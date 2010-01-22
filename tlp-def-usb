@@ -1,0 +1,9 @@
+# tlp - Parameters for usb suspend
+
+# Set to "1" to enable usb autosuspend for all devices 
+# on system startup or upon plugin. 
+USB_AUTOSUSPEND="0"
+
+# Devices from the following list are excluded from usb suspend
+# (use lsusb to get the ids)
+#USB_BLACKLIST=""

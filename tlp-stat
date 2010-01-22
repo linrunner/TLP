@@ -1,0 +1,193 @@
+#!/bin/sh
+# tlp - display power save and usb autosuspend status
+
+# --- Definitions
+LIB=/usr/lib/tlp/tlp-functions
+RFLIB=/usr/lib/tlp/tlp-rf-func
+TLPCFG=/etc/default/tlp
+USBCFG=/etc/default/tlp-usb
+
+HDPARM=/sbin/hdparm
+SMARTCTL=/usr/sbin/smartctl
+
+# --- Functions
+echoparm () {
+	if [ -f $1 ]; then
+		echo "$1 = `cat $1`"
+	else
+		if [ -n "$2" ]; then
+			echo "$1 = ($2)"
+		else
+			echo "$1 = (not available)"
+		fi
+	fi
+}
+
+# --- Read config & libraries
+[ -f $TLPCFG ] && . $TLPCFG
+[ -f $USBCFG ] && . $USBCFG
+
+if [ -f $LIB ]; then
+	. $LIB
+	tlplib="1"
+else
+	tlplib="0"
+fi
+
+if [ -f $RFLIB ]; then
+	. $RFLIB
+	rflib="1"
+else
+	rflib="0"
+fi
+
+# --- MAIN
+if check_laptop_mode_tools; then
+	if [ "$TLP_ENABLE" = "1" ]; then
+		echo "tlp power save = enabled"
+	else
+		echo "tlp power save = not enabled"
+	fi
+fi
+
+if [ $tlplib = "1" ]; then
+	if get_power_state; then
+		echo "power source = ac"
+	else
+		echo "power source = battery"
+	fi
+fi
+echo
+
+# cpu
+echoparm /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 
+echoparm /sys/devices/system/cpu/cpu0/cpufreq/phc_controls "phc kernel not available"
+echo 
+
+# temperatures
+echoparm /proc/acpi/ibm/thermal "thinkpad_acpi not available"
+echo
+
+# laptop-mode, dirty buffers params
+echoparm /proc/sys/vm/laptop_mode
+echoparm /proc/sys/vm/dirty_writeback_centisecs
+echoparm /proc/sys/vm/dirty_expire_centisecs
+echoparm /proc/sys/vm/dirty_ratio
+echoparm /proc/sys/vm/dirty_background_ratio
+echoparm /proc/sys/fs/xfs/age_buffer_centisecs
+echoparm /proc/sys/fs/xfs/xfssyncd_centisecs   
+echoparm /proc/sys/fs/xfs/xfsbufd_centisecs
+echo 
+
+# disk apm level
+DISK_DEVICES=${DISK_DEVICES:=sda}
+for dev in $DISK_DEVICES; do
+	if [ -b /dev/$dev ]; then
+		if [ $USER = "root" ]; then
+			echo "/dev/$dev: Advanced power management level =`/sbin/hdparm -I /dev/$dev | grep 'Advanced power management level' | cut -f2 -d: `"
+			[ -x $SMARTCTL ] && $SMARTCTL -A /dev/$dev | grep " 9 \| 4 \|193"  | \
+			  awk -F ' ' "{ printf \"          %-20s = %6d \\n\", \$2, \$10 }"
+		else
+			echo "/dev/$dev: Advanced power management level = (not available -> call me as root!)"
+		fi
+	fi
+done
+echo
+
+# sata link power
+for i in /sys/class/scsi_host/host* ; do
+    [ -f $i/link_power_management_policy ] && echoparm $i/link_power_management_policy
+done
+echo 
+
+# rfkill state
+if [ $rflib = "1" ]; then
+	for i in bluetooth wifi wwan; do
+		device_state $i
+	done
+fi
+
+# wifi power mode
+if [ -d /sys/module/iwlagn ]; then
+	for i in /sys/bus/pci/drivers/iwlagn/*; do
+		[ -f $i/power_level ] && echoparm $i/power_level
+	done
+	echo 
+fi
+if [ -d /sys/module/iwl3945 ]; then
+	for i in /sys/bus/pci/drivers/iwl3945/*; do
+		[ -f $i/power_level ] && echoparm $i/power_level
+	done
+	echo 
+fi
+if [ -d /sys/module/ipw2200 ]; then
+	iwpriv eth1 get_power
+fi
+
+# sound power mode
+if [ -d /sys/module/snd_hda_intel ]; then
+	echoparm /sys/module/snd_hda_intel/parameters/power_save
+	echoparm /sys/module/snd_hda_intel/parameters/power_save_controller
+fi
+if [ -d /sys/module/snd_ac97_codec ]; then
+	echoparm /sys/module/snd_ac97_codec/parameters/power_save
+fi
+echo 
+
+# battery info & charge thresholds 
+if [ -d /sys/devices/platform/smapi ]; then
+	# ThinkPad via tp_smapi
+	for bat in /sys/devices/platform/smapi/BAT[01]; do
+		if [ "`cat $bat/installed`" = "1" ]; then
+			echoparm $bat/manufacturer
+			echoparm $bat/manufacture_date
+			echoparm $bat/first_use_date
+			echoparm $bat/cycle_count
+			echoparm $bat/design_capacity
+			echoparm $bat/last_full_capacity
+			echoparm $bat/remaining_capacity
+			echoparm $bat/remaining_percent
+			echoparm $bat/remaining_running_time_now
+			echoparm $bat/remaining_charging_time
+			echo
+			echoparm $bat/start_charge_thresh
+			echoparm $bat/stop_charge_thresh 
+			echo
+		fi
+	done
+elif [ -d /sys/class/power_supply ]; then
+	if [ -d /sys/devices/platform/thinkpad_acpi ]; then
+		echo "ThinkPad extended battery info not available (missing tp_smapi kernel module)"
+	fi
+	# generic
+	for bat in /sys/class/power_supply/BAT?; do
+		if [ "`cat $bat/present`" = "1" ]; then
+			echoparm $bat/manufacturer
+			echoparm $bat/energy_full_design
+			echoparm $bat/energy_full
+			echoparm $bat/energy_now
+			echo
+		fi
+	done
+fi
+
+# usb autosuspend
+if [ "$USB_AUTOSUSPEND" = "1" ]; then
+	echo "tlp usb autosuspend = enabled"
+else
+	echo "tlp usb autosuspend = not enabled"
+fi
+echo "tlp usb blacklist = ${USB_BLACKLIST:=(not available)}"
+echo
+
+for i in /sys/bus/usb/devices/* ; do
+	[ -e "$i/power/autosuspend" ] \
+		&& echo "$i/power/autosuspend = `cat $i/power/autosuspend`," \
+		     "level = `cat $i/power/level` --" \
+		     "`cat $i/idVendor`:`cat $i/idProduct`" \
+		     "`[ -f $i/manufacturer ] && cat $i/manufacturer`" \
+		     "`[ -f $i/product ] && cat $i/product`"
+done
+echo
+
+exit 0

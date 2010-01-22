@@ -1,0 +1,8 @@
+usr/bin
+usr/sbin
+etc/acpi/start.d
+etc/default
+etc/network/if-up.d
+usr/lib/pm-utils/power.d
+usr/lib/pm-utils/sleep.d
+lib/udev/rules.d

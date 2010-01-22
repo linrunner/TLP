@@ -1,0 +1,215 @@
+#!/bin/sh
+# tlp - power management functions
+
+# ----------------------------------------------------------------------------
+# Definitions
+DEFAULT_FILE=/etc/default/tlp
+ACPWR=/usr/bin/on_ac_power
+ETHTOOL=/usr/sbin/ethtool
+HDPARM=/sbin/hdparm
+IWPRIV=/sbin/iwpriv
+
+# ----------------------------------------------------------------------------
+# Functions
+check_root () {
+	if [ "$(id -u)" != "0" ]; then
+		echo "Error: you are not root; please call me with 'sudo'." 2>&1
+		exit 1
+	fi
+}
+
+check_tlp_enabled () {
+	if [ ! "$TLP_ENABLE" = "1" ]; then
+		echo "Error: tlp power save is disabled; set TLP_ENABLE=1 in /etc/default/tlp."
+		return 1
+	else
+		return 0
+	fi
+}
+
+check_laptop_mode_tools () {
+	[ -f /etc/default/acpi-support ] && . /etc/default/acpi-support
+	if [ "$ENABLE_LAPTOP_MODE" = "true" -o -f /var/run/laptop-mode-tools/enabled ]; then
+		echo "Error: tlp power save is disabled because laptop-mode-tools is active."
+		echo "       Set ENABLE_LAPTOP_MODE=false in /etc/default/acpi-support."
+		echo 
+		return 1
+	else
+		return 0
+	fi
+}
+
+read_defaults () {
+	if [ -f $DEFAULT_FILE ]; then
+		. $DEFAULT_FILE
+	fi
+}
+
+get_power_state () { 
+	$ACPWR
+	return $? # 0=ac, 1=battery
+}
+
+set_laptopmode () { # $1: 0=ac mode, 1=battery mode
+	if [ $1 = "1" ]; then
+		[ "${DISK_IDLE_SECS_ON_BAT:-undef}" = "undef" ] || \
+		  echo $DISK_IDLE_SECS_ON_BAT > /proc/sys/vm/laptop_mode
+	else
+		[ "${DISK_IDLE_SECS_ON_AC:-undef}" = "undef" ] || \
+		  echo $DISK_IDLE_SECS_ON_AC > /proc/sys/vm/laptop_mode
+	fi
+}
+
+set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
+	if [ $1 = "1" ]; then
+		if [ "${MAX_LOST_WORK_SECS_ON_BAT:-undef}" != "undef" ]; then
+			age=$(($MAX_LOST_WORK_SECS_ON_BAT * 100))
+		else
+			age=1500
+		fi
+
+		echo $age > /proc/sys/vm/dirty_writeback_centisecs
+		echo $age > /proc/sys/vm/dirty_expire_centisecs
+
+		if [ -d /proc/sys/fs/xfs ]; then
+			echo $age > /proc/sys/fs/xfs/age_buffer_centisecs
+			echo $age > /proc/sys/fs/xfs/xfssyncd_centisecs
+			echo 3000 > /proc/sys/fs/xfs/xfsbufd_centisecs
+		fi
+
+		echo 60 > /proc/sys/vm/dirty_ratio
+		echo 1 > /proc/sys/vm/dirty_background_ratio
+	else
+		if [ "${MAX_LOST_WORK_SECS_ON_AC:-undef}" != "undef" ]; then
+			age=$(($MAX_LOST_WORK_SECS_ON_AC * 100))
+		else
+			age=500
+		fi
+		
+		echo $age > /proc/sys/vm/dirty_writeback_centisecs
+		echo $age > /proc/sys/vm/dirty_expire_centisecs
+		
+		if [ -d /proc/sys/fs/xfs ]; then
+			echo $age > /proc/sys/fs/xfs/age_buffer_centisecs
+			echo $age > /proc/sys/fs/xfs/xfssyncd_centisecs
+			echo 3000 > /proc/sys/fs/xfs/xfsbufd_centisecs
+		fi
+
+		echo 40 > /proc/sys/vm/dirty_ratio
+		echo 10 > /proc/sys/vm/dirty_background_ratio
+	fi
+}
+
+set_phc_controls () { 
+	if [ -f "/sys/devices/system/cpu/cpu0/cpufreq/phc_controls" ]; then
+		[ "${PHC_CONTROLS:-undef}" = "undef" ] || \
+		  echo $PHC_CONTROLS > /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
+	fi
+}
+
+
+set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
+	DISK_DEVICES=${DISK_DEVICES:=sda}
+	for dev in $DISK_DEVICES; do
+		if [ -b /dev/$dev ]; then
+			if [ $1 = "1" ]; then
+				[ "${DISK_APM_LEVEL_ON_BAT:-undef}" = "undef" ] || \
+				  $HDPARM -B $DISK_APM_LEVEL_ON_BAT /dev/$dev > /dev/null 2>&1
+			else
+				[ "${DISK_APM_LEVEL_ON_AC:-undef}" = "undef" ] || \
+				  $HDPARM -B $DISK_APM_LEVEL_ON_AC /dev/$dev > /dev/null 2>&1
+			fi
+		fi
+	done
+} 
+
+set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
+	if [ $1 = "1" ]; then
+		[ "${SATA_LINKPWR_ON_BAT:-undef}" = "undef" ] && return 0
+		pwr=$SATA_LINKPWR_ON_BAT
+	else
+		[ "${SATA_LINKPWR_ON_AC:-undef}" = "undef" ] && return 0
+		pwr=$SATA_LINKPWR_ON_AC
+	fi
+	
+	for i in /sys/class/scsi_host/host*/link_power_management_policy ; do
+		echo "$pwr" > $i
+	done
+} 
+
+set_wifi_power_mode () { # $1: 0=ac mode, 1=battery mode
+	if [ $1 = "1" ]; then
+		[ "${WIFI_PWR_ON_BAT:-undef}" = "undef" ] && return 0
+		pwr=$WIFI_PWR_ON_BAT
+	else
+		[ "${WIFI_LINK_PWR_ON_AC:-undef}" = "undef" ] && return 0
+		pwr=$WIFI_PWR_ON_AC
+	fi
+	
+	# Intel 4965, 5100, ... (0=off, 1=min, 5=max)
+	if [ -d /sys/module/iwlagn ]; then
+		for i in /sys/bus/pci/drivers/iwlagn/* ; do
+			[ -f $i/power_level ] && echo "$pwr" > $i
+		done
+	fi
+
+	# Intel 3945agn (0=off, 1=min, 5=max)
+	if [ -d /sys/module/iwl3945 ]; then
+		for i in /sys/bus/pci/drivers/iwl3945/* ; do
+			[ -f $i/power_level ] && echo "$pwr" > $i
+		done
+	fi
+
+	# Intel 2200bg
+	if [ -d /sys/module/ipw2200 ]; then
+		for i in /sys/bus/pci/drivers/ipw2200/*/net/* ; do
+			$IWPRIV ${i##/*/} set_power $pwr
+		done
+	fi
+}
+
+disable_wake_on_lan () {  
+	[ "${WOL_DISABLE:-undef}" = "undef" ] && return 0
+	
+	if [ "$WOL_DISABLE" = "Y" ]; then
+		$ETHTOOL -s eth0 wol d > /dev/null 2>&1
+	else
+		$ETHTOOL -s eth0 wol e > /dev/null 2>&1
+	fi
+}
+
+set_sound_power_mode () {
+	[ "${SOUND_POWER_SAVE:-undef}" = "undef" ] && return 0
+
+	if [ -d /sys/module/snd_hda_intel ]; then
+		echo "$SOUND_POWER_SAVE" > /sys/module/snd_hda_intel/parameters/power_save
+		[ "${SOUND_POWER_SAVE_CONTROLLER:-undef}" = "undef" ] || \
+		  echo "$SOUND_POWER_SAVE_CONTROLLER" > /sys/module/snd_hda_intel/parameters/power_save_controller 
+	fi
+		
+	if [ -d /sys/module/snd_ac97_codec ]; then
+		echo "$SOUND_POWER_SAVE" > /sys/module/snd_ac97_codec/parameters/power_save
+	fi
+}
+
+do_threshold () { # $1: treshold file, $2: new value
+	if [ -n "$2" ]; then
+		if [ "`cat $1`" != "$2" ]; then
+			echo $2 > $1
+		fi
+	fi
+}
+
+set_charge_thresholds () {
+	[ -d /sys/devices/platform/smapi ] || return
+	if [ "`cat /sys/devices/platform/smapi/BAT0/installed`" = "1" ]; then
+		do_threshold /sys/devices/platform/smapi/BAT0/start_charge_thresh "$START_CHARGE_THRESH_BAT0"
+		do_threshold /sys/devices/platform/smapi/BAT0/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT0"
+	fi
+	if [ "`cat /sys/devices/platform/smapi/BAT1/installed`" = "1" ]; then
+		do_threshold /sys/devices/platform/smapi/BAT1/start_charge_thresh "$START_CHARGE_THRESH_BAT1"
+		do_threshold /sys/devices/platform/smapi/BAT1/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT1"
+	fi
+}
+
+

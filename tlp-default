@@ -1,0 +1,60 @@
+# tlp - Parameters for power save
+
+# Set to "1" to enable power save
+TLP_ENABLE="1"
+
+# Seconds laptop mode has to to wait after the disk goes idle before doing a sync.
+# Non-zero value enables, zero disables laptop mode.
+DISK_IDLE_SECS_ON_AC=0
+DISK_IDLE_SECS_ON_BAT=5
+
+# Dirty page values (timeouts in secs).
+MAX_LOST_WORK_SECS_ON_AC=15
+MAX_LOST_WORK_SECS_ON_BAT=600
+        
+# Change CPU voltages aka "undervolting" - Kernel with PHC patch required
+# CAUTION: only use this, if you thorougly understand what you are doing!
+#PHC_CONTROLS=""
+
+# Hard disk devices (separate with spaces)
+DISK_DEVICES="sda"
+
+# Hard disk advanced power management level: 1(max saving)..254(off)
+# Levels 1..127 spin down the disk.
+DISK_APM_LEVEL_ON_AC=254
+DISK_APM_LEVEL_ON_BAT=128  
+
+# SATA Link Power: min_power/medium_power/max_performance
+SATA_LINKPWR_ON_AC="max_performance"
+SATA_LINKPWR_ON_BAT="min_power"
+
+# Wifi power mode for Intel 2200, 3945, 4965, 5100, 5300
+# 1(min saving)..5(max saving)
+# Works only before Karmic.
+WIFI_PWR_ON_AC=1
+WIFI_PWR_ON_BAT=5
+
+# Disable wake on lan: Y/N
+WOL_DISABLE="Y"
+
+# Enable power save for Intel HDA, AC97 devices (timeout in secs).
+# A value auf 0 disables power save.
+SOUND_POWER_SAVE=1
+# Disable controller too: Y/N (HDA only)
+SOUND_POWER_SAVE_CONTROLLER=Y
+
+# Devices to disable on startup: bluetooth/wifi/wwan
+#DEVICES_TO_DISABLE_ON_STARTUP="bluetooth"
+
+# Devices to disable on shutdown: bluetooth/wifi/wwan
+# (workaround for devices that are blocking shutdown)
+#DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi wwan"
+
+# Battery charge thresholds 
+# ThinkPad only, tp-smapi kernel module required)
+# Main battery
+#START_CHARGE_THRESH_BAT0=96
+#STOP_CHARGE_THRESH_BAT0=100
+# Ultrabay battery
+#START_CHARGE_THRESH_BAT1=96
+#STOP_CHARGE_THRESH_BAT1=100

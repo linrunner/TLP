@@ -1,0 +1,18 @@
+#!/bin/sh
+# tlp - Enable usb autosuspend except blacklisted devices
+
+USB_BLACKLIST="046d:c521 06cb:0009 04b3:3018 067b:2303 045e:00b9 062a:0000 04c5:1155 0c4b:0400"
+    
+# --- DO NOT CHANGE BELOW THIS LINE ---
+dev=/sys/bus/usb/devices/${1##/*/}
+
+if [ "$USB_BLACKLIST" != "${USB_BLACKLIST#*$2}" ]; then
+	level="on"
+else
+	level="auto"
+fi
+
+echo 0 > $dev/power/autosuspend
+echo $level > $dev/power/level
+
+exit 0

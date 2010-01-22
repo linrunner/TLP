@@ -1,0 +1,33 @@
+#!/bin/sh
+# tlp - switch bluetooth/wifi/wwan on/off
+
+LIB=/usr/lib/tlp/tlp-rf-func
+[ -f $LIB ] || exit 0
+. $LIB
+
+self=${0##*/}
+
+case $self in
+    bluetooth|wifi|wwan)
+		case $1 in
+			on)
+				device_on $self
+				;;
+
+			off)
+				device_off $self
+				;;
+
+			*)
+				device_state $self
+				;;
+		esac
+        ;;
+
+    *)
+		echo "Error: unknown device type \"$self\"."
+		exit 1
+		;;
+esac
+
+exit 0

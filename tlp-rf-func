@@ -1,0 +1,103 @@
+#!/bin/sh
+# tlp - rf switch functions
+
+# ----------------------------------------------------------------------------
+# Definitions
+RFKILL="/sbin/rfkill"
+
+# ----------------------------------------------------------------------------
+# Functions
+get_ctrl_device () {
+	case $1 in
+		wwan|bluetooth)
+			for i in /sys/devices/platform/thinkpad_acpi/rfkill/rfkill* ; do
+				if [ "$(cat $i/type)" = "$1" ]; then 
+					devc="$i/state"
+					return
+				fi
+			done
+			devc=""
+			;;
+
+		wifi)
+			for i in /sys/class/rfkill/rfkill* ; do
+				if [ "$(cat $i/type)" = "wlan" ]; then 
+					devc="$i/state"
+					return
+				fi
+			done
+			devc=""
+			;;
+        
+        *)
+			echo "Error: no such device \"$1\""
+			devc=""
+			;;
+	esac
+}
+
+device_on () { 
+	if [ -x $RFKILL ]; then
+		$RFKILL unblock $1
+	else
+		get_ctrl_device $1
+		if [ -n $devc ]; then
+			echo -n 1 > $devc
+		fi
+	fi
+}
+
+device_off () {
+	if [ -x $RFKILL ]; then
+		$RFKILL block $1
+	else
+		get_ctrl_device $1
+		if [ -n $devc ]; then
+			echo -n 0 > $devc
+		fi
+	fi
+}
+
+device_state () {
+	get_ctrl_device $1
+	if [ -z $devc ]; then
+		return 1
+	fi
+
+	state=$(cat $devc)
+	case $1 in
+		bluetooth)
+			devstr="bluetooth"
+			;;
+			
+		wifi)
+			devstr="wifi     "
+			;;
+		
+		wwan)
+			devstr="wwan     "
+			;;
+			
+		*)
+			devstr=$1
+			;;
+	esac
+	
+	case $state in
+		0) 
+			echo "$devstr = off (software)"
+			;;
+
+		1) 
+			echo "$devstr = on"
+			;;
+            
+		2) 
+			echo "$devstr = off (hardware)"
+			;;
+
+		*)
+            echo "$devstr = unknown state \"$state\""
+	esac
+}
+

@@ -1,0 +1,16 @@
+Source: tlp
+Section: utils
+Priority: optional
+Maintainer: Thomas Koch <linrunner@gmx.net>
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.8.0
+Homepage: 
+
+Package: tlp
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, pm-utils
+Recommends: ethtool, wireless-tools
+Suggests: tp-smapi-source, smartmontools
+Description: Saves battery power on laptops
+ tlp is a collection of scripts enabling laptop-mode and
+ implementing power save features for laptop hardware.
