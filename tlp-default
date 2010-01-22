@@ -43,6 +43,14 @@ SOUND_POWER_SAVE=1
 # Disable controller too: Y/N (HDA only)
 SOUND_POWER_SAVE_CONTROLLER=Y
 
+# Set to "1" to enable usb autosuspend for all devices 
+# on system startup or upon plugin. 
+USB_AUTOSUSPEND="0"
+
+# Devices from the following list are excluded from usb suspend
+# (use lsusb to get the ids)
+#USB_BLACKLIST=""
+
 # Devices to disable on startup: bluetooth/wifi/wwan
 #DEVICES_TO_DISABLE_ON_STARTUP="bluetooth"
 

@@ -31,6 +31,7 @@ case "$mode" in
 		set_wifi_power_mode $pwr
 		disable_wake_on_lan $pwr
 		set_sound_power_mode $pwr
+		enable_usb_suspend
 		set_charge_thresholds
 		;;
 
@@ -65,9 +66,13 @@ case "$mode" in
 		
 		set_wifi_power_mode $pwr
 		;;
+
+	usb) # Enable usb autosuspend
+		enable_usb_suspend
+		;;
 		
 	*) 
-		echo "Usage: tlp start|true|bat|false|ac|wifi"
+		echo "Usage: tlp start|true|bat|false|ac|wifi|usb"
 		;;
 esac
 

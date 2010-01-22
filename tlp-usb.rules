@@ -1,6 +1,0 @@
-# tlp - udev rules for usb suspend
-ACTION=="add", SUBSYSTEM=="usb", \
-        DRIVER=="usb", \
-        ATTR{power/level}=="on" \
-        RUN+="/lib/udev/tlp-usb-add $env{DEVPATH} $env{ID_VENDOR_ID}:$env{ID_MODEL_ID}"
-

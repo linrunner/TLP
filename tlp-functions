@@ -192,6 +192,23 @@ set_sound_power_mode () {
 	fi
 }
 
+enable_usb_suspend () {
+	if [ "$USB_AUTOSUSPEND" = "1" ]; then
+		for usbdev in /sys/bus/usb/devices/*; do
+			if [ -f $usbdev/power/autosuspend ]; then
+				usbid="`cat $usbdev/idVendor`:`cat $usbdev/idProduct`"
+			
+				if [ "$USB_BLACKLIST" != "${USB_BLACKLIST#*$usbid}" ]; then
+				echo "on" > $usbdev/power/level
+				else
+					echo "auto" > $usbdev/power/level
+				fi
+				echo 0 > $usbdev/power/autosuspend
+			fi
+		done
+	fi
+}
+
 do_threshold () { # $1: treshold file, $2: new value
 	if [ -n "$2" ]; then
 		if [ "`cat $1`" != "$2" ]; then
