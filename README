@@ -11,7 +11,7 @@ Possible settings for ac/battery are:
 - wifi power save (Intel 2200/3945/4965/5x00, kernel < 2.6.30 only)
 - sound power save (hda_intel, ac97)
 - usb autosuspend with blacklist
-- phc-controls (requires kernel with phc-patches)
+- phc controls (requires kernel with phc-patches)
 - battery charge thresholds (ThinkPads only)
 
 Additional functions:
