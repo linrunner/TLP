@@ -3,6 +3,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
+TLPVER=0.1.8
 DEFAULT_FILE=/etc/default/tlp
 ACPWR=/usr/bin/on_ac_power
 ETHTOOL=/usr/sbin/ethtool

@@ -1,0 +1,5 @@
+debian/tlp.8
+debian/tlp-stat.8
+debian/bluetooth.1
+debian/wifi.1
+debian/wwan.1

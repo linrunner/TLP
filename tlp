@@ -45,6 +45,7 @@ case "$mode" in
 		set_wifi_power_mode 1
 		disable_wake_on_lan 1
 		set_sound_power_mode 1
+		enable_usb_suspend
 		;;
 		
 	false|ac) # Set ac power mode
@@ -57,6 +58,7 @@ case "$mode" in
 		set_wifi_power_mode 0
 		disable_wake_on_lan 0
 		set_sound_power_mode 0
+		enable_usb_suspend
 		;;
 		
 	wifi) # Set wifi power mode depending on state

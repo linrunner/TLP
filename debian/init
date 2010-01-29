@@ -28,7 +28,7 @@ CFG=/etc/default/tlp
 check_tlp_enabled || exit 0
 
 case $1 in
-	start)
+	start|restart|force-reload)
 		$TLP start
 		
 		for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do

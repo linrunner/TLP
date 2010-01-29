@@ -5,7 +5,6 @@
 LIB=/usr/lib/tlp/tlp-functions
 RFLIB=/usr/lib/tlp/tlp-rf-func
 TLPCFG=/etc/default/tlp
-USBCFG=/etc/default/tlp-usb
 
 HDPARM=/sbin/hdparm
 SMARTCTL=/usr/sbin/smartctl
@@ -25,7 +24,6 @@ echoparm () {
 
 # --- Read config & libraries
 [ -f $TLPCFG ] && . $TLPCFG
-[ -f $USBCFG ] && . $USBCFG
 
 if [ -f $LIB ]; then
 	. $LIB
@@ -42,6 +40,7 @@ else
 fi
 
 # --- MAIN
+echo "--- tlp $TLPVER ---"
 if check_laptop_mode_tools; then
 	if [ "$TLP_ENABLE" = "1" ]; then
 		echo "tlp power save = enabled"
@@ -88,7 +87,7 @@ for dev in $DISK_DEVICES; do
 			[ -x $SMARTCTL ] && $SMARTCTL -A /dev/$dev | grep " 9 \| 4 \|193"  | \
 			  awk -F ' ' "{ printf \"          %-20s = %6d \\n\", \$2, \$10 }"
 		else
-			echo "/dev/$dev: Advanced power management level = (not available -> call me as root!)"
+			echo "/dev/$dev: Advanced power management level = (not available -> call me with 'sudo'!)"
 		fi
 	fi
 done
@@ -185,7 +184,6 @@ for i in /sys/bus/usb/devices/* ; do
 		&& echo "$i/power/autosuspend = `cat $i/power/autosuspend`," \
 		     "level = `cat $i/power/level` --" \
 		     "`cat $i/idVendor`:`cat $i/idProduct`" \
-		     "`[ -f $i/manufacturer ] && cat $i/manufacturer`" \
 		     "`[ -f $i/product ] && cat $i/product`"
 done
 echo

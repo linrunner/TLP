@@ -6,11 +6,11 @@ TLP_ENABLE="1"
 # Seconds laptop mode has to to wait after the disk goes idle before doing a sync.
 # Non-zero value enables, zero disables laptop mode.
 DISK_IDLE_SECS_ON_AC=0
-DISK_IDLE_SECS_ON_BAT=5
+DISK_IDLE_SECS_ON_BAT=2
 
 # Dirty page values (timeouts in secs).
 MAX_LOST_WORK_SECS_ON_AC=15
-MAX_LOST_WORK_SECS_ON_BAT=600
+MAX_LOST_WORK_SECS_ON_BAT=15
         
 # Change CPU voltages aka "undervolting" - Kernel with PHC patch required
 # CAUTION: only use this, if you thorougly understand what you are doing!

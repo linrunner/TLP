@@ -61,10 +61,11 @@ device_off () {
 device_state () {
 	get_ctrl_device $1
 	if [ -z $devc ]; then
-		return 1
+		state=254
+	else
+		state=$(cat $devc)
 	fi
-
-	state=$(cat $devc)
+	
 	case $1 in
 		bluetooth)
 			devstr="bluetooth"
@@ -94,6 +95,10 @@ device_state () {
             
 		2) 
 			echo "$devstr = off (hardware)"
+			;;
+			
+		254) 
+			echo "$devstr = none (no device)"
 			;;
 
 		*)

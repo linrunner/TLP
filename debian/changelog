@@ -1,8 +1,25 @@
+tlp (0.1.9-0ubuntu1) karmic; urgency=low
+
+  * New release
+    - README
+    - defaults
+
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 29 Jan 2010 17:45:41 +0100
+
+tlp (0.1.8-0ubuntu1) karmic; urgency=low
+
+  * New release
+    - man pages
+    - lintian fixes
+
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 23 Jan 2010 22:42:36 +0100
+
 tlp (0.1.7-0ubuntu1) karmic; urgency=low
 
   * New release
     - usb autosuspend: udev script removed, now handled in tlp start
     - tlp-stat: bugfix
+    - bluetooth/wifi/wwan: new status "none (no device)"
 
  -- Thomas Koch <linrunner@gmx.net>  Fri, 22 Jan 2010 17:06:17 +0100
 

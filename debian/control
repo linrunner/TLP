@@ -14,3 +14,8 @@ Suggests: tp-smapi-source, smartmontools
 Description: Saves battery power on laptops
  tlp is a collection of scripts enabling laptop-mode and
  implementing power save features for laptop hardware.
+ Settings include disk apm, sata link, wifi, sound,
+ usb autosuspend, phc-controls (requires kernel support)
+ and battery charge thresholds (ThinkPads only). 
+ Wifi, bluetooth and wwan devices can be selectively
+ disabled on system startup and shutdown.

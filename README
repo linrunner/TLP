@@ -1,1 +1,27 @@
-*** TODO ***
+tlp README 29.01.2010
+
+tlp is a collection of scripts enabling laptop-mode and
+implementing power save features for laptop hardware.
+
+Possible settings for ac/battery are:
+- kernel laptop-mode, dirty buffer params
+- disk apm level
+- wake on lan (disable)
+- sata link power
+- wifi power save (Intel 2200/3945/4965/5x00, kernel < 2.6.30 only)
+- sound power save (hda_intel, ac97)
+- usb autosuspend with blacklist
+- phc-controls (requires kernel with phc-patches)
+- battery charge thresholds (ThinkPads only)
+
+Additional functions:
+- wifi, bluetooth and wwan devices can be selectively disabled on
+  system startup and shutdown.
+- wwan state is restored after suspend/hibernate
+
+All tlp settings are stored in /etc/default/tlp.
+
+For further details take a look at the man pages:
+- tlp
+- tlp-stat (display tlp status and active settings)
+- wifi, bluetooth, wwan (switch wireless devices on/off)
