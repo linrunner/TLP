@@ -13,7 +13,7 @@ MAX_LOST_WORK_SECS_ON_AC=15
 MAX_LOST_WORK_SECS_ON_BAT=15
         
 # Change CPU voltages aka "undervolting" - Kernel with PHC patch required
-# CAUTION: only use this, if you thorougly understand what you are doing!
+# CAUTION: only use this, if you thoroughly understand what you are doing!
 #PHC_CONTROLS=""
 
 # Hard disk devices (separate with spaces)
@@ -28,9 +28,9 @@ DISK_APM_LEVEL_ON_BAT=128
 SATA_LINKPWR_ON_AC="max_performance"
 SATA_LINKPWR_ON_BAT="min_power"
 
-# Wifi power mode for Intel 2200, 3945, 4965, 5100, 5300
+# Wifi power save mode for Intel 2200, 3945, 4965, 5100, 5300:
 # 1(min saving)..5(max saving)
-# Works only before Karmic.
+# (Kernel < 2.6.30 only)
 WIFI_PWR_ON_AC=1
 WIFI_PWR_ON_BAT=5
 
@@ -44,11 +44,11 @@ SOUND_POWER_SAVE=1
 SOUND_POWER_SAVE_CONTROLLER=Y
 
 # Set to "1" to enable usb autosuspend for all devices 
-# on system startup or upon plugin. 
+# on system startup. 
 USB_AUTOSUSPEND="0"
 
-# Devices from the following list are excluded from usb suspend
-# (use lsusb to get the ids)
+# Devices from the following list are excluded from usb autosuspend
+# (use lsusb to get the id's).
 #USB_BLACKLIST=""
 
 # Devices to disable on startup: bluetooth/wifi/wwan
@@ -59,7 +59,7 @@ USB_AUTOSUSPEND="0"
 #DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi wwan"
 
 # Battery charge thresholds 
-# ThinkPad only, tp-smapi kernel module required)
+# (ThinkPad only, tp-smapi kernel module required)
 # Main battery
 #START_CHARGE_THRESH_BAT0=96
 #STOP_CHARGE_THRESH_BAT0=100
