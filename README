@@ -1,6 +1,6 @@
-tlp README 29.01.2010
+TLP README - 30.01.2010
 
-tlp is a collection of scripts enabling laptop-mode and
+TLP is a collection of scripts enabling laptop-mode and
 implementing power save features for laptop hardware.
 
 Possible settings for ac/battery are:
