@@ -134,7 +134,9 @@ set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 	fi
 	
 	for i in /sys/class/scsi_host/host*/link_power_management_policy ; do
-		echo "$pwr" > $i
+		if [ "$i" != "/sys/class/scsi_host/host*/link_power_management_policy" ]; then
+			echo "$pwr" > $i
+		fi
 	done
 } 
 
