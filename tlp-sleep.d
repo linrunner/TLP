@@ -15,15 +15,15 @@ resume_device () {
 	restorestate $1 > $2
 }
 
-[ -f $LIB ] || exit $NA
-[ -f $CFG ] || exit $NA
+[ -f $LIB ] || exit 0
+[ -f $CFG ] || exit 0
 
 . $LIB
 . $CFG
-[ "$TLP_ENABLE" = "1" ] || exit $NA
+[ "$TLP_ENABLE" = "1" ] || exit 0
 
 get_ctrl_device wwan
-[ -n $devc ] || exit $NA
+[ -n "$devc" ] || exit 0
 
 case $1 in
 	hibernate|suspend)
