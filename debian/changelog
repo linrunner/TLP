@@ -1,3 +1,12 @@
+tlp (0.2.1-0ubuntu1) karmic; urgency=low
+
+  * Bugfixes
+    - #1: pm-suspend/pm-hibernate hang w/o wwan device (Zaphod_42)
+    - #2: error messages from set_sata_link_power() w/o sata-ahci or ide (quarf)
+  * tlp-stat: more info
+
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 31 Jan 2010 14:26:46 +0100
+
 tlp (0.2.0-0ubuntu1) karmic; urgency=low
 
   * Initial public release.

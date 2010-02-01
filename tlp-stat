@@ -9,6 +9,9 @@ TLPCFG=/etc/default/tlp
 HDPARM=/sbin/hdparm
 SMARTCTL=/usr/sbin/smartctl
 
+LSB=/usr/bin/lsb_release
+DMI=/usr/sbin/dmidecode
+
 # --- Functions
 echoparm () {
 	if [ -f $1 ]; then
@@ -40,7 +43,25 @@ else
 fi
 
 # --- MAIN
-echo "--- tlp $TLPVER ---"
+echo "--- tlp $TLPVER --------------------------------------------"
+if [ $USER != "root" ]; then
+	echo "Hint: call me with 'sudo' to obtain more information!"
+	echo
+fi
+
+if [ $USER = "root" ]; then
+	if [ -x $DMI ]; then
+		echo "System = `$DMI -s system-manufacturer`" \
+		  "`$DMI -s system-version`" \
+		  "`$DMI -s system-product-name`"
+	fi
+else
+	echo "System = (not available)"
+fi
+[ -x $LSB ] && echo "Release = `lsb_release -d -s`"
+echo "Kernel = `uname -r -m`"
+echo
+
 if check_laptop_mode_tools; then
 	if [ "$TLP_ENABLE" = "1" ]; then
 		echo "tlp power save = enabled"
@@ -87,16 +108,23 @@ for dev in $DISK_DEVICES; do
 			[ -x $SMARTCTL ] && $SMARTCTL -A /dev/$dev | grep " 9 \| 4 \|193"  | \
 			  awk -F ' ' "{ printf \"          %-20s = %6d \\n\", \$2, \$10 }"
 		else
-			echo "/dev/$dev: Advanced power management level = (not available -> call me with 'sudo'!)"
+			echo "/dev/$dev: Advanced power management level = (not available)"
 		fi
 	fi
 done
 echo
 
 # sata link power
+cnt=0
 for i in /sys/class/scsi_host/host* ; do
-    [ -f $i/link_power_management_policy ] && echoparm $i/link_power_management_policy
+    if [ -f $i/link_power_management_policy ]; then
+		echoparm $i/link_power_management_policy
+		cnt=$((cnt+1))
+	fi
 done
+if [ $cnt = 0 ]; then
+	echo "sata link power management: no ahci-enabled host controller detected"
+fi	
 echo 
 
 # rfkill state
