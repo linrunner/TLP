@@ -41,6 +41,7 @@ if [ -f $RFLIB ]; then
 else
 	rflib="0"
 fi
+load_tp_smapi
 
 # --- MAIN
 echo "--- tlp $TLPVER --------------------------------------------"

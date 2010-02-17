@@ -3,12 +3,14 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.2.1
+TLPVER=0.2.2
 DEFAULT_FILE=/etc/default/tlp
 ACPWR=/usr/bin/on_ac_power
 ETHTOOL=/usr/sbin/ethtool
 HDPARM=/sbin/hdparm
 IWPRIV=/sbin/iwpriv
+MODPRO=/sbin/modprobe
+SMAPI=tp_smapi
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -44,6 +46,10 @@ read_defaults () {
 	if [ -f $DEFAULT_FILE ]; then
 		. $DEFAULT_FILE
 	fi
+}
+
+load_tp_smapi () {
+	$MODPRO $SMAPI > /dev/null 2>&1 
 }
 
 get_power_state () { 

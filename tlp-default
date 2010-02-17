@@ -38,7 +38,7 @@ WIFI_PWR_ON_BAT=5
 WOL_DISABLE="Y"
 
 # Enable power save for Intel HDA, AC97 devices (timeout in secs).
-# A value auf 0 disables power save.
+# A value of 0 disables power save.
 SOUND_POWER_SAVE=1
 # Disable controller too: Y/N (HDA only)
 SOUND_POWER_SAVE_CONTROLLER=Y
@@ -48,8 +48,8 @@ SOUND_POWER_SAVE_CONTROLLER=Y
 USB_AUTOSUSPEND="0"
 
 # Devices from the following list are excluded from usb autosuspend
-# (use lsusb to get the id's).
-#USB_BLACKLIST=""
+# (separate with spaces). Use lsusb to get the id's. 
+#USB_BLACKLIST="1111:2222 3333:4444"
 
 # Devices to disable on startup: bluetooth/wifi/wwan
 #DEVICES_TO_DISABLE_ON_STARTUP="bluetooth"

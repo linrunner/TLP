@@ -22,6 +22,7 @@ case "$mode" in
 		check_root
 		get_power_state
 		pwr=$?
+		load_tp_smapi
 		
 		set_laptopmode $pwr
 		set_dirty_parms $pwr
