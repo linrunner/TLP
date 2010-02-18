@@ -3,6 +3,7 @@ tlp (0.2.2-0ubuntu1) karmic; urgency=low
   * Bugfixes
     - #5: autoload tp_smapi (Starko)
   * Features
+    - upstart integration
     - tlp-stat: error checking improved
 
  -- Thomas Koch <linrunner@gmx.net>  Sun, 07 Feb 2010 12:47:53 +0100
