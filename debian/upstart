@@ -1,0 +1,51 @@
+# TLP settings on system startup/shutdown
+
+description	"tlp"
+
+start on ( virtual-filesystems and runlevel [2345] )
+stop on runlevel [!2345]
+
+env TLP=/usr/sbin/tlp
+env LIB=/usr/lib/tlp/tlp-functions
+env RFLIB=/usr/lib/tlp/tlp-rf-func
+env CFG=/etc/default/tlp
+
+pre-start script
+	[ -x $TLP ] || exit 4
+	[ -f $LIB ] || exit 4
+	[ -f $RFLIB ] || exit 4
+	[ -f $CFG ] || exit 2
+
+	. $LIB
+	. $RFLIB
+	. $CFG
+
+	check_tlp_enabled || exit 1
+
+	$TLP start
+		
+	for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
+		device_off $dev
+	done
+end script
+
+post-stop script
+	[ -x $TLP ] || exit 4
+	[ -f $LIB ] || exit 4
+	[ -f $RFLIB ] || exit 4
+	[ -f $CFG ] || exit 2
+
+	. $LIB	
+	. $RFLIB
+	. $CFG
+
+	check_tlp_enabled || exit 1
+
+	$TLP false
+		
+	for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
+		device_off $dev
+	done
+end script
+
+

@@ -3,7 +3,7 @@ Section: utils
 Priority: optional
 Maintainer: Thomas Koch <linrunner@gmx.net>
 Build-Depends: debhelper (>= 7)
-Standards-Version: 3.8.0
+Standards-Version: 3.8.3
 Homepage: 
 
 Package: tlp

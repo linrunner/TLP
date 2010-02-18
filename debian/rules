@@ -50,7 +50,7 @@ binary-indep: install
 #	dh_installpam
 #	dh_installmime
 #	dh_python
-	dh_installinit --no-start -- defaults 98 01
+	dh_installinit --no-start
 #	dh_installcron
 #	dh_installinfo
 	dh_installman
