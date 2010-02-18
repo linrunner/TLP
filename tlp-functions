@@ -158,14 +158,14 @@ set_wifi_power_mode () { # $1: 0=ac mode, 1=battery mode
 	# Intel 4965, 5100, ... (0=off, 1=min, 5=max)
 	if [ -d /sys/bus/pci/drivers/iwlagn ]; then
 		for i in /sys/bus/pci/drivers/iwlagn/* ; do
-			[ -f $i/power_level ] && echo "$pwr" > $i
+			[ -f $i/power_level ] && echo "$pwr" > $i/power_level
 		done
 	fi
 
 	# Intel 3945agn (0=off, 1=min, 5=max)
 	if [ -d /sys/bus/pci/drivers/iwl3945 ]; then
 		for i in /sys/bus/pci/drivers/iwl3945/* ; do
-			[ -f $i/power_level ] && echo "$pwr" > $i
+			[ -f $i/power_level ] && echo "$pwr" > $i/power_level
 		done
 	fi
 
