@@ -25,26 +25,32 @@ echoparm () {
 	fi
 }
 
-# --- Read config & libraries
-[ -f $TLPCFG ] && . $TLPCFG
-
+# --- Read libraries
 if [ -f $LIB ]; then
 	. $LIB
-	tlplib="1"
 else
-	tlplib="0"
+	echo "Fatal error: library $LIB not installed."
+	exit 1
 fi
 
 if [ -f $RFLIB ]; then
 	. $RFLIB
-	rflib="1"
 else
-	rflib="0"
+	echo "Fatal error: library $RFLIB not installed."
+	exit 1
 fi
 load_tp_smapi
 
 # --- MAIN
 echo "--- tlp $TLPVER --------------------------------------------"
+
+if [ -f $TLPCFG ]; then
+	. $TLPCFG
+else
+	echo "Warning: config file $TLPCFG not present."
+	echo
+fi
+
 if [ $USER != "root" ]; then
 	echo "Hint: call me with 'sudo' to obtain more information!"
 	echo
@@ -71,12 +77,10 @@ if check_laptop_mode_tools; then
 	fi
 fi
 
-if [ $tlplib = "1" ]; then
-	if get_power_state; then
-		echo "power source = ac"
-	else
-		echo "power source = battery"
-	fi
+if get_power_state; then
+	echo "power source = ac"
+else
+	echo "power source = battery"
 fi
 echo
 
@@ -129,20 +133,18 @@ fi
 echo 
 
 # rfkill state
-if [ $rflib = "1" ]; then
-	for i in bluetooth wifi wwan; do
-		device_state $i
-	done
-fi
+for i in bluetooth wifi wwan; do
+	device_state $i
+done
 
 # wifi power mode
-if [ -d /sys/module/iwlagn ]; then
+if [ -d /sys/bus/pci/drivers/iwlagn ]; then
 	for i in /sys/bus/pci/drivers/iwlagn/*; do
 		[ -f $i/power_level ] && echoparm $i/power_level
 	done
 	echo 
 fi
-if [ -d /sys/module/iwl3945 ]; then
+if [ -d //sys/bus/pci/drivers/iwl3945 ]; then
 	for i in /sys/bus/pci/drivers/iwl3945/*; do
 		[ -f $i/power_level ] && echoparm $i/power_level
 	done
