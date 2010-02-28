@@ -8,7 +8,7 @@ Homepage:
 
 Package: tlp
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, pm-utils, perl-base
+Depends: ${shlibs:Depends}, ${misc:Depends}, pm-utils
 Recommends: ethtool, wireless-tools
 Suggests: tp-smapi-source, smartmontools
 Description: Saves battery power on laptops

@@ -52,7 +52,7 @@ device_off () {
 		case $1 in
 			bluetooth)
 				btidx=$($RFKILL list | grep "hci" | cut -f1 -d:)
-				[ -n "$btidx"] && $RFKILL block $btidx
+				[ -n "$btidx" ] && $RFKILL block $btidx
 				$RFKILL block $1
 				;;
 			*)
