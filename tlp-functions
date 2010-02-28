@@ -10,7 +10,10 @@ ETHTOOL=/usr/sbin/ethtool
 HDPARM=/sbin/hdparm
 IWPRIV=/sbin/iwpriv
 MODPRO=/sbin/modprobe
+UDEVADM=/sbin/udevadm
+PERL=/usr/bin/perl
 SMAPI=tp_smapi
+OPTDRV=/dev/sr0
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -236,6 +239,45 @@ set_charge_thresholds () {
 		do_threshold /sys/devices/platform/smapi/BAT1/start_charge_thresh "$START_CHARGE_THRESH_BAT1"
 		do_threshold /sys/devices/platform/smapi/BAT1/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT1"
 	fi
+}
+
+poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
+	# Run only if either explicitly enabled or forced 
+	[ "$BAY_POWEROFF_ON_BAT" = "1" ] || [ "$1" = "1" ] || return 0
+
+	# Code from http://www.thinkwiki.org/wiki/How_to_hotswap_UltraBay_devices
+	# Find generic dock interface for bay
+	dock=$(/bin/grep -l ata_bay /sys/devices/platform/dock.?/type)
+	dock=${dock%%/type}
+	if [ -z "$dock" -o ! -d "$dock" ]; then
+		[ "$1" = "1" ] && echo "Error: cannot locate bay device."
+		return 1
+	fi
+
+	# Check if bay is occupied
+	if [ $(cat $dock/docked) = "0" ]; then
+		[ "$1" = "1" ] && echo "No drive in bay (or power already off)."
+	else 
+		# Check for optical drive
+		if [ ! -b "$OPTDRV" ]; then
+			[ "$1" = "1" ] && echo "No optical drive in bay."
+			return 0
+		else	
+			# Power off drive
+			$HDPARM -Y $OPTDRV > /dev/null 2>&1
+			sleep 0.5
+	
+			# Unregister scsi device
+			syspath="/sys$($UDEVADM info --query=path --name=$OPTDRV | $PERL -pe 's!/block/...$!!')"
+			echo 1 > $syspath/delete
+
+			# Turn power off
+			echo 1 > $dock/undock
+			[ "$1" = "1" ] && echo "Bay is powered off now."
+		fi
+	fi
+	
+	return 0
 }
 
 

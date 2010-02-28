@@ -33,6 +33,7 @@ case "$mode" in
 		disable_wake_on_lan $pwr
 		set_sound_power_mode $pwr
 		enable_usb_suspend
+		[ "$pwr" = "1" ] && poweroff_drivebay 0
 		set_charge_thresholds
 		;;
 
@@ -47,6 +48,7 @@ case "$mode" in
 		disable_wake_on_lan 1
 		set_sound_power_mode 1
 		enable_usb_suspend
+		poweroff_drivebay 0
 		;;
 		
 	false|ac) # Set ac power mode
@@ -73,9 +75,14 @@ case "$mode" in
 	usb) # Enable usb autosuspend
 		enable_usb_suspend
 		;;
+
+	bayoff) # Power off drive bay
+		poweroff_drivebay 1
+		;;
+		
 		
 	*) 
-		echo "Usage: tlp start|true|bat|false|ac|wifi|usb"
+		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff"
 		;;
 esac
 

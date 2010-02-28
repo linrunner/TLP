@@ -13,6 +13,7 @@ Possible settings for ac/battery are:
 - usb autosuspend with blacklist
 - phc controls (requires kernel with phc-patches)
 - battery charge thresholds (ThinkPads only)
+- power off UltraBay optical drive (ThinkPads only)
 
 Additional functions:
 - wifi, bluetooth and wwan devices can be selectively disabled on

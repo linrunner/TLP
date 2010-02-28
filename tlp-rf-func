@@ -49,7 +49,16 @@ device_on () {
 
 device_off () {
 	if [ -x $RFKILL ]; then
-		$RFKILL block $1
+		case $1 in
+			bluetooth)
+				btidx=$($RFKILL list | grep "hci" | cut -f1 -d:)
+				[ -n "$btidx"] && $RFKILL block $btidx
+				$RFKILL block $1
+				;;
+			*)
+				$RFKILL block $1
+				;;
+		esac
 	else
 		get_ctrl_device $1
 		if [ -n $devc ]; then

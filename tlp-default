@@ -13,8 +13,9 @@ MAX_LOST_WORK_SECS_ON_AC=15
 MAX_LOST_WORK_SECS_ON_BAT=15
         
 # Change CPU voltages aka "undervolting" - Kernel with PHC patch required
-# CAUTION: only use this, if you thoroughly understand what you are doing!
-#PHC_CONTROLS=""
+# Freq:voltage pairs are written to /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
+# CAUTION: only use this, if you thoroughly understand what you are doing! 
+#PHC_CONTROLS="F:V F:V F:V F:V"
 
 # Hard disk devices (separate with spaces)
 DISK_DEVICES="sda"
@@ -35,7 +36,7 @@ WIFI_PWR_ON_AC=1
 WIFI_PWR_ON_BAT=5
 
 # Disable wake on lan: Y/N
-WOL_DISABLE="Y"
+WOL_DISABLE=Y
 
 # Enable power save for Intel HDA, AC97 devices (timeout in secs).
 # A value of 0 disables power save.
@@ -43,9 +44,16 @@ SOUND_POWER_SAVE=1
 # Disable controller too: Y/N (HDA only)
 SOUND_POWER_SAVE_CONTROLLER=Y
 
-# Set to "1" to enable usb autosuspend for all devices 
+# Set to 1 to power off optical drive in UltraBay (ThinkPads only) 
+# when running on battery.
+# Drive can be powered on again by releasing (and reinserting) the
+# eject lever or by pressing the disc eject button on newer models.
+# Note: an UltraBay hard disk is never powered off
+BAY_POWEROFF_ON_BAT=0
+
+# Set to 1 to enable usb autosuspend for all devices 
 # on system startup. 
-USB_AUTOSUSPEND="0"
+USB_AUTOSUSPEND=0
 
 # Devices from the following list are excluded from usb autosuspend
 # (separate with spaces). Use lsusb to get the id's. 
@@ -58,11 +66,12 @@ USB_AUTOSUSPEND="0"
 # (workaround for devices that are blocking shutdown)
 #DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi wwan"
 
-# Battery charge thresholds 
-# (ThinkPad only, tp-smapi kernel module required)
-# Main battery
+# Battery charge thresholds (ThinkPad only, tp-smapi kernel module required)
+# Charging starts when the remaining capacity falls below the START_CHARGE_TRESH
+# value and stops when exceeding the STOP_CHARGE_TRESH value.
+# Main battery (values in %)
 #START_CHARGE_THRESH_BAT0=96
 #STOP_CHARGE_THRESH_BAT0=100
-# Ultrabay battery
+# Ultrabay battery (values in %)
 #START_CHARGE_THRESH_BAT1=96
 #STOP_CHARGE_THRESH_BAT1=100

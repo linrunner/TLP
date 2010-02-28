@@ -8,7 +8,7 @@ Homepage:
 
 Package: tlp
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, pm-utils
+Depends: ${shlibs:Depends}, ${misc:Depends}, pm-utils, perl-base
 Recommends: ethtool, wireless-tools
 Suggests: tp-smapi-source, smartmontools
 Description: Saves battery power on laptops
@@ -17,5 +17,6 @@ Description: Saves battery power on laptops
  Settings include disk apm, sata link, wifi, sound,
  usb autosuspend, phc controls (requires kernel support)
  and battery charge thresholds (ThinkPads only). 
- Wifi, bluetooth and wwan devices can be selectively
- disabled on system startup and shutdown.
+ Optical drives can be powered off on battery (ThinkPad
+ Ultrabay devices only). Wifi, bluetooth and wwan devices 
+ can be selectively disabled on system startup and shutdown.

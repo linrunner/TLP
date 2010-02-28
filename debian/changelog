@@ -1,12 +1,14 @@
 tlp (0.2.2-0ubuntu1) karmic; urgency=low
 
   * Bugfixes
+    - #3: impossible to reenable bluetooth after disable (M@C)
     - #5: autoload tp_smapi (Starko)
   * Features
     - upstart integration
     - tlp-stat: error checking improved
+    - poweroff ultrabay optical drive on battery
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 07 Feb 2010 12:47:53 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 28 Feb 2010 21:59:53 +0100
 
 tlp (0.2.1-0ubuntu1) karmic; urgency=low
 
