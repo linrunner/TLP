@@ -1,7 +1,7 @@
 tlp (0.2.2-0ubuntu1) karmic; urgency=low
 
   * Bugfixes
-    - #3: impossible to reenable bluetooth after disable (M@C)
+    - #3: cannot reenable bluetooth after disabling (M@C)
     - #5: autoload tp_smapi (Starko)
   * Features
     - upstart integration
