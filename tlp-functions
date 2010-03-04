@@ -61,7 +61,7 @@ get_power_state () {
 }
 
 set_laptopmode () { # $1: 0=ac mode, 1=battery mode
-	if [ $1 = "1" ]; then
+	if [ "$1" = "1" ]; then
 		[ "${DISK_IDLE_SECS_ON_BAT:-undef}" = "undef" ] || \
 		  echo $DISK_IDLE_SECS_ON_BAT > /proc/sys/vm/laptop_mode
 	else
@@ -71,7 +71,7 @@ set_laptopmode () { # $1: 0=ac mode, 1=battery mode
 }
 
 set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
-	if [ $1 = "1" ]; then
+	if [ "$1" = "1" ]; then
 		if [ "${MAX_LOST_WORK_SECS_ON_BAT:-undef}" != "undef" ]; then
 			age=$(($MAX_LOST_WORK_SECS_ON_BAT * 100))
 		else
@@ -134,7 +134,7 @@ set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
 } 
 
 set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
-	if [ $1 = "1" ]; then
+	if [ "$1" = "1" ]; then
 		[ "${SATA_LINKPWR_ON_BAT:-undef}" = "undef" ] && return 0
 		pwr=$SATA_LINKPWR_ON_BAT
 	else
@@ -150,7 +150,7 @@ set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 } 
 
 set_wifi_power_mode () { # $1: 0=ac mode, 1=battery mode
-	if [ $1 = "1" ]; then
+	if [ "$1" = "1" ]; then
 		[ "${WIFI_PWR_ON_BAT:-undef}" = "undef" ] && return 0
 		pwr=$WIFI_PWR_ON_BAT
 	else
@@ -173,11 +173,11 @@ set_wifi_power_mode () { # $1: 0=ac mode, 1=battery mode
 	fi
 
 	# Intel 2200bg
-	#if [ -d /sys/bus/pci/drivers/ipw2200 ]; then
-	#	for i in /sys/bus/pci/drivers/ipw2200/*/net/* ; do
-	#		[ -e $i ] && $IWPRIV ${i##/*/} set_power $pwr > /dev/null 2>&1
-	#	done
-	#fi
+	if [ -d /sys/bus/pci/drivers/ipw2200 ]; then
+		for i in /sys/bus/pci/drivers/ipw2200/*/net/* ; do
+			[ -e $i ] && $IWPRIV ${i##/*/} set_power $pwr > /dev/null 2>&1
+		done
+	fi
 }
 
 disable_wake_on_lan () {  

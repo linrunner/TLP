@@ -1,9 +1,9 @@
 #!/bin/sh
 # tlp - switch bluetooth/wifi/wwan on/off
 
-LIB=/usr/lib/tlp/tlp-rf-func
-[ -f $LIB ] || exit 0
-. $LIB
+RFLIB=/usr/lib/tlp/tlp-rf-func
+[ -f $RFLIB ] || exit 0
+. $RFLIB
 
 self=${0##*/}
 

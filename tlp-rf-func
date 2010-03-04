@@ -56,7 +56,7 @@ err_no_root_priv () {
 
 device_on () { 
 	check2200 $1
-	if [ $is2200 = "1" ]; then
+	if [ "$is2200" = "1" ]; then
 		if [ "$(id -u)" = "0" ]; then
 			echo 0 > $devc
 		else
@@ -78,7 +78,7 @@ device_on () {
 
 device_off () {
 	check2200 $1
-	if [ $is2200 = "1" ]; then
+	if [ "$is2200" = "1" ]; then
 		if [ "$(id -u)" = "0" ]; then
 			echo 1 > $devc
 		else
@@ -100,7 +100,7 @@ device_off () {
 
 device_state () {
 	check2200 $1
-	if [ $is2200 = "1" ]; then
+	if [ "$is2200" = "1" ]; then
 		if [ -z $devc ]; then
 			state=254
 		else

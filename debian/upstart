@@ -25,7 +25,9 @@ pre-start script
 	$TLP start
 		
 	for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
-		device_off $dev
+		if [ "$dev" != "bluetooth" -o "$X_BT_DISABLE_ON_INIT" = "1" ]; then
+			device_off $dev
+		fi
 	done
 end script
 

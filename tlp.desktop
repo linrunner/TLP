@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=TLP
+Exec=/usr/sbin/tlp xlogin
+Terminal=false
+X-Ubuntu-Gettext-Domain=TLP

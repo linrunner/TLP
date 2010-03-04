@@ -9,6 +9,13 @@ if [ ! -f $LIB ]; then
 fi
 . $LIB
 
+RFLIB=/usr/lib/tlp/tlp-rf-func
+if [ ! -f $LIB ]; then
+	echo "Error: missing function library \'$RFLIB\'."
+	exit 1
+fi
+. $RFLIB
+
 # MAIN
 read_defaults
 check_tlp_enabled || exit 1
@@ -80,9 +87,14 @@ case "$mode" in
 		poweroff_drivebay 1
 		;;
 		
+	xlogin) # Disable bluetooth on desktop login
+		for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
+			[ "$dev" = "bluetooth" ] && device_off $dev
+		done
+		;;
 		
 	*) 
-		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff"
+		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|xlogin"
 		;;
 esac
 

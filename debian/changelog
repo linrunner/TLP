@@ -7,8 +7,9 @@ tlp (0.2.2-0ubuntu1) karmic; urgency=low
     - upstart integration
     - tlp-stat: error checking improved
     - poweroff ultrabay optical drive on battery
+    - support for ipw2200 radio enable/disable (karlitos)
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 28 Feb 2010 21:59:53 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 04 Mar 2010 22:32:05 +0100
 
 tlp (0.2.1-0ubuntu1) karmic; urgency=low
 
