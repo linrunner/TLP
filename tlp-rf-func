@@ -4,6 +4,7 @@
 # ----------------------------------------------------------------------------
 # Definitions
 RFKILL="/sbin/rfkill"
+RMMOD="/sbin/rmmod"
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -30,49 +31,89 @@ get_ctrl_device () {
 			;;
         
         *)
-			echo "Error: no such device \"$1\""
+			echo "Error: no such device \"$1\"" 1>&2
 			devc=""
 			;;
 	esac
 }
 
+check2200 () {
+	is2200="0"
+	if [ $1 = "wifi" ]; then
+		devc=""
+		if [ -d /sys/bus/pci/drivers/ipw2200 ]; then
+			for i in /sys/bus/pci/drivers/ipw2200/*/rf_kill ; do
+				devc=$i
+			done
+			[ -n "$devc" ] && is2200="1"
+		fi
+	fi
+}
+
+err_no_root_priv () {
+	echo "Error: root privilege needed. Please call me with sudo." 1>&2
+}
+
 device_on () { 
-	if [ -x $RFKILL ]; then
+	check2200 $1
+	if [ $is2200 = "1" ]; then
+		if [ "$(id -u)" = "0" ]; then
+			echo 0 > $devc
+		else
+			err_no_root_priv
+		fi
+	elif [ -x $RFKILL ]; then
 		$RFKILL unblock $1
 	else
-		get_ctrl_device $1
-		if [ -n $devc ]; then
-			echo -n 1 > $devc
+		if [ "$(id -u)" = "0" ]; then
+			get_ctrl_device $1
+			if [ -n $devc ]; then
+				echo -n 1 > $devc
+			fi
+		else
+			err_no_root_priv
 		fi
 	fi
 }
 
 device_off () {
-	if [ -x $RFKILL ]; then
-		case $1 in
-			bluetooth)
-				btidx=$($RFKILL list | grep "hci" | cut -f1 -d:)
-				[ -n "$btidx" ] && $RFKILL block $btidx
-				$RFKILL block $1
-				;;
-			*)
-				$RFKILL block $1
-				;;
-		esac
+	check2200 $1
+	if [ $is2200 = "1" ]; then
+		if [ "$(id -u)" = "0" ]; then
+			echo 1 > $devc
+		else
+			err_no_root_priv
+		fi
+	elif [ -x $RFKILL ]; then
+		$RFKILL block $1
 	else
-		get_ctrl_device $1
-		if [ -n $devc ]; then
-			echo -n 0 > $devc
+		if [ "$(id -u)" = "0" ]; then
+			get_ctrl_device $1
+			if [ -n $devc ]; then
+				echo -n 0 > $devc
+			fi
+		else
+			err_no_root_priv
 		fi
 	fi
 }
 
 device_state () {
-	get_ctrl_device $1
-	if [ -z $devc ]; then
-		state=254
-	else
-		state=$(cat $devc)
+	check2200 $1
+	if [ $is2200 = "1" ]; then
+		if [ -z $devc ]; then
+			state=254
+		else
+			state=$(cat $devc)
+			state=$((! $state))
+		fi
+	else 
+		get_ctrl_device $1
+		if [ -z $devc ]; then
+			state=254
+		else
+			state=$(cat $devc)
+		fi
 	fi
 	
 	case $1 in
