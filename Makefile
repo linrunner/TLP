@@ -15,10 +15,11 @@ install:
 	install -m 755 -d $(DESTDIR)/usr/lib/tlp
 	install -m 755 tlp-functions $(DESTDIR)/usr/lib/tlp/
 	install -m 755 tlp-rf-func $(DESTDIR)/usr/lib/tlp/
-	[ -f $(DESTDIR)/etc/default/tlp ] || install -m 644 tlp-default $(DESTDIR)/etc/default/tlp
-	install -m 755 tlp-if-up.d $(DESTDIR)/etc/network/if-up.d/tlp-ifup
-	install -m 755 tlp-power.d $(DESTDIR)/usr/lib/pm-utils/power.d/99tlp
-	install -m 755 tlp-sleep.d $(DESTDIR)/usr/lib/pm-utils/sleep.d/49wwan
+	[ -f $(DESTDIR)/etc/default/tlp ] || install -m 644 default $(DESTDIR)/etc/default/tlp
+	install -m 755 tlp-ifup $(DESTDIR)/etc/network/if-up.d/tlp-ifup
+	install -m 755 99tlp $(DESTDIR)/usr/lib/pm-utils/power.d/99tlp
+	install -m 755 49wwan $(DESTDIR)/usr/lib/pm-utils/sleep.d/49wwan
+	install -m 755 99sata $(DESTDIR)/usr/lib/pm-utils/sleep.d/99sata
 	install -m 644 tlp.desktop $(DESTDIR)/etc/xdg/autostart/tlp.desktop
 
 uninstall: 

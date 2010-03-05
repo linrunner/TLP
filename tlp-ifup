@@ -1,4 +1,5 @@
 #!/bin/sh
+# tlp - ifup hook
 IWC=/sbin/iwconfig
 TLP=/usr/sbin/tlp
 

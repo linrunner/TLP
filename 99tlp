@@ -1,2 +1,3 @@
 #!/bin/sh
+# tlp - power state change hook
 [ -x /usr/sbin/tlp ] && /usr/sbin/tlp $1

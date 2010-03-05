@@ -71,6 +71,8 @@ set_laptopmode () { # $1: 0=ac mode, 1=battery mode
 }
 
 set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
+	local age
+	
 	if [ "$1" = "1" ]; then
 		if [ "${MAX_LOST_WORK_SECS_ON_BAT:-undef}" != "undef" ]; then
 			age=$(($MAX_LOST_WORK_SECS_ON_BAT * 100))
@@ -119,6 +121,8 @@ set_phc_controls () {
 
 
 set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
+	local dev
+	
 	DISK_DEVICES=${DISK_DEVICES:=sda}
 	for dev in $DISK_DEVICES; do
 		if [ -b /dev/$dev ]; then
@@ -134,6 +138,8 @@ set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
 } 
 
 set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
+	local i
+	
 	if [ "$1" = "1" ]; then
 		[ "${SATA_LINKPWR_ON_BAT:-undef}" = "undef" ] && return 0
 		pwr=$SATA_LINKPWR_ON_BAT
@@ -150,6 +156,8 @@ set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 } 
 
 set_wifi_power_mode () { # $1: 0=ac mode, 1=battery mode
+	local i
+	
 	if [ "$1" = "1" ]; then
 		[ "${WIFI_PWR_ON_BAT:-undef}" = "undef" ] && return 0
 		pwr=$WIFI_PWR_ON_BAT
@@ -205,6 +213,8 @@ set_sound_power_mode () {
 }
 
 enable_usb_suspend () {
+	local usbdev
+	
 	if [ "$USB_AUTOSUSPEND" = "1" ]; then
 		for usbdev in /sys/bus/usb/devices/*; do
 			if [ -f $usbdev/power/autosuspend ]; then

@@ -9,6 +9,8 @@ RMMOD="/sbin/rmmod"
 # ----------------------------------------------------------------------------
 # Functions
 get_ctrl_device () {
+	local i
+	
 	case $1 in
 		wwan|bluetooth)
 			for i in /sys/devices/platform/thinkpad_acpi/rfkill/rfkill* ; do
@@ -38,6 +40,8 @@ get_ctrl_device () {
 }
 
 check2200 () {
+	local i
+	
 	is2200="0"
 	if [ $1 = "wifi" ]; then
 		devc=""
