@@ -7,7 +7,11 @@ Upstream Author:
 
 Copyright:
 
-    Copyright (C) 2009 Thomas Koch
+    Copyright (c) 2009 Thomas Koch
+    
+	Some code and descriptions were adapted from:
+	- laptop-mode-tools
+	- thinkwiki.org
 
 License:
 

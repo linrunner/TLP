@@ -1,13 +1,13 @@
 # tlp - Parameters for power save
-
-# Set to "1" to enable power save
-TLP_ENABLE="1"
-
+ 
+# Set to 0 to disable TLP
+TLP_ENABLE=1
+ 
 # Seconds laptop mode has to to wait after the disk goes idle before doing a sync.
 # Non-zero value enables, zero disables laptop mode.
 DISK_IDLE_SECS_ON_AC=0
 DISK_IDLE_SECS_ON_BAT=2
-
+ 
 # Dirty page values (timeouts in secs).
 MAX_LOST_WORK_SECS_ON_AC=15
 MAX_LOST_WORK_SECS_ON_BAT=15
@@ -16,56 +16,56 @@ MAX_LOST_WORK_SECS_ON_BAT=15
 # Freq:voltage pairs are written to /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
 # CAUTION: only use this, if you thoroughly understand what you are doing! 
 #PHC_CONTROLS="F:V F:V F:V F:V"
-
+ 
 # Hard disk devices (separate with spaces)
 DISK_DEVICES="sda"
-
+ 
 # Hard disk advanced power management level: 1(max saving)..254(off)
 # Levels 1..127 spin down the disk.
 DISK_APM_LEVEL_ON_AC=254
 DISK_APM_LEVEL_ON_BAT=128  
-
+ 
 # SATA Link Power: min_power/medium_power/max_performance
-SATA_LINKPWR_ON_AC="max_performance"
-SATA_LINKPWR_ON_BAT="min_power"
-
-# Wifi power save mode for Intel 2200, 3945, 4965, 5100, 5300:
+SATA_LINKPWR_ON_AC=max_performance
+SATA_LINKPWR_ON_BAT=min_power
+ 
+# Wifi power save mode for Intel 3945, 4965, 5100, 5300:
 # 1(min saving)..5(max saving)
 # (Kernel < 2.6.30 only)
 WIFI_PWR_ON_AC=1
 WIFI_PWR_ON_BAT=5
-
+ 
 # Disable wake on lan: Y/N
 WOL_DISABLE=Y
-
+ 
 # Enable power save for Intel HDA, AC97 devices (timeout in secs).
 # A value of 0 disables power save.
 SOUND_POWER_SAVE=1
 # Disable controller too: Y/N (HDA only)
 SOUND_POWER_SAVE_CONTROLLER=Y
-
+ 
 # Set to 1 to power off optical drive in UltraBay (ThinkPads only) 
 # when running on battery.
 # Drive can be powered on again by releasing (and reinserting) the
 # eject lever or by pressing the disc eject button on newer models.
 # Note: an UltraBay hard disk is never powered off
 BAY_POWEROFF_ON_BAT=0
-
+ 
 # Set to 1 to enable usb autosuspend for all devices 
 # on system startup. 
 USB_AUTOSUSPEND=0
-
+ 
 # Devices from the following list are excluded from usb autosuspend
 # (separate with spaces). Use lsusb to get the id's. 
 #USB_BLACKLIST="1111:2222 3333:4444"
-
+ 
 # Devices to disable on startup: bluetooth/wifi/wwan
 #DEVICES_TO_DISABLE_ON_STARTUP="bluetooth"
-
+ 
 # Devices to disable on shutdown: bluetooth/wifi/wwan
 # (workaround for devices that are blocking shutdown)
 #DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi wwan"
-
+ 
 # Battery charge thresholds (ThinkPad only, tp-smapi kernel module required)
 # Charging starts when the remaining capacity falls below the START_CHARGE_TRESH
 # value and stops when exceeding the STOP_CHARGE_TRESH value.
@@ -75,3 +75,4 @@ USB_AUTOSUSPEND=0
 # Ultrabay battery (values in %)
 #START_CHARGE_THRESH_BAT1=96
 #STOP_CHARGE_THRESH_BAT1=100
+ 

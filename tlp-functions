@@ -3,7 +3,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.2.2
+TLPVER=0.2.3
 DEFAULT_FILE=/etc/default/tlp
 ACPWR=/usr/bin/on_ac_power
 ETHTOOL=/usr/sbin/ethtool
@@ -13,7 +13,7 @@ MODPRO=/sbin/modprobe
 UDEVADM=/sbin/udevadm
 PERL=/usr/bin/perl
 SMAPI=tp_smapi
-OPTDRV=/dev/sr0
+CDROM=/dev/cdrom
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -71,6 +71,7 @@ set_laptopmode () { # $1: 0=ac mode, 1=battery mode
 }
 
 set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
+	# Some code adapted from laptop-mode-tools
 	local age
 	
 	if [ "$1" = "1" ]; then
@@ -118,7 +119,6 @@ set_phc_controls () {
 		  echo $PHC_CONTROLS > /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
 	fi
 }
-
 
 set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
 	local dev
@@ -252,12 +252,15 @@ set_charge_thresholds () {
 }
 
 poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
+	# Some code adapted from http://www.thinkwiki.org/wiki/How_to_hotswap_UltraBay_devices
+	local dock
+	local optdrv
+	
 	# Run only if either explicitly enabled or forced 
 	[ "$BAY_POWEROFF_ON_BAT" = "1" ] || [ "$1" = "1" ] || return 0
 
-	# Code from http://www.thinkwiki.org/wiki/How_to_hotswap_UltraBay_devices
 	# Find generic dock interface for bay
-	dock=$(/bin/grep -l ata_bay /sys/devices/platform/dock.?/type)
+	dock=$(grep -l ata_bay /sys/devices/platform/dock.?/type)
 	dock=${dock%%/type}
 	if [ -z "$dock" -o ! -d "$dock" ]; then
 		[ "$1" = "1" ] && echo "Error: cannot locate bay device."
@@ -269,17 +272,23 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
 		[ "$1" = "1" ] && echo "No drive in bay (or power already off)."
 	else 
 		# Check for optical drive
-		if [ ! -b "$OPTDRV" ]; then
+		optdrv=$(readlink $CDROM)
+		if [ -z "$optdrv" ]; then
 			[ "$1" = "1" ] && echo "No optical drive in bay."
 			return 0
-		else	
+		else
+			optdrv="/dev/$optdrv"
+			
+			# Unmount media 
+			umount -l $optdrv > /dev/null 2>&1
+			
 			# Power off drive
-			$HDPARM -Y $OPTDRV > /dev/null 2>&1
+			$HDPARM -Y $optdrv > /dev/null 2>&1
 			sleep 0.5
 	
 			# Unregister scsi device
-			syspath="/sys$($UDEVADM info --query=path --name=$OPTDRV | $PERL -pe 's!/block/...$!!')"
-			echo 1 > $syspath/delete
+			syspath="/sys$($UDEVADM info --query=path --name=$optdrv | $PERL -pe 's!/block/...$!!')"
+			[ -n "$syspath" ] && echo 1 > $syspath/delete
 
 			# Turn power off
 			echo 1 > $dock/undock

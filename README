@@ -1,4 +1,4 @@
-TLP README - 30.01.2010
+TLP README - 07.03.2010
 
 TLP is a collection of scripts enabling laptop-mode and
 implementing power save features for laptop hardware.
@@ -8,7 +8,7 @@ Possible settings for ac/battery are:
 - disk apm level
 - wake on lan (disable)
 - sata link power
-- wifi power save (Intel 2200/3945/4965/5x00, kernel < 2.6.30 only)
+- wifi power save (Intel 3945/4965/5x00, kernel < 2.6.30 only)
 - sound power save (hda_intel, ac97)
 - usb autosuspend with blacklist
 - phc controls (requires kernel with phc-patches)
@@ -26,3 +26,6 @@ For further details take a look at the man pages:
 - tlp
 - tlp-stat (display tlp status and active settings)
 - wifi, bluetooth, wwan (switch wireless devices on/off)
+
+Or visit the Project Homepage (currently in German only):
+- http://thinkpad-wiki.org/TLP_-_Stromspareinstellungen_f%C3%BCr_Ubuntu
