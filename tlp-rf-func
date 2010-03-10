@@ -13,8 +13,8 @@ get_ctrl_device () {
 	
 	case $1 in
 		wwan|bluetooth)
-			for i in /sys/devices/platform/thinkpad_acpi/rfkill/rfkill* ; do
-				if [ "$(cat $i/type)" = "$1" ]; then 
+			for i in /sys/class/rfkill/rfkill* ; do
+				if [ -e $i/type  ] && [ "$(cat $i/type)" = "$1" ]; then 
 					devc="$i/state"
 					return
 				fi
