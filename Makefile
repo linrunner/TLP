@@ -11,6 +11,8 @@ install:
 	install -m 755 tlp-rf $(DESTDIR)/usr/bin/bluetooth
 	ln -f $(DESTDIR)/usr/bin/bluetooth $(DESTDIR)/usr/bin/wifi
 	ln -f $(DESTDIR)/usr/bin/bluetooth $(DESTDIR)/usr/bin/wwan
+	install -m 755 tlp-run-on $(DESTDIR)/usr/bin/run-on-ac
+	ln -f $(DESTDIR)/usr/bin/run-on-ac $(DESTDIR)/usr/bin/run-on-bat
 	install -m 755 tlp-stat $(DESTDIR)/usr/bin/
 	install -m 755 -d $(DESTDIR)/usr/lib/tlp
 	install -m 755 tlp-functions $(DESTDIR)/usr/lib/tlp/
@@ -26,6 +28,8 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/bluetooth
 	rm $(DESTDIR)/usr/bin/wifi
 	rm $(DESTDIR)/usr/bin/wwan
+	rm $(DESTDIR)/usr/bin/run-on-ac
+	rm $(DESTDIR)/usr/bin/run-on-bat
 	rm $(DESTDIR)/usr/bin/tlp-stat
 	rm $(DESTDIR)/usr/lib/tlp/tlp-functions
 	rm $(DESTDIR)/usr/lib/tlp/tlp-rf-func

@@ -3,8 +3,9 @@ tlp (0.2.4-0ubuntu1) karmic; urgency=low
   * Bugfixes
     - #8: tlp-rf-func warnings on ThinkPad w/o bluetooth and wwan (woelffchen)
   * Features
-	- tlp: force/display battery discharge
-	
+    - tlp: force battery discharge
+    - run-on-ac/run-on-bat
+
  -- Thomas Koch <linrunner@gmx.net>  Wed, 10 Mar 2010 21:39:06 +0100
 
 tlp (0.2.3-0ubuntu1) karmic; urgency=low
