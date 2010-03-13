@@ -13,9 +13,19 @@ LSB=/usr/bin/lsb_release
 DMI=/usr/sbin/dmidecode
 
 # --- Functions
-echoparm () {
+echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
+	local val
+	
 	if [ -f $1 ]; then
-		echo "$1 = `cat $1`"
+		val=`cat $1`
+		if [ -n "$4" ]; then
+			val=${val%$4}
+		fi
+		if [ -n "$3" ]; then	
+			echo "$1 = $val [$3]"
+		else
+			echo "$1 = $val"
+		fi
 	else
 		if [ -n "$2" ]; then
 			echo "$1 = ($2)"
@@ -61,6 +71,7 @@ if [ $USER = "root" ]; then
 		echo "System = `$DMI -s system-manufacturer`" \
 		  "`$DMI -s system-version`" \
 		  "`$DMI -s system-product-name`"
+		echo "BIOS = `$DMI -s bios-version`"
 	fi
 else
 	echo "System = (not available)"
@@ -173,15 +184,15 @@ if [ -d /sys/devices/platform/smapi ]; then
 			echoparm $bat/manufacture_date
 			echoparm $bat/first_use_date
 			echoparm $bat/cycle_count
-			echoparm $bat/design_capacity
-			echoparm $bat/last_full_capacity
-			echoparm $bat/remaining_capacity
-			echoparm $bat/remaining_percent
-			echoparm $bat/remaining_running_time_now
-			echoparm $bat/remaining_charging_time
+			echoparm $bat/design_capacity - mWh
+			echoparm $bat/last_full_capacity - mWh
+			echoparm $bat/remaining_capacity - mWh
+			echoparm $bat/remaining_percent - "%"
+			echoparm $bat/remaining_running_time_now - min
+			echoparm $bat/remaining_charging_time - min
 			echo
-			echoparm $bat/start_charge_thresh
-			echoparm $bat/stop_charge_thresh 
+			echoparm $bat/start_charge_thresh - "%"
+			echoparm $bat/stop_charge_thresh - "%"
 			echo
 		fi
 	done
@@ -193,9 +204,9 @@ elif [ -d /sys/class/power_supply ]; then
 	for bat in /sys/class/power_supply/BAT?; do
 		if [ "`cat $bat/present`" = "1" ]; then
 			echoparm $bat/manufacturer
-			echoparm $bat/energy_full_design
-			echoparm $bat/energy_full
-			echoparm $bat/energy_now
+			echoparm $bat/energy_full_design - mWh 000
+			echoparm $bat/energy_full - mWh 000
+			echoparm $bat/energy_now - mWh 000
 			echo
 		fi
 	done
@@ -207,7 +218,7 @@ if [ "$USB_AUTOSUSPEND" = "1" ]; then
 else
 	echo "tlp usb autosuspend = not enabled"
 fi
-echo "tlp usb blacklist = ${USB_BLACKLIST:=(not available)}"
+echo "tlp usb blacklist = ${USB_BLACKLIST:=(not configured)}"
 echo
 
 for i in /sys/bus/usb/devices/* ; do

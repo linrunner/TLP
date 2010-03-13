@@ -2,7 +2,7 @@
 .SH NAME
 tlp \- apply laptop power management settings
 .SH SYNOPSIS
-.B tlp \fIcommand\fR
+.B tlp \fIcommand\fR \fR[\fIparam\fR]
 .SH DESCRIPTION
 This command should be called for debugging purposes only. 
 All actions are called automatically upon system startup and 
@@ -33,6 +33,18 @@ power source (this command is called upon ifup).
 .TP
 .B usb
 Enable autosuspend for all usb devices, except blacklisted ones.
+.TP
+.B bayoff \fR(ThinkPads only)
+Turn off Ultrabay optical drive. The drive may be
+reenabled by pulling the eject lever or pushing the media eject button
+on newer models.
+.TP
+.B xlogin
+Disable bluetooth device if configured so (this command is called
+upon desktop login).
+.TP
+.B discharge [BAT0|BAT1] \fR(ThinkPads only)
+Force discharge of main (BAT0) or Ultrabay battery (BAT1).
 .SH FILES
 .I /etc/default/tlp
 .RS

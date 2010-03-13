@@ -80,10 +80,12 @@ case "$mode" in
 		;;
 
 	usb) # Enable usb autosuspend
+		check_root
 		enable_usb_suspend
 		;;
 
 	bayoff) # Power off drive bay
+		check_root
 		poweroff_drivebay 1
 		;;
 		
@@ -93,8 +95,14 @@ case "$mode" in
 		done
 		;;
 		
+	discharge) # Discharge battery completely
+		check_root
+		load_tp_smapi
+		discharge_battery $2
+		;;
+		
 	*) 
-		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|xlogin"
+		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|xlogin|discharge"
 		;;
 esac
 
