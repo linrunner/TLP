@@ -147,6 +147,7 @@ echo
 for i in bluetooth wifi wwan; do
 	device_state $i
 done
+echo
 
 # wifi power mode
 if [ -d /sys/bus/pci/drivers/iwlagn ]; then
@@ -163,6 +164,7 @@ if [ -d //sys/bus/pci/drivers/iwl3945 ]; then
 fi
 if [ -d /sys/module/ipw2200 ]; then
 	iwpriv eth1 get_power
+	echo
 fi
 
 # sound power mode

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 # tlp - restore ThinkPad wwan state after suspend / hibernate
 
 . "${PM_FUNCTIONS}"

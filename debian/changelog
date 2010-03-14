@@ -2,6 +2,8 @@ tlp (0.2.4-0ubuntu1) karmic; urgency=low
 
   * Bugfixes
     - #8: tlp-rf-func warnings on ThinkPad w/o bluetooth and wwan (woelffchen)
+    - #9: bayoff: ultrabay power on again after resume (linrunner)
+             -> script sleep.d/49bay added
   * Features
     - tlp: force battery discharge
     - run-on-ac/run-on-bat
