@@ -21,7 +21,7 @@ install:
 	install -m 755 tlp-ifup $(DESTDIR)/etc/network/if-up.d/tlp-ifup
 	install -m 755 99tlp $(DESTDIR)/usr/lib/pm-utils/power.d/99tlp
 	install -m 755 49wwan $(DESTDIR)/usr/lib/pm-utils/sleep.d/49wwan
-	install -m 755 49wwan $(DESTDIR)/usr/lib/pm-utils/sleep.d/49bay
+	install -m 755 49bay $(DESTDIR)/usr/lib/pm-utils/sleep.d/49bay
 	install -m 644 tlp.desktop $(DESTDIR)/etc/xdg/autostart/tlp.desktop
 
 uninstall: 
