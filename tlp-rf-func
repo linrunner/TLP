@@ -4,11 +4,10 @@
 # ----------------------------------------------------------------------------
 # Definitions
 RFKILL="/sbin/rfkill"
-RMMOD="/sbin/rmmod"
 
 # ----------------------------------------------------------------------------
 # Functions
-get_ctrl_device () {
+get_ctrl_device () { # $1: rftype
 	local i
 	
 	case $1 in
@@ -39,7 +38,7 @@ get_ctrl_device () {
 	esac
 }
 
-check2200 () {
+check2200 () { # $1: rftype
 	local i
 	
 	is2200="0"
@@ -58,11 +57,35 @@ err_no_root_priv () {
 	echo "Error: root privilege needed. Please call me with sudo." 1>&2
 }
 
-device_on () { 
+device_state () { # $1: rftype
+	local state
+	
+	state=254
 	check2200 $1
 	if [ "$is2200" = "1" ]; then
+		if [ -n "$devc" ]; then
+			state=$(cat $devc)
+			state=$((! $state))
+		fi
+	else 
+		get_ctrl_device $1	
+		if [ -n "$devc" ]; then
+			state=$(cat $devc)
+		fi
+	fi
+
+	return $state
+}
+
+device_on () { # $1: rftype 
+	device_state $1
+	
+	if [ "$is2200" = "1" ]; then
 		if [ "$(id -u)" = "0" ]; then
-			echo 0 > $devc
+			if [ -n "$devc" ]; then
+				echo -n 0 > $devc
+			fi
+			echo -n 0 > $devc
 		else
 			err_no_root_priv
 		fi
@@ -70,8 +93,7 @@ device_on () {
 		$RFKILL unblock $1
 	else
 		if [ "$(id -u)" = "0" ]; then
-			get_ctrl_device $1
-			if [ -n $devc ]; then
+			if [ -n "$devc" ]; then
 				echo -n 1 > $devc
 			fi
 		else
@@ -80,11 +102,14 @@ device_on () {
 	fi
 }
 
-device_off () {
-	check2200 $1
+device_off () { # $1: rftype
+	device_state $1
+	
 	if [ "$is2200" = "1" ]; then
 		if [ "$(id -u)" = "0" ]; then
-			echo 1 > $devc
+			if [ -n "$devc" ]; then
+				echo -n 1 > $devc
+			fi
 		else
 			err_no_root_priv
 		fi
@@ -92,8 +117,7 @@ device_off () {
 		$RFKILL block $1
 	else
 		if [ "$(id -u)" = "0" ]; then
-			get_ctrl_device $1
-			if [ -n $devc ]; then
+			if [ -n "$devc" ]; then
 				echo -n 0 > $devc
 			fi
 		else
@@ -102,24 +126,53 @@ device_off () {
 	fi
 }
 
-device_state () {
-	check2200 $1
+device_toggle () { # $1: rftype
+	local state
+	
+	device_state $1
+	state=$?
+		
 	if [ "$is2200" = "1" ]; then
-		if [ -z $devc ]; then
-			state=254
+		if [ "$(id -u)" = "0" ]; then
+			if [ -n "$devc" ]; then
+				case $state in
+					0) echo -n 1 > $devc ;;
+					1) echo -n 0 > $devc ;;
+					*) ;;
+				esac
+			fi
 		else
-			state=$(cat $devc)
-			state=$((! $state))
+			err_no_root_priv
 		fi
-	else 
-		get_ctrl_device $1
-		if [ -z $devc ]; then
-			state=254
+	elif [ -x $RFKILL ]; then
+		case $state in
+			0) $RFKILL unblock $1 ;;
+			1) $RFKILL block $1   ;;				
+			*) ;;
+		esac
+	else
+		if [ "$(id -u)" = "0" ]; then
+			device_state $1
+			state = $?
+			if [ -n "$devc" ]; then
+				case $state in
+					0) echo -n 1 > $devc ;;
+					1) echo -n 0 > $devc ;;
+					*) ;;
+				esac
+			fi
 		else
-			state=$(cat $devc)
+			err_no_root_priv
 		fi
 	fi
+}
+
+echo_device_state () { # $1: rftype
+	local state
 	
+	device_state $1
+	state=$?
+		
 	case $1 in
 		bluetooth)
 			devstr="bluetooth"

@@ -10,7 +10,7 @@ Package: tlp
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, pm-utils
 Recommends: ethtool, wireless-tools
-Suggests: tp-smapi-source, smartmontools
+Suggests: smartmontools
 Description: Saves battery power on laptops
  TLP is a collection of scripts enabling laptop-mode and
  implementing power save features for laptop hardware.

@@ -12,16 +12,21 @@ case $self in
 		case $1 in
 			on)
 				device_on $self
-				device_state $self
+				echo_device_state $self
 				;;
 
 			off)
 				device_off $self
-				device_state $self
+				echo_device_state $self
 				;;
-
+				
+			toggle)
+				device_toggle $self
+				echo_device_state $self
+				;;
+				
 			*)
-				device_state $self
+				echo_device_state $self
 				;;
 		esac
         ;;

@@ -119,12 +119,31 @@ echo
 DISK_DEVICES=${DISK_DEVICES:=sda}
 for dev in $DISK_DEVICES; do
 	if [ -b /dev/$dev ]; then
-		if [ $USER = "root" ]; then
-			echo "/dev/$dev: Advanced power management level =`/sbin/hdparm -I /dev/$dev | grep 'Advanced power management level' | cut -f2 -d: `"
-			[ -x $SMARTCTL ] && $SMARTCTL -A /dev/$dev | grep " 9 \| 4 \|193"  | \
-			  awk -F ' ' "{ printf \"          %-20s = %6d \\n\", \$2, \$10 }"
-		else
-			echo "/dev/$dev: Advanced power management level = (not available)"
+		check_disk_hdparm_cap $dev
+		if [ $? = 0 ]; then
+			if [ $USER = "root" ]; then
+				echo "/dev/$dev:"
+				
+				echo -n "          Model     = "
+				echo_disk_model $dev
+				
+				get_disk_apm_level $dev
+				apm=$?
+				echo -n "          APM Level = "
+				case $apm in
+					0|255) echo "none/disabled" ;;
+					*)     echo $apm ;;
+				esac
+			
+				if [ -x $SMARTCTL ]; then
+					echo 
+					echo "        SMART info:"
+					$SMARTCTL -A /dev/$dev | egrep '^(  4|  5|  9 |193)' | \
+					  awk -F ' ' '{ printf "          %-25s = %6d \n", $2, $10 }'
+				fi
+			else
+				echo "/dev/$dev: (info not available)"
+			fi
 		fi
 	fi
 done
@@ -145,7 +164,7 @@ echo
 
 # rfkill state
 for i in bluetooth wifi wwan; do
-	device_state $i
+	echo_device_state $i
 done
 echo
 
@@ -181,7 +200,7 @@ echo
 if [ -d /sys/devices/platform/smapi ]; then
 	# ThinkPad via tp_smapi
 	for bat in /sys/devices/platform/smapi/BAT[01]; do
-		if [ "`cat $bat/installed`" = "1" ]; then
+		if [ "$(cat $bat/installed)" = "1" ]; then
 			echoparm $bat/manufacturer
 			echoparm $bat/manufacture_date
 			echoparm $bat/first_use_date
@@ -204,7 +223,7 @@ elif [ -d /sys/class/power_supply ]; then
 	fi
 	# generic
 	for bat in /sys/class/power_supply/BAT?; do
-		if [ "`cat $bat/present`" = "1" ]; then
+		if [ "$(cat $bat/present)" = "1" ]; then
 			echoparm $bat/manufacturer
 			echoparm $bat/energy_full_design - mWh 000
 			echoparm $bat/energy_full - mWh 000
@@ -226,9 +245,9 @@ echo
 for i in /sys/bus/usb/devices/* ; do
 	[ -e "$i/power/autosuspend" ] \
 		&& echo "$i/power/autosuspend = `cat $i/power/autosuspend`," \
-		     "level = `cat $i/power/level` --" \
-		     "`cat $i/idVendor`:`cat $i/idProduct`" \
-		     "`[ -f $i/product ] && cat $i/product`"
+		     "level = $(cat $i/power/level) --" \
+		     "$(cat $i/idVendor):$(cat $i/idProduct)" \
+		     "$([ -f $i/product ] && cat $i/product)"
 done
 echo
 

@@ -121,18 +121,49 @@ set_phc_controls () {
 	fi
 }
 
+check_disk_hdparm_cap () { # $1: dev
+    if [ -z "$($HDPARM -I /dev/$1 2>&1 | grep 'Invalid exchange')" ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+echo_disk_model () { # $1: dev
+	local model
+	
+	model=$($HDPARM -I /dev/$1 2>&1 | grep 'Model Number' | \
+	  cut -f2 -d: | sed -r 's/^ *//' )
+	echo "$model"
+}
+
+get_disk_apm_level () { # $1: dev
+	local apm
+	
+	apm=$($HDPARM -I /dev/$1 2>&1 | grep 'Advanced power management level' | \
+	      cut -f2 -d: | egrep "^ *[0-9]+ *$")
+	if [ -n "$apm" ]; then
+		return $apm
+	else 
+		return 0
+	fi
+}
+
 set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
 	local dev
 	
 	DISK_DEVICES=${DISK_DEVICES:=sda}
 	for dev in $DISK_DEVICES; do
 		if [ -b /dev/$dev ]; then
-			if [ $1 = "1" ]; then
-				[ "${DISK_APM_LEVEL_ON_BAT:-undef}" = "undef" ] || \
-				  $HDPARM -B $DISK_APM_LEVEL_ON_BAT /dev/$dev > /dev/null 2>&1
-			else
-				[ "${DISK_APM_LEVEL_ON_AC:-undef}" = "undef" ] || \
-				  $HDPARM -B $DISK_APM_LEVEL_ON_AC /dev/$dev > /dev/null 2>&1
+			check_disk_hdparm_cap $dev
+			if [ $? = 0 ]; then
+				if [ $1 = "1" ]; then
+					[ "${DISK_APM_LEVEL_ON_BAT:-undef}" = "undef" ] || \
+					  $HDPARM -B $DISK_APM_LEVEL_ON_BAT /dev/$dev > /dev/null 2>&1
+				else
+					[ "${DISK_APM_LEVEL_ON_AC:-undef}" = "undef" ] || \
+					  $HDPARM -B $DISK_APM_LEVEL_ON_AC /dev/$dev > /dev/null 2>&1
+				fi
 			fi
 		fi
 	done
@@ -219,10 +250,10 @@ enable_usb_suspend () {
 	if [ "$USB_AUTOSUSPEND" = "1" ]; then
 		for usbdev in /sys/bus/usb/devices/*; do
 			if [ -f $usbdev/power/autosuspend ]; then
-				usbid="`cat $usbdev/idVendor`:`cat $usbdev/idProduct`"
+				usbid="$(cat $usbdev/idVendor):$(cat $usbdev/idProduct)"
 			
-				if [ "$USB_BLACKLIST" != "${USB_BLACKLIST#*$usbid}" ]; then
-				echo "on" > $usbdev/power/level
+				if [ -n "$USB_BLACKLIST" -a "$USB_BLACKLIST" != "${USB_BLACKLIST#*$usbid}" ]; then
+					echo "on" > $usbdev/power/level
 				else
 					echo "auto" > $usbdev/power/level
 				fi
@@ -234,7 +265,7 @@ enable_usb_suspend () {
 
 do_threshold () { # $1: treshold file, $2: new value
 	if [ -n "$2" ]; then
-		if [ "`cat $1`" != "$2" ]; then
+		if [ "$(cat $1)" != "$2" ]; then
 			echo $2 > $1
 		fi
 	fi
@@ -242,11 +273,11 @@ do_threshold () { # $1: treshold file, $2: new value
 
 set_charge_thresholds () {
 	[ -d /sys/devices/platform/smapi ] || return
-	if [ "`cat /sys/devices/platform/smapi/BAT0/installed`" = "1" ]; then
+	if [ "$(cat /sys/devices/platform/smapi/BAT0/installed)" = "1" ]; then
 		do_threshold /sys/devices/platform/smapi/BAT0/start_charge_thresh "$START_CHARGE_THRESH_BAT0"
 		do_threshold /sys/devices/platform/smapi/BAT0/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT0"
 	fi
-	if [ "`cat /sys/devices/platform/smapi/BAT1/installed`" = "1" ]; then
+	if [ "$(cat /sys/devices/platform/smapi/BAT1/installed)" = "1" ]; then
 		do_threshold /sys/devices/platform/smapi/BAT1/start_charge_thresh "$START_CHARGE_THRESH_BAT1"
 		do_threshold /sys/devices/platform/smapi/BAT1/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT1"
 	fi
