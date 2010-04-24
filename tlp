@@ -24,13 +24,14 @@ check_laptop_mode_tools || exit 2
 # Get cmd line arg
 mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
 
+echo_debug "mode=$mode"
+
 case "$mode" in
 	start) # Set start power mode depending on state
 		check_root
 		get_power_state
 		pwr=$?
 		load_tp_smapi
-		
 		set_laptopmode $pwr
 		set_dirty_parms $pwr
 		set_phc_controls $pwr

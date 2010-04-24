@@ -3,7 +3,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.2.4
+TLPVER=0.2.5
 DEFAULT_FILE=/etc/default/tlp
 ACPWR=/usr/bin/on_ac_power
 ETHTOOL=/usr/sbin/ethtool
@@ -15,9 +15,17 @@ PERL=/usr/bin/perl
 SMAPI=tp_smapi
 CDROM=/dev/cdrom
 SMAPIDIR=/sys/devices/platform/smapi
+LOGGER=/usr/bin/logger
 
 # ----------------------------------------------------------------------------
 # Functions
+
+echo_debug () { # $1: msg
+	if [ "$TLP_DEBUG" = "1" ]; then
+		$LOGGER -p debug -t tlp "$1"
+	fi
+}
+
 check_root () {
 	if [ "$(id -u)" != "0" ]; then
 		echo "Error: root privilege needed. Please call me with 'sudo'." 1>&2
@@ -25,7 +33,7 @@ check_root () {
 	fi
 }
 
-check_tlp_enabled () {
+check_tlp_enabled () { # ret: 0=disabled/1=enabled
 	if [ ! "$TLP_ENABLE" = "1" ]; then
 		echo "Error: tlp power save is disabled; set TLP_ENABLE=1 in /etc/default/tlp." 1>&2
 		return 1
@@ -34,7 +42,7 @@ check_tlp_enabled () {
 	fi
 }
 
-check_laptop_mode_tools () {
+check_laptop_mode_tools () { # ret: 0=disabled/1=enabled
 	[ -f /etc/default/acpi-support ] && . /etc/default/acpi-support
 	if [ "$ENABLE_LAPTOP_MODE" = "true" -o -f /var/run/laptop-mode-tools/enabled ]; then
 		echo "Error: tlp power save is disabled because laptop-mode-tools is active." 1>&2
@@ -56,9 +64,9 @@ load_tp_smapi () {
 	$MODPRO $SMAPI > /dev/null 2>&1 
 }
 
-get_power_state () { 
+get_power_state () { # ret: 0=ac, 1=battery
 	$ACPWR
-	return $? # 0=ac, 1=battery
+	return $? 
 }
 
 set_laptopmode () { # $1: 0=ac mode, 1=battery mode
@@ -121,7 +129,7 @@ set_phc_controls () {
 	fi
 }
 
-check_disk_hdparm_cap () { # $1: dev
+check_disk_hdparm_cap () { # $1: dev; ret: 0=none/1=available
     if [ -z "$($HDPARM -I /dev/$1 2>&1 | grep 'Invalid exchange')" ]; then
 		return 0
 	else
@@ -137,7 +145,7 @@ echo_disk_model () { # $1: dev
 	echo "$model"
 }
 
-get_disk_apm_level () { # $1: dev
+get_disk_apm_level () { # $1: dev; ret: apm
 	local apm
 	
 	apm=$($HDPARM -I /dev/$1 2>&1 | grep 'Advanced power management level' | \

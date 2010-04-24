@@ -18,8 +18,9 @@ pre-start script
 
 	. $LIB
 	. $RFLIB
-	. $CFG
-
+	read_defaults
+	
+	echo_debug "upstart pre-start"
 	check_tlp_enabled || exit 1
 
 	$TLP start
@@ -39,8 +40,9 @@ post-stop script
 
 	. $LIB	
 	. $RFLIB
-	. $CFG
-
+	read_defaults
+	
+	echo_debug "upstart post-stop"
 	check_tlp_enabled || exit 1
 
 	$TLP false

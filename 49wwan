@@ -3,27 +3,36 @@
 
 . "${PM_FUNCTIONS}"
 
-LIB=/usr/lib/tlp/tlp-rf-func
+LIB=/usr/lib/tlp/tlp-functions
+RFLIB=/usr/lib/tlp/tlp-rf-func
 CFG=/etc/default/tlp
 
 suspend_device () {
-	savestate $1 `cat $2`
+	local state
+	
+	state=$(cat $2)
+	savestate $1 $state
+	echo_debug "49wwan.suspend wwan=$state"
 }
 
 resume_device () {
 	state_exists $1 || return
 	restorestate $1 > $2
+	echo_debug "49wwan.resume wwan=$(cat $2)"
 }
 
 [ -f $LIB ] || exit 0
+[ -f $RFLIB ] || exit 0
 [ -f $CFG ] || exit 0
-
 . $LIB
+. $RFLIB
 . $CFG
 [ "$TLP_ENABLE" = "1" ] || exit 0
 
 get_ctrl_device wwan
 [ -n "$devc" ] || exit 0
+
+echo_debug "49wwan $1"
 
 case $1 in
 	hibernate|suspend)
