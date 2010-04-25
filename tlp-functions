@@ -22,7 +22,7 @@ LOGGER=/usr/bin/logger
 
 echo_debug () { # $1: msg
 	if [ "$TLP_DEBUG" = "1" ]; then
-		$LOGGER -p debug -t tlp "$1"
+		$LOGGER -p debug -t "tlp[$$]" "$1"
 	fi
 }
 

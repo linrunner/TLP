@@ -51,9 +51,8 @@ SOUND_POWER_SAVE_CONTROLLER=Y
 # Note: an UltraBay hard disk is never powered off
 BAY_POWEROFF_ON_BAT=0
  
-# Set to 1 to enable usb autosuspend for all devices 
-# on system startup. 
-USB_AUTOSUSPEND=0
+# Set to 0 to disable usb autosuspend feature.
+USB_AUTOSUSPEND=1
  
 # Devices from the following list are excluded from usb autosuspend
 # (separate with spaces). Use lsusb to get the id's. 
