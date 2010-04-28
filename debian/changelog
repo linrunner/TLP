@@ -1,4 +1,4 @@
-tlp (0.2.4.992-0ubuntu1) karmic; urgency=low
+tlp (0.2.4.993-0ubuntu1) karmic; urgency=low
 
   * Bugfixes
     - #11: excessive boottime (+40s) w/ USB_SUSPEND=1 & USB_BLACKLIST=""
@@ -7,6 +7,7 @@ tlp (0.2.4.992-0ubuntu1) karmic; urgency=low
   * Features
     - bluetooth/wifi/wwan: toggle (#12, thatgui)
     - changed usb autosuspend default: on
+    - wifi power management reenabled on 2.6.32 w/ some adapters
 
  -- Thomas Koch <linrunner@gmx.net>  Thu, 15 Apr 2010 21:23:22 +0200
 

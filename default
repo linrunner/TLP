@@ -29,9 +29,8 @@ DISK_APM_LEVEL_ON_BAT=128
 SATA_LINKPWR_ON_AC=max_performance
 SATA_LINKPWR_ON_BAT=min_power
  
-# Wifi power save mode for Intel 3945, 4965, 5100, 5300:
-# 1(min saving)..5(max saving)
-# (Kernel < 2.6.30 only)
+# Wifi power save mode: 1=disable/5=enable
+# (Kernel >= 2.6.32 and selected adapters only)
 WIFI_PWR_ON_AC=1
 WIFI_PWR_ON_BAT=5
  

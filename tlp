@@ -24,7 +24,7 @@ check_laptop_mode_tools || exit 2
 # Get cmd line arg
 mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
 
-echo_debug "mode=$mode"
+echo_debug "run" "mode=$mode"
 
 case "$mode" in
 	start) # Set start power mode depending on state
@@ -42,11 +42,11 @@ case "$mode" in
 		set_sound_power_mode $pwr
 		enable_usb_suspend
 		[ "$pwr" = "1" ] && poweroff_drivebay 0
-		set_charge_thresholds
 		;;
 
 	true|bat*) # Set battery power mode
 		check_root
+		load_tp_smapi
 		set_laptopmode 1
 		set_dirty_parms 1
 		set_phc_controls 1
@@ -61,6 +61,7 @@ case "$mode" in
 		
 	false|ac) # Set ac power mode
 		check_root
+		load_tp_smapi
 		set_laptopmode 0
 		set_dirty_parms 0
 		set_phc_controls 0
@@ -77,7 +78,7 @@ case "$mode" in
 		get_power_state
 		pwr=$?
 		
-		set_wifi_power_mode $pwr
+		set_wifi_power_mode $pwr $2
 		;;
 
 	usb) # Enable usb autosuspend

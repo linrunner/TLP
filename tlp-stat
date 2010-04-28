@@ -169,6 +169,14 @@ done
 echo
 
 # wifi power mode
+get_wifi_ifaces
+for iface in $WIFACES; do
+	if [ -n "$iface" ]; then
+		echo "$iface: $($IWC $iface 2> /dev/null | grep "Power Management" | \
+		  sed -r 's/.*(Power Management):(on|off)/power management=\2/')"
+	fi
+done
+	
 if [ -d /sys/bus/pci/drivers/iwlagn ]; then
 	for i in /sys/bus/pci/drivers/iwlagn/*; do
 		[ -f $i/power_level ] && echoparm $i/power_level

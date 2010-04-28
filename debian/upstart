@@ -20,16 +20,16 @@ pre-start script
 	. $RFLIB
 	read_defaults
 	
-	echo_debug "upstart pre-start"
+	echo_debug "run" "upstart pre-start"
 	check_tlp_enabled || exit 1
 
-	$TLP start
-		
 	for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
 		if [ "$dev" != "bluetooth" -o "$X_BT_DISABLE_ON_INIT" = "1" ]; then
 			device_off $dev
 		fi
 	done
+	
+	set_charge_thresholds
 end script
 
 post-stop script
@@ -42,14 +42,16 @@ post-stop script
 	. $RFLIB
 	read_defaults
 	
-	echo_debug "upstart post-stop"
+	echo_debug "run" "upstart post-stop"
 	check_tlp_enabled || exit 1
 
-	$TLP false
-		
 	for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
 		device_off $dev
 	done
+	
+	$TLP false
+	
+	set_charge_tresholds
 end script
 
 
