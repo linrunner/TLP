@@ -219,6 +219,7 @@ set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
 
 set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 	local i
+	local pwr
 	
 	if [ "$1" = "1" ]; then
 		[ "${SATA_LINKPWR_ON_BAT:-undef}" = "undef" ] && return 0
@@ -245,9 +246,9 @@ get_wifi_ifaces () { # retval: $WIFACES
 }
 
 set_wifi_power_mode () { # $1: 0=ac mode, 1=battery mode; $2 iface
-	local i
+	local pwr
 	local iface
-		
+	
 	if [ "$1" = "1" ]; then
 		pwr=${WIFI_PWR_ON_BAT:-0}
 	else
@@ -277,10 +278,10 @@ disable_wake_on_lan () {
 	[ "${WOL_DISABLE:-undef}" = "undef" ] && return 0
 	
 	if [ "$WOL_DISABLE" = "Y" ]; then
-		echo_debug "pm" "disable_wake_on_lan($1): y"
+		echo_debug "pm" "disable_wake_on_lan: y"
 		$ETHTOOL -s eth0 wol d > /dev/null 2>&1
 	else
-		echo_debug "pm" "disable_wake_on_lan($1): n"
+		echo_debug "pm" "disable_wake_on_lan: n"
 		$ETHTOOL -s eth0 wol e > /dev/null 2>&1
 	fi
 	
@@ -293,14 +294,14 @@ set_sound_power_mode () {
 	check_sysfs "set_sound_power_mode" "/sys/module"
 
 	if [ -d /sys/module/snd_hda_intel ]; then
-		echo_debug "pm" "set_sound_power_mode.hda($1): $SOUND_POWER_SAVE $SOUND_POWER_SAVE_CONTROLLER"
+		echo_debug "pm" "set_sound_power_mode.hda: $SOUND_POWER_SAVE $SOUND_POWER_SAVE_CONTROLLER"
 		echo "$SOUND_POWER_SAVE" > /sys/module/snd_hda_intel/parameters/power_save
 		[ "${SOUND_POWER_SAVE_CONTROLLER:-undef}" = "undef" ] || \
 		  echo "$SOUND_POWER_SAVE_CONTROLLER" > /sys/module/snd_hda_intel/parameters/power_save_controller 
 	fi
 		
 	if [ -d /sys/module/snd_ac97_codec ]; then
-		echo_debug "pm" "set_sound_power_mode.ac97($1): $SOUND_POWER_SAVE"
+		echo_debug "pm" "set_sound_power_mode.ac97: $SOUND_POWER_SAVE"
 		echo "$SOUND_POWER_SAVE" > /sys/module/snd_ac97_codec/parameters/power_save
 	fi
 	
@@ -416,6 +417,9 @@ cancel_discharge () { # called from trap
 }
 
 discharge_battery () { # $1: battery
+	local bat
+	local bdir
+	
 	if [ ! -d $SMAPIDIR ]; then
 		echo "Error: ThinkPad battery functions not available (missing tp_smapi kernel module)."
 		return 1
