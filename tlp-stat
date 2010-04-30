@@ -61,6 +61,8 @@ else
 	echo
 fi
 
+echo_debug "run" "+++ tlp-stat"
+
 if [ $USER != "root" ]; then
 	echo "Hint: call me with 'sudo' to obtain more information!"
 	echo

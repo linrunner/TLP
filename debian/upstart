@@ -20,7 +20,7 @@ pre-start script
 	. $RFLIB
 	read_defaults
 	
-	echo_debug "run" "upstart pre-start"
+	echo_debug "run" "+++ upstart pre-start"
 	check_tlp_enabled || exit 1
 
 	for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
@@ -29,7 +29,9 @@ pre-start script
 		fi
 	done
 	
+	load_tp_smapi
 	set_charge_thresholds
+	
 end script
 
 post-stop script
@@ -42,16 +44,16 @@ post-stop script
 	. $RFLIB
 	read_defaults
 	
-	echo_debug "run" "upstart post-stop"
+	echo_debug "run" "+++ upstart post-stop"
 	check_tlp_enabled || exit 1
 
 	for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
 		device_off $dev
 	done
 	
-	$TLP false
+	load_tp_smapi
+	set_charge_thresholds
 	
-	set_charge_tresholds
 end script
 
 

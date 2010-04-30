@@ -60,6 +60,7 @@ check_laptop_mode_tools () { # ret: 0=disabled, 1=enabled
 		echo "Error: tlp power save is disabled because laptop-mode-tools is active." 1>&2
 		echo "       Set ENABLE_LAPTOP_MODE=false in /etc/default/acpi-support." 1>&2
 		echo 1>&2
+		echo_debug "pm" "check_laptop_mode_tools: yes" 
 		return 1
 	else
 		return 0
@@ -70,10 +71,14 @@ read_defaults () {
 	if [ -f $DEFAULT_FILE ]; then
 		. $DEFAULT_FILE
 	fi
+	
+	return 0
 }
 
 load_tp_smapi () {
 	$MODPRO $SMAPI > /dev/null 2>&1 
+	
+	return 0
 }
 
 get_power_state () { # ret: 0=ac, 1=battery
@@ -85,9 +90,11 @@ set_laptopmode () { # $1: 0=ac mode, 1=battery mode
 	check_sysfs "set_laptopmode" "/proc/sys/vm/laptop_mode"
 	
 	if [ "$1" = "1" ]; then
+		echo_debug "pm" "set_laptopmode($1): $DISK_IDLE_SECS_ON_BAT"
 		[ "${DISK_IDLE_SECS_ON_BAT:-undef}" = "undef" ] || \
 		  echo $DISK_IDLE_SECS_ON_BAT > /proc/sys/vm/laptop_mode
 	else
+		echo_debug "pm" "set_laptopmode($1): $DISK_IDLE_SECS_ON_AC"
 		[ "${DISK_IDLE_SECS_ON_AC:-undef}" = "undef" ] || \
 		  echo $DISK_IDLE_SECS_ON_AC > /proc/sys/vm/laptop_mode
 	fi
@@ -107,6 +114,7 @@ set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
 		else
 			age=1500
 		fi
+		echo_debug "pm" "set_dirty_parms($1): $age"
 		
 		echo $age > /proc/sys/vm/dirty_writeback_centisecs
 		echo $age > /proc/sys/vm/dirty_expire_centisecs
@@ -125,6 +133,7 @@ set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
 		else
 			age=500
 		fi
+		echo_debug "pm" "set_dirty_parms($1): $age"
 		
 		echo $age > /proc/sys/vm/dirty_writeback_centisecs
 		echo $age > /proc/sys/vm/dirty_expire_centisecs
@@ -146,6 +155,7 @@ set_phc_controls () {
 	check_sysfs "set_phc_controls" "/sys/devices/system/cpu/cpu0/cpufreq"
 	
 	if [ -f "/sys/devices/system/cpu/cpu0/cpufreq/phc_controls" ]; then
+		echo_debug "pm" "set_dirty_parms($1): $PHC_CONTROLS"
 		[ "${PHC_CONTROLS:-undef}" = "undef" ] || \
 		  echo $PHC_CONTROLS > /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
 	fi
@@ -192,9 +202,11 @@ set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
 			check_disk_hdparm_cap $dev
 			if [ $? = 0 ]; then
 				if [ $1 = "1" ]; then
+					echo_debug "pm" "set_disk_apm_level($1): $DISK_APM_LEVEL_ON_BAT"
 					[ "${DISK_APM_LEVEL_ON_BAT:-undef}" = "undef" ] || \
 					  $HDPARM -B $DISK_APM_LEVEL_ON_BAT /dev/$dev > /dev/null 2>&1
 				else
+					echo_debug "pm" "set_disk_apm_level($1): $DISK_APM_LEVEL_ON_AC"
 					[ "${DISK_APM_LEVEL_ON_AC:-undef}" = "undef" ] || \
 					  $HDPARM -B $DISK_APM_LEVEL_ON_AC /dev/$dev > /dev/null 2>&1
 				fi
@@ -215,6 +227,7 @@ set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 		[ "${SATA_LINKPWR_ON_AC:-undef}" = "undef" ] && return 0
 		pwr=$SATA_LINKPWR_ON_AC
 	fi
+	echo_debug "pm" "set_sata_link_power($1): $pwr"
 	
 	for i in /sys/class/scsi_host/host*/link_power_management_policy ; do
 		if [ -f $i ]; then
@@ -246,13 +259,13 @@ set_wifi_power_mode () { # $1: 0=ac mode, 1=battery mode; $2 iface
 	esac
 	
 	if [ -n "$2" ]; then
-		echo_debug "rf" "set_wifi_power_mode($1, $2): $pwr"		
+		echo_debug "pm" "set_wifi_power_mode($1, $2): $pwr"		
 		$IWC $2 power $pwr > /dev/null 2>&1 
 	else
 		get_wifi_ifaces
 		
 		for iface in $WIFACES; do
-			echo_debug "rf" "set_wifi_power_mode($1, $iface): $pwr"
+			echo_debug "pm" "set_wifi_power_mode($1, $iface): $pwr"
 			$IWC $iface power $pwr > /dev/null 2>&1 
 		done
 	fi
@@ -264,8 +277,10 @@ disable_wake_on_lan () {
 	[ "${WOL_DISABLE:-undef}" = "undef" ] && return 0
 	
 	if [ "$WOL_DISABLE" = "Y" ]; then
+		echo_debug "pm" "disable_wake_on_lan($1): y"
 		$ETHTOOL -s eth0 wol d > /dev/null 2>&1
 	else
+		echo_debug "pm" "disable_wake_on_lan($1): n"
 		$ETHTOOL -s eth0 wol e > /dev/null 2>&1
 	fi
 	
@@ -278,12 +293,14 @@ set_sound_power_mode () {
 	check_sysfs "set_sound_power_mode" "/sys/module"
 
 	if [ -d /sys/module/snd_hda_intel ]; then
+		echo_debug "pm" "set_sound_power_mode.hda($1): $SOUND_POWER_SAVE $SOUND_POWER_SAVE_CONTROLLER"
 		echo "$SOUND_POWER_SAVE" > /sys/module/snd_hda_intel/parameters/power_save
 		[ "${SOUND_POWER_SAVE_CONTROLLER:-undef}" = "undef" ] || \
 		  echo "$SOUND_POWER_SAVE_CONTROLLER" > /sys/module/snd_hda_intel/parameters/power_save_controller 
 	fi
 		
 	if [ -d /sys/module/snd_ac97_codec ]; then
+		echo_debug "pm" "set_sound_power_mode.ac97($1): $SOUND_POWER_SAVE"
 		echo "$SOUND_POWER_SAVE" > /sys/module/snd_ac97_codec/parameters/power_save
 	fi
 	
@@ -301,8 +318,10 @@ enable_usb_suspend () {
 				usbid="$(cat $usbdev/idVendor):$(cat $usbdev/idProduct)"
 			
 				if patinstr "$usbid" "$USB_BLACKLIST"; then
+					echo_debug "usb" "enable_usb_suspend.on: $usbdev"
 					echo "on" > $usbdev/power/level
 				else
+					echo_debug "usb" "enable_usb_suspend.auto: $usbdev"
 					echo "auto" > $usbdev/power/level
 				fi
 				echo 0 > $usbdev/power/autosuspend
@@ -324,10 +343,12 @@ do_threshold () { # $1: treshold file, $2: new value
 set_charge_thresholds () {
 	[ -d /sys/devices/platform/smapi ] || return 0
 	if [ "$(cat /sys/devices/platform/smapi/BAT0/installed)" = "1" ]; then
+		echo_debug "pm" "set_charge_thresholds: BAT0 $START_CHARGE_THRESH_BAT0 $STOP_CHARGE_THRESH_BAT0"
 		do_threshold /sys/devices/platform/smapi/BAT0/start_charge_thresh "$START_CHARGE_THRESH_BAT0"
 		do_threshold /sys/devices/platform/smapi/BAT0/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT0"
 	fi
 	if [ "$(cat /sys/devices/platform/smapi/BAT1/installed)" = "1" ]; then
+		echo_debug "pm" "set_charge_thresholds: BAT1 $START_CHARGE_THRESH_BAT1 $STOP_CHARGE_THRESH_BAT1"
 		do_threshold /sys/devices/platform/smapi/BAT1/start_charge_thresh "$START_CHARGE_THRESH_BAT1"
 		do_threshold /sys/devices/platform/smapi/BAT1/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT1"
 	fi
@@ -347,17 +368,20 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
 	dock=$(grep -l ata_bay /sys/devices/platform/dock.?/type)
 	dock=${dock%%/type}
 	if [ -z "$dock" -o ! -d "$dock" ]; then
+		echo_debug "pm" "poweroff_drivebay.nobaydevice"
 		[ "$1" = "1" ] && echo "Error: cannot locate bay device."
 		return 1
 	fi
 
 	# Check if bay is occupied
 	if [ $(cat $dock/docked) = "0" ]; then
+		echo_debug "pm" "poweroff_drivebay.drivealreadyoff"
 		[ "$1" = "1" ] && echo "No drive in bay (or power already off)."
 	else 
 		# Check for optical drive
 		optdrv=$(readlink $CDROM)
 		if [ -z "$optdrv" ]; then
+			echo_debug "pm" "poweroff_drivebay.nooptdrive"
 			[ "$1" = "1" ] && echo "No optical drive in bay."
 			return 0
 		else
@@ -377,6 +401,7 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
 			# Turn power off
 			echo 1 > $dock/undock
 			[ "$1" = "1" ] && echo "Bay is powered off now."
+			echo_debug "pm" "poweroff_drivebay.baypoweredoff"
 		fi
 	fi
 	
@@ -386,6 +411,7 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
 cancel_discharge () { # called from trap
 	echo 0 > $bdir/force_discharge
 	echo "\nDischarging of battery $bat cancelled."
+	echo_debug "pm" "discharge_battery.cancelled: $bat"
 	exit 0
 }
 
@@ -401,6 +427,7 @@ discharge_battery () { # $1: battery
 	bdir=$SMAPIDIR/$bat
 	
 	if [ ! -f $bdir/installed ] || [ "$(cat $bdir/installed)" = "0" ]; then
+		echo_debug "pm" "discharge_battery.notpresent: $bat"
 		echo "Error: battery $bat not present."
 		return 1
 	fi
@@ -409,6 +436,7 @@ discharge_battery () { # $1: battery
 	trap cancel_discharge INT
 	
 	while [ "$(cat $bdir/force_discharge)" = "0" ]; do :; done
+	echo_debug "pm" "discharge_battery.running: $bat"
 
 	while [ "$(cat $bdir/force_discharge)" = "1" ]; do
 		clear
@@ -423,6 +451,7 @@ discharge_battery () { # $1: battery
 
 	echo
 	echo "Done: battery $bat was completely discharged."
+	echo_debug "pm" "discharge_battery.complete: $bat"
 	return 0
 }
 
