@@ -3,7 +3,6 @@ tlp (0.2.4.995-0ubuntu1) karmic; urgency=low
   * Bugfixes
     - #11: excessive boottime (+40s) w/ USB_SUSPEND=1 & USB_BLACKLIST=""
     - tlp-stat: display hard disk w/o apm das "none/disabled" 
-    - upstart: exec post-stop-script on shutdown/reboot
 
   * Features
     - bluetooth/wifi/wwan: toggle (#12, thatgui)
