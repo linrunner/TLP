@@ -1,4 +1,4 @@
-tlp (0.2.4.995-0ubuntu1) karmic; urgency=low
+tlp (0.2.4.996-0ubuntu1) karmic; urgency=low
 
   * Bugfixes
     - #11: excessive boottime (+40s) w/ USB_SUSPEND=1 & USB_BLACKLIST=""
