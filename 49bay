@@ -21,9 +21,9 @@ suspend_bay () {
 		if [ -e $dock/docked ]; then
 			if [ "$(cat $dock/docked)" = "0" ]; then
 				savestate $STATE 1
-				echo_debug "49bay.suspend: bay=off"
+				echo_debug "pm" "49bay.suspend: bay=off"
 			else
-				echo_debug "49bay.suspend: bay=on"
+				echo_debug "pm" "49bay.suspend: bay=on"
 			fi
 		fi
 	fi
@@ -47,7 +47,7 @@ resume_bay () {
 				rc=$?
 				[ $rc = 0 ] || sleep 0.5
 			done
-			echo_debug "49bay.resume-bayoff: rc=$rc"
+			echo_debug "pm" "49bay.resume-bayoff: rc=$rc"
 			return 0
 		fi
 	fi

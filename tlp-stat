@@ -178,24 +178,8 @@ for iface in $WIFACES; do
 		  sed -r 's/.*(Power Management):(on|off)/power management=\2/')"
 	fi
 done
+echo
 	
-if [ -d /sys/bus/pci/drivers/iwlagn ]; then
-	for i in /sys/bus/pci/drivers/iwlagn/*; do
-		[ -f $i/power_level ] && echoparm $i/power_level
-	done
-	echo 
-fi
-if [ -d //sys/bus/pci/drivers/iwl3945 ]; then
-	for i in /sys/bus/pci/drivers/iwl3945/*; do
-		[ -f $i/power_level ] && echoparm $i/power_level
-	done
-	echo 
-fi
-if [ -d /sys/module/ipw2200 ]; then
-	iwpriv eth1 get_power
-	echo
-fi
-
 # sound power mode
 if [ -d /sys/module/snd_hda_intel ]; then
 	echoparm /sys/module/snd_hda_intel/parameters/power_save

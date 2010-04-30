@@ -12,13 +12,13 @@ suspend_device () {
 	
 	state=$(cat $2)
 	savestate $1 $state
-	echo_debug "49wwan.suspend wwan=$state"
+	echo_debug "pm" "49wwan.suspend wwan=$state"
 }
 
 resume_device () {
 	state_exists $1 || return
 	restorestate $1 > $2
-	echo_debug "49wwan.resume wwan=$(cat $2)"
+	echo_debug "pm" "49wwan.resume wwan=$(cat $2)"
 }
 
 [ -f $LIB ] || exit 0
@@ -32,7 +32,7 @@ resume_device () {
 get_ctrl_device wwan
 [ -n "$devc" ] || exit 0
 
-echo_debug "49wwan $1"
+echo_debug "pm" "49wwan $1"
 
 case $1 in
 	hibernate|suspend)

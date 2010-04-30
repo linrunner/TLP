@@ -30,7 +30,7 @@ SATA_LINKPWR_ON_AC=max_performance
 SATA_LINKPWR_ON_BAT=min_power
  
 # Wifi power save mode: 1=disable/5=enable
-# (Kernel >= 2.6.32 and selected adapters only)
+# (Kernel >= 2.6.32, some adapters only!)
 WIFI_PWR_ON_AC=1
 WIFI_PWR_ON_BAT=5
  
