@@ -1,4 +1,4 @@
-TLP README - 13.03.2010
+TLP README - 02.05.2010
 
 TLP is a collection of scripts enabling laptop-mode and
 implementing power save features for laptop hardware.
@@ -8,7 +8,7 @@ Possible settings for ac/battery are:
 - disk apm level
 - wake on lan (disable)
 - sata link power
-- wifi power save (Intel 3945/4965/5x00, kernel < 2.6.30 only)
+- wifi power save (Kernel >= 2.6.32, some adapters only!)
 - sound power save (hda_intel, ac97)
 - usb autosuspend with blacklist
 - phc controls (requires kernel with phc-patches)

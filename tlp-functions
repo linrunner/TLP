@@ -374,6 +374,7 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
 		[ "$1" = "1" ] && echo "Error: cannot locate bay device."
 		return 1
 	fi
+	echo_debug "pm" "poweroff_drivebay: dock=$dock"
 
 	# Check if bay is occupied
 	if [ $(cat $dock/docked) = "0" ]; then
@@ -388,6 +389,7 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
 			return 0
 		else
 			optdrv="/dev/$optdrv"
+			echo_debug "pm" "poweroff_drivebay: optdrv=$optdrv"
 			
 			# Unmount media 
 			umount -l $optdrv > /dev/null 2>&1
@@ -398,6 +400,7 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
 	
 			# Unregister scsi device
 			syspath="/sys$($UDEVADM info --query=path --name=$optdrv | perl -pe 's!/block/...$!!')"
+			echo_debug "pm" "poweroff_drivebay: syspath=$syspath"
 			[ -n "$syspath" ] && echo 1 > $syspath/delete
 
 			# Turn power off

@@ -2,12 +2,13 @@ tlp (0.2.4.996-0ubuntu1) karmic; urgency=low
 
   * Bugfixes
     - #11: excessive boottime (+40s) w/ USB_SUSPEND=1 & USB_BLACKLIST=""
-    - tlp-stat: display hard disk w/o apm das "none/disabled" 
+    - tlp-stat: display hard disk w/o apm as "none/disabled" 
 
   * Features
     - bluetooth/wifi/wwan: toggle (#12, thatgui)
     - changed usb autosuspend default: on
-    - wifi power management reenabled on 2.6.32 w/ some adapters
+    - wifi power management re-enabled on 2.6.32 w/ some adapters
+    - trace feature, output to syslog/debug (TLP_DEBUG)
 
  -- Thomas Koch <linrunner@gmx.net>  Thu, 15 Apr 2010 21:23:22 +0200
 

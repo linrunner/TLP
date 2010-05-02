@@ -1,6 +1,7 @@
 usr/bin
 usr/sbin
 etc/default
+etc/init.d
 etc/network/if-up.d
 etc/xdg/autostart
 usr/lib/pm-utils/power.d
