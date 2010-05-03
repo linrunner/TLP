@@ -25,7 +25,7 @@ patinstr () { # $1: pattern, $2: target -- test if pattern matches part of targe
 
 echo_debug () { # $1: tag; $2: msg; echo debug msg if tag matches 
 	if patinstr "$1" "$TLP_DEBUG"; then
-		$LOGGER -p debug -t "tlp[$$]" "$2"
+		$LOGGER -p debug -t "tlp[$$,$PPID]" "$2"
 	fi
 }
 

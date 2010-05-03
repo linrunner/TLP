@@ -1,4 +1,4 @@
-tlp (0.2.4.997-0ubuntu1) karmic; urgency=low
+tlp (0.2.5-0ubuntu1) lucid; urgency=low
 
   * Bugfixes
     - #11: excessive boottime (+40s) w/ USB_SUSPEND=1 & USB_BLACKLIST=""
@@ -9,8 +9,9 @@ tlp (0.2.4.997-0ubuntu1) karmic; urgency=low
     - changed usb autosuspend default: on
     - wifi power management re-enabled on 2.6.32 w/ some adapters
     - trace feature, output to syslog/debug (TLP_DEBUG)
+    - new variable BAY_DEVICE
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 15 Apr 2010 21:23:22 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 03 May 2010 23:55:59 +0200
 
 tlp (0.2.4-0ubuntu1) karmic; urgency=low
 
