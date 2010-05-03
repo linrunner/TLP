@@ -1,6 +1,6 @@
 # tlp - Parameters for power save
  
-# Set to 0 to disable TLP
+# Set to 0 to disable/1 to enable TLP
 TLP_ENABLE=1
  
 # Seconds laptop mode has to to wait after the disk goes idle before doing a sync.
@@ -14,10 +14,11 @@ MAX_LOST_WORK_SECS_ON_BAT=15
         
 # Change CPU voltages aka "undervolting" - Kernel with PHC patch required
 # Freq:voltage pairs are written to /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
-# CAUTION: only use this, if you thoroughly understand what you are doing! 
+# CAUTION: only use this, if you thoroughly understand what you are doing!
 #PHC_CONTROLS="F:V F:V F:V F:V"
+# Hint: this feature ist disabled by default, remove the leading # to enable it.
  
-# Hard disk devices (separate with spaces)
+# Hard disk devices, separate with spaces (default: sda).
 DISK_DEVICES="sda"
  
 # Hard disk advanced power management level: 1(max saving)..254(off)
@@ -38,31 +39,36 @@ WIFI_PWR_ON_BAT=5
 WOL_DISABLE=Y
  
 # Enable power save for Intel HDA, AC97 devices (timeout in secs).
-# A value of 0 disables power save.
+# A value of 0 disables / >=1 enables power save.
 SOUND_POWER_SAVE=1
-# Disable controller too: Y/N (HDA only)
+# Disable controller too (HDA only): Y/N
 SOUND_POWER_SAVE_CONTROLLER=Y
  
 # Set to 1 to power off optical drive in UltraBay (ThinkPads only) 
-# when running on battery.
+# when running on battery. A value of 0 disables this Feature (Default).
 # Drive can be powered on again by releasing (and reinserting) the
 # eject lever or by pressing the disc eject button on newer models.
-# Note: an UltraBay hard disk is never powered off
+# Note: an UltraBay hard disk is never powered off.
 BAY_POWEROFF_ON_BAT=0
+# Optical drive device to power off (default sr0)
+BAY_DEVICE="sr0"
  
-# Set to 0 to disable usb autosuspend feature.
+# Set to 0 to disable/1 to enable usb autosuspend feature
 USB_AUTOSUSPEND=1
  
 # Devices from the following list are excluded from usb autosuspend
-# (separate with spaces). Use lsusb to get the id's. 
+# (separate with spaces). Use lsusb to get the id's.
 #USB_BLACKLIST="1111:2222 3333:4444"
+# Hint: this feature ist disabled by default, remove the leading # to enable it.
  
 # Devices to disable on startup: bluetooth/wifi/wwan
 #DEVICES_TO_DISABLE_ON_STARTUP="bluetooth"
+# Hint: this feature ist disabled by default, remove the leading # to enable it.
  
 # Devices to disable on shutdown: bluetooth/wifi/wwan
 # (workaround for devices that are blocking shutdown)
 #DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi wwan"
+# Hint: this feature ist disabled by default, remove the leading # to enable it.
  
 # Battery charge thresholds (ThinkPad only, tp-smapi kernel module required)
 # Charging starts when the remaining capacity falls below the START_CHARGE_TRESH
@@ -73,4 +79,5 @@ USB_AUTOSUSPEND=1
 # Ultrabay battery (values in %)
 #START_CHARGE_THRESH_BAT1=96
 #STOP_CHARGE_THRESH_BAT1=100
+# Hint: this feature ist disabled by default, remove the leading #s to enable it.
  

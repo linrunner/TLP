@@ -12,7 +12,6 @@ IWC=/sbin/iwconfig
 MODPRO=/sbin/modprobe
 UDEVADM=/sbin/udevadm
 SMAPI=tp_smapi
-CDROM=/dev/cdrom
 SMAPIDIR=/sys/devices/platform/smapi
 LOGGER=/usr/bin/logger
 
@@ -382,13 +381,12 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
 		[ "$1" = "1" ] && echo "No drive in bay (or power already off)."
 	else 
 		# Check for optical drive
-		optdrv=$(readlink $CDROM)
-		if [ -z "$optdrv" ]; then
-			echo_debug "pm" "poweroff_drivebay.nooptdrive"
-			[ "$1" = "1" ] && echo "No optical drive in bay."
+		optdrv=/dev/${BAY_DEVICE:=sr0}
+		if [ ! -b "$optdrv" ]; then
+			echo_debug "pm" "poweroff_drivebay.nooptdrive: $optdrv"
+			[ "$1" = "1" ] && echo "No optical drive in bay ($optdrv)."
 			return 0
 		else
-			optdrv="/dev/$optdrv"
 			echo_debug "pm" "poweroff_drivebay: optdrv=$optdrv"
 			
 			# Unmount media 
