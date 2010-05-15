@@ -51,9 +51,6 @@ post-stop script
 		device_off $dev
 	done
 	
-	load_tp_smapi
-	set_charge_thresholds
-	
 end script
 
 

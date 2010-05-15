@@ -194,7 +194,7 @@ echo
 if [ -d /sys/devices/platform/smapi ]; then
 	# ThinkPad via tp_smapi
 	for bat in /sys/devices/platform/smapi/BAT[01]; do
-		if [ "$(cat $bat/installed)" = "1" ]; then
+		if [ -d $bat ] && [ "$(cat $bat/installed)" = "1" ]; then
 			echoparm $bat/manufacturer
 			echoparm $bat/manufacture_date
 			echoparm $bat/first_use_date
@@ -213,11 +213,11 @@ if [ -d /sys/devices/platform/smapi ]; then
 	done
 elif [ -d /sys/class/power_supply ]; then
 	if [ -d /sys/devices/platform/thinkpad_acpi ]; then
-		echo "ThinkPad extended battery info not available (missing tp_smapi kernel module)"
+		echo "ThinkPad extended battery info not available (missing tp_smapi kernel module)."
 	fi
 	# generic
 	for bat in /sys/class/power_supply/BAT?; do
-		if [ "$(cat $bat/present)" = "1" ]; then
+		if [ -d $bat ] && [ "$(cat $bat/present)" = "1" ]; then
 			echoparm $bat/manufacturer
 			echoparm $bat/energy_full_design - mWh 000
 			echoparm $bat/energy_full - mWh 000
@@ -237,7 +237,7 @@ echo "tlp usb blacklist = ${USB_BLACKLIST:=(not configured)}"
 echo
 
 for i in /sys/bus/usb/devices/* ; do
-	[ -e "$i/power/autosuspend" ] \
+	[ -f "$i/power/autosuspend" ] \
 		&& echo "$i/power/autosuspend = `cat $i/power/autosuspend`," \
 		     "level = $(cat $i/power/level) --" \
 		     "$(cat $i/idVendor):$(cat $i/idProduct)" \

@@ -1,3 +1,16 @@
+tlp (0.2.5.900-0ubuntu1) lucid; urgency=low
+
+  * Development (trunk).
+  * Bugfixes
+     - tlp-stat: error checking get_ctrl_device, tlp-stat batinfo (mikar)
+
+  * Features
+    - tlp fullcharge
+    - set_charge_thresholds on startup only, not on shutdown
+    - ext3/ext4 fs commit depending on MAX_LOST_WORK_SECS
+ 
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 14 May 2010 11:39:17 +0200
+
 tlp (0.2.5-0ubuntu1) lucid; urgency=low
 
   * Bugfixes

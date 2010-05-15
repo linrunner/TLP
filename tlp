@@ -41,6 +41,7 @@ case "$mode" in
 		disable_wake_on_lan $pwr
 		set_sound_power_mode $pwr
 		enable_usb_suspend
+		set_charge_thresholds
 		[ "$pwr" = "1" ] && poweroff_drivebay 0
 		;;
 
@@ -101,9 +102,16 @@ case "$mode" in
 		load_tp_smapi
 		discharge_battery $2
 		;;
+
+	fullcharge) # Charge battery up to 100%
+		check_root
+		load_tp_smapi
+		fullcharge_battery $2
+		;;
+
 		
 	*) 
-		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|xlogin|discharge"
+		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|xlogin|discharge|fullcharge"
 		;;
 esac
 

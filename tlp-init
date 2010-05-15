@@ -45,9 +45,6 @@ case $1 in
 		for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
 			device_off $dev
 		done
-	
-		load_tp_smapi
-		set_charge_thresholds
 		;;
 
 	*)

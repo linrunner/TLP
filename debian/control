@@ -3,7 +3,7 @@ Section: utils
 Priority: optional
 Maintainer: Thomas Koch <linrunner@gmx.net>
 Build-Depends: debhelper (>= 7)
-Standards-Version: 3.8.3
+Standards-Version: 3.8.4
 Homepage: http://thinkpad-wiki.org/TLP_-_Stromspareinstellungen_f%C3%BCr_Ubuntu
 
 Package: tlp
