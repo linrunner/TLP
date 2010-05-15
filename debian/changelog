@@ -8,6 +8,7 @@ tlp (0.2.5.900-0ubuntu1) lucid; urgency=low
     - tlp fullcharge
     - set_charge_thresholds on startup only, not on shutdown
     - ext3/ext4 fs commit depending on MAX_LOST_WORK_SECS
+    - tlp-stat: check wifi power mgmt capability
  
  -- Thomas Koch <linrunner@gmx.net>  Fri, 14 May 2010 11:39:17 +0200
 

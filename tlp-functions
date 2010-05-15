@@ -108,10 +108,9 @@ set_extfs_commit () { # $1: commit
 	mount | while read dev d1 mtpoint d2 fstype mopts; do 
 		case $fstype in
 			ext[34]) 
-				mopts=${mopts#(}; mopts=${mopts%)}
-				mopts=${mopts%%,commit=*}
+				mopts=$(echo $mopts | sed -r 's/,commit=[0-9]+|^\(commit=[0-9]+,|\(|\)//g')
 				if [ -b $dev -a -d $mtpoint ]; then
-					mount $dev $mtpoint -o remount,$mopts,commit=$commit
+					mount $dev $mtpoint -t $fstype -o remount,$mopts,commit=$commit
 				fi
 				;;
 			

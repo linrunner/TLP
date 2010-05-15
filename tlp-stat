@@ -174,8 +174,21 @@ echo
 get_wifi_ifaces
 for iface in $WIFACES; do
 	if [ -n "$iface" ]; then
-		echo "$iface: $($IWC $iface 2> /dev/null | grep "Power Management" | \
-		  sed -r 's/.*(Power Management):(on|off)/power management=\2/')"
+		wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
+		  sed -r 's/.*(Power Management):(on|off).*/\2/')
+		  
+		case $wifipm in
+			on|off)
+				if [ -z "$($IWC $iface power $wifipm 2>&1)" ]; then
+					echo "$iface: power management = $wifipm"
+				else
+					echo "$iface: power management = off (not supported)"
+				fi
+				;;
+				
+			*) 
+				;;
+		esac
 	fi
 done
 echo
