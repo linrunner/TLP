@@ -12,6 +12,16 @@ tlp (0.2.5.900-0ubuntu1) lucid; urgency=low
  
  -- Thomas Koch <linrunner@gmx.net>  Fri, 14 May 2010 11:39:17 +0200
 
+tlp (0.2.5-0ubuntu2) lucid; urgency=low
+
+  * Bugfix/Package change
+    - Conflicts: pm-utils-powersave-policy
+    - powersave-policy-sata-link-power breaks pm-powersave w/ sata 
+      controllers in compatible mode an pata controllers (LP# 514881).
+    - TLP implements same functionality as conflicting package anyway ...
+
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 17 May 2010 22:32:34 +0200
+
 tlp (0.2.5-0ubuntu1) lucid; urgency=low
 
   * Bugfixes
