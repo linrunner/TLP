@@ -93,7 +93,7 @@ case "$mode" in
 		
 	xlogin) # Disable bluetooth on desktop login
 		for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
-			[ "$dev" = "bluetooth" ] && device_off $dev
+			[ "$dev" = "bluetooth" ] && ( sleep 5; device_off $dev ) &
 		done
 		;;
 		

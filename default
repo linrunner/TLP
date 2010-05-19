@@ -79,5 +79,5 @@ USB_AUTOSUSPEND=1
 # Ultrabay battery (values in %)
 #START_CHARGE_THRESH_BAT1=96
 #STOP_CHARGE_THRESH_BAT1=100
-# Hint: this feature ist disabled by default, remove the leading #s to enable it.
+# Hint: this feature ist disabled by default, remove the leading # to enable it.
  

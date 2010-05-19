@@ -10,7 +10,7 @@ tlp (0.2.5.900-0ubuntu1) lucid; urgency=low
     - ext3/ext4 fs commit depending on MAX_LOST_WORK_SECS
     - tlp-stat: check wifi power mgmt capability
  
- -- Thomas Koch <linrunner@gmx.net>  Fri, 14 May 2010 11:39:17 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 19 May 2010 11:55:59 +0200
 
 tlp (0.2.5-0ubuntu2) lucid; urgency=low
 
