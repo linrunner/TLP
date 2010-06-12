@@ -14,6 +14,9 @@ UDEVADM=/sbin/udevadm
 SMAPI=tp_smapi
 SMAPIDIR=/sys/devices/platform/smapi
 LOGGER=/usr/bin/logger
+USBD=/sys/bus/usb/devices
+USB_BLACKLIST_INT=""
+USB_TIMEOUT=2
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -310,23 +313,24 @@ set_sound_power_mode () {
 }
 
 enable_usb_suspend () {
-	local usbdev
+	local devices usbdev
 	
-	check_sysfs "set_usb_suspend" "/sys/bus/usb/devices"
+	check_sysfs "set_usb_suspend" "$USBD"
 	
 	if [ "$USB_AUTOSUSPEND" = "1" ]; then
-		for usbdev in /sys/bus/usb/devices/*; do
-			if [ -f $usbdev/power/autosuspend ]; then
-				usbid="$(cat $usbdev/idVendor):$(cat $usbdev/idProduct)"
+		devices=$(ls $USBD | egrep '^usb[0-9]+$|^[0-9]+-[0-9]$')
+		for usbdev in $devices; do
+			if [ -f $USBD/$usbdev/power/autosuspend ]; then
+				usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
 			
-				if patinstr "$usbid" "$USB_BLACKLIST"; then
-					echo_debug "usb" "enable_usb_suspend.on: $usbdev"
-					echo "on" > $usbdev/power/level
+				if patinstr "$usbid" "$USB_BLACKLIST_INT $USB_BLACKLIST"; then
+					echo_debug "usb" "enable_usb_suspend.on: $USBD/$usbdev"
+					echo "on" > $USBD/$usbdev/power/level
 				else
-					echo_debug "usb" "enable_usb_suspend.auto: $usbdev"
-					echo "auto" > $usbdev/power/level
+					echo_debug "usb" "enable_usb_suspend.auto: $USBD/$usbdev"
+					echo "auto" > $USBD/$usbdev/power/level
 				fi
-				echo 0 > $usbdev/power/autosuspend
+				echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
 			fi
 		done
 	fi

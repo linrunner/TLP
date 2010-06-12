@@ -1,9 +1,10 @@
-tlp (0.2.5.900-0ubuntu1) lucid; urgency=low
+tlp (0.2.6-0ubuntu1) lucid; urgency=low
 
-  * Development (trunk).
   * Bugfixes
      - tlp-stat: error checking get_ctrl_device, tlp-stat batinfo (mikar)
-
+     - #14: excessive boottime w/ USB_AUTOSUSPEND (steveurkel, fishmac,
+            saubaer) -> set autosuspend=2
+            
   * Features
     - tlp fullcharge
     - set_charge_thresholds on startup only, not on shutdown

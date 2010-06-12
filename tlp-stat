@@ -177,16 +177,22 @@ for iface in $WIFACES; do
 		wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
 		  sed -r 's/.*(Power Management):(on|off).*/\2/')
 		  
+		echo -n "$iface: power management = "
 		case $wifipm in
-			on|off)
-				if [ -z "$($IWC $iface power $wifipm 2>&1)" ]; then
-					echo "$iface: power management = $wifipm"
+			on)
+				echo "on"
+				;;
+				
+			off)
+				if [ -z "$($IWC $iface power off 2>&1)" ]; then
+					echo "off"
 				else
-					echo "$iface: power management = off (not supported)"
+					echo "off (not supported)"
 				fi
 				;;
 				
 			*) 
+				echo "$wifipm (unknown state)"
 				;;
 		esac
 	fi
