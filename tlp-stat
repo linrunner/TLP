@@ -12,6 +12,8 @@ SMARTCTL=/usr/sbin/smartctl
 LSB=/usr/bin/lsb_release
 DMI=/usr/sbin/dmidecode
 
+USBD=/sys/bus/usb/devices
+
 # --- Functions
 echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
 	local val
@@ -176,8 +178,8 @@ for iface in $WIFACES; do
 	if [ -n "$iface" ]; then
 		wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
 		  sed -r 's/.*(Power Management):(on|off).*/\2/')
-		  
-		echo -n "$iface: power management = "
+		get_wifi_driver $iface
+		echo -n "$iface($WIFIDRV): power management = "
 		case $wifipm in
 			on)
 				echo "on"
@@ -255,12 +257,14 @@ fi
 echo "tlp usb blacklist = ${USB_BLACKLIST:=(not configured)}"
 echo
 
-for i in /sys/bus/usb/devices/* ; do
-	[ -f "$i/power/autosuspend" ] \
-		&& echo "$i/power/autosuspend = `cat $i/power/autosuspend`," \
-		     "level = $(cat $i/power/level) --" \
-		     "$(cat $i/idVendor):$(cat $i/idProduct)" \
-		     "$([ -f $i/product ] && cat $i/product)"
+devices=$(ls $USBD | egrep '^usb[0-9]+$|^[0-9]+-[0-9]$')
+for usbdev in $devices; do
+	if [ -f $USBD/$usbdev/power/autosuspend ]; then
+		echo "$USBD/$usbdev/power/autosuspend = `cat $USBD/$usbdev/power/autosuspend`," \
+		     "level = $(cat $USBD/$usbdev//power/level) --" \
+		     "$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)" \
+		     "$([ -f $USBD/$usbdev/product ] && cat $USBD/$usbdev/product)"
+	fi
 done
 echo
 

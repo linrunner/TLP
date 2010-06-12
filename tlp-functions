@@ -17,6 +17,7 @@ LOGGER=/usr/bin/logger
 USBD=/sys/bus/usb/devices
 USB_BLACKLIST_INT=""
 USB_TIMEOUT=2
+NETD=/sys/class/net
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -246,6 +247,18 @@ set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 
 get_wifi_ifaces () { # retval: $WIFACES
 	WIFACES=$($IWC 2> /dev/null | grep 'IEEE' | sed -r 's/^(.*)[ \t]+IEEE.*/\1/')
+	
+	return 0
+}
+
+get_wifi_driver () { # $1: iface; retval: $WIFIDRV
+	local drvl
+	
+	WIFIDRV=""
+	if [ -d $NETD/$1 ]; then
+		drvl=$(readlink $NETD/$1/device/driver)
+		[ -n "$drvl" ] && WIFIDRV=${drvl##*/}
+	fi
 	
 	return 0
 }
