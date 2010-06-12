@@ -1,9 +1,9 @@
 tlp (0.2.6-0ubuntu1) lucid; urgency=low
 
   * Bugfixes
-     - tlp-stat: error checking get_ctrl_device, tlp-stat batinfo (mikar)
-     - #14: delayed login window (greeter) w/ USB_AUTOSUSPEND=1 
-            (steveurkel, fishmac, saubaer) 
+    - tlp-stat: error checking get_ctrl_device, tlp-stat batinfo (mikar)
+    - #14: delayed login window (greeter) w/ USB_AUTOSUSPEND=1 
+           (steveurkel, fishmac, saubaer) 
             
   * Features
     - tlp fullcharge
