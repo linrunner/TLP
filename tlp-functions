@@ -162,7 +162,7 @@ set_phc_controls () {
 	check_sysfs "set_phc_controls" "/sys/devices/system/cpu/cpu0/cpufreq"
 	
 	if [ -f "/sys/devices/system/cpu/cpu0/cpufreq/phc_controls" ]; then
-		echo_debug "pm" "set_dirty_parms($1): $PHC_CONTROLS"
+		echo_debug "pm" "set_phc_controls: $PHC_CONTROLS"
 		[ "${PHC_CONTROLS:-undef}" = "undef" ] || \
 		  echo $PHC_CONTROLS > /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
 	fi
