@@ -72,16 +72,16 @@ fi
 
 if [ $USER = "root" ]; then
 	if [ -x $DMI ]; then
-		echo "System = `$DMI -s system-manufacturer`" \
-		  "`$DMI -s system-version`" \
-		  "`$DMI -s system-product-name`"
-		echo "BIOS = `$DMI -s bios-version`"
+		echo "System = $($DMI -s system-manufacturer)" \
+		  "$($DMI -s system-version)" \
+		  "$($DMI -s system-product-name)"
+		echo "BIOS = $($DMI -s bios-version)"
 	fi
 else
 	echo "System = (not available)"
 fi
-[ -x $LSB ] && echo "Release = `lsb_release -d -s`"
-echo "Kernel = `uname -r -m`"
+[ -x $LSB ] && echo "Release = $(lsb_release -d -s)"
+echo "Kernel = $(uname -r -m)"
 echo
 
 if check_laptop_mode_tools; then
@@ -257,7 +257,7 @@ fi
 echo "tlp usb blacklist = ${USB_BLACKLIST:=(not configured)}"
 echo
 
-devices=$(ls $USBD | egrep '^usb[0-9]+$|^[0-9]+-[0-9]$')
+devices=$(ls $USBD | grep -v ':')
 for usbdev in $devices; do
 	if [ -f $USBD/$usbdev/power/autosuspend ]; then
 		echo "$USBD/$usbdev/power/autosuspend = `cat $USBD/$usbdev/power/autosuspend`," \

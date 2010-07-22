@@ -1,3 +1,12 @@
+tlp (0.2.6.900-0ubuntu1) lucid; urgency=low
+
+  * Development version
+  * Bug fixes:
+    - usb autosuspend/tlp-stat missing some usb devices
+    - #15: tlp-stat abort w/ ipw2200 (agape)
+
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 17 Jul 2010 12:36:11 +0200
+
 tlp (0.2.6-0ubuntu1) lucid; urgency=low
 
   * Bugfixes
@@ -11,8 +20,9 @@ tlp (0.2.6-0ubuntu1) lucid; urgency=low
     - ext3/ext4 fs commit depending on MAX_LOST_WORK_SECS
     - tlp-stat: check wifi power mgmt capability
     - tlp-stat: display wifi driver
- 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 19 May 2010 18:00:00 +0200
+   * i
+
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 17 Jul 2010 12:36:07 +0200
 
 tlp (0.2.5-0ubuntu2) lucid; urgency=low
 

@@ -1,4 +1,4 @@
-.TH TLP 8 "2010-01-23" "Power Management" ""
+.TH TLP 8 "2010-06-14" "Power Management" ""
 .SH NAME
 tlp \- apply laptop power management settings
 .SH SYNOPSIS
@@ -11,7 +11,7 @@ power source changes.
 .TP
 .B start
 Initialize \fBtlp\fR and apply settings according to the 
-actual power source (this command is called upon system startup).
+actual power source.
 .TP
 .B bat
 Apply settings for battery power source.
@@ -34,10 +34,10 @@ power source (this command is called upon ifup).
 .B usb
 Enable autosuspend for all usb devices, except blacklisted ones.
 .TP
-.B bayoff \fR(ThinkPads only)
-Turn off Ultrabay optical drive. The drive may be
-reenabled by pulling the eject lever or pushing the media eject button
-on newer models.
+.B bayoff 
+Turn off optical drive in drive bay (or ThinkPad UltrayBay). 
+The drive may be reenabled by pulling the eject lever or pushing
+the media eject button on newer models.
 .TP
 .B xlogin
 Disable bluetooth device if configured so (this command is called
@@ -45,6 +45,10 @@ upon desktop login).
 .TP
 .B discharge [BAT0|BAT1] \fR(ThinkPads only)
 Force discharge of main (BAT0) or Ultrabay battery (BAT1).
+.TP
+.B fullcharge [BAT0|BAT1] \fR(ThinkPads only)
+Set charge thresholds to factory preset (96/100) temporarily. 
+TLP's threshold settings are restored on the next system start.
 .SH FILES
 .I /etc/default/tlp
 .RS

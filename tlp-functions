@@ -3,7 +3,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.2.6
+TLPVER=0.2.7
 DEFAULT_FILE=/etc/default/tlp
 ACPWR=/usr/bin/on_ac_power
 ETHTOOL=/usr/sbin/ethtool
@@ -159,14 +159,21 @@ set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
 }
 
 set_phc_controls () { 
+    local cpu
+    
 	check_sysfs "set_phc_controls" "/sys/devices/system/cpu/cpu0/cpufreq"
 	
-	if [ -f "/sys/devices/system/cpu/cpu0/cpufreq/phc_controls" ]; then
-		echo_debug "pm" "set_phc_controls: $PHC_CONTROLS"
-		[ "${PHC_CONTROLS:-undef}" = "undef" ] || \
-		  echo $PHC_CONTROLS > /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
-	fi
-	
+    if [ "${PHC_CONTROLS:-undef}" != "undef" ]; then 
+        echo_debug "pm" "set_phc_controls: $PHC_CONTROLS"
+            
+        for cpu in "/sys/devices/system/cpu/cpu*/cpufreq/phc_controls"; do 
+            if [ -f "$cpu" ]; then
+                echo_debug "pm" "set_phc_controls: $cpu $PHC_CONTROLS"
+                echo $PHC_CONTROLS > $cpu
+            fi
+        done
+    fi
+    
 	return 0
 }
 
@@ -331,7 +338,7 @@ enable_usb_suspend () {
 	check_sysfs "set_usb_suspend" "$USBD"
 	
 	if [ "$USB_AUTOSUSPEND" = "1" ]; then
-		devices=$(ls $USBD | egrep '^usb[0-9]+$|^[0-9]+-[0-9]$')
+		devices=$(ls $USBD | grep -v ':')
 		for usbdev in $devices; do
 			if [ -f $USBD/$usbdev/power/autosuspend ]; then
 				usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
