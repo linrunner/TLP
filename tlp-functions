@@ -159,17 +159,17 @@ set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
 }
 
 set_phc_controls () { 
-    local cpu
+    local control
     
 	check_sysfs "set_phc_controls" "/sys/devices/system/cpu/cpu0/cpufreq"
 	
     if [ "${PHC_CONTROLS:-undef}" != "undef" ]; then 
         echo_debug "pm" "set_phc_controls: $PHC_CONTROLS"
             
-        for cpu in "/sys/devices/system/cpu/cpu*/cpufreq/phc_controls"; do 
-            if [ -f "$cpu" ]; then
-                echo_debug "pm" "set_phc_controls: $cpu $PHC_CONTROLS"
-                echo $PHC_CONTROLS > $cpu
+        for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do 
+            if [ -f $control ]; then
+                echo_debug "pm" "set_phc_controls: $control $PHC_CONTROLS"
+                echo $PHC_CONTROLS > $control
             fi
         done
     fi
