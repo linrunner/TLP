@@ -367,8 +367,9 @@ do_threshold () { # $1: treshold file, $2: new value
 }
 
 set_charge_thresholds () {
-	[ -d $SMAPIDIR ] || return 0
 	echo_debug "pm" "set_charge_thresholds"
+	[ -d $SMAPIDIR ] || return 0
+	echo_debug "pm" "set_charge_thresholds.smapidir-present"
 	
 	if [ -d $SMAPIDIR/BAT0 ] && [ "$(cat $SMAPIDIR/BAT0/installed)" = "1" ]; then
 		echo_debug "pm" "set_charge_thresholds: BAT0 $START_CHARGE_THRESH_BAT0 $STOP_CHARGE_THRESH_BAT0"
