@@ -11,7 +11,7 @@ if [ -z $($IWC $IFACE 2>&1 | grep "no wireless extensions") ]; then
     $TLP wifi $IFACE
 elif [ "${IFACE#usb}" != "$IFACE" -o "${IFACE#ppp}" != "$IFACE" ]; then
 	# interface is (probably) wwan
-	TLP usb
+	$TLP usb
 fi
 
 exit 0
