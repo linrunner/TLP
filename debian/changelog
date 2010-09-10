@@ -1,16 +1,12 @@
-tlp (0.2.6.990-0ubuntu1) lucid; urgency=low
+tlp (0.2.7-0ubuntu1) lucid; urgency=low
 
-  * Development version -> 0.2.7
-  
   * Bug fixes
     - usb autosuspend/tlp-stat not showing all usb devices
     - #15: tlp-stat abort w/ ipw2200 (agape)
-    - #16: PHC_CONTROL written to all cpus/cores (pumpe)
+    - #16: PHC_CONTROL written to all cpus/cores (pumpe et al.)
     
   * Features
-    - charge thresholds
-      - new command tlp tempcharge (crishu)
-      - activation on system startup, no shutdown necessary
+    - charge thresholds: new command tlp setcharge (crishu)
     - DEVICES_TO_DISABLE_ON_STARTUP: handle bluetooth in upstart job
       (previously via desktop login)
     - set usb autosuspend for wwan devices on ifup

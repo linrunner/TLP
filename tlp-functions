@@ -441,43 +441,68 @@ discharge_battery () { # $1: battery
 	return 0
 }
 
-fullcharge_battery () { # $1: battery
-	local bat bdir
+thresh_check () { # $1: threshold; ret: 0=invalid/1..100=valid
+	local thr
 	
+	thr=$(echo $1 | egrep '^[0-9]{1,3}$') # check for 1..3 digits
+	[ -z "$thr"  ] && thr=0 
+	[ $thr -gt 100 ] && thr=0 
+	
+	return $thr
+}
+
+setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, $3: battery, 
+	local bat bdir start_thresh stop_thresh
+
+	# check prerequisites: tp-smapi 
 	if [ ! -d $SMAPIDIR ]; then
 		echo_debug "pm" "fullcharge_battery.nosmapi: $bat"
 		echo "Error: ThinkPad battery functions not available (missing tp_smapi kernel module)."
 		return 1
 	fi
 
+	# check prerequisites: must be on ac power
 	if ! get_power_state ; then
-		echo_debug "pm" "discharge_battery.noacpower: $bat"
-		echo "Error: fullcharge is possible on ac power only."
+		echo_debug "pm" "setcharge_battery.noacpower: $bat"
+		echo "Error: setting charge thresholds is possible on ac power only."
 		return 1
 	fi	
 
-	bat=$1
+	# select battery and check if it is present
+	bat=$3
 	bat=${bat:=BAT0} # default is BAT0
 	bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
 	bdir=$SMAPIDIR/$bat
 	
 	if [ ! -f $bdir/installed ] || [ "$(cat $bdir/installed)" = "0" ]; then
-		echo_debug "pm" "fullcharge_battery.notpresent: $bat"
 		echo "Error: battery $bat not present."
+		echo_debug "pm" "setcharge_battery.notpresent: $bat"
+		return 1
+	fi
+	
+	# get thresholds args and check if they're valid
+	thresh_check $1; start_thresh=$?
+	thresh_check $2; stop_thresh=$?
+		
+	# check if > 0 and stop > start	
+	if [ $start_thresh -eq 0 -o $stop_thresh -eq 0 -o $start_thresh -ge $stop_thresh ]; then
+		echo "Error: invalid threshold arguments (start=$1, stop=$2)"		
+		echo_debug "pm" "setcharge_battery.invalid_thresh: $bat \"$1\" \"$2\""
 		return 1
 	fi
 
-	# set thresholds to max charge
-	do_threshold $bdir/start_charge_thresh "96"
-	do_threshold $bdir/stop_charge_thresh "100"
+	# set thresholds 
+	echo_debug "pm" "setcharge_battery: $bat $start_thresh $stop_thresh"
+	do_threshold $bdir/start_charge_thresh "$start_thresh"
+	do_threshold $bdir/stop_charge_thresh "$stop_thresh"
 	
 	# trigger charging via discharge
 	echo 1 > $bdir/force_discharge
-	sleep 2
+	sleep 0.5
 	echo 0 > $bdir/force_discharge
 	
-	echo "Charging of battery $bat was initiated (thresholds temporarily set to 96/100)."
-	echo_debug "pm" "fullcharge_battery.initiated: $bat"
+	echo "Charging thresholds of battery $bat temporarily set to $start_thresh $stop_thresh."
+	echo_debug "pm" "setcharge_battery.initiated: $bat $start_thresh $stop_thresh"
 	return 0
 }
 

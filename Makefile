@@ -18,7 +18,7 @@ install:
 	install -m 755 tlp-functions $(DESTDIR)/usr/lib/tlp/
 	install -m 755 tlp-rf-func $(DESTDIR)/usr/lib/tlp/
 	[ -f $(DESTDIR)/etc/default/tlp ] || install -m 644 default $(DESTDIR)/etc/default/tlp
-	install -m 755 tlp-init $(DESTDIR)/etc/init.d/tlp
+	install -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
 	install -m 755 tlp-ifup $(DESTDIR)/etc/network/if-up.d/tlp-ifup
 	install -m 755 zztlp $(DESTDIR)/usr/lib/pm-utils/power.d/zztlp
 	install -m 755 49wwan $(DESTDIR)/usr/lib/pm-utils/sleep.d/49wwan

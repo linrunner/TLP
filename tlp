@@ -97,21 +97,27 @@ case "$mode" in
 		done
 		;;
 		
-	discharge) # Discharge battery completely
+	discharge) # Discharge battery completely (to recalibrate)
 		check_root
 		load_tp_smapi
 		discharge_battery $2
 		;;
 
-	fullcharge) # Charge battery up to 100%
+	setcharge) # Set charge thresholds (temporarily)
 		check_root
 		load_tp_smapi
-		fullcharge_battery $2
+		setcharge_battery $2 $3 $4
+		;;
+
+	fullcharge) # Charge battery up to 100% (temporarily)
+		check_root
+		load_tp_smapi
+		setcharge_battery 96 100 $2
 		;;
 
 		
 	*) 
-		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|xlogin|discharge|fullcharge"
+		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|xlogin|discharge|setcharge|fullcharge"
 		;;
 esac
 

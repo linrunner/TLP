@@ -75,10 +75,10 @@ USB_AUTOSUSPEND=1
 # Charging starts when the remaining capacity falls below the START_CHARGE_TRESH
 # value and stops when exceeding the STOP_CHARGE_TRESH value.
 # Main battery (values in %)
-#START_CHARGE_THRESH_BAT0=96
-#STOP_CHARGE_THRESH_BAT0=100
+#START_CHARGE_THRESH_BAT0=75
+#STOP_CHARGE_THRESH_BAT0=80
 # Ultrabay battery (values in %)
-#START_CHARGE_THRESH_BAT1=96
-#STOP_CHARGE_THRESH_BAT1=100
+#START_CHARGE_THRESH_BAT1=75
+#STOP_CHARGE_THRESH_BAT1=80
 # Hint: this feature ist disabled by default, remove the leading # to enable it.
  
