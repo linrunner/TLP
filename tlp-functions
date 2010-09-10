@@ -498,7 +498,7 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
 	
 	# trigger charging via discharge
 	echo 1 > $bdir/force_discharge
-	sleep 0.5
+	sleep 2
 	echo 0 > $bdir/force_discharge
 	
 	echo "Charging thresholds of battery $bat temporarily set to $start_thresh $stop_thresh."
@@ -542,7 +542,7 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
 			
 			# Power off drive
 			$HDPARM -Y $optdrv > /dev/null 2>&1
-			sleep 0.5
+			sleep 1
 	
 			# Unregister scsi device
 			syspath="/sys$($UDEVADM info --query=path --name=$optdrv | perl -pe 's!/block/...$!!')"
