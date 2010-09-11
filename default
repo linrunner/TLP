@@ -1,4 +1,6 @@
 # tlp - Parameters for power save
+
+# Hint: some features are disabled by default, remove the leading # to enable them
  
 # Set to 0 to disable/1 to enable TLP
 TLP_ENABLE=1
@@ -16,7 +18,7 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 # Freq:voltage pairs are written to /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
 # CAUTION: only use this, if you thoroughly understand what you are doing!
 #PHC_CONTROLS="F:V F:V F:V F:V"
-# Hint: this feature ist disabled by default, remove the leading # to enable it.
+
  
 # Hard disk devices, separate with spaces (default: sda).
 DISK_DEVICES="sda"
@@ -60,16 +62,13 @@ USB_AUTOSUSPEND=1
 # Devices from the following list are excluded from usb autosuspend
 # (separate with spaces). Use lsusb to get the id's.
 #USB_BLACKLIST="1111:2222 3333:4444"
-# Hint: this feature ist disabled by default, remove the leading # to enable it.
  
 # Devices to disable on startup: bluetooth/wifi/wwan
 #DEVICES_TO_DISABLE_ON_STARTUP="bluetooth"
-# Hint: this feature ist disabled by default, remove the leading # to enable it.
  
 # Devices to disable on shutdown: bluetooth/wifi/wwan
 # (workaround for devices that are blocking shutdown)
 #DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi wwan"
-# Hint: this feature ist disabled by default, remove the leading # to enable it.
  
 # Battery charge thresholds (ThinkPad only, tp-smapi kernel module required)
 # Charging starts when the remaining capacity falls below the START_CHARGE_TRESH
@@ -80,5 +79,3 @@ USB_AUTOSUSPEND=1
 # Ultrabay battery (values in %)
 #START_CHARGE_THRESH_BAT1=75
 #STOP_CHARGE_THRESH_BAT1=80
-# Hint: this feature ist disabled by default, remove the leading # to enable it.
- 
