@@ -96,13 +96,13 @@ case "$mode" in
 			[ "$dev" = "bluetooth" -a "$X_BT_DISABLE_ON_LOGIN" = "1" ] && ( sleep 5; device_off $dev ) &
 		done
 		;;
-		
+
 	discharge) # Discharge battery completely (to recalibrate)
 		check_root
 		load_tp_smapi
 		discharge_battery $2
 		;;
-
+		
 	setcharge) # Set charge thresholds (temporarily)
 		check_root
 		load_tp_smapi
@@ -117,7 +117,7 @@ case "$mode" in
 
 		
 	*) 
-		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|xlogin|discharge|setcharge|fullcharge"
+		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge"
 		;;
 esac
 

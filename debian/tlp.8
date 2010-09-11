@@ -1,24 +1,20 @@
-.TH TLP 8 "2010-06-14" "Power Management" ""
+.TH TLP 8 "2010-09-11" "Power Management" ""
 .SH NAME
 tlp \- apply laptop power management settings
 .SH SYNOPSIS
 .B tlp \fIcommand\fR \fR[\fIparam\fR]
 .SH DESCRIPTION
-This command should be called for debugging purposes only. 
-All actions are called automatically upon system startup and 
-power source changes.
+This command is mainly for debugging purposes. All necessary actions are called automatically upon system start and power source changes.
 .SH COMMANDS
 .TP
 .B start
-Initialize \fBtlp\fR and apply settings according to the 
-actual power source.
+Initialize \fBtlp\fR and apply settings according to the actual power source.
 .TP
 .B bat
 Apply settings for battery power source.
 .TP
 .B true
-Same as \fBbat\fR (this command is called when power source changes
-to battery).
+Same as \fBbat\fR (this command is called when power source changes to battery).
 .TP
 .B ac
 Apply settings for ac power source.
@@ -28,27 +24,25 @@ Same as \fBac\fR (this command is called when power source changes
 to ac).
 .TP
 .B wifi
-Apply power save settings for wifi interface according to actual 
-power source (this command is called upon ifup).
+Apply power save settings for wifi interface according to actual power source (this command is called upon ifup).
 .TP
 .B usb
 Enable autosuspend for all usb devices, except blacklisted ones.
 .TP
 .B bayoff 
 Turn off optical drive in drive bay (or ThinkPad UltrayBay). 
-The drive may be reenabled by pulling the eject lever or pushing
-the media eject button on newer models.
-.TP
-.B xlogin
-Disable bluetooth device if configured so (this command is called
-upon desktop login).
+The drive may be reenabled by pulling the eject lever or pushing the media eject button on newer models.
 .TP
 .B discharge [BAT0|BAT1] \fR(ThinkPads only)
 Force discharge of main (BAT0) or Ultrabay battery (BAT1).
 .TP
+.B setcharge START_CHARGE STOP_CHARGE [BAT0|BAT1] \fR(ThinkPads only)
+Set charge thresholds temporarily, values must be between 1 and 100. Configured settings are restored upon next system start.
+.TP
 .B fullcharge [BAT0|BAT1] \fR(ThinkPads only)
-Set charge thresholds to factory preset (96/100) temporarily. 
-TLP's threshold settings are restored on the next system start.
+Set charge thresholds to factory preset (96/100) temporarily. Configured settings are restored upon next system start.
+.TP
+
 .SH FILES
 .I /etc/default/tlp
 .RS
