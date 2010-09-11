@@ -1,4 +1,4 @@
-tlp (0.2.7-0ubuntu1) lucid; urgency=low
+tlp (0.2.7-0ubuntu2) lucid; urgency=low
 
   * Bug fixes
     - usb autosuspend/tlp-stat not showing all usb devices
@@ -11,7 +11,7 @@ tlp (0.2.7-0ubuntu1) lucid; urgency=low
       (previously via desktop login)
     - set usb autosuspend for wwan devices on ifup
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 17 Jul 2010 12:36:11 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 11 Sep 2010 22:55:00 +0200
 
 tlp (0.2.6-0ubuntu1) lucid; urgency=low
 
