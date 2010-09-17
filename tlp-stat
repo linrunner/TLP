@@ -260,10 +260,21 @@ echo
 devices=$(ls $USBD | grep -v ':')
 for usbdev in $devices; do
 	if [ -f $USBD/$usbdev/power/autosuspend ]; then
-		echo "$USBD/$usbdev/power/autosuspend = `cat $USBD/$usbdev/power/autosuspend`," \
+		echo -n "$USBD/$usbdev/power/autosuspend = `cat $USBD/$usbdev/power/autosuspend`," \
 		     "level = $(cat $USBD/$usbdev//power/level) --" \
-		     "$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)" \
-		     "$([ -f $USBD/$usbdev/product ] && cat $USBD/$usbdev/product)"
+		     "$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct) " \
+             "$([ -f $USBD/$usbdev/product ] && cat $USBD/$usbdev/product)"
+        # check for hid subdevices
+        for subdev in $USBD/$usbdev/*:*; do
+            if [ -L $subdev/driver ]; then
+                driver=$(readlink $subdev/driver)
+                if [ "${driver##*/}" = "usbhid" ]; then
+                    echo " (hid)"
+                    break
+                fi
+            fi
+        done              
+        echo ""
 	fi
 done
 echo
