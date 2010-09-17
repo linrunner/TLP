@@ -4,7 +4,7 @@ tlp (0.2.7.900-0ubuntu1) lucid; urgency=low
 
   * Features
     - exclude usbhid devices from autosuspend without blacklist
-    - tlp-stat: indicate usbhid devices
+    - tlp-stat: indicate drivers in usb device list
 
  -- Thomas Koch <linrunner@gmx.net>  Fri, 17 Sep 2010 23:07:58 +0200
 
