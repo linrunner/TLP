@@ -61,12 +61,13 @@ USB_AUTOSUSPEND=1
  
 # Devices from the following list are excluded from usb autosuspend
 # (separate with spaces). Use lsusb to get the id's.
+# Note: input devices are excluded automatically, no need to enter them here
 #USB_BLACKLIST="1111:2222 3333:4444"
  
-# Devices to disable on startup: bluetooth/wifi/wwan
-#DEVICES_TO_DISABLE_ON_STARTUP="bluetooth"
+# Devices to disable on startup: bluetooth wifi wwan
+#DEVICES_TO_DISABLE_ON_STARTUP="bluetooth wifi wwan"
  
-# Devices to disable on shutdown: bluetooth/wifi/wwan
+# Devices to disable on shutdown: bluetooth wifi wwan
 # (workaround for devices that are blocking shutdown)
 #DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi wwan"
  
