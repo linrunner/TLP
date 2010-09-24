@@ -3,6 +3,7 @@ usr/sbin
 etc/default
 etc/init.d
 etc/network/if-up.d
+etc/pm/power.d
 etc/xdg/autostart
 usr/lib/pm-utils/power.d
 usr/lib/pm-utils/sleep.d
