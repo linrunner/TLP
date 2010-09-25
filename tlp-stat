@@ -163,7 +163,7 @@ for dev in $DISK_DEVICES; do
 done
 echo
 
-# sata link power
+# sata alpm
 cnt=0
 for i in /sys/class/scsi_host/host* ; do
     if [ -f $i/link_power_management_policy ]; then
@@ -175,6 +175,10 @@ if [ $cnt = 0 ]; then
 	echo "sata link power management: no ahci-enabled host controller detected"
 fi	
 echo 
+
+# pcie aspm
+echoparm /sys/module/pcie_aspm/parameters/policy
+echo
 
 # rfkill state
 for i in bluetooth wifi wwan; do

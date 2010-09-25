@@ -208,22 +208,30 @@ get_disk_apm_level () { # $1: dev; ret: apm
 }
 
 set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
-	local dev
+	local dev apm apmlist
 	
 	DISK_DEVICES=${DISK_DEVICES:=sda}
+    if [ $1 = "1" ]; then
+        apmlist=$DISK_APM_LEVEL_ON_BAT
+    else
+        apmlist=$DISK_APM_LEVEL_ON_AC
+    fi
+    
+    # strip excess blanks from list
+    apmlist=$(echo -n $apmlist | sed -r 's/ +/ /g; s/^ | $//g') 
+    
+    [ -z "$apmlist" ] && return 0 
+    
 	for dev in $DISK_DEVICES; do
 		if [ -b /dev/$dev ]; then
 			check_disk_hdparm_cap $dev
 			if [ $? = 0 ]; then
-				if [ $1 = "1" ]; then
-					echo_debug "pm" "set_disk_apm_level($1): $DISK_APM_LEVEL_ON_BAT"
-					[ "${DISK_APM_LEVEL_ON_BAT:-undef}" = "undef" ] || \
-					  $HDPARM -B $DISK_APM_LEVEL_ON_BAT /dev/$dev > /dev/null 2>&1
-				else
-					echo_debug "pm" "set_disk_apm_level($1): $DISK_APM_LEVEL_ON_AC"
-					[ "${DISK_APM_LEVEL_ON_AC:-undef}" = "undef" ] || \
-					  $HDPARM -B $DISK_APM_LEVEL_ON_AC /dev/$dev > /dev/null 2>&1
-				fi
+                # parse list
+                apm=$(echo -n $apmlist | sed -r 's/^(\w+) .*/\1/')
+                apmlist=$(echo -n $apmlist | sed -r 's/^\w+ (.*)/\1/')
+				
+                echo_debug "pm" "set_disk_apm_level($1): $dev $apm"
+                $HDPARM -B $apm /dev/$dev > /dev/null 2>&1
 			fi
 		fi
 	done

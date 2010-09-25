@@ -1,5 +1,5 @@
 # tlp - Parameters for power save
-
+ 
 # Hint: some features are disabled by default, remove the leading # to enable them
  
 # Set to 0 to disable/1 to enable TLP
@@ -18,15 +18,15 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 # Freq:voltage pairs are written to /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
 # CAUTION: only use this, if you thoroughly understand what you are doing!
 #PHC_CONTROLS="F:V F:V F:V F:V"
-
  
-# Hard disk devices, separate with spaces (default: sda).
+# Hard disk devices, separate multiple devices with spaces (default: sda).
 DISK_DEVICES="sda"
  
 # Hard disk advanced power management level: 1(max saving)..254(off)
 # Levels 1..127 spin down the disk.
-DISK_APM_LEVEL_ON_AC=254
-DISK_APM_LEVEL_ON_BAT=128  
+# Separate values for multiple devices "sda sdb" with spaces.
+DISK_APM_LEVEL_ON_AC="254 254"
+DISK_APM_LEVEL_ON_BAT="128 128"  
  
 # SATA aggressive link power management (ALPM):
 # min_power/medium_power/max_performance
@@ -61,7 +61,7 @@ USB_AUTOSUSPEND=1
  
 # Devices from the following list are excluded from usb autosuspend
 # (separate with spaces). Use lsusb to get the id's.
-# Note: input devices are excluded automatically, no need to enter them here
+# Note: input devices (usbhid) are excluded automatically
 #USB_BLACKLIST="1111:2222 3333:4444"
  
 # Devices to disable on startup: bluetooth wifi wwan

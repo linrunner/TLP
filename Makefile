@@ -33,6 +33,7 @@ install:
 	install -m 755 49bay $(PLIB)/sleep.d/49bay
 	install -m 644 tlp.desktop $(DESTDIR)/etc/xdg/autostart/tlp.desktop
 	cd $(PMETC) ; \
+	  ln -s $(TLREL)/tlp-nop 95hdparm-apm ; \
 	  ln -s $(TLREL)/tlp-nop disable_wol ; \
 	  ln -s $(TLREL)/tlp-nop intel-audio-powersave ; \
 	  ln -s $(TLREL)/tlp-nop laptop-mode ; \

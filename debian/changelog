@@ -1,13 +1,12 @@
-tlp (0.2.7.900-0ubuntu1) lucid; urgency=low
-
-  *** Development version
+tlp (0.2.8-0ubuntu1) lucid; urgency=low
 
   * Features
-    - exclude usbhid devices from autosuspend without blacklist
+    - USB_AUTOSUSPEND: exclude input devices (usbhid) w/o blacklist
     - tlp-stat: indicate drivers in usb device list
-    - maverick: override pm-utils power.d-scripts with similar functionality
+    - DISK_APM_LEVEL: support multiple devices (Stifflers_mom)
+    - maverick: override pm-utils power.d/ scripts with own functionality
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 17 Sep 2010 23:07:58 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 25 Sep 2010 19:05:00 +0200
 
 tlp (0.2.7-0ubuntu2) lucid; urgency=low
 
