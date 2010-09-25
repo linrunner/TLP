@@ -4,6 +4,7 @@ SBIN  = $(DESTDIR)/usr/sbin
 BIN   = $(DESTDIR)/usr/bin
 PMETC = $(DESTDIR)/etc/pm/power.d
 TLIB  = $(DESTDIR)/usr/lib/tlp
+TLREL = ../../../usr/lib/tlp
 PLIB  = $(DESTDIR)/usr/lib/pm-utils
 
 all: 
@@ -23,6 +24,7 @@ install:
 	install -m 755 -d $(TLIB)
 	install -m 755 tlp-functions $(TLIB)/
 	install -m 755 tlp-rf-func $(TLIB)/
+	install -m 755 tlp-nop $(TLIB)/
 	[ -f $(DESTDIR)/etc/default/tlp ] || install -m 644 default $(DESTDIR)/etc/default/tlp
 	install -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
 	install -m 755 tlp-ifup $(DESTDIR)/etc/network/if-up.d/tlp-ifup
@@ -30,14 +32,14 @@ install:
 	install -m 755 49wwan $(PLIB)/sleep.d/49wwan
 	install -m 755 49bay $(PLIB)/sleep.d/49bay
 	install -m 644 tlp.desktop $(DESTDIR)/etc/xdg/autostart/tlp.desktop
-	install -m 755 tlp-nop $(PMETC)/disable_wol
-	install -m 755 tlp-nop $(PMETC)/hal-cd-polling 
-	install -m 755 tlp-nop $(PMETC)/intel-audio-powersave
-	install -m 755 tlp-nop $(PMETC)/laptop-mode
-	install -m 755 tlp-nop $(PMETC)/journal-commit
-	install -m 755 tlp-nop $(PMETC)/sata_alpm 
-	install -m 755 tlp-nop $(PMETC)/wireless
-	install -m 755 tlp-nop $(PMETC)/xfs_buffer
+	cd $(PMETC) ; \
+	  ln -s $(TLREL)/tlp-nop disable_wol ; \
+	  ln -s $(TLREL)/tlp-nop intel-audio-powersave ; \
+	  ln -s $(TLREL)/tlp-nop laptop-mode ; \
+	  ln -s $(TLREL)/tlp-nop journal-commit ; \
+	  ln -s $(TLREL)/tlp-nop sata_alpm ; \
+	  ln -s $(TLREL)/tlp-nop wireless ; \
+	  ln -s $(TLREL)/tlp-nop xfs_buffer
 
 uninstall: 
 	rm $(SBIN)/tlp

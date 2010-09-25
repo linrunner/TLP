@@ -1,12 +1,4 @@
 #!/bin/sh
 # tlp - override corresponding script in /usr/lib/pm-utils/power.d/
-if [ -x /usr/sbin/tlp ]; then
-    echo "Disabled and replaced by tlp."
-    exit 0 
-fi
-# fallback if tlp not present
-PMSCRIPT=/usr/lib/pm-utils/power.d/${0##/*/}
-if [ -x $PMSCRIPT ]; then   
-    echo "tlp not installed; executing $PMSCRIPT instead."
-    $PMSCRIPT $1
-fi
+echo "notice: /usr/lib/pm-utils/power.d/${0##/*/} disabled by tlp."
+exit 0
