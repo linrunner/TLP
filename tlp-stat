@@ -140,6 +140,9 @@ for dev in $DISK_DEVICES; do
 				
 				echo -n "          Model     = "
 				echo_disk_model $dev
+                
+                echo -n "          Firmware  = "
+				echo_disk_firmware $dev
 				
 				get_disk_apm_level $dev
 				apm=$?

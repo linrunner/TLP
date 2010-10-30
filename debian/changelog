@@ -1,3 +1,9 @@
+tlp (0.2.8.900-0ubuntu1) lucid; urgency=low
+
+  * 0.2.9 development
+
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 23 Oct 2010 14:15:32 +0200
+
 tlp (0.2.8-0ubuntu1) lucid; urgency=low
 
   * Features

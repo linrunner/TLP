@@ -3,7 +3,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.2.8
+TLPVER=0.2.9
 DEFAULT_FILE=/etc/default/tlp
 ACPWR=/usr/bin/on_ac_power
 ETHTOOL=/usr/sbin/ethtool
@@ -191,6 +191,16 @@ echo_disk_model () { # $1: dev
 	model=$($HDPARM -I /dev/$1 2>&1 | grep 'Model Number' | \
 	  cut -f2 -d: | sed -r 's/^ *//' )
 	echo "$model"
+	
+	return 0
+}
+
+echo_disk_firmware () { # $1: dev
+	local firmware
+	
+	firmware=$($HDPARM -I /dev/$1 2>&1 | grep 'Firmware Revision' | \
+	  cut -f2 -d: | sed -r 's/^ *//' )
+	echo "$firmware"
 	
 	return 0
 }
