@@ -1,8 +1,13 @@
 tlp (0.2.8.900-0ubuntu1) lucid; urgency=low
 
   * 0.2.9 development
+  * Bug Fixes
+    - Switch wwan off before suspend 
+      (workaround for kernel/network-manager quirk)
+  * Features
+    - Specify DISK_DEVICES with id's from /dev/disk/by-id
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 23 Oct 2010 14:15:32 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 29 Dec 2010 12:13:00 +0100
 
 tlp (0.2.8-0ubuntu1) lucid; urgency=low
 

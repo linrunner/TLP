@@ -20,7 +20,9 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #PHC_CONTROLS="F:V F:V F:V F:V"
  
 # Hard disk devices, separate multiple devices with spaces (default: sda).
-DISK_DEVICES="sda"
+# Devices can be specified by diskid too; lookup with
+#  ls /dev/disk/by-id/ | egrep '^ata' | egrep -v 'part[1-9]$'
+DISK_DEVICES="sda sdb"
  
 # Hard disk advanced power management level: 1(max saving)..254(off)
 # Levels 1..127 spin down the disk.

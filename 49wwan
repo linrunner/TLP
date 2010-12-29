@@ -11,6 +11,7 @@ suspend_device () {
 	local state
 	
 	state=$(cat $2)
+    echo 0 > $2 # workaround: switch off before suspend
 	savestate $1 $state
 	echo_debug "pm" "49wwan.suspend wwan=$state"
 }

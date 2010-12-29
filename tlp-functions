@@ -215,6 +215,18 @@ get_disk_apm_level () { # $1: dev; ret: apm
 	else 
 		return 0
 	fi
+	
+}
+
+disk_by_id2dev () { # $1: id or dev; ret: id2dev
+	if [ -L /dev/disk/by-id/$1 ]; then
+		id2dev=$(echo $1 | sed -r 's/-part[1-9]+$//')
+		id2dev=$(readlink /dev/disk/by-id/$id2dev)
+		id2dev=${id2dev##*/}
+	else
+		id2dev=$1
+	fi
+	id2dev=$(echo $id2dev | sed -r 's/[1-9]+$//')
 }
 
 set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
@@ -233,15 +245,17 @@ set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
     [ -z "$apmlist" ] && return 0 
     
 	for dev in $DISK_DEVICES; do
-		if [ -b /dev/$dev ]; then
-			check_disk_hdparm_cap $dev
+		disk_by_id2dev $dev
+		
+		if [ -b /dev/$id2dev ]; then
+			check_disk_hdparm_cap $id2dev
 			if [ $? = 0 ]; then
                 # parse list
                 apm=$(echo -n $apmlist | sed -r 's/^(\w+) .*/\1/')
                 apmlist=$(echo -n $apmlist | sed -r 's/^\w+ (.*)/\1/')
 				
-                echo_debug "pm" "set_disk_apm_level($1): $dev $apm"
-                $HDPARM -B $apm /dev/$dev > /dev/null 2>&1
+                echo_debug "pm" "set_disk_apm_level($1): $id2dev ($dev) $apm"
+                $HDPARM -B $apm /dev/$id2dev > /dev/null 2>&1
 			fi
 		fi
 	done
