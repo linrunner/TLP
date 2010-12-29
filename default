@@ -20,15 +20,20 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #PHC_CONTROLS="F:V F:V F:V F:V"
  
 # Hard disk devices, separate multiple devices with spaces (default: sda).
-# Devices can be specified by diskid too; lookup with
-#  ls /dev/disk/by-id/ | egrep '^ata' | egrep -v 'part[1-9]$'
+# Devices can be specified by disk id too; lookup with
+#   ls /dev/disk/by-id/ | egrep '^ata' | egrep -v 'part[1-9]$'
 DISK_DEVICES="sda sdb"
- 
+
 # Hard disk advanced power management level: 1(max saving)..254(off)
 # Levels 1..127 spin down the disk.
-# Separate values for multiple devices "sda sdb" with spaces.
+# Separate values for multiple devices with spaces.
 DISK_APM_LEVEL_ON_AC="254 254"
 DISK_APM_LEVEL_ON_BAT="128 128"  
+
+# Select i/o scheduler for the disk devices - possible values are 
+#   noop anticipatory deadline cfq (Default: cfq) 
+# Separate values for multiple devices with spaces.
+#DISK_IOSCHED="deadline cfq"
  
 # SATA aggressive link power management (ALPM):
 # min_power/medium_power/max_performance

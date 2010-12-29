@@ -263,6 +263,32 @@ set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
 	return 0
 } 
 
+set_disk_io_sched () {
+	local dev sched schedlist schedctrl
+	
+	[ -n "$DISK_IOSCHED" ] || return 0
+	
+	DISK_DEVICES=${DISK_DEVICES:=sda}
+	# strip excess blanks from list
+	schedlist=$(echo -n $DISK_IOSCHED | sed -r 's/ +/ /g; s/^ | $//g')
+	
+	for dev in $DISK_DEVICES; do
+		disk_by_id2dev $dev
+		
+		sched=$(echo -n $schedlist | sed -r 's/^(\w+) .*/\1/')
+        schedlist=$(echo -n $schedlist | sed -r 's/^\w+ (.*)/\1/')
+        schedctrl="/sys/block/$id2dev/queue/scheduler"
+		
+		if [ -f $schedctrl ]; then
+			echo_debug "pm" "set_disk_io_sched: $id2dev ($dev) $sched"
+			echo -n $sched > $schedctrl
+		fi
+	done
+	
+	return 0
+
+}
+
 set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 	local i pwr
 		

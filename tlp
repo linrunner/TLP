@@ -36,6 +36,7 @@ case "$mode" in
 		set_dirty_parms $pwr
 		set_phc_controls $pwr
 		set_disk_apm_level $pwr
+		set_disk_io_sched
 		set_sata_link_power $pwr
 		set_wifi_power_mode $pwr
 		disable_wake_on_lan $pwr
@@ -52,6 +53,7 @@ case "$mode" in
 		set_dirty_parms 1
 		set_phc_controls 1
 		set_disk_apm_level 1
+		set_disk_io_sched
 		set_sata_link_power 1
 		set_wifi_power_mode 1
 		disable_wake_on_lan 1
@@ -67,6 +69,7 @@ case "$mode" in
 		set_dirty_parms 0
 		set_phc_controls 0
 		set_disk_apm_level 0
+		set_disk_io_sched
 		set_sata_link_power 0
 		set_wifi_power_mode 0
 		disable_wake_on_lan 0
