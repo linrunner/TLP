@@ -275,8 +275,9 @@ set_disk_io_sched () {
 	for dev in $DISK_DEVICES; do
 		disk_by_id2dev $dev
 		
+		# parse list, add cfq as default when list is too short
 		sched=$(echo -n $schedlist | sed -r 's/^(\w+) .*/\1/')
-        schedlist=$(echo -n $schedlist | sed -r 's/^\w+ (.*)/\1/')
+        schedlist=$(echo -n "$schedlist cfq"| sed -r 's/^\w+ (.*)/\1/')
         schedctrl="/sys/block/$id2dev/queue/scheduler"
 		
 		if [ -f $schedctrl ]; then
