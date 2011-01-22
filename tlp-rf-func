@@ -134,7 +134,17 @@ device_off () { # $1: rftype
 		fi
 	elif [ -x $RFKILL ]; then
 		echo_debug "rf" "device_off($1).rfkill"
-		$RFKILL block $1
+
+        ## DEBUG 
+        if patinstr "rf" "$TLP_DEBUG"; then
+            local rfout rfrc
+            rfout=$($RFKILL block $1 2>&1)
+            rfrc=$?
+            $LOGGER -p debug -t "tlp[$$,$PPID]" "*** rfkill: rc=$rfrc out=\"$rfout\"" 
+            $LOGGER -p debug -t "tlp[$$,$PPID]" "*** $devc=$(cat $devc)"            
+        else
+            $RFKILL block $1
+        fi
 	else
 		if [ "$(id -u)" = "0" ]; then
 			if [ -n "$devc" ]; then
