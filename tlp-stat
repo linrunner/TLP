@@ -132,25 +132,25 @@ echo
 # disk apm level
 DISK_DEVICES=${DISK_DEVICES:=sda}
 for dev in $DISK_DEVICES; do
-    disk_by_id2dev $dev
+    get_disk_dev $dev
 
-	if [ -b /dev/$id2dev ]; then
-		check_disk_hdparm_cap $id2dev
+	if [ -b /dev/$disk_dev ]; then
+		check_disk_hdparm_cap $disk_dev
 		if [ $? = 0 ]; then
 			if [ $USER = "root" ]; then
-				echo "/dev/$id2dev:"
+				echo "/dev/$disk_dev:"
                 
-                if [ "$dev" != "$id2dev" ]; then
-                    echo "          Disk ID   = $dev"
+                if [ -n "$disk_id" ]; then
+                    echo "          Disk ID   = $disk_id"
                 fi
                 
 				echo -n "          Model     = "
-				echo_disk_model $id2dev
+				echo_disk_model $disk_dev
                 
                 echo -n "          Firmware  = "
-				echo_disk_firmware $id2dev
+				echo_disk_firmware $disk_dev
 				
-				get_disk_apm_level $id2dev
+				get_disk_apm_level $disk_dev
 				apm=$?
 				echo -n "          APM Level = "
 				case $apm in
@@ -161,11 +161,11 @@ for dev in $DISK_DEVICES; do
 				if [ -x $SMARTCTL ]; then
 					echo 
 					echo "        SMART info:"
-					$SMARTCTL -A /dev/$id2dev | egrep '^(  4|  5|  9 |193)' | \
+					$SMARTCTL -A /dev/$disk_dev | egrep '^(  4|  5|  9 |193)' | \
 					  awk -F ' ' '{ printf "          %-25s = %6d \n", $2, $10 }'
 				fi
 			else
-				echo "/dev/$id2dev: (info not available)"
+				echo "/dev/$disk_dev: (info not available)"
 			fi
 		fi
 	fi

@@ -18,6 +18,7 @@ USBD=/sys/bus/usb/devices
 USB_BLACKLIST_INT=""
 USB_TIMEOUT=2
 NETD=/sys/class/net
+START_THRESH_BLACKLIST="'ThinkPad Edge'"
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -218,15 +219,20 @@ get_disk_apm_level () { # $1: dev; ret: apm
 	
 }
 
-disk_by_id2dev () { # $1: id or dev; ret: id2dev
+get_disk_dev () { # $1: id or dev; ret: disk_dev, disk_id
 	if [ -L /dev/disk/by-id/$1 ]; then
-		id2dev=$(echo $1 | sed -r 's/-part[1-9]+$//')
-		id2dev=$(readlink /dev/disk/by-id/$id2dev)
-		id2dev=${id2dev##*/}
+        # $1 is disk id
+        disk_id=$1
+		disk_dev=$(echo $disk_id | sed -r 's/-part[1-9]+$//')
+		disk_dev=$(readlink /dev/disk/by-id/$disk_dev)
+		disk_dev=${disk_dev##*/}
 	else
-		id2dev=$1
+        # $1 is disk dev
+		disk_dev=$1
+        disk_id=""
 	fi
-	id2dev=$(echo $id2dev | sed -r 's/[1-9]+$//')
+    # strip partition number
+	disk_dev=$(echo $disk_dev | sed -r 's/[1-9]+$//')
 }
 
 set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
@@ -245,17 +251,17 @@ set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
     [ -z "$apmlist" ] && return 0 
     
 	for dev in $DISK_DEVICES; do
-		disk_by_id2dev $dev
+		get_disk_dev $dev
 		
-		if [ -b /dev/$id2dev ]; then
-			check_disk_hdparm_cap $id2dev
+		if [ -b /dev/$disk_dev ]; then
+			check_disk_hdparm_cap $disk_dev
 			if [ $? = 0 ]; then
                 # parse list
                 apm=$(echo -n $apmlist | sed -r 's/^(\w+) .*/\1/')
                 apmlist=$(echo -n $apmlist | sed -r 's/^\w+ (.*)/\1/')
 				
-                echo_debug "pm" "set_disk_apm_level($1): $id2dev ($dev) $apm"
-                $HDPARM -B $apm /dev/$id2dev > /dev/null 2>&1
+                echo_debug "pm" "set_disk_apm_level($1): $disk_dev [$disk_id] $apm"
+                $HDPARM -B $apm /dev/$disk_dev > /dev/null 2>&1
 			fi
 		fi
 	done
@@ -273,15 +279,15 @@ set_disk_io_sched () {
 	schedlist=$(echo -n $DISK_IOSCHED | sed -r 's/ +/ /g; s/^ | $//g')
 	
 	for dev in $DISK_DEVICES; do
-		disk_by_id2dev $dev
+		get_disk_dev $dev
 		
 		# parse list, add cfq as default when list is too short
 		sched=$(echo -n $schedlist | sed -r 's/^(\w+) .*/\1/')
         schedlist=$(echo -n "$schedlist cfq"| sed -r 's/^\w+ (.*)/\1/')
-        schedctrl="/sys/block/$id2dev/queue/scheduler"
+        schedctrl="/sys/block/$disk_dev/queue/scheduler"
 		
 		if [ -f $schedctrl ]; then
-			echo_debug "pm" "set_disk_io_sched: $id2dev ($dev) $sched"
+			echo_debug "pm" "set_disk_io_sched: $disk_dev [id=$disk_id] $sched"
 			echo -n $sched > $schedctrl
 		fi
 	done
