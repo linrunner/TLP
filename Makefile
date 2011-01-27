@@ -38,9 +38,11 @@ install:
 	  ln -s $(TLREL)/tlp-nop intel-audio-powersave ; \
 	  ln -s $(TLREL)/tlp-nop laptop-mode ; \
 	  ln -s $(TLREL)/tlp-nop journal-commit ; \
+	  ln -s $(TLREL)/tlp-nop pcie_aspm ; \
 	  ln -s $(TLREL)/tlp-nop sata_alpm ; \
 	  ln -s $(TLREL)/tlp-nop wireless ; \
 	  ln -s $(TLREL)/tlp-nop xfs_buffer
+	  
 
 uninstall: 
 	rm $(SBIN)/tlp
@@ -65,6 +67,7 @@ uninstall:
 	rm $(PMETC)/intel-audio-powersave 
 	rm $(PMETC)/laptop-mode 
 	rm $(PMETC)/journal-commit 
+	rm $(PMETC)/pcie_aspm 
 	rm $(PMETC)/sata_alpm 
 	rm $(PMETC)/wireless 
 	rm $(PMETC)/xfs_buffer 

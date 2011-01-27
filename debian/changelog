@@ -7,6 +7,7 @@ tlp (0.2.8.900-0ubuntu1) lucid; urgency=low
   * Features
     - Specify DISK_DEVICES with id's from /dev/disk/by-id (egalus)
     - DISK_IOSCHED: set i/o scheduler (egalus)
+    - PCIe ASPM 
 
  -- Thomas Koch <linrunner@gmx.net>  Sat, 29 Dec 2010 12:13:00 +0100
 

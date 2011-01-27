@@ -317,6 +317,27 @@ set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 	return 0
 } 
 
+set_pcie_aspm () { # $1: 0=ac mode, 1=battery mode
+    local pwr
+
+	if [ "$1" = "1" ]; then
+		[ "${PCIE_ASPM_ON_BAT:-undef}" = "undef" ] && return 0
+		pwr=$PCIE_ASPM_ON_BAT
+	else
+		[ "${PCIE_ASPM_ON_AC:-undef}" = "undef" ] && return 0
+		pwr=$PCIE_ASPM_ON_AC
+	fi
+    
+    if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
+        echo_debug "pm" "set_pcie_aspm($1): $pwr"
+        echo "$pwr" > /sys/module/pcie_aspm/parameters/policy
+    else
+        echo_debug "pm" "set_pcie_aspm($1).not_available"
+    fi
+
+    return 0
+}
+
 get_wifi_ifaces () { # retval: $WIFACES
 	WIFACES=$($IWC 2> /dev/null | grep 'IEEE' | sed -r 's/^(.*)[ \t]+IEEE.*/\1/')
 	
