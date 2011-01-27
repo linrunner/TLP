@@ -421,7 +421,7 @@ set_sound_power_mode () {
 }
 
 enable_usb_suspend () {
-	local devices usbdev subdev level hid
+	local devices usbdev subdev control hid
 	
 	check_sysfs "set_usb_suspend" "$USBD"
 	
@@ -431,18 +431,18 @@ enable_usb_suspend () {
 			if [ -f $USBD/$usbdev/power/autosuspend ]; then
 				usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
 			
-				level="auto"
+				control="auto"
                 hid=""
                 if patinstr "$usbid" "$USB_BLACKLIST_INT $USB_BLACKLIST"; then
                     # device is in blacklist
-                    level="on"
+                    control="on"
                 else
                     # check for hid subdevices
                     for subdev in $USBD/$usbdev/*:*; do
                         if [ -L $subdev/driver ]; then
                             driver=$(readlink $subdev/driver)
                             if [ "${driver##*/}" = "usbhid" ]; then
-                                level="on"
+                                control="on"
                                 hid="(hid)"
                                 break
                             fi
@@ -450,8 +450,13 @@ enable_usb_suspend () {
                     done    
                 fi
                 
-                echo_debug "usb" "enable_usb_suspend.$level$hid: $USBD/$usbdev"
-				echo "$level" > $USBD/$usbdev/power/level
+                echo_debug "usb" "enable_usb_suspend.$control$hid: $USBD/$usbdev"
+				if [ -f $USBD/$usbdev/power/control ]; then
+                    echo "$control" > $USBD/$usbdev/power/control
+                else
+                    # level is deprecated
+                    echo "$control" > $USBD/$usbdev/power/level
+                fi
 				echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
 			fi
 		done

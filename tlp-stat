@@ -289,9 +289,16 @@ echo
 devices=$(ls $USBD | grep -v ':')
 for usbdev in $devices; do
 	if [ -f $USBD/$usbdev/power/autosuspend ]; then
-        # show dev path + usb id
+        if [ -f $USBD/$usbdev/power/control ]; then
+            control="control = $(cat $USBD/$usbdev/power/control)" 
+        else
+            # level is deprecated
+            control="level = $(cat $USBD/$usbdev/power/level)" 
+        fi
+        
+        # show dev path, state, usb id
 		echo -n "$USBD/$usbdev/power/autosuspend = `cat $USBD/$usbdev/power/autosuspend`," \
-		     "level = $(cat $USBD/$usbdev/power/level) --" \
+		     "$control --" \
 		     "$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct) "
         
         # show product string     
