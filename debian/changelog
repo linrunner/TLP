@@ -7,7 +7,8 @@ tlp (0.2.8.900-0ubuntu1) lucid; urgency=low
   * Features
     - Specify DISK_DEVICES with id's from /dev/disk/by-id (egalus)
     - DISK_IOSCHED: set i/o scheduler (egalus)
-    - PCIe ASPM 
+    - PCIe ASPM
+    - Do not set START_CHARGE_THRESH on ThinkPad Edge w/ tp-smapi
 
  -- Thomas Koch <linrunner@gmx.net>  Sat, 29 Dec 2010 12:13:00 +0100
 

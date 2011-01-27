@@ -237,6 +237,8 @@ echo
 # battery info & charge thresholds 
 if [ -d /sys/devices/platform/smapi ]; then
 	# ThinkPad via tp_smapi
+    thresh_blacklist_check
+    
 	for bat in /sys/devices/platform/smapi/BAT[01]; do
 		if [ -d $bat ] && [ "$(cat $bat/installed)" = "1" ]; then
 			echoparm $bat/manufacturer
@@ -250,7 +252,11 @@ if [ -d /sys/devices/platform/smapi ]; then
 			echoparm $bat/remaining_running_time_now - min
 			echoparm $bat/remaining_charging_time - min
 			echo
-			echoparm $bat/start_charge_thresh - "%"
+			if [ -z "$thresh_blacklisted" ]; then
+                echoparm $bat/start_charge_thresh - "%"
+            else
+                echo "$bat/start_charge_thresh = (not available)"
+            fi
 			echoparm $bat/stop_charge_thresh - "%"
 			echo
 		fi

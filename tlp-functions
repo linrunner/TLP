@@ -18,7 +18,8 @@ USBD=/sys/bus/usb/devices
 USB_BLACKLIST_INT=""
 USB_TIMEOUT=2
 NETD=/sys/class/net
-START_THRESH_BLACKLIST="'ThinkPad Edge'"
+DMI=/usr/sbin/dmidecode
+START_THRESH_BLACKLIST="ThinkPad Edge" 
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -57,6 +58,7 @@ check_tlp_enabled () { # ret: 0=disabled/1=enabled
 		return 0
 	fi
 }
+
 
 check_laptop_mode_tools () { # ret: 0=disabled, 1=enabled
 	[ -f /etc/default/acpi-support ] && . /etc/default/acpi-support
@@ -466,19 +468,39 @@ do_threshold () { # $1: treshold file, $2: new value
 	fi
 }
 
+thresh_blacklist_check () { # retval: $thresh_blacklisted ""/"[blacklisted model]"
+    if [ "$(id -u)" != "0" ]; then
+        # can't check when not root, so let it be ...
+        thresh_blacklisted=""
+    else
+        # check via blacklist if ThinkPad model supports start_charge_thresh
+        thresh_blacklisted=$($DMI -s system-version | egrep "$START_THRESH_BLACKLIST")
+        echo_debug "pm" "thresh_blacklist_check.blacklisted: $thresh_blacklisted"
+    fi
+}
+
 set_charge_thresholds () {
-	echo_debug "pm" "set_charge_thresholds"
+	echo_debug "pm" "set_charge_thresholds.enter"
 	[ -d $SMAPIDIR ] || return 0
 	echo_debug "pm" "set_charge_thresholds.smapidir-present"
-	
+    
+    thresh_blacklist_check
+        
 	if [ -d $SMAPIDIR/BAT0 ] && [ "$(cat $SMAPIDIR/BAT0/installed)" = "1" ]; then
-		echo_debug "pm" "set_charge_thresholds: BAT0 $START_CHARGE_THRESH_BAT0 $STOP_CHARGE_THRESH_BAT0"
-		do_threshold $SMAPIDIR/BAT0/start_charge_thresh "$START_CHARGE_THRESH_BAT0"
+		if [ -z "$thresh_blacklisted" ]; then
+            echo_debug "pm" "set_charge_thresholds.start(BAT0): $START_CHARGE_THRESH_BAT0"
+            do_threshold $SMAPIDIR/BAT0/start_charge_thresh "$START_CHARGE_THRESH_BAT0"
+        fi
+        echo_debug "pm" "set_charge_thresholds.stop (BAT0): $STOP_CHARGE_THRESH_BAT0"
 		do_threshold $SMAPIDIR/BAT0/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT0"
 	fi
+    
 	if [ -d $SMAPIDIR/BAT1 ] &&  [ "$(cat $SMAPIDIR/BAT1/installed)" = "1" ]; then
-		echo_debug "pm" "set_charge_thresholds: BAT1 $START_CHARGE_THRESH_BAT1 $STOP_CHARGE_THRESH_BAT1"
-		do_threshold $SMAPIDIR/BAT1/start_charge_thresh "$START_CHARGE_THRESH_BAT1"
+		if [ -z "$thresh_blacklisted"  ]; then
+            echo_debug "pm" "set_charge_thresholds.start(BAT1): $START_CHARGE_THRESH_BAT1"
+            do_threshold $SMAPIDIR/BAT1/start_charge_thresh "$START_CHARGE_THRESH_BAT1"
+        fi
+        echo_debug "pm" "set_charge_thresholds.stop (BAT1): $STOP_CHARGE_THRESH_BAT1"
 		do_threshold $SMAPIDIR/BAT1/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT1"
 	fi
 	
@@ -592,8 +614,12 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
 	fi
 
 	# set thresholds 
-	echo_debug "pm" "setcharge_battery: $bat $start_thresh $stop_thresh"
-	do_threshold $bdir/start_charge_thresh "$start_thresh"
+    thresh_blacklist_check
+    if [ -z "$thresh_blacklisted" ]; then
+        echo_debug "pm" "setcharge_battery.start($bat) $start_thresh"
+        do_threshold $bdir/start_charge_thresh "$start_thresh"
+    fi
+    echo_debug "pm" "setcharge_battery.stop ($bat) $stop_thresh"
 	do_threshold $bdir/stop_charge_thresh "$stop_thresh"
 	
 	# trigger charging via discharge
@@ -601,8 +627,12 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
 	sleep 2
 	echo 0 > $bdir/force_discharge
 	
-	echo "Charging thresholds of battery $bat temporarily set to $start_thresh $stop_thresh."
-	echo_debug "pm" "setcharge_battery.initiated: $bat $start_thresh $stop_thresh"
+    if [ -z "$thresh_blacklisted" ]; then
+    	echo "Charging thresholds of battery $bat temporarily set to: start=$start_thresh stop=$stop_thresh."
+    else
+        echo "Charging thresholds of battery $bat temporarily set to: start=n/a stop=$stop_thresh."
+    fi
+	echo_debug "pm" "setcharge_battery.initiated"
 	return 0
 }
 
