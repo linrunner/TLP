@@ -1,0 +1,10 @@
+#!/bin/sh
+#DEBHELPER#
+
+# Disable conflicting pm-utils hooks
+for i in 95hdparm-apm hal-cd-polling intel-audio-powersave laptop-mode \
+         journal-commit pcie_aspm sata_alpm wireless xfs_buffer; do
+    if [ -x /usr/lib/pm-utils/power.d/$i ]; then
+        ln -sf /usr/lib/tlp-pm/tlp-nop /etc/pm/power.d/$i
+    fi
+done

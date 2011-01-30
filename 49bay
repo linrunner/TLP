@@ -3,7 +3,7 @@
 
 . "${PM_FUNCTIONS}"
 
-LIB=/usr/lib/tlp/tlp-functions
+LIB=/usr/lib/tlp-pm/tlp-functions
 CFG=/etc/default/tlp
 STATE=tp_bay_off
 

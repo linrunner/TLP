@@ -1,6 +1,11 @@
-tlp (0.2.8.900-0ubuntu1) lucid; urgency=low
+tlp (0.2.8.910-1) lucid; urgency=low
 
   * 0.2.9 development
+  * Packaging
+    - Debian version scheme
+    - Move startup code from upstart back to init.d
+    - Move symlinking in /etc/pm/power.d/ to postinst/postrm
+    - Move /usr/lib/tlp/ to /usr/lib/tlp-pm/
   * Bug Fixes
     - Switch wwan off before suspend 
       (workaround for kernel/network-manager quirk)
@@ -8,9 +13,9 @@ tlp (0.2.8.900-0ubuntu1) lucid; urgency=low
     - Specify DISK_DEVICES with id's from /dev/disk/by-id (egalus)
     - DISK_IOSCHED: set i/o scheduler (egalus)
     - PCIe ASPM
-    - Do not set START_CHARGE_THRESH on ThinkPad Edge w/ tp-smapi
+    - Do not set START_CHARGE_THRESH on tp_smapi-capable ThinkPad Edges
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 29 Dec 2010 12:13:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 30 Jan 2010 17:30:00 +0100
 
 tlp (0.2.8-0ubuntu1) lucid; urgency=low
 

@@ -2,8 +2,8 @@
 # tlp - display power save and usb autosuspend status
 
 # --- Definitions
-LIB=/usr/lib/tlp/tlp-functions
-RFLIB=/usr/lib/tlp/tlp-rf-func
+LIB=/usr/lib/tlp-pm/tlp-functions
+RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 TLPCFG=/etc/default/tlp
 
 HDPARM=/sbin/hdparm

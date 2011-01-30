@@ -2,14 +2,14 @@
 # tlp - adjust power settings 
 
 # Source library
-LIB=/usr/lib/tlp/tlp-functions
+LIB=/usr/lib/tlp-pm/tlp-functions
 if [ ! -f $LIB ]; then
 	echo "Error: missing function library \'$LIB\'."
 	exit 1
 fi
 . $LIB
 
-RFLIB=/usr/lib/tlp/tlp-rf-func
+RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 if [ ! -f $LIB ]; then
 	echo "Error: missing function library \'$RFLIB\'."
 	exit 1

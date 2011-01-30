@@ -3,8 +3,8 @@
 
 . "${PM_FUNCTIONS}"
 
-LIB=/usr/lib/tlp/tlp-functions
-RFLIB=/usr/lib/tlp/tlp-rf-func
+LIB=/usr/lib/tlp-pm/tlp-functions
+RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 CFG=/etc/default/tlp
 
 suspend_device () {
