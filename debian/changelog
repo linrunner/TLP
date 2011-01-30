@@ -15,7 +15,7 @@ tlp (0.2.8.910-1) lucid; urgency=low
     - PCIe ASPM
     - Do not set START_CHARGE_THRESH on tp_smapi-capable ThinkPad Edges
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 30 Jan 2010 17:30:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 30 Jan 2011 20:30:00 +0100
 
 tlp (0.2.8-0ubuntu1) lucid; urgency=low
 

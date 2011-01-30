@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 #DEBHELPER#
 
 # Remove upstart job from obsolete versions
