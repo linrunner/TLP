@@ -1,4 +1,0 @@
-#!/bin/sh
-# tlp - override corresponding script in /usr/lib/pm-utils/power.d/
-echo "notice: /usr/lib/pm-utils/power.d/${0##/*/} disabled by tlp."
-exit 0
