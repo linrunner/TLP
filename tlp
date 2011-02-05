@@ -121,7 +121,13 @@ case "$mode" in
 		setcharge_battery 96 100 $2
 		;;
 
-		
+    diskid) # Show disk-by-id
+        { for dev in $(ls /dev/disk/by-id/ | egrep '^ata' | egrep -v 'part[1-9]+$'); do
+            get_disk_dev $dev
+            echo "$disk_dev: $disk_id"
+        done } | sort
+		;;
+        
 	*) 
 		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge"
 		;;
