@@ -51,6 +51,8 @@ check_root () {
 }
 
 check_tlp_enabled () { # ret: 0=disabled/1=enabled
+    TLP_ENABLE=${TLP_ENABLE:-1}
+    
 	if [ ! "$TLP_ENABLE" = "1" ]; then
 		echo "Error: tlp power save is disabled; set TLP_ENABLE=1 in /etc/default/tlp." 1>&2
 		return 1
@@ -58,7 +60,6 @@ check_tlp_enabled () { # ret: 0=disabled/1=enabled
 		return 0
 	fi
 }
-
 
 check_laptop_mode_tools () { # ret: 0=disabled, 1=enabled
 	[ -f /etc/default/acpi-support ] && . /etc/default/acpi-support
@@ -94,15 +95,16 @@ get_power_state () { # ret: 0=ac, 1=battery
 
 set_laptopmode () { # $1: 0=ac mode, 1=battery mode
 	check_sysfs "set_laptopmode" "/proc/sys/vm/laptop_mode"
+    
+    DISK_IDLE_SECS_ON_AC=${DISK_IDLE_SECS_ON_AC:-0}
+    DISK_IDLE_SECS_ON_BAT=${DISK_IDLE_SECS_ON_BAT:-2}
 	
 	if [ "$1" = "1" ]; then
 		echo_debug "pm" "set_laptopmode($1): $DISK_IDLE_SECS_ON_BAT"
-		[ "${DISK_IDLE_SECS_ON_BAT:-undef}" = "undef" ] || \
-		  echo $DISK_IDLE_SECS_ON_BAT > /proc/sys/vm/laptop_mode
+		echo $DISK_IDLE_SECS_ON_BAT > /proc/sys/vm/laptop_mode
 	else
 		echo_debug "pm" "set_laptopmode($1): $DISK_IDLE_SECS_ON_AC"
-		[ "${DISK_IDLE_SECS_ON_AC:-undef}" = "undef" ] || \
-		  echo $DISK_IDLE_SECS_ON_AC > /proc/sys/vm/laptop_mode
+		echo $DISK_IDLE_SECS_ON_AC > /proc/sys/vm/laptop_mode
 	fi
 	
 	return 0
@@ -161,12 +163,33 @@ set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
 	return 0
 }
 
+set_sched_powersave () { # $1: 0=ac mode, 1=battery mode
+    local pwr pool sdev
+
+    if [ "$1" = "1" ]; then
+		pwr=${SCHED_POWERSAVE_ON_AC:-1}
+	else
+		pwr=${SCHED_POWERSAVE_ON_AC:-0}
+	fi
+	
+    for pool in mc smp smt; do
+        sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
+        [ -w "$sdev" ] || continue
+        echo_debug "pm" "set_sched_powersave($1): ${sdev##/*/} $pwr"
+        echo $pwr > "$sdev"
+    done
+    
+    return 0
+}
+
 set_phc_controls () { 
     local control
     
 	check_sysfs "set_phc_controls" "/sys/devices/system/cpu/cpu0/cpufreq"
 	
-    if [ "${PHC_CONTROLS:-undef}" != "undef" ]; then 
+    PHC_CONTROLS=${PHC_CONTROLS:-}
+    
+    if [ -n "$PHC_CONTROLS" ]; then 
         echo_debug "pm" "set_phc_controls: $PHC_CONTROLS"
             
         for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do 
@@ -289,7 +312,7 @@ set_disk_io_sched () {
         schedctrl="/sys/block/$disk_dev/queue/scheduler"
 		
 		if [ -f $schedctrl ]; then
-			echo_debug "pm" "set_disk_io_sched: $disk_dev [id=$disk_id] $sched"
+			echo_debug "pm" "set_disk_io_sched: $disk_dev [$disk_id] $sched"
 			echo -n $sched > $schedctrl
 		fi
 	done
@@ -300,13 +323,11 @@ set_disk_io_sched () {
 
 set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 	local i pwr
-		
-	if [ "$1" = "1" ]; then
-		[ "${SATA_LINKPWR_ON_BAT:-undef}" = "undef" ] && return 0
-		pwr=$SATA_LINKPWR_ON_BAT
+    
+    if [ "$1" = "1" ]; then
+		pwr=${SATA_LINKPWR_ON_BAT:-min_power}
 	else
-		[ "${SATA_LINKPWR_ON_AC:-undef}" = "undef" ] && return 0
-		pwr=$SATA_LINKPWR_ON_AC
+		pwr=${SATA_LINKPWR_ON_AC:-max_perfomance}
 	fi
 	echo_debug "pm" "set_sata_link_power($1): $pwr"
 	
@@ -321,13 +342,11 @@ set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 
 set_pcie_aspm () { # $1: 0=ac mode, 1=battery mode
     local pwr
-
+    
 	if [ "$1" = "1" ]; then
-		[ "${PCIE_ASPM_ON_BAT:-undef}" = "undef" ] && return 0
-		pwr=$PCIE_ASPM_ON_BAT
+		pwr=${PCIE_ASPM_ON_BAT:-powersave}
 	else
-		[ "${PCIE_ASPM_ON_AC:-undef}" = "undef" ] && return 0
-		pwr=$PCIE_ASPM_ON_AC
+		pwr=${PCIE_ASPM_ON_AC:-performance}
 	fi
     
     if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
@@ -362,7 +381,7 @@ set_wifi_power_mode () { # $1: 0=ac mode, 1=battery mode; $2 iface
 	local pwr iface
 	
 	if [ "$1" = "1" ]; then
-		pwr=${WIFI_PWR_ON_BAT:-0}
+		pwr=${WIFI_PWR_ON_BAT:-5}
 	else
 		pwr=${WIFI_PWR_ON_AC:-0}
 	fi
@@ -387,7 +406,7 @@ set_wifi_power_mode () { # $1: 0=ac mode, 1=battery mode; $2 iface
 }
 
 disable_wake_on_lan () {  
-	[ "${WOL_DISABLE:-undef}" = "undef" ] && return 0
+	WOL_DISABLE=${WOL_DISABLE:-Y}
 	
 	if [ "$WOL_DISABLE" = "Y" ]; then
 		echo_debug "pm" "disable_wake_on_lan: y"
@@ -401,15 +420,15 @@ disable_wake_on_lan () {
 }
 
 set_sound_power_mode () {
-	[ "${SOUND_POWER_SAVE:-undef}" = "undef" ] && return 0
+	SOUND_POWER_SAVE=${SOUND_POWER_SAVE:-1}
+    SOUND_POWER_SAVE_CONTROLLER=${SOUND_POWER_SAVE_CONTROLLER:-Y}
 	
 	check_sysfs "set_sound_power_mode" "/sys/module"
 
 	if [ -d /sys/module/snd_hda_intel ]; then
 		echo_debug "pm" "set_sound_power_mode.hda: $SOUND_POWER_SAVE $SOUND_POWER_SAVE_CONTROLLER"
 		echo "$SOUND_POWER_SAVE" > /sys/module/snd_hda_intel/parameters/power_save
-		[ "${SOUND_POWER_SAVE_CONTROLLER:-undef}" = "undef" ] || \
-		  echo "$SOUND_POWER_SAVE_CONTROLLER" > /sys/module/snd_hda_intel/parameters/power_save_controller 
+		echo "$SOUND_POWER_SAVE_CONTROLLER" > /sys/module/snd_hda_intel/parameters/power_save_controller 
 	fi
 		
 	if [ -d /sys/module/snd_ac97_codec ]; then
@@ -480,7 +499,7 @@ thresh_blacklist_check () { # retval: $thresh_blacklisted ""/"[blacklisted model
     else
         # check via blacklist if ThinkPad model supports start_charge_thresh
         thresh_blacklisted=$($DMI -s system-version | egrep "$START_THRESH_BLACKLIST")
-        echo_debug "pm" "thresh_blacklist_check.blacklisted: $thresh_blacklisted"
+        echo_debug "pm" "thresh_blacklist_check.blacklisted: ${thresh_blacklisted:-(none)}"
     fi
 }
 

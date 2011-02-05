@@ -34,6 +34,7 @@ case "$mode" in
 		load_tp_smapi
 		set_laptopmode $pwr
 		set_dirty_parms $pwr
+        set_sched_powersave $pwr
 		set_phc_controls $pwr
 		set_disk_apm_level $pwr
 		set_disk_io_sched
@@ -52,6 +53,7 @@ case "$mode" in
 		load_tp_smapi
 		set_laptopmode 1
 		set_dirty_parms 1
+        set_sched_powersave 1
 		set_phc_controls 1
 		set_disk_apm_level 1
 		set_disk_io_sched
@@ -69,6 +71,7 @@ case "$mode" in
 		load_tp_smapi
 		set_laptopmode 0
 		set_dirty_parms 0
+        set_sched_powersave 0
 		set_phc_controls 0
 		set_disk_apm_level 0
 		set_disk_io_sched
@@ -129,7 +132,7 @@ case "$mode" in
 		;;
         
 	*) 
-		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge"
+		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge|diskid"
 		;;
 esac
 

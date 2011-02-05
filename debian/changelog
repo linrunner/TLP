@@ -14,8 +14,9 @@ tlp (0.2.8.910-1) lucid; urgency=low
     - DISK_IOSCHED: set i/o scheduler (egalus)
     - PCIe ASPM
     - Do not set START_CHARGE_THRESH on tp_smapi-capable ThinkPad Edges
+    - SCHED_POWERSAVE: cpu/sched_*_power_savings
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 30 Jan 2011 20:30:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 05 Feb 2011 21:10:00 +0100
 
 tlp (0.2.8-0ubuntu1) lucid; urgency=low
 

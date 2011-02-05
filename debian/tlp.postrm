@@ -3,7 +3,8 @@
 
 # Remove pm-utils hook disablers
 for i in 95hdparm-apm hal-cd-polling intel-audio-powersave laptop-mode \
-         journal-commit pcie_aspm sata_alpm wireless xfs_buffer; do
+         journal-commit pcie_aspm sata_alpm sched-powersave wireless \
+         xfs_buffer; do
     if [ "$(readlink /etc/pm/power.d/$i)" = "/usr/lib/tlp-pm/tlp-nop" ]; then
         rm /etc/pm/power.d/$i
     fi
