@@ -32,17 +32,6 @@ install:
 	install -m 755 49wwan $(PLIB)/sleep.d/49wwan
 	install -m 755 49bay $(PLIB)/sleep.d/49bay
 	install -m 644 tlp.desktop $(DESTDIR)/etc/xdg/autostart/tlp.desktop
-#	cd $(PMETC) ; \
-#	  ln -s $(TLREL)/tlp-nop 95hdparm-apm ; \
-#	  ln -s $(TLREL)/tlp-nop disable_wol ; \
-#	  ln -s $(TLREL)/tlp-nop intel-audio-powersave ; \
-#	  ln -s $(TLREL)/tlp-nop laptop-mode ; \
-#	  ln -s $(TLREL)/tlp-nop journal-commit ; \
-#	  ln -s $(TLREL)/tlp-nop pcie_aspm ; \
-#	  ln -s $(TLREL)/tlp-nop sata_alpm ; \
-#	  ln -s $(TLREL)/tlp-nop wireless ; \
-#	  ln -s $(TLREL)/tlp-nop xfs_buffer
-	  
 
 uninstall: 
 	rm $(SBIN)/tlp
@@ -55,20 +44,10 @@ uninstall:
 	rm $(TLIB)/tlp-functions
 	rm $(TLIB)/tlp-rf-func
 	rmdir $(TLIB)
-	# rm $(DESTDIR)/etc/default/tlp
+#	rm $(DESTDIR)/etc/default/tlp
 	rm $(DESTDIR)/etc/init.d/tlp
 	rm $(DESTDIR)/etc/network/if-up.d/tlp-ifup
 	rm $(PLIB)/power.d/zztlp
 	rm $(PLIB)/sleep.d/49wwan
 	rm $(PLIB)/sleep.d/49bay
 	rm $(DESTDIR)/etc/xdg/autostart/tlp.desktop
-#	rm $(PMETC)/95hdparm-apm
-#	rm $(PMETC)/hal-cd-polling 
-#	rm $(PMETC)/intel-audio-powersave 
-#	rm $(PMETC)/laptop-mode 
-#	rm $(PMETC)/journal-commit 
-#	rm $(PMETC)/pcie_aspm 
-#	rm $(PMETC)/sata_alpm 
-#	rm $(PMETC)/wireless 
-#	rm $(PMETC)/xfs_buffer 
-	
