@@ -12,6 +12,8 @@ SMARTCTL=/usr/sbin/smartctl
 LSB=/usr/bin/lsb_release
 DMI=/usr/sbin/dmidecode
 
+ASPM=/sys/module/pcie_aspm/parameters/policy
+
 USBD=/sys/bus/usb/devices
 
 # --- Functions
@@ -66,7 +68,7 @@ fi
 echo_debug "run" "+++ tlp-stat"
 
 if [ $USER != "root" ]; then
-	echo "Hint: call me with 'sudo' to obtain more information!"
+	echo "Use 'sudo tlp-stat' to get more information!"
 	echo
 fi
 
@@ -105,9 +107,12 @@ for cpup in /sys/devices/system/cpu/cpu?/cpufreq/scaling_governor; do
 done
 echo
 
-echoparm /sys/devices/system/cpu/sched_mc_power_savings
-echoparm /sys/devices/system/cpu/sched_smt_power_savings
-echo
+for pool in mc smp smt; do
+    sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
+    [ -w "$sdev" ] || continue
+    echoparm $sdev
+    echo
+done
 
 for cpup in /sys/devices/system/cpu/cpu?/cpufreq/phc_controls; do
     echoparm $cpup "phc kernel not available"
@@ -138,8 +143,8 @@ for dev in $DISK_DEVICES; do
 		check_disk_hdparm_cap $disk_dev
 		if [ $? = 0 ]; then
 			if [ $USER = "root" ]; then
-				echo "/dev/$disk_dev:"
-                
+                echo "/dev/$disk_dev:"
+                	
                 if [ -n "$disk_id" ]; then
                     echo "          Disk ID   = $disk_id"
                 fi
@@ -157,6 +162,8 @@ for dev in $DISK_DEVICES; do
 					0|255) echo "none/disabled" ;;
 					*)     echo $apm ;;
 				esac
+                
+                echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
 			
 				if [ -x $SMARTCTL ]; then
 					echo 
@@ -165,7 +172,8 @@ for dev in $DISK_DEVICES; do
 					  awk -F ' ' '{ printf "          %-25s = %6d \n", $2, $10 }'
 				fi
 			else
-				echo "/dev/$disk_dev: (info not available)"
+                echo "/dev/$disk_dev: (use 'sudo tlp-stat' to get more information)"
+                echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
 			fi
 		fi
 	fi
@@ -186,7 +194,11 @@ fi
 echo 
 
 # pcie aspm
-echoparm /sys/module/pcie_aspm/parameters/policy
+if [ -f $ASPM ]; then
+    echo "$ASPM = $(cat $ASPM | sed -r 's/.*\[(.*)\].*/\1/')"
+else
+    echo "$ASPM = (not available)"
+fi
 echo
 
 # rfkill state
