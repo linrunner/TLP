@@ -26,7 +26,6 @@ pre-start script
 	for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
 		if [ "$dev" != "bluetooth" -o "$X_BT_DISABLE_ON_LOGIN" != "1" ]; then
 			device_off $dev
-            device_state $dev
 		fi
 	done
 	
@@ -50,7 +49,6 @@ post-stop script
 
 	for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
 		device_off $dev
-        device_state $dev
 	done
 	
 end script

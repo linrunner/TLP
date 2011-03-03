@@ -35,7 +35,6 @@ case $1 in
 		for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
 			if [ "$dev" != "bluetooth" -o "$X_BT_DISABLE_ON_LOGIN" != "1" ]; then
 				device_off $dev
-                device_state $dev
 			fi
 		done
 	
@@ -46,7 +45,6 @@ case $1 in
 	stop)
 		for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
 			device_off $dev
-            device_state $dev
 		done
 		;;
 
