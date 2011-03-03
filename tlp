@@ -123,6 +123,10 @@ case "$mode" in
 		load_tp_smapi
 		setcharge_battery 96 100 $2
 		;;
+        
+    stat) # Show status
+        tlp-stat
+        ;;
 
     diskid) # Show disk-by-id
         { for dev in $(ls /dev/disk/by-id/ | egrep '^ata' | egrep -v 'part[1-9]+$'); do
@@ -132,7 +136,7 @@ case "$mode" in
 		;;
         
 	*) 
-		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge|diskid"
+		echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge|stat|diskid"
 		;;
 esac
 
