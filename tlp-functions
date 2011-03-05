@@ -54,7 +54,7 @@ check_tlp_enabled () { # ret: 0=disabled/1=enabled
     TLP_ENABLE=${TLP_ENABLE:-1}
     
 	if [ ! "$TLP_ENABLE" = "1" ]; then
-		echo "Error: tlp power save is disabled; set TLP_ENABLE=1 in /etc/default/tlp." 1>&2
+		echo "Error: tlp power save is disabled. Set TLP_ENABLE=1 in $DEFAULT_FILE." 1>&2
 		return 1
 	else
 		return 0
@@ -91,6 +91,16 @@ load_tp_smapi () {
 get_power_state () { # ret: 0=ac, 1=battery
 	$ACPWR
 	return $? 
+}
+
+echo_started_mode () { # $1: 0=ac mode, 1=battery mode
+    if [ "$1" = "0" ]; then
+        echo "tlp started in ac mode."
+    else
+        echo "tlp started in battery mode."
+    fi
+    
+    return 0
 }
 
 set_laptopmode () { # $1: 0=ac mode, 1=battery mode
@@ -461,7 +471,7 @@ set_sound_power_mode () {
 	return 0
 }
 
-enable_usb_suspend () {
+enable_usb_suspend () { # $1: 0=silent/1=report result
 	local devices usbdev subdev control hid
 	
 	check_sysfs "set_usb_suspend" "$USBD"
@@ -501,7 +511,10 @@ enable_usb_suspend () {
 				echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
 			fi
 		done
-	fi
+        [ "$1" = "1" ] && echo "usb autosuspend settings applied."
+	else
+        [ "$1" = "1" ] && echo "Error: usb autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $DEFAULT_FILE."
+    fi
 	
 	return 0
 }

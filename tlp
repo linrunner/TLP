@@ -44,9 +44,11 @@ case "$mode" in
 		set_wifi_power_mode $pwr
 		disable_wake_on_lan $pwr
 		set_sound_power_mode $pwr
-		enable_usb_suspend
+		enable_usb_suspend 0
 		set_charge_thresholds
 		[ "$pwr" = "1" ] && poweroff_drivebay 0
+        
+        echo_started_mode $pwr
 		;;
 
 	true|bat*) # Set battery power mode
@@ -64,8 +66,10 @@ case "$mode" in
 		set_wifi_power_mode 1
 		disable_wake_on_lan 1
 		set_sound_power_mode 1
-		enable_usb_suspend
+		enable_usb_suspend 0
 		poweroff_drivebay 0
+        
+        echo_started_mode 1
 		;;
 		
 	false|ac) # Set ac power mode
@@ -83,7 +87,9 @@ case "$mode" in
 		set_wifi_power_mode 0
 		disable_wake_on_lan 0
 		set_sound_power_mode 0
-		enable_usb_suspend
+		enable_usb_suspend 0
+        
+        echo_started_mode 1
 		;;
 		
 	wifi) # Set wifi power mode depending on state
@@ -95,7 +101,7 @@ case "$mode" in
 
 	usb) # Enable usb autosuspend
 		check_root
-		enable_usb_suspend
+		enable_usb_suspend 1
 		;;
 		
 	bayoff) # Power off drive bay
