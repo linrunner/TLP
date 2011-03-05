@@ -2,7 +2,6 @@ tlp (0.2.8.910-1) lucid; urgency=low
 
   * 0.2.9 development
   * Packaging
-    - Debian version scheme
     - Move startup code from upstart back to init.d
     - Move symlinking in /etc/pm/power.d/ to postinst/postrm
     - Move /usr/lib/tlp/ to /usr/lib/tlp-pm/
@@ -11,9 +10,10 @@ tlp (0.2.8.910-1) lucid; urgency=low
       (workaround for kernel/network-manager quirk)
   * Features
     - Specify DISK_DEVICES with id's from /dev/disk/by-id (egalus)
+    - tlp diskid: shown disk id's 
     - DISK_IOSCHED: set i/o scheduler (egalus)
     - PCIe ASPM
-    - Do not set START_CHARGE_THRESH on tp_smapi-capable ThinkPad Edges
+    - Do not set START_CHARGE_THRESH on tp_smapi-capable ThinkPad Edge
     - SCHED_POWERSAVE: cpu/sched_*_power_savings
 
  -- Thomas Koch <linrunner@gmx.net>  Sat, 05 Feb 2011 21:10:00 +0100
