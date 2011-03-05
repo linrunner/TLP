@@ -40,6 +40,7 @@ case "$mode" in
 		set_disk_io_sched
 		set_sata_link_power $pwr
         set_pcie_aspm $pwr
+        set_radeon_profile $pwr
 		set_wifi_power_mode $pwr
 		disable_wake_on_lan $pwr
 		set_sound_power_mode $pwr
@@ -59,6 +60,7 @@ case "$mode" in
 		set_disk_io_sched
 		set_sata_link_power 1
         set_pcie_aspm 1
+        set_radeon_profile 1
 		set_wifi_power_mode 1
 		disable_wake_on_lan 1
 		set_sound_power_mode 1
@@ -77,6 +79,7 @@ case "$mode" in
 		set_disk_io_sched
 		set_sata_link_power 0
         set_pcie_aspm 0
+        set_radeon_profile 0
 		set_wifi_power_mode 0
 		disable_wake_on_lan 0
 		set_sound_power_mode 0

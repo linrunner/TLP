@@ -359,6 +359,28 @@ set_pcie_aspm () { # $1: 0=ac mode, 1=battery mode
     return 0
 }
 
+set_radeon_profile () { #$1: 0=ac mode, 1=battery mode
+    local pwr card
+    
+    if [ "$1" = "1" ]; then
+		pwr=${RADEON_POWER_PROFILE_ON_BAT:-low}
+	else
+		pwr=${RADEON_POWER_PROFILE_ON_AC:-high}
+	fi
+    
+    for card in /sys/class/drm/card[0-9]/device ; do
+        if [ -f $card/power_method -a -f $card/power_profile ]; then
+            echo_debug "pm" "set_radeon_profile($1): $pwr $card"
+            echo "profile" > $card/power_method
+            echo "$pwr" > $card/power_profile
+            return 0
+        fi
+    done
+    
+    echo_debug "pm" "set_radeon_profile($1).not_available"
+    return 0    
+}
+
 get_wifi_ifaces () { # retval: $WIFACES
 	WIFACES=$($IWC 2> /dev/null | grep 'IEEE' | sed -r 's/^(.*)[ \t]+IEEE.*/\1/')
 	

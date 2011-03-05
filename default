@@ -48,6 +48,12 @@ SATA_LINKPWR_ON_BAT=min_power
 # default/performance/powersave
 PCIE_ASPM_ON_AC=performance
 PCIE_ASPM_ON_BAT=powersave
+
+# Radeon graphics clock speed (profile method): low/mid/high/auto/default
+# auto = mid on BAT, high on AC; default = use hardware defaults
+# (Kernel >= 2.6.35 only, not with fglrx driver!)
+RADEON_POWER_PROFILE_ON_AC=high
+RADEON_POWER_PROFILE_ON_BAT=low
  
 # WiFi power saving mode: 1=disable/5=enable
 # (Kernel >= 2.6.32, some adapters only!)

@@ -201,9 +201,21 @@ else
 fi
 echo
 
+# radeon power profile
+for card in /sys/class/drm/card[0-9]/device ; do
+   if [ -f $card/power_method -a -f $card/power_profile ]; then
+       echoparm $card/power_method
+       echoparm $card/power_profile
+       echo
+       break
+   fi
+done
+
 # rfkill state
 for i in bluetooth wifi wwan; do
-	echo_device_state $i
+    get_devc $i
+    get_devs $i
+	echo_device_state $i $devs
 done
 echo
 

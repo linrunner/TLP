@@ -15,6 +15,7 @@ tlp (0.2.8.910-1) lucid; urgency=low
     - PCIe ASPM
     - Do not set START_CHARGE_THRESH on tp_smapi-capable ThinkPad Edge
     - SCHED_POWERSAVE: cpu/sched_*_power_savings
+    - Set radeon clock speed via /sys/class/drm/card*/device/power_profile
 
  -- Thomas Koch <linrunner@gmx.net>  Sat, 05 Feb 2011 21:10:00 +0100
 
