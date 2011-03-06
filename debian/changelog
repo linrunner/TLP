@@ -1,10 +1,5 @@
-tlp (0.2.8.910-1) lucid; urgency=low
+tlp (0.3.0-1) lucid; urgency=low
 
-  * 0.2.9 development
-  * Packaging
-    - Move startup code from upstart back to init.d
-    - Move symlinking in /etc/pm/power.d/ to postinst/postrm
-    - Move /usr/lib/tlp/ to /usr/lib/tlp-pm/
   * Bug Fixes
     - Switch wwan off before suspend 
       (workaround for kernel/network-manager quirk)
@@ -16,8 +11,12 @@ tlp (0.2.8.910-1) lucid; urgency=low
     - Do not set START_CHARGE_THRESH on tp_smapi-capable ThinkPad Edge
     - SCHED_POWERSAVE: cpu/sched_*_power_savings
     - Set radeon clock speed via /sys/class/drm/card*/device/power_profile
+  * Packaging
+    - Move startup code from upstart back to init.d
+    - Move symlinking in /etc/pm/power.d/ to postinst/postrm
+    - Move /usr/lib/tlp/ to /usr/lib/tlp-pm/
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 05 Feb 2011 21:10:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 06 Mar 2011 19:48:00 +0100
 
 tlp (0.2.8-0ubuntu1) lucid; urgency=low
 
