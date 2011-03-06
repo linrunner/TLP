@@ -185,29 +185,34 @@ set_sched_powersave () { # $1: 0=ac mode, 1=battery mode
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
         [ -w "$sdev" ] || continue
+        
         echo_debug "pm" "set_sched_powersave($1): ${sdev##/*/} $pwr"
         echo $pwr > "$sdev"
+        return 0
     done
     
+    echo_debug "pm" "set_sched_powersave($1).not_available"
     return 0
 }
 
 set_phc_controls () { 
-    local control
+    local control 
+    local ctrl_avail="0"
     
 	check_sysfs "set_phc_controls" "/sys/devices/system/cpu/cpu0/cpufreq"
 	
     PHC_CONTROLS=${PHC_CONTROLS:-}
     
     if [ -n "$PHC_CONTROLS" ]; then 
-        echo_debug "pm" "set_phc_controls: $PHC_CONTROLS"
-            
         for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do 
             if [ -f $control ]; then
                 echo_debug "pm" "set_phc_controls: $control $PHC_CONTROLS"
                 echo $PHC_CONTROLS > $control
+                ctrl_avail="1"
             fi
         done
+        
+        [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_phc_controls.not_available"
     fi
     
 	return 0
@@ -333,6 +338,7 @@ set_disk_io_sched () {
 
 set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 	local i pwr
+    local ctrl_avail="0"
     
     if [ "$1" = "1" ]; then
 		pwr=${SATA_LINKPWR_ON_BAT:-min_power}
@@ -344,8 +350,11 @@ set_sata_link_power () { # $1: 0=ac mode, 1=battery mode
 	for i in /sys/class/scsi_host/host*/link_power_management_policy ; do
 		if [ -f $i ]; then
 			echo "$pwr" > $i
+            ctrl_avail="1"
 		fi
 	done
+    
+    [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_sata_link_power($1).not_available"
 	
 	return 0
 } 
