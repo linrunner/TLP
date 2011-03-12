@@ -53,7 +53,7 @@ else
 	echo "Fatal error: library $RFLIB not installed."
 	exit 1
 fi
-load_tp_smapi
+load_tp_modules
 
 # --- MAIN
 echo "--- tlp $TLPVER --------------------------------------------"
