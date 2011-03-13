@@ -31,14 +31,15 @@ check_tlp_enabled || exit 0
 
 case $1 in
 	start|restart|force-reload)
-			
+		
+        load_tp_modules
+        	
 		for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
 			if [ "$dev" != "bluetooth" -o "$X_BT_DISABLE_ON_LOGIN" != "1" ]; then
 				device_off $dev
 			fi
 		done
 	
-		load_tp_smapi
 		set_charge_thresholds
 		;;
 		
