@@ -10,6 +10,7 @@ ETHTOOL=/usr/sbin/ethtool
 HDPARM=/sbin/hdparm
 IWC=/sbin/iwconfig
 MODPRO=/sbin/modprobe
+TPMODULES="thinkpad_acpi tp_smapi"
 UDEVADM=/sbin/udevadm
 SMAPIDIR=/sys/devices/platform/smapi
 LOGGER=/usr/bin/logger
@@ -84,8 +85,11 @@ read_defaults () {
 }
 
 load_tp_modules () {
-	$MODPRO thinkpad_acpi > /dev/null 2>&1 
-	$MODPRO tp_smapi > /dev/null 2>&1 
+    local mod
+    
+    for mod in $TPMODULES; do
+        $MODPRO $mod > /dev/null 2>&1 
+	done
 	return 0
 }
 
