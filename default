@@ -24,8 +24,7 @@ SCHED_POWERSAVE_ON_BAT=1
 #PHC_CONTROLS="F:V F:V F:V F:V"
  
 # Hard disk devices, separate multiple devices with spaces (default: sda).
-# Devices can be specified by disk id too; lookup with
-#   ls /dev/disk/by-id/ | egrep '^ata' | egrep -v 'part[1-9]$'
+# Devices can be specified by disk id too (lookup with: tlp diskid).
 DISK_DEVICES="sda sdb"
 
 # Hard disk advanced power management level: 1(max saving)..254(off)
