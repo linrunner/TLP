@@ -2,7 +2,7 @@
 #DEBHELPER#
 
 # Disable conflicting pm-utils hooks
-for i in 95hdparm-apm hal-cd-polling intel-audio-powersave laptop-mode \
+for i in 95hdparm-apm disable_wol hal-cd-polling intel-audio-powersave laptop-mode \
          journal-commit pcie_aspm sata_alpm sched-powersave wireless \
          xfs_buffer; do
     if [ -x /usr/lib/pm-utils/power.d/$i ]; then

@@ -5,7 +5,7 @@ tlp (0.3.0-1) lucid; urgency=low
       (workaround for kernel/network-manager quirk)
   * Features
     - Specify DISK_DEVICES with id's from /dev/disk/by-id (egalus)
-    - tlp diskid: shown disk id's 
+    - tlp diskid: show disk id's 
     - DISK_IOSCHED: set i/o scheduler (egalus)
     - PCIe ASPM
     - Do not set START_CHARGE_THRESH on tp_smapi-capable ThinkPad Edge
@@ -16,7 +16,7 @@ tlp (0.3.0-1) lucid; urgency=low
     - Move symlinking in /etc/pm/power.d/ to postinst/postrm
     - Move /usr/lib/tlp/ to /usr/lib/tlp-pm/
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 16 Mar 2011 22:22:23 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 18 Mar 2011 20:55:00 +0100
 
 tlp (0.2.8-0ubuntu1) lucid; urgency=low
 
