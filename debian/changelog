@@ -1,3 +1,11 @@
+tlp (0.3.0-2) lucid; urgency=low
+
+  * Bug Fixes
+    - DEVICES_TO_DISABLE_ON_STARTUP (Debian): startup code fixed;
+      SysV-script depends on $syslog now
+
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 20 Mar 2011 18:42:00 +0100
+
 tlp (0.3.0-1) lucid; urgency=low
 
   * Bug Fixes
