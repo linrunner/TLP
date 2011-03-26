@@ -89,7 +89,7 @@ case "$mode" in
 		set_sound_power_mode 0
 		enable_usb_suspend 0
         
-        echo_started_mode 1
+        echo_started_mode 0
 		;;
 		
 	wifi) # Set wifi power mode depending on state
