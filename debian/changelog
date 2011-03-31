@@ -1,7 +1,9 @@
-tlp (0.3.0.100-1) lucid; urgency=low
+tlp (0.3.0.900-1) lucid; urgency=low
 
+  * Development version
   * Bug Fixes
     - #18: tlp start ac: incorrect ouptut "started in bat mode" fixed (yatpu)
+  * Features
 
  -- Thomas Koch <linrunner@gmx.net>  Sat, 26 Mar 2011 13:49:00 +0100
 
