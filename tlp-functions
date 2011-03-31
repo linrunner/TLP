@@ -1,5 +1,12 @@
 #!/bin/sh
 # tlp - power management functions
+#
+# Copyright (c) 2011 Thomas Koch <linrunner@gmx.net>
+# This software is licensed under the GPL v2.
+#
+# Some code and descriptions were adapted from:
+# - laptop-mode-tools
+# - thinkwiki.org
 
 # ----------------------------------------------------------------------------
 # Definitions

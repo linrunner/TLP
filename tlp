@@ -1,5 +1,8 @@
 #!/bin/sh
 # tlp - adjust power settings 
+#
+# Copyright (c) 2011 Thomas Koch <linrunner@gmx.net>
+# This software is licensed under the GPL v2.
 
 # Source library
 LIB=/usr/lib/tlp-pm/tlp-functions

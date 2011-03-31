@@ -15,10 +15,3 @@ Conflicts: pm-utils-powersave-policy
 Description: Saves battery power on laptops
  TLP is a collection of scripts enabling laptop-mode and
  implementing power save features for laptop hardware.
- Settings include harddisk advanced power management, sata aggressive 
- link power management, wifi power saving, sound power saving,
- usb autosuspend, phc controls aka "undervolting" (requires kernel 
- support) and battery charge thresholds (ThinkPads only). 
- Optical drives can be powered off on battery (ThinkPad
- Ultrabay devices only). Wifi, bluetooth and wwan devices 
- can be selectively disabled on system startup and shutdown.

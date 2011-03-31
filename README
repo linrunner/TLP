@@ -1,4 +1,4 @@
-TLP README - 31.08.2010
+TLP README - 31.03.2011
 
 TLP is a collection of scripts enabling laptop-mode and
 implementing power save features for laptop hardware.
@@ -6,8 +6,11 @@ implementing power save features for laptop hardware.
 Possible settings for ac/battery are:
 - Kernel laptop-mode, dirty buffer params/file system commit 
 - Harddisk advanced power magement level
-- Wake on lan (disable)
+- IO scheduler per disk
+- Wake on LAN (disable)
 - SATA aggressive link power management (ALPM)
+- PCI express active state power management (PCIe ASPM) (Kernel 2.6.35)
+- Radeon KMS power management (Kernel 2.6.35/not fglrx) 
 - WiFi power saving mode (Kernel 2.6.32/iwlagn only)
 - Audio power saving mode (hda_intel, ac97)
 - USB autosuspend with blacklist

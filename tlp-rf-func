@@ -1,5 +1,8 @@
 #!/bin/sh
 # tlp - rf switch functions
+#
+# Copyright (c) 2011 Thomas Koch <linrunner@gmx.net>
+# This software is licensed under the GPL v2.
 
 # ----------------------------------------------------------------------------
 # Definitions

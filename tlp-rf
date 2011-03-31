@@ -1,5 +1,8 @@
 #!/bin/sh
 # tlp - switch bluetooth/wifi/wwan on/off
+#
+# Copyright (c) 2011 Thomas Koch <linrunner@gmx.net>
+# This software is licensed under the GPL v2.
 
 LIB=/usr/lib/tlp-pm/tlp-functions
 [ -f $LIB ] || exit 0

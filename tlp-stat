@@ -1,5 +1,8 @@
 #!/bin/sh
 # tlp - display power save and usb autosuspend status
+#
+# Copyright (c) 2011 Thomas Koch <linrunner@gmx.net>
+# This software is licensed under the GPL v2.
 
 # --- Definitions
 LIB=/usr/lib/tlp-pm/tlp-functions
