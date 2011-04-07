@@ -28,6 +28,7 @@ check_laptop_mode_tools || exit 2
 mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
 
 echo_debug "run" "+++ mode=$mode"
+echo_debug "path" "PATH=$PATH"
 
 case "$mode" in
 	start) # Set start power mode depending on state

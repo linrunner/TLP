@@ -1,6 +1,8 @@
 tlp (0.3.0.900-1) lucid; urgency=low
 
   * Development version
+    - removed absolute paths for system utils
+    - added PATH debug output in tlp, tlp.init/upstart
   * Bug Fixes
     - #18: tlp start ac: incorrect ouptut "started in bat mode" fixed (yatpu)
   * Features

@@ -21,6 +21,7 @@ pre-start script
 	read_defaults
 	
 	echo_debug "run" "+++ upstart pre-start"
+    echo_debug "path" "PATH=$PATH"
 	check_tlp_enabled || exit 1
 
     load_tp_modules
@@ -46,6 +47,7 @@ post-stop script
 	read_defaults
 	
 	echo_debug "run" "+++ upstart post-stop"
+    echo_debug "path" "PATH=$PATH"
 	check_tlp_enabled || exit 1
 
 	for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do

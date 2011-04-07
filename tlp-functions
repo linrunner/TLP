@@ -10,23 +10,26 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.3.0
+TLPVER=0.3.0.900
 DEFAULT_FILE=/etc/default/tlp
-ACPWR=/usr/bin/on_ac_power
-ETHTOOL=/usr/sbin/ethtool
-HDPARM=/sbin/hdparm
-IWC=/sbin/iwconfig
-MODPRO=/sbin/modprobe
-TPMODULES="thinkpad_acpi tp_smapi"
-UDEVADM=/sbin/udevadm
+
+ACPWR=on_ac_power
+ETHTOOL=ethtool
+HDPARM=hdparm
+IWC=iwconfig
+MODPRO=modprobe
+LOGGER=logger
+DMI=dmidecode
+UDEVADM=udevadm
+
 SMAPIDIR=/sys/devices/platform/smapi
-LOGGER=/usr/bin/logger
 USBD=/sys/bus/usb/devices
+NETD=/sys/class/net
+
 USB_BLACKLIST_INT=""
 USB_TIMEOUT=2
-NETD=/sys/class/net
-DMI=/usr/sbin/dmidecode
 START_THRESH_BLACKLIST="ThinkPad Edge" 
+TPMODULES="thinkpad_acpi tp_smapi"
 
 # ----------------------------------------------------------------------------
 # Functions

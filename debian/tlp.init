@@ -10,8 +10,6 @@
 # Description:       Initialize tlp settings
 ### END INIT INFO
 
-PATH=/sbin:/usr/sbin:/bin:/usr/bin
-
 TLP=/usr/sbin/tlp
 LIB=/usr/lib/tlp-pm/tlp-functions
 RFLIB=/usr/lib/tlp-pm/tlp-rf-func
@@ -27,6 +25,8 @@ CFG=/etc/default/tlp
 read_defaults
 
 echo_debug "run" "+++ init.d $1"
+echo_debug "path" "PATH=$PATH"
+
 check_tlp_enabled || exit 0
 
 case $1 in
