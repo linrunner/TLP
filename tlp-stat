@@ -9,14 +9,12 @@ LIB=/usr/lib/tlp-pm/tlp-functions
 RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 TLPCFG=/etc/default/tlp
 
-HDPARM=/sbin/hdparm
-SMARTCTL=/usr/sbin/smartctl
-
-LSB=/usr/bin/lsb_release
-DMI=/usr/sbin/dmidecode
+HDPARM=hdparm
+SMARTCTL=$(which smartctl)
+LSB=$(which lsb_release)
+DMI=$(which dmidecode)
 
 ASPM=/sys/module/pcie_aspm/parameters/policy
-
 USBD=/sys/bus/usb/devices
 
 # --- Functions
@@ -56,10 +54,10 @@ else
 	echo "Fatal error: library $RFLIB not installed."
 	exit 1
 fi
-load_tp_modules
 
 # --- MAIN
 nodebug=1
+load_tp_modules
 
 echo "--- tlp $TLPVER --------------------------------------------"
 
@@ -76,7 +74,7 @@ if [ $USER != "root" ]; then
 fi
 
 if [ $USER = "root" ]; then
-	if [ -x $DMI ]; then
+	if [ -x "$DMI" ]; then
 		echo "System = $($DMI -s system-manufacturer)" \
 		  "$($DMI -s system-version)" \
 		  "$($DMI -s system-product-name)"
@@ -85,7 +83,7 @@ if [ $USER = "root" ]; then
 else
 	echo "System = (not available)"
 fi
-[ -x $LSB ] && echo "Release = $(lsb_release -d -s)"
+[ -x "$LSB" ] && echo "Release = $(lsb_release -d -s)"
 echo "Kernel = $(uname -r -m)"
 echo
 
@@ -168,7 +166,7 @@ for dev in $DISK_DEVICES; do
                 
                 echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
 			
-				if [ -x $SMARTCTL ]; then
+				if [ -x "$SMARTCTL" ]; then
 					echo 
 					echo "        SMART info:"
 					$SMARTCTL -A /dev/$disk_dev | egrep '^(  4|  5|  9 |193)' | \

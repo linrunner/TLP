@@ -104,7 +104,7 @@ device_on () { # $1: rftype
 		else
 			err_no_root_priv
 		fi
-	elif [ -x $RFKILL ]; then
+	elif [ -x "$RFKILL" ]; then
 		echo_debug "rf" "device_on($1).rfkill"
 		$RFKILL unblock $1
 	else
@@ -135,7 +135,7 @@ device_off () { # $1: rftype
 		else
 			err_no_root_priv
 		fi
-	elif [ -x $RFKILL ]; then
+	elif [ -x "$RFKILL" ]; then
 		echo_debug "rf" "device_off($1).rfkill"
 		$RFKILL block $1
 	else
@@ -170,7 +170,7 @@ device_toggle () { # $1: rftype
 		else
 			err_no_root_priv
 		fi
-	elif [ -x $RFKILL ]; then
+	elif [ -x "$RFKILL" ]; then
 		echo_debug "rf" "device_toggle($1).rfkill"
 		case $devs in
 			0) $RFKILL unblock $1 ;;

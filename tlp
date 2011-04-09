@@ -4,22 +4,24 @@
 # Copyright (c) 2011 Thomas Koch <linrunner@gmx.net>
 # This software is licensed under the GPL v2.
 
-# Source library
+# --- Definitions
 LIB=/usr/lib/tlp-pm/tlp-functions
+RFLIB=/usr/lib/tlp-pm/tlp-rf-func
+
+# --- Source libraries
 if [ ! -f $LIB ]; then
 	echo "Error: missing function library \'$LIB\'."
 	exit 1
 fi
 . $LIB
 
-RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 if [ ! -f $LIB ]; then
 	echo "Error: missing function library \'$RFLIB\'."
 	exit 1
 fi
 . $RFLIB
 
-# MAIN
+# --- MAIN
 read_defaults
 check_tlp_enabled || exit 1
 check_laptop_mode_tools || exit 2
