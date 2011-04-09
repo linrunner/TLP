@@ -227,7 +227,7 @@ get_wifi_ifaces
 for iface in $WIFACES; do
 	if [ -n "$iface" ]; then
 		wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
-		  sed -r 's/.*(Power Management):(on|off).*/\2/')
+		  sed -r 's/.*Power Management:(on|off).*/\1/')
 		get_wifi_driver $iface
 		echo -n "$iface($WIFIDRV): power management = "
 		case $wifipm in
@@ -244,7 +244,7 @@ for iface in $WIFACES; do
 				;;
 				
 			*) 
-				echo "$wifipm (unknown state)"
+				echo "unknown"
 				;;
 		esac
 	fi

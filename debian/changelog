@@ -6,6 +6,7 @@ tlp (0.3.0.900-1) lucid; urgency=low
     - move manpages from debian/ to man/
   * Bug Fixes
     - #18: tlp start ac: incorrect ouptut "started in bat mode" fixed (yatpu)
+    - #19: tlp-stat: incorrect wifi power mgmt detection for wl driver (DrPaulaner) 
   * Features
 
  -- Thomas Koch <linrunner@gmx.net>  Thu, 31 Mar 2011 13:55:00 +0200
