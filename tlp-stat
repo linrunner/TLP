@@ -12,7 +12,6 @@ TLPCFG=/etc/default/tlp
 HDPARM=hdparm
 SMARTCTL=$(which smartctl)
 LSB=$(which lsb_release)
-DMI=$(which dmidecode)
 
 ASPM=/sys/module/pcie_aspm/parameters/policy
 USBD=/sys/bus/usb/devices
@@ -74,12 +73,10 @@ if [ $USER != "root" ]; then
 fi
 
 if [ $USER = "root" ]; then
-	if [ -x "$DMI" ]; then
-		echo "System = $($DMI -s system-manufacturer)" \
-		  "$($DMI -s system-version)" \
-		  "$($DMI -s system-product-name)"
-		echo "BIOS = $($DMI -s bios-version)"
-	fi
+    echo "System = $($DMI -s system-manufacturer)" \
+	  "$($DMI -s system-version)" \
+	  "$($DMI -s system-product-name)"
+	echo "BIOS = $($DMI -s bios-version)"
 else
 	echo "System = (not available)"
 fi
