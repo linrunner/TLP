@@ -1,4 +1,4 @@
-tlp (0.3.0.200-1) lucid; urgency=low
+tlp (0.3.0.201-1) lucid; urgency=low
 
   * Development Version
   * Changes to ease porting to other distros
@@ -6,10 +6,12 @@ tlp (0.3.0.200-1) lucid; urgency=low
     - added PATH debug output in tlp, tlp.init/tlp.upstart
     - move manpages from debian/ to man/
   * Bug Fixes
-    - #18: tlp start ac: incorrect ouptut "started in bat mode" fixed (yatpu)
-    - #19: tlp-stat: incorrect wifi power mgmt detection for wl driver (DrPaulaner) 
+    - #18: tlp start (ac): incorrect ouptut "started in bat mode"
+           fixed (yatpu)
+    - #19: tlp-stat: incorrect wifi power mgmt detection for 
+           wl driver (DrPaulaner) 
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 15 Apr 2011 19:54:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 26 Apr 2011 20:50:00 +0200
 
 tlp (0.3.0-2) lucid; urgency=low
 

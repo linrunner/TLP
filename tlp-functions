@@ -10,7 +10,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.3.0.200
+TLPVER=0.3.0.201
 DEFAULT_FILE=/etc/default/tlp
 
 ACPWR=on_ac_power
@@ -28,7 +28,7 @@ NETD=/sys/class/net
 
 USB_BLACKLIST_INT=""
 USB_TIMEOUT=2
-START_THRESH_BLACKLIST="ThinkPad Edge" 
+START_THRESH_BLACKLIST="ThinkPad Edge|xyzzy" 
 TPMODULES="thinkpad_acpi tp_smapi"
 
 # ----------------------------------------------------------------------------

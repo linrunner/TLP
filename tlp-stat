@@ -10,8 +10,8 @@ RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 TLPCFG=/etc/default/tlp
 
 HDPARM=hdparm
-SMARTCTL=$(which smartctl)
-LSB=$(which lsb_release)
+SMARTCTL=$(which smartctl 2> /dev/null)
+LSB=$(which lsb_release 2> /dev/null)
 
 ASPM=/sys/module/pcie_aspm/parameters/policy
 USBD=/sys/bus/usb/devices
