@@ -57,7 +57,7 @@ check_sysfs ()  { # $1: routine; $2: sysfs path
 
 check_root () { 
 	if [ "$(id -u)" != "0" ]; then
-		echo "Error: root privilege needed. Please call me with 'sudo'." 1>&2
+		echo "Error: root privilege needed." 1>&2
 		exit 1
 	fi
 }

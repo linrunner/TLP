@@ -15,12 +15,6 @@ if [ ! -f $LIB ]; then
 fi
 . $LIB
 
-if [ ! -f $LIB ]; then
-	echo "Error: missing function library \'$RFLIB\'."
-	exit 1
-fi
-. $RFLIB
-
 # --- MAIN
 read_defaults
 check_tlp_enabled || exit 1
@@ -116,9 +110,6 @@ case "$mode" in
 		;;
 		
 	xlogin) # Called on desktop login
-		for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
-			[ "$dev" = "bluetooth" -a "$X_BT_DISABLE_ON_LOGIN" = "1" ] && ( sleep 5; device_off $dev ) &
-		done
 		;;
 
 	discharge) # Discharge battery completely (to recalibrate)
