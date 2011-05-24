@@ -55,6 +55,8 @@ else
 fi
 
 # --- MAIN
+check_root
+
 nodebug=1
 load_tp_modules
 
@@ -67,19 +69,11 @@ else
 	echo
 fi
 
-if [ $USER != "root" ]; then
-	echo "Use 'sudo tlp-stat' to get more information!"
-	echo
-fi
+echo "System = $($DMI -s system-manufacturer)" \
+	   "$($DMI -s system-version)" \
+	   "$($DMI -s system-product-name)"
+echo "BIOS = $($DMI -s bios-version)"
 
-if [ $USER = "root" ]; then
-    echo "System = $($DMI -s system-manufacturer)" \
-	  "$($DMI -s system-version)" \
-	  "$($DMI -s system-product-name)"
-	echo "BIOS = $($DMI -s bios-version)"
-else
-	echo "System = (not available)"
-fi
 [ -x "$LSB" ] && echo "Release = $(lsb_release -d -s)"
 echo "Kernel = $(uname -r -m)"
 echo
@@ -140,39 +134,34 @@ for dev in $DISK_DEVICES; do
 	if [ -b /dev/$disk_dev ]; then
 		check_disk_hdparm_cap $disk_dev
 		if [ $? = 0 ]; then
-			if [ $USER = "root" ]; then
-                echo "/dev/$disk_dev:"
-                	
-                if [ -n "$disk_id" ]; then
-                    echo "          Disk ID   = $disk_id"
-                fi
+            echo "/dev/$disk_dev:"
                 
-				echo -n "          Model     = "
-				echo_disk_model $disk_dev
-                
-                echo -n "          Firmware  = "
-				echo_disk_firmware $disk_dev
-				
-				get_disk_apm_level $disk_dev
-				apm=$?
-				echo -n "          APM Level = "
-				case $apm in
-					0|255) echo "none/disabled" ;;
-					*)     echo $apm ;;
-				esac
-                
-                echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
-			
-				if [ -x "$SMARTCTL" ]; then
-					echo 
-					echo "        SMART info:"
-					$SMARTCTL -A /dev/$disk_dev | egrep '^(  4|  5|  9 |193)' | \
-					  awk -F ' ' '{ printf "          %-25s = %6d \n", $2, $10 }'
-				fi
-			else
-                echo "/dev/$disk_dev: (use 'sudo tlp-stat' to get more information)"
-                echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
-			fi
+            if [ -n "$disk_id" ]; then
+                echo "          Disk ID   = $disk_id"
+            fi
+            
+            echo -n "          Model     = "
+            echo_disk_model $disk_dev
+            
+            echo -n "          Firmware  = "
+            echo_disk_firmware $disk_dev
+            
+            get_disk_apm_level $disk_dev
+            apm=$?
+            echo -n "          APM Level = "
+            case $apm in
+                0|255) echo "none/disabled" ;;
+                *)     echo $apm ;;
+            esac
+            
+            echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
+        
+            if [ -x "$SMARTCTL" ]; then
+                echo 
+                echo "        SMART info:"
+                $SMARTCTL -A /dev/$disk_dev | egrep '^(  4|  5|  9 |193)' | \
+                  awk -F ' ' '{ printf "          %-25s = %6d \n", $2, $10 }'
+            fi
 		fi
 	fi
 done
