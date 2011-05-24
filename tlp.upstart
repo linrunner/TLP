@@ -27,9 +27,7 @@ pre-start script
     load_tp_modules
     
 	for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
-		if [ "$dev" != "bluetooth" -o "$X_BT_DISABLE_ON_LOGIN" != "1" ]; then
-			device_off $dev
-		fi
+        device_off $dev
 	done
 	
 	set_charge_thresholds
