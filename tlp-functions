@@ -385,7 +385,7 @@ set_pcie_aspm () { # $1: 0=ac mode, 1=battery mode
     
     if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
         echo_debug "pm" "set_pcie_aspm($1): $pwr"
-        echo "$pwr" > /sys/module/pcie_aspm/parameters/policy
+        echo "$pwr" > /sys/module/pcie_aspm/parameters/policy 2> /dev/null
     else
         echo_debug "pm" "set_pcie_aspm($1).not_available"
     fi
