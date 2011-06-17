@@ -77,6 +77,10 @@ BAY_POWEROFF_ON_BAT=0
 # Optical drive device to power off (default sr0)
 BAY_DEVICE="sr0"
  
+# Set to 0 to disable/1 to enable runtime pm feature 
+# for pci/spi/i2c bus devices
+RUNTIME_PM=1
+
 # Set to 0 to disable/1 to enable usb autosuspend feature
 USB_AUTOSUSPEND=1
  

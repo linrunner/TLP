@@ -1,11 +1,12 @@
-tlp (0.3.0.202-1) lucid; urgency=low
+tlp (0.3.0.900-1) lucid; urgency=low
 
   * Development Version
   * Changes to ease porting to other distros
     - removed system utils absolute paths
     - added PATH debug output in tlp, tlp.init/tlp.upstart
     - move manpages from debian/ to man/
-  * Other changes
+  * Features, other changes
+    - runtime pm ()
     - tlp-stat now runs with root privilege only
   * Bug Fixes
     - #18: tlp start (ac): incorrect ouptut "started in bat mode"
