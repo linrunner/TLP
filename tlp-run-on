@@ -4,27 +4,27 @@ self=${0##*/}
 
 cmd=$1
 if [ -z "$1" ]; then
-	echo "Usage: $self command [arg(s)]"
-	exit 1
+    echo "Usage: $self command [arg(s)]"
+    exit 1
 fi
 
 shift
 
 case $self in
     run-on-ac)
-		if on_ac_power; then		
-			$cmd $@
-		fi
-		;;
-		
-	run-on-bat)
-		if ! on_ac_power; then		
-			$cmd $@
-		fi
-		;;
+        if on_ac_power; then        
+            $cmd $@
+        fi
+        ;;
+        
+    run-on-bat)
+        if ! on_ac_power; then      
+            $cmd $@
+        fi
+        ;;
 
     *)
-		echo "Error: unknown mode $self."
-		exit 1
-		;;
+        echo "Error: unknown mode $self."
+        exit 1
+        ;;
 esac

@@ -18,40 +18,40 @@ USBD=/sys/bus/usb/devices
 
 # --- Functions
 echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
-	local val
-	
-	if [ -f $1 ]; then
-		val=`cat $1`
-		if [ -n "$4" ]; then
-			val=${val%$4}
-		fi
-		if [ -n "$3" ]; then	
-			echo "$1 = $val [$3]"
-		else
-			echo "$1 = $val"
-		fi
-	else
-		if [ -n "$2" ]; then
-			echo "$1 = ($2)"
-		else
-			echo "$1 = (not available)"
-		fi
-	fi
+    local val
+    
+    if [ -f $1 ]; then
+        val=`cat $1`
+        if [ -n "$4" ]; then
+            val=${val%$4}
+        fi
+        if [ -n "$3" ]; then    
+            echo "$1 = $val [$3]"
+        else
+            echo "$1 = $val"
+        fi
+    else
+        if [ -n "$2" ]; then
+            echo "$1 = ($2)"
+        else
+            echo "$1 = (not available)"
+        fi
+    fi
 }
 
 # --- Read libraries
 if [ -f $LIB ]; then
-	. $LIB
+    . $LIB
 else
-	echo "Fatal error: library $LIB not installed."
-	exit 1
+    echo "Fatal error: library $LIB not installed."
+    exit 1
 fi
 
 if [ -f $RFLIB ]; then
-	. $RFLIB
+    . $RFLIB
 else
-	echo "Fatal error: library $RFLIB not installed."
-	exit 1
+    echo "Fatal error: library $RFLIB not installed."
+    exit 1
 fi
 
 # --- MAIN
@@ -63,15 +63,15 @@ load_tp_modules
 echo "--- tlp $TLPVER --------------------------------------------"
 
 if [ -f $TLPCFG ]; then
-	. $TLPCFG
+    . $TLPCFG
 else
-	echo "Warning: config file $TLPCFG not present."
-	echo
+    echo "Warning: config file $TLPCFG not present."
+    echo
 fi
 
 echo "System = $($DMI -s system-manufacturer)" \
-	   "$($DMI -s system-version)" \
-	   "$($DMI -s system-product-name)"
+       "$($DMI -s system-version)" \
+       "$($DMI -s system-product-name)"
 echo "BIOS = $($DMI -s bios-version)"
 
 [ -x "$LSB" ] && echo "Release = $(lsb_release -d -s)"
@@ -79,17 +79,17 @@ echo "Kernel = $(uname -r -m)"
 echo
 
 if check_laptop_mode_tools; then
-	if [ "$TLP_ENABLE" = "1" ]; then
-		echo "tlp power save = enabled"
-	else
-		echo "tlp power save = not enabled"
-	fi
+    if [ "$TLP_ENABLE" = "1" ]; then
+        echo "tlp power save = enabled"
+    else
+        echo "tlp power save = not enabled"
+    fi
 fi
 
 if get_power_state; then
-	echo "power source = ac"
+    echo "power source = ac"
 else
-	echo "power source = battery"
+    echo "power source = battery"
 fi
 echo
 
@@ -131,9 +131,9 @@ DISK_DEVICES=${DISK_DEVICES:=sda}
 for dev in $DISK_DEVICES; do
     get_disk_dev $dev
 
-	if [ -b /dev/$disk_dev ]; then
-		check_disk_hdparm_cap $disk_dev
-		if [ $? = 0 ]; then
+    if [ -b /dev/$disk_dev ]; then
+        check_disk_hdparm_cap $disk_dev
+        if [ $? = 0 ]; then
             echo "/dev/$disk_dev:"
                 
             if [ -n "$disk_id" ]; then
@@ -162,8 +162,8 @@ for dev in $DISK_DEVICES; do
                 $SMARTCTL -A /dev/$disk_dev | egrep '^(  4|  5|  9 |193)' | \
                   awk -F ' ' '{ printf "          %-25s = %6d \n", $2, $10 }'
             fi
-		fi
-	fi
+        fi
+    fi
 done
 echo
 
@@ -171,13 +171,13 @@ echo
 cnt=0
 for i in /sys/class/scsi_host/host* ; do
     if [ -f $i/link_power_management_policy ]; then
-		echoparm $i/link_power_management_policy
-		cnt=$((cnt+1))
-	fi
+        echoparm $i/link_power_management_policy
+        cnt=$((cnt+1))
+    fi
 done
 if [ $cnt = 0 ]; then
-	echo "sata link power management: no ahci-enabled host controller detected"
-fi	
+    echo "sata link power management: no ahci-enabled host controller detected"
+fi  
 echo 
 
 # pcie aspm
@@ -202,104 +202,104 @@ done
 for i in bluetooth wifi wwan; do
     get_devc $i
     get_devs $i
-	echo_device_state $i $devs
+    echo_device_state $i $devs
 done
 echo
 
 # wifi power mode
 get_wifi_ifaces
 for iface in $WIFACES; do
-	if [ -n "$iface" ]; then
-		wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
-		  sed -r 's/.*Power Management:(on|off).*/\1/')
-		get_wifi_driver $iface
-		echo -n "$iface($WIFIDRV): power management = "
-		case $wifipm in
-			on)
-				echo "on"
-				;;
-				
-			off)
-				if [ -z "$($IWC $iface power off 2>&1)" ]; then
-					echo "off"
-				else
-					echo "off (not supported)"
-				fi
-				;;
-				
-			*) 
-				echo "unknown"
-				;;
-		esac
-	fi
+    if [ -n "$iface" ]; then
+        wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
+          sed -r 's/.*Power Management:(on|off).*/\1/')
+        get_wifi_driver $iface
+        echo -n "$iface($WIFIDRV): power management = "
+        case $wifipm in
+            on)
+                echo "on"
+                ;;
+                
+            off)
+                if [ -z "$($IWC $iface power off 2>&1)" ]; then
+                    echo "off"
+                else
+                    echo "off (not supported)"
+                fi
+                ;;
+                
+            *) 
+                echo "unknown"
+                ;;
+        esac
+    fi
 done
 echo
-	
+    
 # sound power mode
 if [ -d /sys/module/snd_hda_intel ]; then
-	echoparm /sys/module/snd_hda_intel/parameters/power_save
-	echoparm /sys/module/snd_hda_intel/parameters/power_save_controller
+    echoparm /sys/module/snd_hda_intel/parameters/power_save
+    echoparm /sys/module/snd_hda_intel/parameters/power_save_controller
 fi
 if [ -d /sys/module/snd_ac97_codec ]; then
-	echoparm /sys/module/snd_ac97_codec/parameters/power_save
+    echoparm /sys/module/snd_ac97_codec/parameters/power_save
 fi
 echo 
 
 # battery info & charge thresholds 
 if [ -d /sys/devices/platform/smapi ]; then
-	# ThinkPad via tp_smapi
+    # ThinkPad via tp_smapi
     thresh_blacklist_check
     
-	for bat in /sys/devices/platform/smapi/BAT[01]; do
-		if [ -d $bat ] && [ "$(cat $bat/installed)" = "1" ]; then
-			echoparm $bat/manufacturer
-			echoparm $bat/manufacture_date
-			echoparm $bat/first_use_date
-			echoparm $bat/cycle_count
-			echoparm $bat/design_capacity - mWh
-			echoparm $bat/last_full_capacity - mWh
-			echoparm $bat/remaining_capacity - mWh
-			echoparm $bat/remaining_percent - "%"
-			echoparm $bat/remaining_running_time_now - min
-			echoparm $bat/remaining_charging_time - min
-			echo
-			if [ -z "$thresh_blacklisted" ]; then
+    for bat in /sys/devices/platform/smapi/BAT[01]; do
+        if [ -d $bat ] && [ "$(cat $bat/installed)" = "1" ]; then
+            echoparm $bat/manufacturer
+            echoparm $bat/manufacture_date
+            echoparm $bat/first_use_date
+            echoparm $bat/cycle_count
+            echoparm $bat/design_capacity - mWh
+            echoparm $bat/last_full_capacity - mWh
+            echoparm $bat/remaining_capacity - mWh
+            echoparm $bat/remaining_percent - "%"
+            echoparm $bat/remaining_running_time_now - min
+            echoparm $bat/remaining_charging_time - min
+            echo
+            if [ -z "$thresh_blacklisted" ]; then
                 echoparm $bat/start_charge_thresh - "%"
             else
                 echo "$bat/start_charge_thresh = (not available)"
             fi
-			echoparm $bat/stop_charge_thresh - "%"
-			echo
-		fi
-	done
+            echoparm $bat/stop_charge_thresh - "%"
+            echo
+        fi
+    done
 elif [ -d /sys/class/power_supply ]; then
-	if [ -d /sys/devices/platform/thinkpad_acpi ]; then
-		echo "ThinkPad extended battery info not available (missing tp_smapi kernel module)."
-	fi
-	# generic
-	for bat in /sys/class/power_supply/BAT?; do
-		if [ -d $bat ] && [ "$(cat $bat/present)" = "1" ]; then
-			echoparm $bat/manufacturer
-			echoparm $bat/energy_full_design - mWh 000
-			echoparm $bat/energy_full - mWh 000
-			echoparm $bat/energy_now - mWh 000
-			echo
-		fi
-	done
+    if [ -d /sys/devices/platform/thinkpad_acpi ]; then
+        echo "ThinkPad extended battery info not available (missing tp_smapi kernel module)."
+    fi
+    # generic
+    for bat in /sys/class/power_supply/BAT?; do
+        if [ -d $bat ] && [ "$(cat $bat/present)" = "1" ]; then
+            echoparm $bat/manufacturer
+            echoparm $bat/energy_full_design - mWh 000
+            echoparm $bat/energy_full - mWh 000
+            echoparm $bat/energy_now - mWh 000
+            echo
+        fi
+    done
 fi
 
 # usb autosuspend
 if [ "$USB_AUTOSUSPEND" = "1" ]; then
-	echo "tlp usb autosuspend = enabled"
+    echo "tlp usb autosuspend = enabled"
 else
-	echo "tlp usb autosuspend = not enabled"
+    echo "tlp usb autosuspend = not enabled"
 fi
 echo "tlp usb blacklist = ${USB_BLACKLIST:=(not configured)}"
 echo
 
 devices=$(ls $USBD | grep -v ':')
 for usbdev in $devices; do
-	if [ -f $USBD/$usbdev/power/autosuspend ]; then
+    if [ -f $USBD/$usbdev/power/autosuspend ]; then
         if [ -f $USBD/$usbdev/power/control ]; then
             control="control = $(cat $USBD/$usbdev/power/control)" 
         else
@@ -308,9 +308,9 @@ for usbdev in $devices; do
         fi
         
         # show dev path, state, usb id
-		echo -n "$USBD/$usbdev/power/autosuspend = `cat $USBD/$usbdev/power/autosuspend`," \
-		     "$control --" \
-		     "$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct) "
+        echo -n "$USBD/$usbdev/power/autosuspend = `cat $USBD/$usbdev/power/autosuspend`," \
+             "$control --" \
+             "$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct) "
         
         # show product string     
         product="$([ -f $USBD/$usbdev/product ] && cat $USBD/$usbdev/product)"
@@ -333,7 +333,7 @@ for usbdev in $devices; do
             fi
         done 
         echo "(${driverlist:-no driver})"
-	fi
+    fi
 done
 echo
 

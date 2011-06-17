@@ -30,26 +30,26 @@ echo_debug "path" "PATH=$PATH"
 check_tlp_enabled || exit 0
 
 case $1 in
-	start|restart|force-reload)
-		
+    start|restart|force-reload)
+        
         load_tp_modules
-        	
-		for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
-			device_off $dev
-		done
-	
-		set_charge_thresholds
-		;;
-		
-	stop)
-		for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
-			device_off $dev
-		done
-		;;
+            
+        for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
+            device_off $dev
+        done
+    
+        set_charge_thresholds
+        ;;
+        
+    stop)
+        for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
+            device_off $dev
+        done
+        ;;
 
-	*)
-		# do nothing
-		;;
+    *)
+        # do nothing
+        ;;
 esac
 
 exit 0

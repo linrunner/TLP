@@ -1,6 +1,6 @@
 # TLP settings on system startup/shutdown
 
-description	"tlp"
+description "tlp"
 
 start on ( virtual-filesystems and runlevel [2345] )
 stop on runlevel [!2345]
@@ -11,47 +11,47 @@ env RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 env CFG=/etc/default/tlp
 
 pre-start script
-	[ -x $TLP ] || exit 4
-	[ -f $LIB ] || exit 4
-	[ -f $RFLIB ] || exit 4
-	[ -f $CFG ] || exit 2
+    [ -x $TLP ] || exit 4
+    [ -f $LIB ] || exit 4
+    [ -f $RFLIB ] || exit 4
+    [ -f $CFG ] || exit 2
 
-	. $LIB
-	. $RFLIB
-	read_defaults
-	
-	echo_debug "run" "+++ upstart pre-start"
+    . $LIB
+    . $RFLIB
+    read_defaults
+    
+    echo_debug "run" "+++ upstart pre-start"
     echo_debug "path" "PATH=$PATH"
-	check_tlp_enabled || exit 1
+    check_tlp_enabled || exit 1
 
     load_tp_modules
     
-	for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
+    for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
         device_off $dev
-	done
-	
-	set_charge_thresholds
-	
+    done
+    
+    set_charge_thresholds
+    
 end script
 
 post-stop script
-	[ -x $TLP ] || exit 4
-	[ -f $LIB ] || exit 4
-	[ -f $RFLIB ] || exit 4
-	[ -f $CFG ] || exit 2
+    [ -x $TLP ] || exit 4
+    [ -f $LIB ] || exit 4
+    [ -f $RFLIB ] || exit 4
+    [ -f $CFG ] || exit 2
 
-	. $LIB	
-	. $RFLIB
-	read_defaults
-	
-	echo_debug "run" "+++ upstart post-stop"
+    . $LIB  
+    . $RFLIB
+    read_defaults
+    
+    echo_debug "run" "+++ upstart post-stop"
     echo_debug "path" "PATH=$PATH"
-	check_tlp_enabled || exit 1
+    check_tlp_enabled || exit 1
 
-	for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
-		device_off $dev
-	done
-	
+    for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
+        device_off $dev
+    done
+    
 end script
 
 
