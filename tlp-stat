@@ -288,6 +288,7 @@ elif [ -d /sys/class/power_supply ]; then
                 echoparm $bat/charge_full_design - mAh 000
                 echoparm $bat/charge_full - mAh 000
                 echoparm $bat/charge_now - mAh 000
+                echoparm $bat/cycle_count - 
             fi
             echo
         fi
