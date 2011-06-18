@@ -32,7 +32,7 @@ I2CD=/sys/bus/i2c/devices
 
 USB_BLACKLIST_INT=""
 USB_TIMEOUT=2
-START_THRESH_BLACKLIST="ThinkPad Edge|xyzzy" 
+
 TPMODULES="thinkpad_acpi tp_smapi"
 
 # ----------------------------------------------------------------------------
@@ -607,20 +607,19 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
 do_threshold () { # $1: treshold file, $2: new value
     if [ -n "$2" ]; then
         if [ "$(cat $1)" != "$2" ]; then
-            echo $2 > $1
+            echo $2 > $1 2> /dev/null
         fi
     fi
 }
 
-thresh_blacklist_check () { # retval: $thresh_blacklisted ""/"[blacklisted model]"
-    if [ "$(id -u)" != "0" ]; then
-        # can't check when not root, so let it be ...
-        thresh_blacklisted=""
-    else
-        # check via blacklist if ThinkPad model supports start_charge_thresh
-        thresh_blacklisted=$($DMI -s system-version | egrep "$START_THRESH_BLACKLIST")
-        echo_debug "pm" "thresh_blacklist_check.blacklisted: ${thresh_blacklisted:-(none)}"
-    fi
+thresh_check () { # $1: threshold; ret: 0=invalid/1..100=valid
+    local thr
+    
+    thr=$(echo $1 | egrep '^[0-9]{1,3}$') # check for 1..3 digits
+    [ -z "$thr"  ] && thr=0 
+    [ $thr -gt 100 ] && thr=0 
+    
+    return $thr
 }
 
 set_charge_thresholds () {
@@ -628,22 +627,18 @@ set_charge_thresholds () {
     [ -d $SMAPIDIR ] || return 0
     echo_debug "pm" "set_charge_thresholds.smapidir-present"
     
-    thresh_blacklist_check
-        
     if [ -d $SMAPIDIR/BAT0 ] && [ "$(cat $SMAPIDIR/BAT0/installed)" = "1" ]; then
-        if [ -z "$thresh_blacklisted" ]; then
-            echo_debug "pm" "set_charge_thresholds.start(BAT0): $START_CHARGE_THRESH_BAT0"
-            do_threshold $SMAPIDIR/BAT0/start_charge_thresh "$START_CHARGE_THRESH_BAT0"
-        fi
+        echo_debug "pm" "set_charge_thresholds.start(BAT0): $START_CHARGE_THRESH_BAT0"
+        do_threshold $SMAPIDIR/BAT0/start_charge_thresh "$START_CHARGE_THRESH_BAT0"
+        
         echo_debug "pm" "set_charge_thresholds.stop (BAT0): $STOP_CHARGE_THRESH_BAT0"
         do_threshold $SMAPIDIR/BAT0/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT0"
     fi
     
     if [ -d $SMAPIDIR/BAT1 ] &&  [ "$(cat $SMAPIDIR/BAT1/installed)" = "1" ]; then
-        if [ -z "$thresh_blacklisted"  ]; then
-            echo_debug "pm" "set_charge_thresholds.start(BAT1): $START_CHARGE_THRESH_BAT1"
-            do_threshold $SMAPIDIR/BAT1/start_charge_thresh "$START_CHARGE_THRESH_BAT1"
-        fi
+        echo_debug "pm" "set_charge_thresholds.start(BAT1): $START_CHARGE_THRESH_BAT1"
+        do_threshold $SMAPIDIR/BAT1/start_charge_thresh "$START_CHARGE_THRESH_BAT1"
+        
         echo_debug "pm" "set_charge_thresholds.stop (BAT1): $STOP_CHARGE_THRESH_BAT1"
         do_threshold $SMAPIDIR/BAT1/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT1"
     fi
@@ -684,7 +679,7 @@ discharge_battery () { # $1: battery
         return 1
     fi
         
-    echo 1 > $bdir/force_discharge
+    echo 1 > $bdir/force_discharge 2> /dev/null
     trap cancel_discharge INT
     
     while [ "$(cat $bdir/force_discharge)" = "0" ]; do :; done
@@ -707,16 +702,6 @@ discharge_battery () { # $1: battery
     return 0
 }
 
-thresh_check () { # $1: threshold; ret: 0=invalid/1..100=valid
-    local thr
-    
-    thr=$(echo $1 | egrep '^[0-9]{1,3}$') # check for 1..3 digits
-    [ -z "$thr"  ] && thr=0 
-    [ $thr -gt 100 ] && thr=0 
-    
-    return $thr
-}
-
 setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, $3: battery, 
     local bat bdir start_thresh stop_thresh
 
@@ -733,49 +718,58 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
         echo "Error: setting charge thresholds is possible on ac power only."
         return 1
     fi  
-
-    # select battery and check if it is present
-    bat=$3
-    bat=${bat:=BAT0} # default is BAT0
-    bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
-    bdir=$SMAPIDIR/$bat
     
-    if [ ! -f $bdir/installed ] || [ "$(cat $bdir/installed)" = "0" ]; then
-        echo "Error: battery $bat not present."
-        echo_debug "pm" "setcharge_battery.notpresent: $bat"
-        return 1
-    fi
-    
-    # get thresholds args and check if they're valid
-    thresh_check $1; start_thresh=$?
-    thresh_check $2; stop_thresh=$?
+    if [ $# -gt 0 ]; then 
+        # some parameters given, check them
         
-    # check if > 0 and stop > start 
-    if [ $start_thresh -eq 0 -o $stop_thresh -eq 0 -o $start_thresh -ge $stop_thresh ]; then
-        echo "Error: invalid thresholds (start=$1, stop=$2)"        
-        echo_debug "pm" "setcharge_battery.invalid_thresh: $bat \"$1\" \"$2\""
+        # get battery arg, check if selected battery is present
+        bat=${3:-BAT0} # default is BAT0
+        bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
+        bdir=$SMAPIDIR/$bat
+        
+        if [ ! -f $bdir/installed ] || [ "$(cat $bdir/installed)" = "0" ]; then
+            echo "Error: battery $bat not present."
+            echo_debug "pm" "setcharge_battery.notpresent: $bat"
+            return 1
+        fi
+        
+        # get thresholds args
+        start_thresh=$1
+        stop_thresh=${2:-0}
+               
+    else 
+        # no parameters given, assume BAT0 and take thresholds from config file
+        bat=BAT0
+        bdir=$SMAPIDIR/$bat
+        start_thresh=${START_CHARGE_THRESH_BAT0:-0}
+        stop_thresh=${STOP_CHARGE_THRESH_BAT0:-0}
+        
+    fi
+ 
+    # check thresholds 
+    thresh_check $start_thresh; start_thresh=$?
+    thresh_check $stop_thresh; stop_thresh=$?
+    
+    # check if thresholds > 0 and stop > start + 3 
+    if [ $start_thresh -eq 0 -o $stop_thresh -eq 0 -o $(($start_thresh + 3)) -ge $stop_thresh ]; then
+        echo "Error: invalid thresholds (start=$start_thresh, stop=$stop_thresh)"        
+        echo_debug "pm" "setcharge_battery.invalid_thresh: $bat $start_thresh $stop_thresh"
         return 1
     fi
 
-    # set thresholds 
-    thresh_blacklist_check
-    if [ -z "$thresh_blacklisted" ]; then
-        echo_debug "pm" "setcharge_battery.start($bat) $start_thresh"
-        do_threshold $bdir/start_charge_thresh "$start_thresh"
-    fi
+    # write threshold values
+    echo_debug "pm" "setcharge_battery.start($bat) $start_thresh"
+    do_threshold $bdir/start_charge_thresh "$start_thresh"
+    
     echo_debug "pm" "setcharge_battery.stop ($bat) $stop_thresh"
     do_threshold $bdir/stop_charge_thresh "$stop_thresh"
     
     # trigger charging via discharge
-    echo 1 > $bdir/force_discharge
+    echo 1 > $bdir/force_discharge 2> /dev/null
     sleep 2
-    echo 0 > $bdir/force_discharge
+    echo 0 > $bdir/force_discharge 2> /dev/null
     
-    if [ -z "$thresh_blacklisted" ]; then
-        echo "Charging thresholds of battery $bat temporarily set to: start=$start_thresh stop=$stop_thresh."
-    else
-        echo "Charging thresholds of battery $bat temporarily set to: start=n/a stop=$stop_thresh."
-    fi
+    echo "Charging thresholds of battery $bat temporarily set to: start=$start_thresh stop=$stop_thresh."
     echo_debug "pm" "setcharge_battery.initiated"
     return 0
 }

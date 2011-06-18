@@ -1,4 +1,4 @@
-.TH TLP 8 "2011-03-18" "Power Management" ""
+.TH TLP 8 "2011-06-18" "Power Management" ""
 .SH NAME
 tlp \- apply laptop power management settings
 .SH SYNOPSIS
@@ -36,11 +36,11 @@ The drive may be reenabled by pulling the eject lever or pushing the media eject
 .B discharge [BAT0|BAT1] \fR(ThinkPads only)
 Force discharge of main (BAT0) or Ultrabay battery (BAT1).
 .TP
-.B setcharge START_CHARGE STOP_CHARGE [BAT0|BAT1] \fR(ThinkPads only)
-Set charge thresholds temporarily, values must be between 1 and 100. Configured settings are restored upon next system start.
+.B setcharge [START_CHARGE STOP_CHARGE [BAT0|BAT1]] \fR(ThinkPads only)
+Set charge thresholds temporarily. Values must be between 1 and 100, Stop > Start + 3. Configured thresholds are restored upon next system start. When called without arguments, configured thresholds are set.
 .TP
 .B fullcharge [BAT0|BAT1] \fR(ThinkPads only)
-Set charge thresholds to factory preset (96/100) temporarily. Configured settings are restored upon next system start.
+Set charge thresholds to factory preset (96/100) temporarily. Configured thresholds are restored upon next system start.
 .TP
 .B stat
 Same as tlp-stat.
