@@ -31,7 +31,15 @@ DISK_DEVICES="sda sdb"
 # Levels 1..127 spin down the disk.
 # Separate values for multiple devices with spaces.
 DISK_APM_LEVEL_ON_AC="254 254"
-DISK_APM_LEVEL_ON_BAT="128 128"  
+DISK_APM_LEVEL_ON_BAT="128 128"
+
+# Hard disk spin down timeout:
+# 0:        spin down disabled
+# 1..240:   timeouts from 5s to 20min (in units of 5s)
+# 241..251: timeouts from 30min to 5.5 hours (in units of 30min)
+# (see 'man hdparm' for details)
+#DISK_SPINDOWN_TIMEOUT_ON_AC="0 0"
+#DISK_SPINDOWN_TIMEOUT_ON_BAT="0 0"
 
 # Select i/o scheduler for the disk devices - possible values are 
 #   noop anticipatory deadline cfq (Default: cfq) 

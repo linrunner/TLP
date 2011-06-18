@@ -7,6 +7,7 @@ tlp (0.3.0.900-1) lucid; urgency=low
     - move manpages from debian/ to man/
   * Features, other changes
     - runtime pm (ccyx)
+    - set/disable hard disk spindown timeout (enrico65, hausmarke86)
     - tlp-stat now runs with root privilege only
   * Bug Fixes
     - #18: tlp start (ac): incorrect ouptut "started in bat mode"

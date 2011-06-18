@@ -328,6 +328,40 @@ set_disk_apm_level () { # $1: 0=ac mode, 1=battery mode
     return 0
 } 
 
+set_disk_spindown_timeout () { # $1: 0=ac mode, 1=battery mode
+    local dev timeout timeoutlist
+    
+    DISK_DEVICES=${DISK_DEVICES:=sda}
+    if [ $1 = "1" ]; then
+        timeoutlist=$DISK_SPINDOWN_TIMEOUT_ON_BAT
+    else
+        timeoutlist=$DISK_SPINDOWN_TIMEOUT__ON_AC
+    fi
+    
+    # strip excess blanks from list
+    timeoutlist=$(echo -n $timeoutlist | sed -r 's/ +/ /g; s/^ | $//g') 
+    
+    [ -z "$timeoutlist" ] && return 0 
+    
+    for dev in $DISK_DEVICES; do
+        get_disk_dev $dev
+        
+        if [ -b /dev/$disk_dev ]; then
+            check_disk_hdparm_cap $disk_dev
+            if [ $? = 0 ]; then
+                # parse list
+                timeout=$(echo -n $timeoutlist | sed -r 's/^(\w+) .*/\1/')
+                timeoutlist=$(echo -n $timeoutlist | sed -r 's/^\w+ (.*)/\1/')
+                
+                echo_debug "pm" "set_disk_spindown_timeout($1): $disk_dev [$disk_id] $timeout"
+                $HDPARM -S $timeout /dev/$disk_dev > /dev/null 2>&1
+            fi
+        fi
+    done
+    
+    return 0
+} 
+
 set_disk_io_sched () {
     local dev sched schedlist schedctrl
     

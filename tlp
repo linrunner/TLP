@@ -37,6 +37,7 @@ case "$mode" in
         set_sched_powersave $pwr
         set_phc_controls $pwr
         set_disk_apm_level $pwr
+        set_disk_spindown_timeout $pwr
         set_disk_io_sched
         set_sata_link_power $pwr
         set_pcie_aspm $pwr
@@ -60,6 +61,7 @@ case "$mode" in
         set_sched_powersave 1
         set_phc_controls 1
         set_disk_apm_level 1
+        set_disk_spindown_timeout 1
         set_disk_io_sched
         set_sata_link_power 1
         set_pcie_aspm 1
@@ -82,6 +84,7 @@ case "$mode" in
         set_sched_powersave 0
         set_phc_controls 0
         set_disk_apm_level 0
+        set_disk_spindown_timeout 0
         set_disk_io_sched
         set_sata_link_power 0
         set_pcie_aspm 0
