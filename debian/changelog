@@ -8,7 +8,8 @@ tlp (0.3.0.900-1) lucid; urgency=low
   * Features, other changes
     - runtime pm (ccyx)
     - set/disable hard disk spindown timeout (enrico65, hausmarke86)
-    - tlp-stat now runs with root privilege only
+    - tlp-stat: now runs with root privilege only
+    - tlp-stat: show intel ssd specific smart values
   * Bug Fixes
     - #18: tlp start (ac): incorrect ouptut "started in bat mode"
            fixed (yatpu)

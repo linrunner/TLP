@@ -161,6 +161,10 @@ for dev in $DISK_DEVICES; do
                 echo "        SMART info:"
                 $SMARTCTL -A /dev/$disk_dev | egrep '^(  4|  5|  9 |193)' | \
                   awk -F ' ' '{ printf "          %-25s = %6d \n", $2, $10 }'
+                $SMARTCTL -A /dev/$disk_dev | egrep '^(225)' | egrep 'Host_Writes' | \
+                  awk -F ' ' '{ printf "          %-25s = %6d \n", $2, $10 }'
+                $SMARTCTL -A /dev/$disk_dev | egrep '^(232|233)' | egrep 'Reservd_Space|Media_Wearout' | \
+                  awk -F ' ' '{ printf "          %-25s = %6d [%]\n", $2, $4 }'
             fi
         fi
     fi
