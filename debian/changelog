@@ -6,15 +6,19 @@ tlp (0.3.0.900-1) lucid; urgency=low
     - added PATH debug output in tlp, tlp.init/tlp.upstart
     - move manpages from debian/ to man/
   * Features, other changes
-    - runtime pm ()
+    - runtime pm (ccyx)
     - tlp-stat now runs with root privilege only
   * Bug Fixes
     - #18: tlp start (ac): incorrect ouptut "started in bat mode"
            fixed (yatpu)
     - #19: tlp-stat: incorrect wifi power mgmt detection for 
-           wl driver (DrPaulaner) 
+           wl driver (DrPaulaner)
+    - #20: handle disabled pcie aspm in kernel 2.6.39 gracefully
+           (Schmitti, g3eB4Y)
+    - #21: battery attributes /sys/class/power_supply/BAT?/charge_*
+           not recognized (Tanja Petri)
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 26 Apr 2011 20:50:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 18 Jun 2011 02:15:00 +0200
 
 tlp (0.3.0-2) lucid; urgency=low
 

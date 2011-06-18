@@ -280,9 +280,15 @@ elif [ -d /sys/class/power_supply ]; then
     for bat in /sys/class/power_supply/BAT?; do
         if [ -d $bat ] && [ "$(cat $bat/present)" = "1" ]; then
             echoparm $bat/manufacturer
-            echoparm $bat/energy_full_design - mWh 000
-            echoparm $bat/energy_full - mWh 000
-            echoparm $bat/energy_now - mWh 000
+            if [ -f $bat/energy_full ]; then 
+                echoparm $bat/energy_full_design - mWh 000
+                echoparm $bat/energy_full - mWh 000
+                echoparm $bat/energy_now - mWh 000
+            elif [ -f $bat/charge_full ]; then
+                echoparm $bat/charge_full_design - mAh 000
+                echoparm $bat/charge_full - mAh 000
+                echoparm $bat/charge_now - mAh 000
+            fi
             echo
         fi
     done
