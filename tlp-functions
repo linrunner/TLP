@@ -335,7 +335,7 @@ set_disk_spindown_timeout () { # $1: 0=ac mode, 1=battery mode
     if [ $1 = "1" ]; then
         timeoutlist=$DISK_SPINDOWN_TIMEOUT_ON_BAT
     else
-        timeoutlist=$DISK_SPINDOWN_TIMEOUT__ON_AC
+        timeoutlist=$DISK_SPINDOWN_TIMEOUT_ON_AC
     fi
     
     # strip excess blanks from list
