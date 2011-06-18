@@ -159,12 +159,15 @@ for dev in $DISK_DEVICES; do
             if [ -x "$SMARTCTL" ]; then
                 echo 
                 echo "        SMART info:"
-                $SMARTCTL -A /dev/$disk_dev | egrep '^(  4|  5|  9 |193)' | \
-                  awk -F ' ' '{ printf "          %-25s = %6d \n", $2, $10 }'
-                $SMARTCTL -A /dev/$disk_dev | egrep '^(225)' | egrep 'Host_Writes' | \
-                  awk -F ' ' '{ printf "          %-25s = %6d \n", $2, $10 }'
-                $SMARTCTL -A /dev/$disk_dev | egrep '^(232|233)' | egrep 'Reservd_Space|Media_Wearout' | \
-                  awk -F ' ' '{ printf "          %-25s = %6d [%]\n", $2, $4 }'
+                $SMARTCTL -A /dev/$disk_dev | \
+                  awk -F ' ' '$2 ~ /Start_Stop_Count|Reallocated_Sector_Ct|Load_Cycle_Count/ \
+                                    { printf "          %3d %-25s = %8d \n", $1, $2, $10 } ; \
+                              $2 ~ /Power_On_Hours/ \
+                                    { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[h]" } ; \
+                              $2 ~ /Host_Writes/ \
+                                    { printf "          %3d %-25s = %8.3f %s\n", $1, $2, $10 / 32768.0, "[TB]" } ; \
+                              $2 ~ /Available_Reservd_Space|Media_Wearout_Indicator/ \
+                                    { printf "          %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
             fi
         fi
     fi

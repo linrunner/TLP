@@ -86,7 +86,7 @@ BAY_POWEROFF_ON_BAT=0
 BAY_DEVICE="sr0"
  
 # Set to 0 to disable/1 to enable runtime pm feature 
-# for pci/spi/i2c bus devices
+# for pci/spi/i2c bus devices (Kernel >= 2.6.35 only).
 RUNTIME_PM=1
 
 # Set to 0 to disable/1 to enable usb autosuspend feature
