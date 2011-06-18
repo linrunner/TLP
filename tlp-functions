@@ -534,7 +534,7 @@ set_sound_power_mode () {
 }
 
 enable_runtime_pm () {
-    local type device conrol
+    local type device control
     
     RUNTIME_PM=${RUNTIME_PM:-1}
     
