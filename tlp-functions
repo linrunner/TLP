@@ -32,6 +32,7 @@ I2CD=/sys/bus/i2c/devices
 
 USB_BLACKLIST_INT=""
 USB_TIMEOUT=2
+USB_TIMEOUT_MS=2000
 
 TPMODULES="thinkpad_acpi tp_smapi"
 
@@ -593,7 +594,12 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
                     # level is deprecated
                     echo "$control" > $USBD/$usbdev/power/level
                 fi
-                echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
+                if [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
+                    echo $USB_TIMEOUT_MS > $USBD/$usbdev/power/autosuspend_delay_ms
+                else
+                    # autosuspend is deprecated
+                    echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
+                fi
             fi
         done
         [ "$1" = "1" ] && echo "usb autosuspend settings applied."

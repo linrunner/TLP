@@ -12,6 +12,7 @@ tlp (0.3.0.900-1) lucid; urgency=low
     - tlp-stat: show intel ssd specific smart values
     - bluetooth/wifi/wwan: check for root privilege or /dev/rfkill user
         writable when using rfkill
+    - use power/autosuspend_delay_ms when available
   * Bug Fixes
     - #18: tlp start (ac): incorrect ouptut "started in bat mode"
            fixed (yatpu)

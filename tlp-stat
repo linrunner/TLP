@@ -307,7 +307,15 @@ echo
 
 devices=$(ls $USBD | grep -v ':')
 for usbdev in $devices; do
-    if [ -f $USBD/$usbdev/power/autosuspend ]; then
+    if [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
+        asp="$USBD/$usbdev/power/autosuspend_delay_ms"
+    elif [ -f $USBD/$usbdev/power/autosuspend ]; then
+        asp="$USBD/$usbdev/power/autosuspend"
+    else
+        asp=""
+    fi
+    
+    if [ -n "$asp" ]; then
         if [ -f $USBD/$usbdev/power/control ]; then
             control="control = $(cat $USBD/$usbdev/power/control)" 
         else
@@ -316,7 +324,7 @@ for usbdev in $devices; do
         fi
         
         # show dev path, state, usb id
-        echo -n "$USBD/$usbdev/power/autosuspend = `cat $USBD/$usbdev/power/autosuspend`," \
+        echo -n "$asp = $(cat $asp)," \
              "$control --" \
              "$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct) "
         
