@@ -10,6 +10,8 @@ tlp (0.3.0.900-1) lucid; urgency=low
     - set/disable hard disk spindown timeout (enrico65, hausmarke86)
     - tlp-stat: now runs with root privilege only
     - tlp-stat: show intel ssd specific smart values
+    - bluetooth/wifi/wwan: check for root privilege or /dev/rfkill user
+        writable when using rfkill
   * Bug Fixes
     - #18: tlp start (ac): incorrect ouptut "started in bat mode"
            fixed (yatpu)
@@ -20,7 +22,7 @@ tlp (0.3.0.900-1) lucid; urgency=low
     - #21: battery attributes /sys/class/power_supply/BAT?/charge_*
            not recognized (Tanja Petri)
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 18 Jun 2011 02:15:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 21 Jun 2011 20:50:00 +0200
 
 tlp (0.3.0-2) lucid; urgency=low
 
