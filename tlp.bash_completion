@@ -1,32 +1,70 @@
 # bash completion for TLP
 
-_tlp() 
-{
-    local cur prev opts
+_tlp() {
+    local cur prev opts bats
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     opts="start ac bat usb bayoff discharge setcharge fullcharge stat diskid"
 
-    if [[ ${cur} == * ]] ; then
-        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-        return 0
-    fi
+    case $COMP_CWORD in
+        1)
+            # subcmds only
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            return 0
+            ;;
+            
+        2)
+            if [ "${prev}" = "discharge" -o "${prev}" = "fullcharge" ]; then
+                # show list of batteries
+                bats=$( { local b
+                    for b in /sys/devices/platform/smapi/BAT*; do
+                        if [ -f $b/installed ] && [ $(cat $b/installed) = "1" ]; then
+                            echo "${b##/*/} "
+                        fi
+                    done } )
+                
+                if [ -n "$bats" ]; then
+                    COMPREPLY=( $(compgen -W "${bats}" -- ${cur}) )
+                    return 0
+                fi
+            fi
+            ;;
+            
+        4)
+            if [ "${COMP_WORDS[1]}" = "setcharge" ]; then
+                # show list of batteries
+                bats=$( { local b
+                    for b in /sys/devices/platform/smapi/BAT*; do
+                        if [ -f $b/installed ] && [ $(cat $b/installed) = "1" ]; then
+                            echo "${b##/*/} "
+                        fi
+                    done } )
+                
+                if [ -n "$bats" ]; then
+                    COMPREPLY=( $(compgen -W "${bats}" -- ${cur}) )
+                    return 0
+                fi
+            fi
+            ;;
+            
+        *)
+            ;;
+    esac
 }
 complete -F _tlp tlp
 
-_tlp_rf() 
-{
+_tlp_rf() {
     local cur prev opts
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     opts="on off toggle"
 
-    if [[ ${cur} == * ]] ; then
+    if [ "$COMP_CWORD" = "1" ]; then
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
-    fi
+    fi 
 }
 complete -F _tlp_rf bluetooth
 complete -F _tlp_rf wwan
