@@ -32,6 +32,7 @@ install:
 	install -m 755 49wwan $(PLIB)/sleep.d/49wwan
 	install -m 755 49bay $(PLIB)/sleep.d/49bay
 	install -m 644 tlp.desktop $(DESTDIR)/etc/xdg/autostart/tlp.desktop
+	install -m 644 tlp.bash_completion $(DESTDIR)/etc/bash_completion.d/tlp
 
 uninstall: 
 	rm $(SBIN)/tlp
@@ -51,3 +52,4 @@ uninstall:
 	rm $(PLIB)/sleep.d/49wwan
 	rm $(PLIB)/sleep.d/49bay
 	rm $(DESTDIR)/etc/xdg/autostart/tlp.desktop
+	rm $(DESTDIR)/etc/bash_completion.d/tlp

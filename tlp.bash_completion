@@ -1,0 +1,35 @@
+# bash completion for TLP
+
+_tlp() 
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="start ac bat usb bayoff discharge setcharge fullcharge stat diskid"
+
+    if [[ ${cur} == * ]] ; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+}
+complete -F _tlp tlp
+
+_tlp_rf() 
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="on off toggle"
+
+    if [[ ${cur} == * ]] ; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+}
+complete -F _tlp_rf bluetooth
+complete -F _tlp_rf wwan
+complete -F _tlp_rf wifi
+
+
