@@ -189,7 +189,13 @@ echo
 
 # pcie aspm
 if [ -f $ASPM ]; then
-    echo "$ASPM = $(cat $ASPM | sed -r 's/.*\[(.*)\].*/\1/')"
+    pol=$(cat $ASPM | sed -r 's/.*\[(.*)\].*/\1/')
+    echo "$pol" > $ASPM 2> /dev/null
+    if [ $? = 0 ]; then
+        echo "$ASPM = $pol"
+    else
+        echo "$ASPM = $pol (disabled by kernel)"
+    fi 
 else
     echo "$ASPM = (not available)"
 fi
@@ -230,7 +236,7 @@ for iface in $WIFACES; do
                 if [ -z "$($IWC $iface power off 2>&1)" ]; then
                     echo "off"
                 else
-                    echo "off (not supported)"
+                    echo "off (disabled by kernel)"
                 fi
                 ;;
                 
