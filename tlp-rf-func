@@ -24,7 +24,7 @@ get_devc () { # $1: rftype; retval $devc
     case $1 in
         wwan|bluetooth)
             for i in /sys/class/rfkill/rfkill* ; do
-                if [ -f $i/type  -a "$(cat $i/type)" = "$1" ]; then 
+                if [ -f $i/type ] && [ "$(cat $i/type)" = "$1" ]; then 
                     devc="$i/state"
                     echo_debug "rf" "get_devc($1) = $devc"
                     return 0
@@ -44,7 +44,7 @@ get_devc () { # $1: rftype; retval $devc
                 done
             else
                 for i in /sys/class/rfkill/rfkill* ; do
-                    if [ -f $i/type  -a "$(cat $i/type)" = "wlan" ]; then 
+                    if [ -f $i/type ] && [ "$(cat $i/type)" = "wlan" ]; then 
                         devc="$i/state"
                         echo_debug "rf" "get_devc($1) = $devc"
                         return 0
