@@ -14,25 +14,24 @@ clean:
 	@/bin/true 
 	
 install: 
-	install -m 755 tlp $(SBIN)/
-	install -m 755 tlp-rf $(BIN)/bluetooth
+	install -D -m 755 tlp $(SBIN)/tlp
+	install -D -m 755 tlp-rf $(BIN)/bluetooth
 	ln -f $(BIN)/bluetooth $(BIN)/wifi
 	ln -f $(BIN)/bluetooth $(BIN)/wwan
 	install -m 755 tlp-run-on $(BIN)/run-on-ac
 	ln -f $(BIN)/run-on-ac $(BIN)/run-on-bat
 	install -m 755 tlp-stat $(BIN)/
-	install -m 755 -d $(TLIB)
-	install -m 755 tlp-functions $(TLIB)/
+	install -D -m 755 tlp-functions $(TLIB)/tlp-functions
 	install -m 755 tlp-rf-func $(TLIB)/
 	install -m 755 tlp-nop $(TLIB)/
-	[ -f $(DESTDIR)/etc/default/tlp ] || install -m 644 default $(DESTDIR)/etc/default/tlp
-	install -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
-	install -m 755 tlp-ifup $(DESTDIR)/etc/network/if-up.d/tlp-ifup
-	install -m 755 zztlp $(PLIB)/power.d/zztlp
-	install -m 755 49wwan $(PLIB)/sleep.d/49wwan
+	[ -f $(DESTDIR)/etc/default/tlp ] || install -D -m 644 default $(DESTDIR)/etc/default/tlp
+	install -D -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
+	install -D -m 755 tlp-ifup $(DESTDIR)/etc/network/if-up.d/tlp-ifup
+	install -D -m 755 zztlp $(PLIB)/power.d/zztlp
+	install -D -m 755 49wwan $(PLIB)/sleep.d/49wwan
 	install -m 755 49bay $(PLIB)/sleep.d/49bay
-	install -m 644 tlp.desktop $(DESTDIR)/etc/xdg/autostart/tlp.desktop
-	install -m 644 tlp.bash_completion $(DESTDIR)/etc/bash_completion.d/tlp
+	install -D -m 644 tlp.desktop $(DESTDIR)/etc/xdg/autostart/tlp.desktop
+	install -D -m 644 tlp.bash_completion $(DESTDIR)/etc/bash_completion.d/tlp
 
 uninstall: 
 	rm $(SBIN)/tlp

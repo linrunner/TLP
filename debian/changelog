@@ -1,20 +1,19 @@
-tlp (0.3.0.900-1) lucid; urgency=low
+tlp (0.3.1-1) lucid; urgency=low
 
-  * Development Version
   * Changes to ease porting to other distros
     - removed system utils absolute paths
     - added PATH debug output in tlp, tlp.init/tlp.upstart
-    - move manpages from debian/ to man/
+    - manpages moved from debian/ to man/
   * Features, other changes
     - runtime pm (ccyx)
     - set/disable hard disk spindown timeout (enrico65, hausmarke86)
-    - bash completion for subcommands of tlp/bluetooth/wifi/wwan
-    - tlp-stat: now runs with root privilege only
-    - tlp-stat: show intel ssd specific smart values
-    - tlp-stat: check for pcie aspm disabled by kernel
-    - bluetooth/wifi/wwan: check for root privilege or /dev/rfkill user
-        writable when using rfkill
-    - use power/autosuspend_delay_ms when available
+    - use power/autosuspend_delay_ms (kernel >= 2.6.38)
+    - tlp-stat: now runs with root privilege only, 
+        show intel ssd specific smart values,
+        check for pcie aspm disabled by kernel
+    - bluetooth/wifi/wwan: when using rfkill, check for root privilege
+        or /dev/rfkill user-writable
+    - tlp/bluetooth/wifi/wwan: bash completion
   * Bug Fixes
     - #18: tlp start (ac): incorrect ouptut "started in bat mode"
            fixed (yatpu)
@@ -23,9 +22,9 @@ tlp (0.3.0.900-1) lucid; urgency=low
     - #20: handle disabled pcie aspm in kernel 2.6.39 gracefully
            (Schmitti, g3eB4Y)
     - #21: battery attributes /sys/class/power_supply/BAT?/charge_*
-           not recognized (Tanja Petri)
+           not recognized (tanjapetri)
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 21 Jun 2011 20:50:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 23 Jun 2011 19:15:00 +0200
 
 tlp (0.3.0-2) lucid; urgency=low
 
