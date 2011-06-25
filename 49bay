@@ -47,7 +47,7 @@ resume_bay () {
 				rc=$?
 				[ $rc = 0 ] || sleep 0.5
 			done
-			echo_debug "pm" "49bay.resume-bayoff: rc=$rc"
+			echo_debug "pm" "49bay.resume_bayoff: rc=$rc"
 			return 0
 		fi
 	fi

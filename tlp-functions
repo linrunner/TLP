@@ -633,7 +633,7 @@ thresh_check () { # $1: threshold; ret: 0=invalid/1..100=valid
 set_charge_thresholds () {
     echo_debug "pm" "set_charge_thresholds.enter"
     [ -d $SMAPIDIR ] || return 0
-    echo_debug "pm" "set_charge_thresholds.smapidir-present"
+    echo_debug "pm" "set_charge_thresholds.tp-smapi_present"
     
     if [ -d $SMAPIDIR/BAT0 ] && [ "$(cat $SMAPIDIR/BAT0/installed)" = "1" ]; then
         echo_debug "pm" "set_charge_thresholds.start(BAT0): $START_CHARGE_THRESH_BAT0"
@@ -665,13 +665,13 @@ discharge_battery () { # $1: battery
     local bat bdir
     
     if [ ! -d $SMAPIDIR ]; then
-        echo_debug "pm" "discharge_battery.nosmapi: $bat"
+        echo_debug "pm" "discharge_battery.no_tp-smapi: $bat"
         echo "Error: ThinkPad battery functions not available (missing tp_smapi kernel module)."
         return 1
     fi
-    
+        
     if ! get_power_state ; then
-        echo_debug "pm" "discharge_battery.noacpower: $bat"
+        echo_debug "pm" "discharge_battery.no_ac_power"
         echo "Error: discharge is possible on ac power only."
         return 1
     fi  
@@ -682,7 +682,7 @@ discharge_battery () { # $1: battery
     bdir=$SMAPIDIR/$bat
     
     if [ ! -f $bdir/installed ] || [ "$(cat $bdir/installed)" = "0" ]; then
-        echo_debug "pm" "discharge_battery.notpresent: $bat"
+        echo_debug "pm" "discharge_battery.not_present: $bat"
         echo "Error: battery $bat not present."
         return 1
     fi
@@ -722,7 +722,7 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
 
     # check prerequisites: must be on ac power
     if ! get_power_state ; then
-        echo_debug "pm" "setcharge_battery.noacpower: $bat"
+        echo_debug "pm" "setcharge_battery.no_ac_power"
         echo "Error: setting charge thresholds is possible on ac power only."
         return 1
     fi  
@@ -737,7 +737,7 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
         
         if [ ! -f $bdir/installed ] || [ "$(cat $bdir/installed)" = "0" ]; then
             echo "Error: battery $bat not present."
-            echo_debug "pm" "setcharge_battery.notpresent: $bat"
+            echo_debug "pm" "setcharge_battery.not_present: $bat"
             return 1
         fi
         
@@ -793,7 +793,7 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
     dock=$(grep -l ata_bay /sys/devices/platform/dock.?/type)
     dock=${dock%%/type}
     if [ -z "$dock" -o ! -d "$dock" ]; then
-        echo_debug "pm" "poweroff_drivebay.nobaydevice"
+        echo_debug "pm" "poweroff_drivebay.no_bay_device"
         [ "$1" = "1" ] && echo "Error: cannot locate bay device."
         return 1
     fi
@@ -801,13 +801,13 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
 
     # Check if bay is occupied
     if [ $(cat $dock/docked) = "0" ]; then
-        echo_debug "pm" "poweroff_drivebay.drivealreadyoff"
+        echo_debug "pm" "poweroff_drivebay.drive_already_off"
         [ "$1" = "1" ] && echo "No drive in bay (or power already off)."
     else 
         # Check for optical drive
         optdrv=/dev/${BAY_DEVICE:=sr0}
         if [ ! -b "$optdrv" ]; then
-            echo_debug "pm" "poweroff_drivebay.nooptdrive: $optdrv"
+            echo_debug "pm" "poweroff_drivebay.no_opt_drive: $optdrv"
             [ "$1" = "1" ] && echo "No optical drive in bay ($optdrv)."
             return 0
         else
@@ -828,7 +828,7 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
             # Turn power off
             echo 1 > $dock/undock
             [ "$1" = "1" ] && echo "Bay is powered off now."
-            echo_debug "pm" "poweroff_drivebay.baypoweredoff"
+            echo_debug "pm" "poweroff_drivebay.bay_powered_off"
         fi
     fi
     
