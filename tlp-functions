@@ -538,22 +538,20 @@ set_sound_power_mode () {
     return 0
 }
 
-enable_runtime_pm () {
+set_runtime_pm () { #$1: 0=ac mode, 1=battery mode
     local type device control
     
-    RUNTIME_PM=${RUNTIME_PM:-1}
-    
-    if [ "$RUNTIME_PM" = "1" ]; then
-        control="auto"
+    if [ "$1" = "1" ]; then
+        control=${RUNTIME_PM_ON_BAT:-auto}
     else
-        control="on"
+        control=${RUNTIME_PM_ON_AC:-auto}
     fi
     
     for type in $PCID $SPID $I2CD; do
         for device in $type/*; do
             if [ -f $device/power/control ]; then
                 echo $control > $device/power/control;
-                echo_debug "pm" "enable_runtime_pm.$control: $device"
+                echo_debug "pm" "set_runtime_pm($1).$control: $device"
             fi
         done
     done

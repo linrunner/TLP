@@ -45,7 +45,7 @@ case "$mode" in
         set_wifi_power_mode $pwr
         disable_wake_on_lan $pwr
         set_sound_power_mode $pwr
-        enable_runtime_pm
+        set_runtime_pm $pwr
         enable_usb_suspend 0
         set_charge_thresholds
         [ "$pwr" = "1" ] && poweroff_drivebay 0
@@ -69,7 +69,7 @@ case "$mode" in
         set_wifi_power_mode 1
         disable_wake_on_lan 1
         set_sound_power_mode 1
-        enable_runtime_pm
+        set_runtime_pm 1
         enable_usb_suspend 0
         poweroff_drivebay 0
         
@@ -92,7 +92,7 @@ case "$mode" in
         set_wifi_power_mode 0
         disable_wake_on_lan 0
         set_sound_power_mode 0
-        enable_runtime_pm
+        set_runtime_pm 0
         enable_usb_suspend 0
         
         echo_started_mode 0
