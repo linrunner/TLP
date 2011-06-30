@@ -1,18 +1,19 @@
-TLP README - 31.03.2011
+TLP README - 30.06.2011
 
 TLP is a collection of scripts enabling laptop-mode and
 implementing power save features for laptop hardware.
 
 Possible settings for ac/battery are:
 - Kernel laptop-mode, dirty buffer params/file system commit 
-- Harddisk advanced power magement level
+- Hard disk advanced power magement level and spindown timeout
 - IO scheduler per disk
 - Wake on LAN (disable)
 - SATA aggressive link power management (ALPM)
-- PCI express active state power management (PCIe ASPM) (Kernel 2.6.35)
-- Radeon KMS power management (Kernel 2.6.35/not fglrx) 
-- WiFi power saving mode (Kernel 2.6.32/iwlagn only)
+- PCI express active state power management (PCIe ASPM) (Kernel 2.6.35+)
+- Radeon KMS power management (Kernel 2.6.35, not fglrx) 
+- WiFi power saving mode (Kernel 2.6.32+, iwlagn only)
 - Audio power saving mode (hda_intel, ac97)
+-  Runtime Power Management for pci/spi/i2c bus devices (Kernel 2.6.35+)
 - USB autosuspend with blacklist
 - PHC controls (requires kernel with phc-patches)
 - Battery charge thresholds (ThinkPads only)
@@ -24,8 +25,7 @@ Additional functions:
   system startup and shutdown
 - WWAN state is restored after suspend/hibernate
 
-
-All tlp settings are stored in /etc/default/tlp.
+All TLP settings are stored in /etc/default/tlp.
 
 For further details take a look at the man pages:
 - tlp
@@ -33,5 +33,6 @@ For further details take a look at the man pages:
 - wifi, bluetooth, wwan (switch wireless devices on/off)
 - run-on-ac, run-on-bat
 
-Or visit the Project Homepage (currently in German only):
-- http://thinkpad-wiki.org/TLP_-_Stromspareinstellungen_fuer_Ubuntu
+Or visit the project's homepages:
+- https://github.com/linrunner/TLP
+- http://thinkpad-wiki.org/TLP_-_Stromspareinstellungen_fuer_Ubuntu (german)
