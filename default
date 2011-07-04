@@ -87,8 +87,8 @@ BAY_DEVICE="sr0"
  
 # Runtime Power Management for pci/spi/i2c bus devices 
 # (Kernel >= 2.6.35 only): on=disable/auto=enable
-RUNTIME_PM_ON_AC=auto
-RUNTIME_PM_ON_BAT=auto
+RUNTIME_PM_ON_AC=on
+RUNTIME_PM_ON_BAT=on
 
 # Set to 0 to disable/1 to enable usb autosuspend feature
 USB_AUTOSUSPEND=1

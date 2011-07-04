@@ -10,7 +10,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.3.1
+TLPVER=0.3.2
 DEFAULT_FILE=/etc/default/tlp
 
 ACPWR=on_ac_power
@@ -542,9 +542,9 @@ set_runtime_pm () { #$1: 0=ac mode, 1=battery mode
     local type device control
     
     if [ "$1" = "1" ]; then
-        control=${RUNTIME_PM_ON_BAT:-auto}
+        control=${RUNTIME_PM_ON_BAT:-on}
     else
-        control=${RUNTIME_PM_ON_AC:-auto}
+        control=${RUNTIME_PM_ON_AC:-on}
     fi
     
     for type in $PCID $SPID $I2CD; do
