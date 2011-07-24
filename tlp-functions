@@ -636,19 +636,27 @@ set_charge_thresholds () {
     echo_debug "pm" "set_charge_thresholds.tp-smapi_present"
     
     if [ -d $SMAPIDIR/BAT0 ] && [ "$(cat $SMAPIDIR/BAT0/installed)" = "1" ]; then
-        echo_debug "pm" "set_charge_thresholds.start(BAT0): $START_CHARGE_THRESH_BAT0"
-        do_threshold $SMAPIDIR/BAT0/start_charge_thresh "$START_CHARGE_THRESH_BAT0"
+        if [ -n "$START_CHARGE_THRESH_BAT0" ]; then 
+            echo_debug "pm" "set_charge_thresholds.start(BAT0): $START_CHARGE_THRESH_BAT0"
+            do_threshold $SMAPIDIR/BAT0/start_charge_thresh "$START_CHARGE_THRESH_BAT0"
+        fi
         
-        echo_debug "pm" "set_charge_thresholds.stop (BAT0): $STOP_CHARGE_THRESH_BAT0"
-        do_threshold $SMAPIDIR/BAT0/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT0"
+        if [ -n "$STOP_CHARGE_THRESH_BAT0" ]; then 
+            echo_debug "pm" "set_charge_thresholds.stop (BAT0): $STOP_CHARGE_THRESH_BAT0"
+            do_threshold $SMAPIDIR/BAT0/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT0"
+        fi
     fi
     
     if [ -d $SMAPIDIR/BAT1 ] &&  [ "$(cat $SMAPIDIR/BAT1/installed)" = "1" ]; then
-        echo_debug "pm" "set_charge_thresholds.start(BAT1): $START_CHARGE_THRESH_BAT1"
-        do_threshold $SMAPIDIR/BAT1/start_charge_thresh "$START_CHARGE_THRESH_BAT1"
+        if [ -n "$START_CHARGE_THRESH_BAT1" ]; then 
+            echo_debug "pm" "set_charge_thresholds.start(BAT1): $START_CHARGE_THRESH_BAT1"
+            do_threshold $SMAPIDIR/BAT1/start_charge_thresh "$START_CHARGE_THRESH_BAT1"
+        fi
         
-        echo_debug "pm" "set_charge_thresholds.stop (BAT1): $STOP_CHARGE_THRESH_BAT1"
-        do_threshold $SMAPIDIR/BAT1/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT1"
+        if [ -n "$STOP_CHARGE_THRESH_BAT1" ]; then 
+            echo_debug "pm" "set_charge_thresholds.stop (BAT1): $STOP_CHARGE_THRESH_BAT1"
+            do_threshold $SMAPIDIR/BAT1/stop_charge_thresh "$STOP_CHARGE_THRESH_BAT1"
+        fi
     fi
     
     return 0
