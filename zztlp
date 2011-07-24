@@ -1,3 +1,26 @@
 #!/bin/sh
 # tlp - power state change hook
-[ -x /usr/sbin/tlp ] && { sleep 2; /usr/sbin/tlp $1; }
+TLP="/usr/sbin/tlp"
+
+print_help() {
+    cat << EOF
+--------
+${0}: trigger $TLP on power state change.
+EOF
+}
+
+case "$1" in
+    true|false)
+        [ -x $TLP ] || exit 0
+        sleep 2
+        $TLP $1
+        ;;
+        
+    help)
+        print_help
+        ;;
+        
+    *)
+        exit $NA   
+        ;;
+esac
