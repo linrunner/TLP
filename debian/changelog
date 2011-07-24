@@ -1,3 +1,14 @@
+tlp (0.3.2.900-1) lucid; urgency=low
+
+  * Development release
+  * Features, other changes
+    - set_charge_thresholds(): check for undefined thresh values
+  * Bug Fix
+    - #24: openSUSE 11.4/2.6.37 - writing to autosuspend_delay_ms fails
+             -> fallback to autosuspend
+
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 24 Jul 2011 11:05:05 +0200
+
 tlp (0.3.2-2) lucid; urgency=low
 
   * Bug Fix 
