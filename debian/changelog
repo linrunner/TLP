@@ -3,6 +3,7 @@ tlp (0.3.2.900-1) lucid; urgency=low
   * Development release
   * Features, other changes
     - set_charge_thresholds(): check for undefined thresh values
+    - set_extfs_commit(): skip bind mounts (Fedora sandbox)
   * Bug Fix
     - #24: openSUSE 11.4/2.6.37 - writing to autosuspend_delay_ms fails
              -> fallback to autosuspend

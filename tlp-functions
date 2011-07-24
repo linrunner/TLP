@@ -143,19 +143,16 @@ set_laptopmode () { # $1: 0=ac mode, 1=battery mode
 set_extfs_commit () { # $1: commit
     # remount ext3/4 filesystems with commit=age (from laptop-mode-tools)
     local dev mtpoint fstype mopts d1 d2
+    local mtlist=""
     
-    mount | while read dev d1 mtpoint d2 fstype mopts; do 
-        case $fstype in
-            ext[34]) 
-                mopts=$(echo $mopts | sed -r 's/,commit=[0-9]+|^\(commit=[0-9]+,|\(|\)//g')
-                if [ -b $dev -a -d $mtpoint ]; then
-                    mount $dev $mtpoint -t $fstype -o remount,$mopts,commit=$commit
-                fi
-                ;;
-            
-            *)
-                ;;
-        esac        
+    mount -t ext3 -t ext4 | while read dev d1 mtpoint d2 fstype mopts; do 
+        # skip bind mounts already in list (Fedora sandbox)
+        # skip nonexistent devs/mounts
+        if ! patinstr "$dev" "$mtlist" && [ -b $dev -a -d $mtpoint ]; then 
+            mtlist="$mtlist $dev"
+            mount $mtpoint -o remount,commit=$commit 2> /dev/null
+            echo_debug "pm" "set_extfs_commit($mtpoint, $commit): rc=$?"
+        fi
     done
     
     return 0
