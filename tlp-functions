@@ -560,14 +560,16 @@ set_runtime_pm () { #$1: 0=ac mode, 1=battery mode
 }
 
 enable_usb_suspend () { # $1: 0=silent/1=report result
-    local devices usbdev subdev control hid
-    
+    local devices usbdev subdev control hid 
+    local ctrlf="control"
+    local autof="autosuspend_delay_ms"
+        
     check_sysfs "set_usb_suspend" "$USBD"
     
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
         devices=$(ls $USBD | grep -v ':')
         for usbdev in $devices; do
-            if [ -f $USBD/$usbdev/power/autosuspend ]; then
+            if [ -f $USBD/$usbdev/power/autosuspend -o -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
                 usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
             
                 control="auto"
@@ -589,19 +591,28 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
                     done    
                 fi
                 
-                echo_debug "usb" "enable_usb_suspend.$control$hid: $USBD/$usbdev"
+                
                 if [ -f $USBD/$usbdev/power/control ]; then
                     echo "$control" > $USBD/$usbdev/power/control
                 else
                     # level is deprecated
                     echo "$control" > $USBD/$usbdev/power/level
+                    ctrlf="level"
                 fi
                 if [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
-                    echo $USB_TIMEOUT_MS > $USBD/$usbdev/power/autosuspend_delay_ms
+                    echo $USB_TIMEOUT_MS > $USBD/$usbdev/power/autosuspend_delay_ms 2> /dev/null
+                    if [ $? != 0 ]; then
+                        # openSUSE 11.4/2.6.37: writing to autosuspend_delay_ms fails -> fallback to autosuspend
+                        echo_debug "usb" "enable_usb_suspend.autosuspend_delay_ms_not_writable: $USBD/$usbdev"
+                        echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
+                        autof="autosuspend"
+                    fi
                 else
                     # autosuspend is deprecated
                     echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
+                    autof="autosuspend"
                 fi
+                echo_debug "usb" "enable_usb_suspend.$control$hid: $USBD/$usbdev ($ctrlf, $autof)"
             fi
         done
         [ "$1" = "1" ] && echo "usb autosuspend settings applied."
