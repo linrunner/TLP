@@ -317,8 +317,15 @@ devices=$(ls $USBD | grep -v ':')
 for usbdev in $devices; do
     if [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
         asp="$USBD/$usbdev/power/autosuspend_delay_ms"
+        aspv=$(cat $asp 2> /dev/null)
+        if [ $? != 0 ]; then 
+            # openSUSE 11.4/2.6.37: reading from autosuspend_delay_ms fails -> fallback to autosuspend
+            asp="$USBD/$usbdev/power/autosuspend"
+            aspv=$(cat $asp 2> /dev/null)
+        fi
     elif [ -f $USBD/$usbdev/power/autosuspend ]; then
         asp="$USBD/$usbdev/power/autosuspend"
+        aspv=$(cat $asp 2> /dev/null)
     else
         asp=""
     fi
@@ -332,7 +339,7 @@ for usbdev in $devices; do
         fi
         
         # show dev path, state, usb id
-        echo -n "$asp = $(cat $asp)," \
+        echo -n "$asp = $aspv," \
              "$control --" \
              "$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct) "
         
