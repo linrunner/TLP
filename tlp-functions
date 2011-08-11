@@ -80,7 +80,7 @@ check_tlp_enabled () { # ret: 0=disabled/1=enabled
 
 check_laptop_mode_tools () { # ret: 0=disabled, 1=enabled
     [ -f /etc/default/acpi-support ] && . /etc/default/acpi-support
-    if [ "$ENABLE_LAPTOP_MODE" = "true" -o -f /var/run/laptop-mode-tools/enabled ]; then
+    if [ "$ENABLE_LAPTOP_MODE" = "true" ] || [ -f /var/run/laptop-mode-tools/enabled ]; then
         echo "Error: tlp power save is disabled because laptop-mode-tools is active." 1>&2
         echo "       Set ENABLE_LAPTOP_MODE=false in /etc/default/acpi-support." 1>&2
         echo 1>&2
@@ -148,7 +148,7 @@ set_extfs_commit () { # $1: commit
     mount -t ext3 -t ext4 | while read dev d1 mtpoint d2 fstype mopts; do 
         # skip bind mounts already in list (Fedora sandbox)
         # skip nonexistent devs/mounts
-        if ! patinstr "$dev" "$mtlist" && [ -b $dev -a -d $mtpoint ]; then 
+        if ! patinstr "$dev" "$mtlist" && [ -b $dev ] && [ -d $mtpoint ]; then 
             mtlist="$mtlist $dev"
             mount $mtpoint -o remount,commit=$commit 2> /dev/null
             echo_debug "pm" "set_extfs_commit($mtpoint, $commit): rc=$?"
@@ -443,7 +443,7 @@ set_radeon_profile () { #$1: 0=ac mode, 1=battery mode
     fi
     
     for card in /sys/class/drm/card[0-9]/device ; do
-        if [ -f $card/power_method -a -f $card/power_profile ]; then
+        if [ -f $card/power_method ] && [ -f $card/power_profile ]; then
             echo_debug "pm" "set_radeon_profile($1): $pwr $card"
             echo "profile" > $card/power_method
             echo "$pwr" > $card/power_profile
@@ -566,7 +566,7 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
         devices=$(ls $USBD | grep -v ':')
         for usbdev in $devices; do
-            if [ -f $USBD/$usbdev/power/autosuspend -o -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
+            if [ -f $USBD/$usbdev/power/autosuspend ] || [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
                 usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
             
                 control="auto"
@@ -672,7 +672,8 @@ set_charge_thresholds () {
 
 cancel_discharge () { # called from trap
     echo 0 > $bdir/force_discharge
-    echo "\nDischarging of battery $bat cancelled."
+    echo
+    echo "Discharging of battery $bat cancelled."
     echo_debug "pm" "discharge_battery.cancelled: $bat"
     exit 0
 }
@@ -775,7 +776,7 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
     thresh_check $stop_thresh; stop_thresh=$?
     
     # check if thresholds > 0 and stop > start + 3 
-    if [ $start_thresh -eq 0 -o $stop_thresh -eq 0 -o $(($start_thresh + 3)) -ge $stop_thresh ]; then
+    if [ $start_thresh -eq 0 ] || [ $stop_thresh -eq 0 ] || [ $(($start_thresh + 3)) -ge $stop_thresh ]; then
         echo "Error: invalid thresholds (start=$start_thresh, stop=$stop_thresh)"        
         echo_debug "pm" "setcharge_battery.invalid_thresh: $bat $start_thresh $stop_thresh"
         return 1
@@ -808,7 +809,7 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
     # Find generic dock interface for bay
     dock=$(grep -l ata_bay /sys/devices/platform/dock.?/type)
     dock=${dock%%/type}
-    if [ -z "$dock" -o ! -d "$dock" ]; then
+    if [ -z "$dock" ] || [ ! -d "$dock" ]; then
         echo_debug "pm" "poweroff_drivebay.no_bay_device"
         [ "$1" = "1" ] && echo "Error: cannot locate bay device."
         return 1

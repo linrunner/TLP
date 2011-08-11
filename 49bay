@@ -57,7 +57,7 @@ resume_bay () {
 [ -f $CFG ] || exit 0
 . $LIB
 . $CFG
-[ "$TLP_ENABLE" = "1" -a "$BAY_POWEROFF_ON_BAT" = "1" ] || exit 0
+[ "$TLP_ENABLE" = "1" ] && [ "$BAY_POWEROFF_ON_BAT" = "1" ] || exit 0
 
 echo_debug "49bay $1"
 

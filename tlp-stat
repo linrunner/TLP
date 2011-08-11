@@ -205,7 +205,7 @@ echo
 
 # radeon power profile
 for card in /sys/class/drm/card[0-9]/device ; do
-   if [ -f $card/power_method -a -f $card/power_profile ]; then
+   if [ -f $card/power_method ] && [ -f $card/power_profile ]; then
        echoparm $card/power_method
        echoparm $card/power_profile
        echo
