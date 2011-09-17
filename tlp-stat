@@ -15,6 +15,7 @@ LSB=$(which lsb_release 2> /dev/null)
 
 ASPM=/sys/module/pcie_aspm/parameters/policy
 USBD=/sys/bus/usb/devices
+NMIWD=/proc/sys/kernel/nmi_watchdog
 
 # --- Functions
 echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
@@ -103,8 +104,21 @@ for pool in mc smp smt; do
     sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
     [ -w "$sdev" ] || continue
     echoparm $sdev
-    echo
 done
+
+# nmi watchdog
+if [ -f $NMIWD ]; then
+    nmiwd=$(cat $NMIWD)
+    echo "$mnmiwd" > $NMIWD 2> /dev/null
+    if [ $? = 0 ]; then
+        echo "$NMIWD = $nmiwd"
+    else
+        echo "$NMIWD = $nmiwd (disabled by kernel)"
+    fi 
+else
+    echo "$NMIWD = (not available)"
+fi
+echo
 
 for cpup in /sys/devices/system/cpu/cpu?/cpufreq/phc_controls; do
     echoparm $cpup "phc kernel not available"

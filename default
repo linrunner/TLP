@@ -17,6 +17,10 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 # Minimize number of used cpus/cores under light load conditions
 SCHED_POWERSAVE_ON_AC=0
 SCHED_POWERSAVE_ON_BAT=1
+
+# Kernel NMI Watchdog
+# 0=disable (default, saves power) / 1=enable (for kernel debugging only)
+NMI_WATCHDOG=0
         
 # Change CPU voltages aka "undervolting" - Kernel with PHC patch required
 # Freq:voltage pairs are written to /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
@@ -75,7 +79,7 @@ WOL_DISABLE=Y
 SOUND_POWER_SAVE=1
 # Disable controller too (HDA only): Y/N
 SOUND_POWER_SAVE_CONTROLLER=Y
- 
+
 # Set to 1 to power off optical drive in UltraBay (ThinkPads only) 
 # when running on battery. A value of 0 disables this Feature (Default).
 # Drive can be powered on again by releasing (and reinserting) the

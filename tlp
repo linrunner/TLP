@@ -35,6 +35,7 @@ case "$mode" in
         set_laptopmode $pwr
         set_dirty_parms $pwr
         set_sched_powersave $pwr
+        set_nmi_watchdog
         set_phc_controls $pwr
         set_disk_apm_level $pwr
         set_disk_spindown_timeout $pwr
@@ -59,6 +60,7 @@ case "$mode" in
         set_laptopmode 1
         set_dirty_parms 1
         set_sched_powersave 1
+        set_nmi_watchdog
         set_phc_controls 1
         set_disk_apm_level 1
         set_disk_spindown_timeout 1
@@ -82,6 +84,7 @@ case "$mode" in
         set_laptopmode 0
         set_dirty_parms 0
         set_sched_powersave 0
+        set_nmi_watchdog
         set_phc_controls 0
         set_disk_apm_level 0
         set_disk_spindown_timeout 0

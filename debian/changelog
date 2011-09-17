@@ -3,6 +3,7 @@ tlp (0.3.2.900-1) lucid; urgency=low
   * Development release
   * Features
     - tlp-stat: show hdd temp SMART values (bassplayer)
+    - enable/disable kernel NMI watchdog
   * Other changes
     - set_charge_thresholds(): check for undefined thresh values
     - set_extfs_commit(): skip bind mounts (Fedora sandbox)
@@ -12,7 +13,7 @@ tlp (0.3.2.900-1) lucid; urgency=low
              fallback to autosuspend
     - #25: fix sched_mc_power_savings on bat
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 24 Jul 2011 11:05:05 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 17 Sep 2011 18:05:00 +0200
 
 tlp (0.3.2-2) lucid; urgency=low
 
