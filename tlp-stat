@@ -9,9 +9,9 @@ LIB=/usr/lib/tlp-pm/tlp-functions
 RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 TLPCFG=/etc/default/tlp
 
-HDPARM=hdparm
 SMARTCTL=$(which smartctl 2> /dev/null)
-LSB=$(which lsb_release 2> /dev/null)
+LSBREL=$(which lsb_release 2> /dev/null)
+DMIDEC=$(which dmidecode 2> /dev/null)
 
 ASPM=/sys/module/pcie_aspm/parameters/policy
 USBD=/sys/bus/usb/devices
@@ -70,12 +70,14 @@ else
     echo
 fi
 
-echo "System = $($DMI -s system-manufacturer)" \
-       "$($DMI -s system-version)" \
-       "$($DMI -s system-product-name)"
-echo "BIOS = $($DMI -s bios-version)"
+if [ -n "$DMIDEC" ]; then
+    echo "System = $($DMIDEC -s system-manufacturer)" \
+        "$($DMIDEC -s system-version)" \
+        "$($DMIDEC -s system-product-name)"
+    echo "BIOS = $($DMIDEC -s bios-version)"
+fi
 
-[ -x "$LSB" ] && echo "Release = $(lsb_release -d -s)"
+[ -n "$LSBREL" ] && echo "Release = $($LSBREL -d -s)"
 echo "Kernel = $(uname -r -m)"
 echo
 
@@ -170,7 +172,7 @@ for dev in $DISK_DEVICES; do
             
             echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
         
-            if [ -x "$SMARTCTL" ]; then
+            if [ -n "$SMARTCTL" ]; then
                 echo 
                 echo "        SMART info:"
                 $SMARTCTL -A /dev/$disk_dev | \

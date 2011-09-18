@@ -19,7 +19,6 @@ HDPARM=hdparm
 IWC=iwconfig
 MODPRO=modprobe
 LOGGER=logger
-DMI=dmidecode
 UDEVADM=udevadm
 
 SMAPIDIR=/sys/devices/platform/smapi
