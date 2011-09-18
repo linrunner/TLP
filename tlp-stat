@@ -109,17 +109,7 @@ for pool in mc smp smt; do
 done
 
 # nmi watchdog
-if [ -f $NMIWD ]; then
-    nmiwd=$(cat $NMIWD)
-    echo "$mnmiwd" > $NMIWD 2> /dev/null
-    if [ $? = 0 ]; then
-        echo "$NMIWD = $nmiwd"
-    else
-        echo "$NMIWD = $nmiwd (disabled by kernel)"
-    fi 
-else
-    echo "$NMIWD = (not available)"
-fi
+echoparm $NMIWD
 echo
 
 for cpup in /sys/devices/system/cpu/cpu?/cpufreq/phc_controls; do
