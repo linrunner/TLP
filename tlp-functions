@@ -221,6 +221,8 @@ set_nmi_watchdog () {
         else
             echo_debug "pm" "set_nmi_watchdog.disabled_by_kernel: $nmiwd"
         fi
+    else
+        echo_debug "pm" "set_nmi_watchdog.not_available"
     fi
     
     return 0
