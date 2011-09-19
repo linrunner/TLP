@@ -1,6 +1,5 @@
-tlp (0.3.2.900-1) lucid; urgency=low
+tlp (0.3.3-1) lucid; urgency=low
 
-  * Development release
   * Features
     - tlp-stat: show hdd temp SMART values (bassplayer)
     - enable/disable kernel NMI watchdog
@@ -8,13 +7,13 @@ tlp (0.3.2.900-1) lucid; urgency=low
     - set_charge_thresholds(): check for undefined thresh values
     - set_extfs_commit(): skip bind mounts (Fedora sandbox)
     - zztlp: check param; show help text
-  * Bug Fix
+  * Bug Fixes
     - #24: openSUSE 11.4/2.6.37: writing to autosuspend_delay_ms fails,
              fallback to autosuspend
     - #25: fix sched_mc_power_savings on bat
     - #26: tlp-stat complains about missing dmidecode (Sara)
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 18 Sep 2011 13:40:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 19 Sep 2011 19:05:00 +0200
 
 tlp (0.3.2-2) lucid; urgency=low
 
