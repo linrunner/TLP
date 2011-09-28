@@ -1,3 +1,11 @@
+tlp (0.3.3.900-1) lucid; urgency=low
+
+  * Development release
+  * Features
+    - Intel graphics: rc6 power save mode, frame buffer compression
+
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 28 Sep 2011 18:55:00 +0200
+
 tlp (0.3.3-1) lucid; urgency=low
 
   * Features

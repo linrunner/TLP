@@ -60,6 +60,14 @@ SATA_LINKPWR_ON_BAT=min_power
 PCIE_ASPM_ON_AC=performance
 PCIE_ASPM_ON_BAT=powersave
 
+# Intel graphics power management (Kernel >= 3.0)
+# 0=disable/1=enable rc6 power save
+I915_ENABLE_RC6_ON_AC=0
+I915_ENABLE_RC6_ON_BAT=1
+# 0=disable/1=enable frame buffer compression
+I915_ENABLE_FBC_ON_AC=0
+I915_ENABLE_FBC_ON_BAT=1
+
 # Radeon graphics clock speed (profile method): low/mid/high/auto/default
 # auto = mid on BAT, high on AC; default = use hardware defaults
 # (Kernel >= 2.6.35 only, not with fglrx driver!)

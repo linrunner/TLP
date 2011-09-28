@@ -209,6 +209,13 @@ else
 fi
 echo
 
+# i915 power mgmt
+if [ -d $I915D ]; then 
+    echoparm $I915D/i915_enable_rc6
+    echoparm $I915D/i915_enable_fbc
+    echo
+fi
+
 # radeon power profile
 for card in /sys/class/drm/card[0-9]/device ; do
    if [ -f $card/power_method ] && [ -f $card/power_profile ]; then

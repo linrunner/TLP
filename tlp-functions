@@ -10,7 +10,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.3.3
+TLPVER=0.3.3.900
 DEFAULT_FILE=/etc/default/tlp
 
 ACPWR=on_ac_power
@@ -28,6 +28,8 @@ NETD=/sys/class/net
 PCID=/sys/bus/pci/devices
 SPID=/sys/bus/spi/devices
 I2CD=/sys/bus/i2c/devices
+
+I915D=/sys/module/i915/parameters
 
 USB_BLACKLIST_INT=""
 USB_TIMEOUT=2
@@ -447,6 +449,33 @@ set_pcie_aspm () { # $1: 0=ac mode, 1=battery mode
     fi
 
     return 0
+}
+
+set_i915_power_mgmt () { #$1: 0=ac mode, 1=battery mode
+    local rc6 fbc
+    
+    if [ "$1" = "1" ]; then
+        rc6=${I915_ENABLE_RC6_ON_BAT:-1}
+        fbc=${I915_ENABLE_FBC_ON_BAT:-1}
+    else
+        rc6=${I915_ENABLE_RC6_ON_AC:-0}
+        fbc=${I915_ENABLE_FBC_ON_AC:-0}
+    fi
+
+    if [ -f $I915D/i915_enable_rc6 ]; then 
+        echo_debug "pm" "set_i915_power_mgmt($1).rc6: $rc6"
+        echo "$rc6" > $I915D/i915_enable_rc6
+    else
+        echo_debug "pm" "set_i915_power_mgmt($1).rc6.not_available"
+    fi
+    if [ -f $I915D/i915_enable_fbc ]; then 
+        echo_debug "pm" "set_i915_power_mgmt($1).fbc: $fbc"
+        echo "$fbc" > $I915D/i915_enable_fbc
+    else
+        echo_debug "pm" "set_i915_power_mgmt($1).fbc.not_available"
+    fi
+
+    return 0    
 }
 
 set_radeon_profile () { #$1: 0=ac mode, 1=battery mode
