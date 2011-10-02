@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Thomas Koch <linrunner@gmx.net>
 Build-Depends: debhelper (>= 7)
 Standards-Version: 3.8.4
-Homepage: http://thinkpad-wiki.org/TLP_-_Stromspareinstellungen_fuer_Ubuntu
+Homepage: https://github.com/linrunner/TLP/wiki/TLP-Linux-Advanced-Power-Management
 
 Package: tlp
 Architecture: all
