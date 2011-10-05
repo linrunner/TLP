@@ -1,38 +1,40 @@
-TLP README - 30.06.2011
+TLP README - 05.10.2011
 
-TLP is a collection of scripts enabling laptop-mode and
-implementing power save features for laptop hardware.
+TLP brings you the benefits of advanced power management for Linux
+without the need to understand every technical detail. 
 
-Possible settings for ac/battery are:
-- Kernel laptop-mode, dirty buffer params/file system commit 
-- Hard disk advanced power magement level and spindown timeout
-- IO scheduler per disk
-- Wake on LAN (disable)
+Settings depending on the power source ac/bat:
+- Kernel laptop mode, dirty buffer params and file system commit timeout
+- Power aware process scheduler for multi-core/multi-threading
+- Hard disk advanced power magement level (per disk)
 - SATA aggressive link power management (ALPM)
-- PCI express active state power management (PCIe ASPM) (Kernel 2.6.35+)
-- Radeon KMS power management (Kernel 2.6.35, not fglrx) 
-- WiFi power saving mode (Kernel 2.6.32+, iwlagn only)
-- Audio power saving mode (hda_intel, ac97)
--  Runtime Power Management for pci/spi/i2c bus devices (Kernel 2.6.35+)
-- USB autosuspend with blacklist
-- PHC controls (requires kernel with phc-patches)
-- Battery charge thresholds (ThinkPads only)
-- Power off optical drive in drive bay on battery
-- Run commands conditionally 
+- PCI Express active state power management (PCIe ASPM) - Kernel 2.6.35 and above
+- Runtime power management for pci/spi/i2c bus devices - Kernel 2.6.35 and above
+- Intel graphics rc6/fbc power management - Kernel 3.0 and above
+- Radeon graphics KMS power management - Kernel 2.6.35 and above, not fglrx
+- Wifi power saving mode -  depending on kernel/driver
+- Power off optical drive in drive bay (on battery)
 
 Additional functions:
-- WiFi, Bluetooth and WWAN devices can be selectively disabled on
-  system startup and shutdown
+- Hard disk spin down timeout and I/O scheduler (per disk)
+- USB autosuspend with blacklist
+- Audio power saving mode - hda_intel, ac97
+- Disable Wifi, bluetooth or WWAN devices upon system startup and shutdown
+- Disable Wake On LAN
 - WWAN state is restored after suspend/hibernate
+- Untervolting of Intel processors - requires kernel with PHC-Patch
+- Battery charge thresholds - ThinkPads only
+- Recalibrate battery - ThinkPads only
 
-All TLP settings are stored in /etc/default/tlp.
+All TLP settings are stored in /etc/default/tlp. The default configuration
+provides optimized power saving out of the box. 
 
-For further details take a look at the man pages:
+Read the the extensive documentation at:
+- https://github.com/linrunner/TLP/wiki/TLP-Linux-Advanced-Power-Management
+- http://thinkpad-wiki.org/TLP_-_Linux_Stromsparen (in German)
+
+Or take a look at the manpages:
 - tlp
 - tlp-stat (display tlp status and active settings)
 - wifi, bluetooth, wwan (switch wireless devices on/off)
 - run-on-ac, run-on-bat
-
-Or visit the project's homepages:
-- https://github.com/linrunner/TLP/wiki/TLP-Linux-Advanced-Power-Management
-- http://thinkpad-wiki.org/TLP_-_Stromspareinstellungen_fuer_Ubuntu (german)

@@ -10,7 +10,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.3.3.900
+TLPVER=0.3.4
 DEFAULT_FILE=/etc/default/tlp
 
 ACPWR=on_ac_power
