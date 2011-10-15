@@ -5,7 +5,7 @@ _tlp() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="start ac bat usb bayoff discharge setcharge fullcharge stat diskid"
+    opts="start ac bat usb bayoff discharge setcharge fullcharge recalibrate stat diskid"
 
     case $COMP_CWORD in
         1)
@@ -15,7 +15,7 @@ _tlp() {
             ;;
             
         2)
-            if [ "${prev}" = "discharge" -o "${prev}" = "fullcharge" ]; then
+            if [ "${prev}" = "discharge" -o "${prev}" = "fullcharge" -o "${prev}" = "recalibrate" ]; then
                 # show list of batteries
                 bats=$( { local b
                     for b in /sys/devices/platform/smapi/BAT*; do

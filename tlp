@@ -142,6 +142,13 @@ case "$mode" in
         setcharge_battery 96 100 $2
         ;;
         
+    recalibrate) # Recalibrate battery, i.e. discharge and charge to 100%
+        check_root
+        load_tp_modules
+        setcharge_battery 96 100 $2
+        discharge_battery $2
+        ;;        
+        
     stat) # Show status
         tlp-stat
         ;;
@@ -154,7 +161,7 @@ case "$mode" in
         ;;
         
     *) 
-        echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge|stat|diskid"
+        echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid"
         ;;
 esac
 

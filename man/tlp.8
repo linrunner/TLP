@@ -1,4 +1,4 @@
-.TH TLP 8 "2011-06-18" "Power Management" ""
+.TH TLP 8 "2011-10-15" "Power Management" ""
 .SH NAME
 tlp \- apply laptop power management settings
 .SH SYNOPSIS
@@ -41,6 +41,9 @@ Set charge thresholds temporarily. Values must be between 1 and 100, Stop > Star
 .TP
 .B fullcharge [BAT0|BAT1] \fR(ThinkPads only)
 Set charge thresholds to factory preset (96/100) temporarily. Configured thresholds are restored upon next system start.
+.TP
+.B recalibrate [BAT0|BAT1] \fR(ThinkPads only)
+Battery recalibration: discharge und recharge to 100%.
 .TP
 .B stat
 Same as tlp-stat.
