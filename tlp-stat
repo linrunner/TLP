@@ -16,23 +16,32 @@ DMIDEC=$(which dmidecode 2> /dev/null)
 ASPM=/sys/module/pcie_aspm/parameters/policy
 USBD=/sys/bus/usb/devices
 NMIWD=/proc/sys/kernel/nmi_watchdog
+TPACPI=/sys/devices/platform/thinkpad_acpi
 
 # --- Functions
 echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
     local val
     
     if [ -f $1 ]; then
-        val=`cat $1`
-        if [ -n "$4" ]; then
-            val=${val%$4}
-        fi
-        if [ -n "$3" ]; then    
-            echo "$1 = $val [$3]"
+        val=$(cat $1 2> /dev/null)
+        if [ $? = 0 ]; then
+            if [ -n "$4" ]; then
+                val=${val%$4}
+            fi
+            if [ -n "$3" ]; then    
+                echo "$1 = $val [$3]"
+            else
+                echo "$1 = $val"
+            fi
         else
-            echo "$1 = $val"
+            if [ -n "$2" ] && [ "$2" != "-" ]; then
+                echo "$1 = ($2)"
+            else
+                echo "$1 = (not available)"
+            fi
         fi
     else
-        if [ -n "$2" ]; then
+        if [ -n "$2" ] && [ "$2" != "-" ]; then
             echo "$1 = ($2)"
         else
             echo "$1 = (not available)"
@@ -118,7 +127,11 @@ done
 echo 
 
 # temperatures
-echoparm /proc/acpi/ibm/thermal "thinkpad_acpi not available"
+if [ -d $TPACPI ]; then
+    echoparm /proc/acpi/ibm/thermal 
+else 
+    echo "/proc/acpi/ibm/thermal = (thinkpad_acpi not available)" 
+fi
 echo
 
 # laptop-mode, dirty buffers params

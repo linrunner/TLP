@@ -1,4 +1,4 @@
-TLP README - 05.10.2011
+TLP README - 12.10.2011
 
 TLP brings you the benefits of advanced power management for Linux
 without the need to understand every technical detail. 
@@ -6,7 +6,7 @@ without the need to understand every technical detail.
 Settings depending on the power source ac/bat:
 - Kernel laptop mode, dirty buffer params and file system commit timeout
 - Power aware process scheduler for multi-core/multi-threading
-- Hard disk advanced power magement level (per disk)
+- Hard disk advanced power magement level and spin down timeout (per disk)
 - SATA aggressive link power management (ALPM)
 - PCI Express active state power management (PCIe ASPM) - Kernel 2.6.35 and above
 - Runtime power management for pci/spi/i2c bus devices - Kernel 2.6.35 and above
@@ -16,10 +16,10 @@ Settings depending on the power source ac/bat:
 - Power off optical drive in drive bay (on battery)
 
 Additional functions:
-- Hard disk spin down timeout and I/O scheduler (per disk)
+- I/O scheduler (per disk)
 - USB autosuspend with blacklist
 - Audio power saving mode - hda_intel, ac97
-- Disable Wifi, bluetooth or WWAN devices upon system startup and shutdown
+- Disable integrated Wifi, bluetooth or WWAN devices upon system startup and shutdown
 - Disable Wake On LAN
 - WWAN state is restored after suspend/hibernate
 - Untervolting of Intel processors - requires kernel with PHC-Patch
