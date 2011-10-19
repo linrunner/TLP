@@ -4,7 +4,7 @@
 # Copyright (c) 2011 Thomas Koch <linrunner@gmx.net>
 # This software is licensed under the GPL v2.
 #
-# Some code and descriptions were adapted from:
+# Some concepts and descriptions were adapted from:
 # - laptop-mode-tools
 # - thinkwiki.org
 
@@ -142,7 +142,7 @@ set_laptopmode () { # $1: 0=ac mode, 1=battery mode
 }
 
 set_extfs_commit () { # $1: commit
-    # remount ext3/4 filesystems with commit=age (from laptop-mode-tools)
+    # remount ext3/4 filesystems with commit=age (concept from laptop-mode-tools)
     local dev mtpoint fstype mopts d1 d2
     local mtlist=""
     
@@ -160,7 +160,7 @@ set_extfs_commit () { # $1: commit
 }
 
 set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
-    # Some code adapted from laptop-mode-tools
+    # Concept from laptop-mode-tools
     local commit age
     
     check_sysfs "set_dirty_parms" "/proc/sys/vm"
