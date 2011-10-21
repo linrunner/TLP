@@ -5,7 +5,7 @@ without the need to understand every technical detail.
 
 Settings depending on the power source ac/bat:
 - Kernel laptop mode, dirty buffer params and file system commit timeout
-- Power aware process scheduler for multi-core/multi-threading
+- Power aware process scheduler for multi-core/hyper-threading
 - Hard disk advanced power magement level and spin down timeout (per disk)
 - SATA aggressive link power management (ALPM)
 - PCI Express active state power management (PCIe ASPM) - Kernel 2.6.35 and above

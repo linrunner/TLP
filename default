@@ -14,7 +14,7 @@ DISK_IDLE_SECS_ON_BAT=2
 MAX_LOST_WORK_SECS_ON_AC=15
 MAX_LOST_WORK_SECS_ON_BAT=60
 
-# Minimize number of used cpus/cores under light load conditions
+# Minimize number of used cpu cores/hyper-threads under light load conditions
 SCHED_POWERSAVE_ON_AC=0
 SCHED_POWERSAVE_ON_BAT=1
 
