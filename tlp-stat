@@ -80,10 +80,10 @@ else
 fi
 
 if [ -n "$DMIDEC" ]; then
-    echo "System = $($DMIDEC -s system-manufacturer)" \
-        "$($DMIDEC -s system-version)" \
-        "$($DMIDEC -s system-product-name)"
-    echo "BIOS = $($DMIDEC -s bios-version)"
+    echo "System = $( $DMIDEC -s system-manufacturer 2> /dev/null )" \
+        "$( $DMIDEC -s system-version 2> /dev/null )" \
+        "$( $DMIDEC -s system-product-name 2> /dev/null )"
+    echo "BIOS = $($DMIDEC -s bios-version 2> /dev/null )"
 fi
 
 [ -n "$LSBREL" ] && echo "Release = $($LSBREL -d -s)"
