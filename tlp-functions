@@ -457,24 +457,29 @@ set_i915_power_mgmt () { #$1: 0=ac mode, 1=battery mode
     local rc6 fbc
     
     if [ "$1" = "1" ]; then
-        rc6=${I915_ENABLE_RC6_ON_BAT:-1}
-        fbc=${I915_ENABLE_FBC_ON_BAT:-0}
+        rc6=${I915_ENABLE_RC6_ON_BAT:-}
+        fbc=${I915_ENABLE_FBC_ON_BAT:-}
     else
-        rc6=${I915_ENABLE_RC6_ON_AC:-0}
-        fbc=${I915_ENABLE_FBC_ON_AC:-0}
+        rc6=${I915_ENABLE_RC6_ON_AC:-}
+        fbc=${I915_ENABLE_FBC_ON_AC:-}
     fi
 
-    if [ -f $I915D/i915_enable_rc6 ]; then 
-        echo_debug "pm" "set_i915_power_mgmt($1).rc6: $rc6"
-        echo "$rc6" > $I915D/i915_enable_rc6
-    else
-        echo_debug "pm" "set_i915_power_mgmt($1).rc6.not_available"
+    if [ -n "$rc6" ]; then 
+        if [ -f $I915D/i915_enable_rc6 ]; then 
+            echo_debug "pm" "set_i915_power_mgmt($1).rc6: $rc6"
+            echo "$rc6" > $I915D/i915_enable_rc6
+        else
+            echo_debug "pm" "set_i915_power_mgmt($1).rc6.not_available"
+        fi  
     fi
-    if [ -f $I915D/i915_enable_fbc ]; then 
-        echo_debug "pm" "set_i915_power_mgmt($1).fbc: $fbc"
-        echo "$fbc" > $I915D/i915_enable_fbc
-    else
-        echo_debug "pm" "set_i915_power_mgmt($1).fbc.not_available"
+    
+    if [ -n "$fbc" ]; then 
+        if [ -f $I915D/i915_enable_fbc ]; then 
+            echo_debug "pm" "set_i915_power_mgmt($1).fbc: $fbc"
+            echo "$fbc" > $I915D/i915_enable_fbc
+        else
+            echo_debug "pm" "set_i915_power_mgmt($1).fbc.not_available"
+        fi
     fi
 
     return 0    
