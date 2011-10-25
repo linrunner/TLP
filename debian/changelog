@@ -7,6 +7,7 @@ tlp (0.3.4.900-1) lucid; urgency=low
   * Bug Fixes
     - #27: tlp-stat complains about missing /proc/acpi/ibm/thermal and
              start_charge_thresh on X220/T420(s) et al. (Esc)
+    - #29: tlp-stat: remove smartctl garbage output (SirVival)
     - #30: supress dmidecode error output (kristatos)
     - iterate over all sched_powersave instances
     - i915: rc6/fbc features removed

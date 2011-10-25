@@ -178,7 +178,7 @@ for dev in $DISK_DEVICES; do
             if [ -n "$SMARTCTL" ]; then
                 echo 
                 echo "        SMART info:"
-                $SMARTCTL -A /dev/$disk_dev | \
+                $SMARTCTL -A /dev/$disk_dev | grep -v '<==' | \
                   awk -F ' ' '$2 ~ /Start_Stop_Count|Reallocated_Sector_Ct|Load_Cycle_Count/ \
                                     { printf "          %3d %-25s = %8d \n", $1, $2, $10 } ; \
                               $2 ~ /Power_On_Hours/ \
