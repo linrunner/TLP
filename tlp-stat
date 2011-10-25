@@ -292,6 +292,7 @@ if [ -d /sys/devices/platform/smapi ]; then
     for bat in /sys/devices/platform/smapi/BAT[01]; do
         if [ -d $bat ] && [ "$(cat $bat/installed)" = "1" ]; then
             echoparm $bat/manufacturer
+            echoparm $bat/model
             echoparm $bat/manufacture_date
             echoparm $bat/first_use_date
             echoparm $bat/cycle_count
