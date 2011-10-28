@@ -32,23 +32,34 @@ check_tlp_enabled || exit 0
 case $1 in
     start|restart|force-reload)
         
+        echo -n "Loading tp-smapi kernel module..."
         load_tp_modules
-            
+        echo "done. "
+        
+        echo -n "Disabling radios:"
         for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
+            echo -n " $dev"
             device_off $dev
         done
+        echo "."
     
+        echo -n "Setting battery charge thresholds..."
         set_charge_thresholds
+        echo "done."
         ;;
         
     stop)
+        echo -n "Disabling radios:"
         for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
+            echo -n " $dev"
             device_off $dev
         done
+        echo "."
         ;;
 
     *)
-        # do nothing
+        echo "Usage: tlp {start|stop|restart|force-reload}" >&2
+        exit 3
         ;;
 esac
 

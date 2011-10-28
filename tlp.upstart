@@ -24,13 +24,20 @@ pre-start script
     echo_debug "path" "PATH=$PATH"
     check_tlp_enabled || exit 1
 
+    echo -n "Loading tp-smapi kernel module..."
     load_tp_modules
+    echo "done. "
     
+    echo -n "Disabling radios:"
     for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
+        echo -n " $dev"
         device_off $dev
     done
-    
+    echo "."
+        
+    echo -n "Setting battery charge thresholds..."
     set_charge_thresholds
+    echo "done."
     
 end script
 
@@ -48,9 +55,12 @@ post-stop script
     echo_debug "path" "PATH=$PATH"
     check_tlp_enabled || exit 1
 
+    echo -n "Disabling radios:"
     for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
+        echo -n " $dev"
         device_off $dev
     done
+    echo "."
     
 end script
 
