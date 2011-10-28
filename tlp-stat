@@ -18,6 +18,9 @@ USBD=/sys/bus/usb/devices
 NMIWD=/proc/sys/kernel/nmi_watchdog
 TPACPI=/sys/devices/platform/thinkpad_acpi
 
+THERMAL=/proc/acpi/ibm/thermal
+FAN=/proc/acpi/ibm/fan
+
 # --- Functions
 echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
     local val
@@ -128,9 +131,15 @@ echo
 
 # temperatures
 if [ -d $TPACPI ]; then
-    echoparm /proc/acpi/ibm/thermal 
+    echoparm $THERMAL
+    if [ -f $FAN ]; then
+        cat $FAN | \
+            awk '$1 ~ /speed:/ { printf "'$FAN'     = speed:        %5d\n", $2 }'
+    else
+        echo "$FAN     = (not available)"
+    fi
 else 
-    echo "/proc/acpi/ibm/thermal = (thinkpad_acpi not available)" 
+    echo "$THERMAL,fan = (thinkpad_acpi not available)" 
 fi
 echo
 

@@ -3,7 +3,7 @@ tlp (0.3.4.900-1) lucid; urgency=low
   * Development version
   * Features
     - tlp recalibrate 
-    - tlp-stat: show battery model (tp-smapi)
+    - tlp-stat: show thinkpad fan speed, battery model
   * Bug Fixes
     - #27: tlp-stat complains about missing /proc/acpi/ibm/thermal and
              start_charge_thresh on X220/T420(s) et al. (Esc)
