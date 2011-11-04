@@ -233,8 +233,10 @@ echo
 
 # i915 power mgmt
 if [ -d $I915D ]; then 
+    echoparm $I915D/powersave
     echoparm $I915D/i915_enable_rc6
     echoparm $I915D/i915_enable_fbc
+    echoparm $I915D/lvds_downclock
     echo
 fi
 
@@ -311,6 +313,7 @@ if [ -d /sys/devices/platform/smapi ]; then
             echoparm $bat/remaining_percent - "%"
             echoparm $bat/remaining_running_time_now - min
             echoparm $bat/remaining_charging_time - min
+            echoparm $bat/power_now - mW
             echo
             echoparm $bat/start_charge_thresh - "%"
             echoparm $bat/stop_charge_thresh - "%"
@@ -322,19 +325,25 @@ elif [ -d /sys/class/power_supply ]; then
         echo "ThinkPad extended battery info not available (missing tp_smapi kernel module)."
     fi
     # generic
-    for bat in /sys/class/power_supply/BAT?; do
-        if [ -d $bat ] && [ "$(cat $bat/present)" = "1" ]; then
+    for bat in /sys/class/power_supply/*; do
+        if [ -d $bat ] \
+           && [ "$(cat $bat/type)" = "Battery" ] \
+           && [ "$(cat $bat/present)" = "1" ]; then
             echoparm $bat/manufacturer
+            echoparm $bat/model_name
+            echoparm $bat/cycle_count 
             if [ -f $bat/energy_full ]; then 
                 echoparm $bat/energy_full_design - mWh 000
                 echoparm $bat/energy_full - mWh 000
                 echoparm $bat/energy_now - mWh 000
+                echoparm $bat/power_now - mW 000
             elif [ -f $bat/charge_full ]; then
                 echoparm $bat/charge_full_design - mAh 000
                 echoparm $bat/charge_full - mAh 000
                 echoparm $bat/charge_now - mAh 000
-                echoparm $bat/cycle_count - 
+                echoparm $bat/current_now - mA 000
             fi
+            echoparm $bat/status
             echo
         fi
     done
@@ -375,14 +384,10 @@ for usbdev in $devices; do
         fi
         
         # show dev path, state, usb id
-        echo -n "$asp = $aspv," \
-             "$control --" \
-             "$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct) "
+        echo -n "$asp = $aspv, $control -- "
         
-        # show product string     
-        product="$([ -f $USBD/$usbdev/product ] && cat $USBD/$usbdev/product)"
-        product="${product%% }"
-        echo -n "${product:-unknown device} "
+        # usb id, product string     
+        echo -n "$(lsusb -s $(cat $USBD/$usbdev/busnum):$(cat $USBD/$usbdev/devnum) | cut -f6- -d' ') "
         
         # show drivers
         driverlist=""
