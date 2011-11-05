@@ -14,8 +14,9 @@ tlp (0.3.4.900-1) lucid; urgency=low
     - #30: supress dmidecode error output (kristatos)
     - iterate over all sched_powersave instances
     - i915: rc6/fbc features removed
+    - Start upowerd in init script
     
- -- Thomas Koch <linrunner@gmx.net> Sat, 15 Oct 2011 12:20:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 15 Oct 2011 12:20:00 +0200
 
 tlp (0.3.4-1) lucid; urgency=low
 

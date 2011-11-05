@@ -31,7 +31,6 @@ check_tlp_enabled || exit 0
 
 case $1 in
     start|restart|force-reload)
-        
         echo -n "Loading tp-smapi kernel module..."
         load_tp_modules
         echo "done. "
@@ -46,6 +45,14 @@ case $1 in
         echo -n "Setting battery charge thresholds..."
         set_charge_thresholds
         echo "done."
+
+        UPWR=$(which upower)
+        if [ -n "$UPWR" ]; then
+            echo -n "Starting upowerd..."
+            $UPWR -e > /dev/null 2&>1
+            echo "done."
+            echo_debug "run" "upower_start"
+        fi
         ;;
         
     stop)
