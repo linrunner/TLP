@@ -130,14 +130,23 @@ echoparm $NMIWD
 echo
 
 echo "+++ Undervolting"
-for cpup in /sys/devices/system/cpu/cpu?/cpufreq/phc_controls; do
-    echoparm $cpup "phc kernel not available"
+phc_avail=0
+for cpuf in /sys/devices/system/cpu/cpu?/cpufreq; do
+    if [ -f $cpuf/phc_controls ]; then
+        phc_avail=1
+        echoparm "$cpuf/phc_controls        "
+        echoparm "$cpuf/phc_default_controls"
+        echo
+    fi
 done
-echo 
+if [ $phc_avail = 0 ]; then
+    echo "PHC kernel not available."
+    echo 
+fi
 
 # temperatures
+echo "+++ ThinkPad Temperatures"
 if [ -d $TPACPI ]; then
-    echo "+++ ThinkPad Temperatures"
     echoparm $THERMAL
     if [ -f $FAN ]; then
         cat $FAN | \
