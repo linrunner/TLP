@@ -226,6 +226,7 @@ done
 echo
 
 # sata alpm
+echo "+++ SATA Aggressive Link Power Management"
 cnt=0
 for i in /sys/class/scsi_host/host* ; do
     if [ -f $i/link_power_management_policy ]; then
@@ -234,7 +235,7 @@ for i in /sys/class/scsi_host/host* ; do
     fi
 done
 if [ $cnt = 0 ]; then
-    echo "sata link power management: no ahci-enabled host controller detected"
+    echo "No AHCI-enabled host controller detected."
 fi  
 echo 
 
