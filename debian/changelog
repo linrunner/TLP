@@ -5,6 +5,7 @@ tlp (0.3.4.900-1) lucid; urgency=low
     - tlp recalibrate 
     - tlp-stat: show thinkpad fan speed, battery model, power_now,
                 i915: powersave, lvds_downclock
+    - tlp-stat: usb output refactored, new subcommand tlp-usblist
   * Bug Fixes
     - #27: tlp-stat complains about missing /proc/acpi/ibm/thermal and
              start_charge_thresh on X220/T420(s) et al. (Esc)
@@ -16,7 +17,7 @@ tlp (0.3.4.900-1) lucid; urgency=low
     - i915: rc6/fbc features removed
     - Start upowerd in init script
     
- -- Thomas Koch <linrunner@gmx.net>  Sat, 15 Oct 2011 12:20:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 06 Nov 2011 14:35:00 +0100
 
 tlp (0.3.4-1) lucid; urgency=low
 

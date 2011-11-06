@@ -8,6 +8,7 @@
 LIB=/usr/lib/tlp-pm/tlp-functions
 RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 TLPCFG=/etc/default/tlp
+TLPUSB=/usr/bin/tlp-usblist
 
 SMARTCTL=$(which smartctl 2> /dev/null)
 LSBREL=$(which lsb_release 2> /dev/null)
@@ -358,55 +359,11 @@ fi
 echo "tlp usb blacklist = ${USB_BLACKLIST:=(not configured)}"
 echo
 
-devices=$(ls $USBD | grep -v ':')
-for usbdev in $devices; do
-    if [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
-        asp="$USBD/$usbdev/power/autosuspend_delay_ms"
-        aspv=$(cat $asp 2> /dev/null)
-        if [ $? != 0 ]; then 
-            # openSUSE 11.4/2.6.37: reading from autosuspend_delay_ms fails -> fallback to autosuspend
-            asp="$USBD/$usbdev/power/autosuspend"
-            aspv=$(cat $asp 2> /dev/null)
-        fi
-    elif [ -f $USBD/$usbdev/power/autosuspend ]; then
-        asp="$USBD/$usbdev/power/autosuspend"
-        aspv=$(cat $asp 2> /dev/null)
-    else
-        asp=""
-    fi
-    
-    if [ -n "$asp" ]; then
-        if [ -f $USBD/$usbdev/power/control ]; then
-            control="control = $(cat $USBD/$usbdev/power/control)" 
-        else
-            # level is deprecated
-            control="level = $(cat $USBD/$usbdev/power/level)" 
-        fi
-        
-        # show dev path, state, usb id
-        echo -n "$asp = $aspv, $control -- "
-        
-        # usb id, product string     
-        echo -n "$(lsusb -s $(cat $USBD/$usbdev/busnum):$(cat $USBD/$usbdev/devnum) | cut -f6- -d' ') "
-        
-        # show drivers
-        driverlist=""
-        for subdev in $USBD/$usbdev/*:*; do
-            if [ -L $subdev/driver ]; then
-                driver=$(readlink $subdev/driver)
-                driver=${driver##*/}
-                if ! patinstr "$driver" "$driverlist"; then
-                    if [ -n "$driverlist" ]; then
-                        driverlist="$driverlist, $driver"
-                    else
-                        driverlist="$driver"
-                    fi
-                fi
-            fi
-        done 
-        echo "(${driverlist:-no driver})"
-    fi
-done
+if [ -x $TLPUSB ]; then
+    $TLPUSB 
+else
+    echo "Error: missing subcommand $TLPUSB."
+fi
 echo
 
 exit 0
