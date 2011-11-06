@@ -75,6 +75,7 @@ nodebug=1
 load_tp_modules
 
 echo "--- tlp $TLPVER --------------------------------------------"
+echo
 
 if [ -f $TLPCFG ]; then
     . $TLPCFG
@@ -83,6 +84,7 @@ else
     echo
 fi
 
+echo "+++ System Info"
 if [ -n "$DMIDEC" ]; then
     echo "System = $( $DMIDEC -s system-manufacturer 2> /dev/null )" \
         "$( $DMIDEC -s system-version 2> /dev/null )" \
@@ -94,6 +96,7 @@ fi
 echo "Kernel = $(uname -r -m)"
 echo
 
+echo "+++ System Status"
 if check_laptop_mode_tools; then
     if [ "$TLP_ENABLE" = "1" ]; then
         echo "tlp power save = enabled"
@@ -110,6 +113,7 @@ fi
 echo
 
 # cpu
+echo "+++ Processor"
 for cpup in /sys/devices/system/cpu/cpu?/cpufreq/scaling_governor; do
     echoparm $cpup
 done
@@ -125,6 +129,7 @@ done
 echoparm $NMIWD
 echo
 
+echo "+++ Undervolting"
 for cpup in /sys/devices/system/cpu/cpu?/cpufreq/phc_controls; do
     echoparm $cpup "phc kernel not available"
 done
@@ -132,6 +137,7 @@ echo
 
 # temperatures
 if [ -d $TPACPI ]; then
+    echo "+++ ThinkPad Temperatures"
     echoparm $THERMAL
     if [ -f $FAN ]; then
         cat $FAN | \
@@ -145,6 +151,7 @@ fi
 echo
 
 # laptop-mode, dirty buffers params
+echo "+++ File System"
 echoparm /proc/sys/vm/laptop_mode
 echoparm /proc/sys/vm/dirty_writeback_centisecs
 echoparm /proc/sys/vm/dirty_expire_centisecs
@@ -156,6 +163,7 @@ echoparm /proc/sys/fs/xfs/xfsbufd_centisecs
 echo 
 
 # disk apm level
+echo "+++ Storage Devices"
 DISK_DEVICES=${DISK_DEVICES:=sda}
 for dev in $DISK_DEVICES; do
     get_disk_dev $dev
@@ -219,6 +227,7 @@ fi
 echo 
 
 # pcie aspm
+echo "+++ PCIe Active State Power Management"
 if [ -f $ASPM ]; then
     pol=$(cat $ASPM | sed -r 's/.*\[(.*)\].*/\1/')
     echo "$pol" > $ASPM 2> /dev/null
@@ -234,6 +243,7 @@ echo
 
 # i915 power mgmt
 if [ -d $I915D ]; then 
+    echo "+++ Intel Graphics"
     echoparm $I915D/powersave
     echoparm $I915D/i915_enable_rc6
     echoparm $I915D/i915_enable_fbc
@@ -243,14 +253,16 @@ fi
 
 # radeon power profile
 for card in /sys/class/drm/card[0-9]/device ; do
-   if [ -f $card/power_method ] && [ -f $card/power_profile ]; then
-       echoparm $card/power_method
-       echoparm $card/power_profile
-       echo
-       break
-   fi
+    if [ -f $card/power_method ] && [ -f $card/power_profile ]; then
+        echo "+++ Radeon Graphics"
+        echoparm $card/power_method
+        echoparm $card/power_profile
+        echo
+        break
+    fi
 done
 
+echo "+++ Wireless"
 # rfkill state
 for i in bluetooth wifi wwan; do
     get_devc $i
@@ -289,6 +301,7 @@ done
 echo
     
 # sound power mode
+echo "+++ Audio"
 if [ -d /sys/module/snd_hda_intel ]; then
     echoparm /sys/module/snd_hda_intel/parameters/power_save
     echoparm /sys/module/snd_hda_intel/parameters/power_save_controller
@@ -303,6 +316,7 @@ if [ -d /sys/devices/platform/smapi ]; then
     # ThinkPad via tp_smapi
     for bat in /sys/devices/platform/smapi/BAT[01]; do
         if [ -d $bat ] && [ "$(cat $bat/installed)" = "1" ]; then
+            echo "+++ ThinkPad Battery"
             echoparm $bat/manufacturer
             echoparm $bat/model
             echoparm $bat/manufacture_date
@@ -322,6 +336,7 @@ if [ -d /sys/devices/platform/smapi ]; then
         fi
     done
 elif [ -d /sys/class/power_supply ]; then
+    echo "+++ Battery"
     if [ -d /sys/devices/platform/thinkpad_acpi ]; then
         echo "ThinkPad extended battery info not available (missing tp_smapi kernel module)."
     fi
@@ -351,6 +366,7 @@ elif [ -d /sys/class/power_supply ]; then
 fi
 
 # usb autosuspend
+echo "+++ USB"
 if [ "$USB_AUTOSUSPEND" = "1" ]; then
     echo "tlp usb autosuspend = enabled"
 else
