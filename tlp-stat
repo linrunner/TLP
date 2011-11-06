@@ -86,10 +86,13 @@ fi
 
 echo "+++ System Info"
 if [ -n "$DMIDEC" ]; then
-    echo "System = $( $DMIDEC -s system-manufacturer 2> /dev/null )" \
-        "$( $DMIDEC -s system-version 2> /dev/null )" \
-        "$( $DMIDEC -s system-product-name 2> /dev/null )"
-    echo "BIOS = $($DMIDEC -s bios-version 2> /dev/null )"
+    pmanuf="$( $DMIDEC -s system-manufacturer 2> /dev/null )"
+    pversion="$( $DMIDEC -s system-version 2> /dev/null )"
+    product="$( $DMIDEC -s system-product-name 2> /dev/null )"
+    bios="$($DMIDEC -s bios-version 2> /dev/null )"
+    
+    echo "$pmanuf $pversion $product"
+    echo "BIOS = $bios"
 fi
 
 [ -n "$LSBREL" ] && echo "Release = $($LSBREL -d -s)"
@@ -145,8 +148,8 @@ if [ $phc_avail = 0 ]; then
 fi
 
 # temperatures
-echo "+++ ThinkPad Temperatures"
 if [ -d $TPACPI ]; then
+    echo "+++ ThinkPad Temperatures"
     echoparm $THERMAL
     if [ -f $FAN ]; then
         cat $FAN | \
@@ -154,10 +157,9 @@ if [ -d $TPACPI ]; then
     else
         echo "$FAN     = (not available)"
     fi
-else 
-    echo "$THERMAL,fan = (thinkpad_acpi not available)" 
+    echo
 fi
-echo
+
 
 # laptop-mode, dirty buffers params
 echo "+++ File System"
