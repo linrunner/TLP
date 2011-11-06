@@ -13,13 +13,15 @@ TEST="$(which test 2> /dev/null)"
 # ----------------------------------------------------------------------------
 # Functions
 get_devc () { # $1: rftype; retval $devc
-    local i
+    local i 
     
     check_sysfs "get_devc" "/sys/class/rfkill"
 
     devc=""
     devs=254
-    is2200="0"
+    rfkdev="1"
+    devon="1"
+    devoff="0"
     
     case $1 in
         wwan|bluetooth)
@@ -30,26 +32,42 @@ get_devc () { # $1: rftype; retval $devc
                     return 0
                 fi
             done
+            
+            i=/sys/devices/platform/asus_laptop
+            if [ -d $i ] && [ -f $i/$1 ]; then
+                devc="$i/$1"
+                rfkdev="0"
+                echo_debug "rf" "get_devc($1) = $devc [asus]"
+                return 0
+            fi
             ;;
 
         wifi)
-            if [ -d /sys/bus/pci/drivers/ipw2200 ]; then
-                for i in /sys/bus/pci/drivers/ipw2200/*/rf_kill ; do
-                    if [ -f $i ]; then
-                        devc="$i"
-                        is2200="1"
-                        echo_debug "rf" "get_devc($1) = $devc [ipw2200]"
-                        return 0
-                    fi
-                done
-            else
-                for i in /sys/class/rfkill/rfkill* ; do
-                    if [ -f $i/type ] && [ "$(cat $i/type)" = "wlan" ]; then 
-                        devc="$i/state"
-                        echo_debug "rf" "get_devc($1) = $devc"
-                        return 0
-                    fi
-                done
+            for i in /sys/class/rfkill/rfkill* ; do
+                if [ -f $i/type ] && [ "$(cat $i/type)" = "wlan" ]; then 
+                    devc="$i/state"
+                    echo_debug "rf" "get_devc($1) = $devc"
+                    return 0
+                fi
+            done
+ 
+            for i in /sys/bus/pci/drivers/ipw2?00; do
+                if [ -d $i ] && [ -f $i/rf_kill ]; then
+                    devc="$i/rf_kill"
+                    rfkdev="0"
+                    devon="0"
+                    devoff="1"
+                    echo_debug "rf" "get_devc($1) = $devc [ipw2X00]"
+                    return 0
+                fi
+            done
+            
+            i=/sys/devices/platform/asus_laptop
+            if [ -d $i ] && [ -f $i/wlan ]; then
+                devc="$i/wlan"
+                rfkdev="0"
+                echo_debug "rf" "get_devc($1) = $devc [asus]"
+                return 0
             fi
             ;;
         
@@ -74,10 +92,8 @@ err_no_root_priv () {
 
 get_devs () { # $1: rftype; retval $devs: 0=off/1=on
     if [ -n "$devc" ]; then
-        devs=$(cat $devc)
-        if [ "$is2200" = "1" ]; then
-            devs=$((! $devs))
-        fi
+        devs=$(cat $devc) 
+        [ "$rfkdev" = "0" ] && devs=$(($devs ^ $devoff))
     fi
 
     echo_debug "rf" "get_devs($1) = $devs"
@@ -100,14 +116,7 @@ device_on () { # $1: rftype
     [ -z "$devc" ] && return 0
     get_devs $1 
     
-    if [ "$is2200" = "1" ]; then
-        if [ "$(id -u)" = "0" ]; then
-            echo_debug "rf" "device_on($1).ipw2200"
-            echo -n 0 > $devc
-        else
-            err_no_root_priv "device_on($1).ipw2200"
-        fi
-    elif [ -x "$RFKILL" ]; then
+    if [ "$rfkdev" = "1" ] && [ -x "$RFKILL" ]; then
         if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
             echo_debug "rf" "device_on($1).rfkill"
             $RFKILL unblock $1
@@ -117,7 +126,7 @@ device_on () { # $1: rftype
     else
         if [ "$(id -u)" = "0" ]; then
             echo_debug "rf" "device_on($1).devc"
-            echo -n 1 > $devc
+            echo -n $devon > $devc
         else
             err_no_root_priv "device_on($1).devc"
         fi
@@ -135,14 +144,7 @@ device_off () { # $1: rftype
     [ -z "$devc" ] && return 0
     get_devs $1 
     
-    if [ "$is2200" = "1" ]; then
-        if [ "$(id -u)" = "0" ]; then
-            echo_debug "rf" "device_off($1).ipw2200"
-            echo -n 1 > $devc
-        else
-            err_no_root_priv "device_off($1).ipw2200"
-        fi
-    elif [ -x "$RFKILL" ]; then
+    if [ "$rfkdev" = "1" ] && [ -x "$RFKILL" ]; then
         if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
             echo_debug "rf" "device_off($1).rfkill"
             $RFKILL block $1
@@ -152,7 +154,7 @@ device_off () { # $1: rftype
     else
         if [ "$(id -u)" = "0" ]; then
             echo_debug "rf" "device_off($1).devc"
-            echo -n 0 > $devc
+            echo -n $devoff > $devc
         else
             err_no_root_priv "device_off($1).devc"
         fi
@@ -170,19 +172,8 @@ device_toggle () { # $1: rftype
     [ -z "$devc" ] && return 0
     get_devs $1 
             
-    if [ "$is2200" = "1" ]; then
-        if [ "$(id -u)" = "0" ]; then
-            echo_debug "rf" "device_toggle($1).ipw2200"
-            case $devs in
-                0) echo -n 0 > $devc ;;
-                1) echo -n 1 > $devc ;;
-                *) ;;
-            esac
-        else
-            err_no_root_priv "device_toggle($1).rfkill"
-        fi
-    elif [ -x "$RFKILL" ]; then
-        if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
+    if [ "$rfkdev" = "1" ] && [ -x "$RFKILL" ]; then
+         if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
             echo_debug "rf" "device_toggle($1).rfkill"
             case $devs in
                 0) $RFKILL unblock $1 ;;
@@ -196,8 +187,8 @@ device_toggle () { # $1: rftype
         if [ "$(id -u)" = "0" ]; then
             echo_debug "rf" "device_toggle($1).devc"
             case $devs in
-                0) echo -n 1 > $devc ;;
-                1) echo -n 0 > $devc ;;
+                0) echo -n $devon > $devc ;;
+                1) echo -n $devoff > $devc ;;
                 *) ;;
             esac
         else

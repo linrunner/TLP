@@ -219,6 +219,7 @@ for dev in $DISK_DEVICES; do
                               $2 ~ /Available_Reservd_Space|Media_Wearout_Indicator/ \
                                     { printf "          %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
             fi
+            echo
         fi
     fi
 done
