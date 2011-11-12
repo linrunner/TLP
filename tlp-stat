@@ -86,12 +86,16 @@ fi
 
 echo "+++ System Info"
 if [ -n "$DMIDEC" ]; then
-    pmanuf="$( $DMIDEC -s system-manufacturer 2> /dev/null )"
-    pversion="$( $DMIDEC -s system-version 2> /dev/null )"
-    product="$( $DMIDEC -s system-product-name 2> /dev/null )"
-    bios="$($DMIDEC -s bios-version 2> /dev/null )"
+    pmanuf="$( $DMIDEC -s system-manufacturer 2> /dev/null | \
+                egrep -iv 'not available|to be filled' )"
+    pversion="$( $DMIDEC -s system-version 2> /dev/null | \
+                egrep -iv 'not available|to be filled' )"
+    product="$( $DMIDEC -s system-product-name 2> /dev/null | \
+                egrep -iv 'not available|to be filled' )"
+    bios="$( $DMIDEC -s bios-version 2> /dev/null | \
+                egrep -iv 'not available|to be filled' )"
     
-    echo "$pmanuf $pversion $product"
+    echo "System = $pmanuf $pversion $product"
     echo "BIOS = $bios"
 fi
 
@@ -311,7 +315,7 @@ for iface in $WIFACES; do
         esac
     fi
 done
-echo
+[ -n "$WIFACES" ] && echo
     
 # sound power mode
 echo "+++ Audio"
