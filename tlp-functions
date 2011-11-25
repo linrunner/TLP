@@ -690,6 +690,17 @@ thresh_check () { # $1: threshold; ret: 0=invalid/1..100=valid
     return $thr
 }
 
+do_force_discharge () { # $1: bat sysfile; $2: 0=off/1=on
+    local rc=1
+    
+    if [ -f $1 ]; then
+        echo $1 > $2 2> /dev/null
+        rc = $?
+    fi
+    
+    return $rc
+}
+
 set_charge_thresholds () {
     echo_debug "pm" "set_charge_thresholds.enter"
     [ -d $SMAPIDIR ] || return 0
@@ -723,7 +734,7 @@ set_charge_thresholds () {
 }
 
 cancel_discharge () { # called from trap
-    echo 0 > $bdir/force_discharge
+    do_force_discharge $bdir/force_discharge 0
     echo
     echo "Discharging of battery $bat cancelled."
     echo_debug "pm" "discharge_battery.cancelled: $bat"
@@ -756,7 +767,13 @@ discharge_battery () { # $1: battery
         return 1
     fi
         
-    echo 1 > $bdir/force_discharge 2> /dev/null
+    do_force_discharge $bdir/force_discharge 1
+    if ! $? ; then
+        echo_debug "pm" "discharge_battery.force_discharge_not_available: $bat"
+        echo "Error: discharge function not available for this ThinkPad model."
+        return 1
+    fi
+   
     trap cancel_discharge INT
     
     while [ "$(cat $bdir/force_discharge)" = "0" ]; do :; done
@@ -842,12 +859,18 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
     do_threshold $bdir/stop_charge_thresh "$stop_thresh"
     
     # trigger charging via discharge
-    echo 1 > $bdir/force_discharge 2> /dev/null
-    sleep 2
-    echo 0 > $bdir/force_discharge 2> /dev/null
+    do_force_discharge $bdir/force_discharge 1
+    if $?; then 
+        sleep 2
+        do_force_discharge $bdir/force_discharge 1
+        
+        echo "Charging thresholds of battery $bat temporarily set to: start=$start_thresh stop=$stop_thresh."
+        echo_debug "pm" "setcharge_battery.initiated"
+    else
+        echo "Error: cannot force thresholds on this ThinkPad model."
+        echo_debug "pm" "setcharge_battery.force_discharge_not_available: $bat"
+    fi
     
-    echo "Charging thresholds of battery $bat temporarily set to: start=$start_thresh stop=$stop_thresh."
-    echo_debug "pm" "setcharge_battery.initiated"
     return 0
 }
 

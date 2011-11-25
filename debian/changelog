@@ -10,6 +10,7 @@ tlp (0.3.4.900-1) lucid; urgency=low
   * Bug Fixes
     - #27: tlp-stat complains about missing /proc/acpi/ibm/thermal and
              start_charge_thresh on X220/T420(s) et al. (Esc)
+    - X220/T420(s) et al.: check for force_discharge availability
     - #28: further mitigate race with gdm when disabling radios 
              in init script (blackbox)
     - #29: tlp-stat: remove smartctl garbage output (SirVival)
@@ -18,7 +19,7 @@ tlp (0.3.4.900-1) lucid; urgency=low
     - i915: rc6/fbc features removed
     - Start upowerd in init script
     
- -- Thomas Koch <linrunner@gmx.net>  Sun, 06 Nov 2011 14:35:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 25 Nov 2011 19:15:00 +0100
 
 tlp (0.3.4-1) lucid; urgency=low
 
