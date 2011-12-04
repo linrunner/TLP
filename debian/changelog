@@ -10,7 +10,8 @@ tlp (0.3.4.900-1) lucid; urgency=low
   * Bug Fixes
     - #27: tlp-stat complains about missing /proc/acpi/ibm/thermal and
              start_charge_thresh on X220/T420(s) et al. (Esc)
-    - X220/T420(s) et al.: check for force_discharge availability
+    - Check if start_charge_thresh, stop_charge_thresh, force_discharge 
+      are writable
     - #28: further mitigate race with gdm when disabling radios 
              in init script (blackbox)
     - #29: tlp-stat: remove smartctl garbage output (SirVival)

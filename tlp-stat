@@ -345,6 +345,7 @@ if [ -d /sys/devices/platform/smapi ]; then
             echoparm $bat/remaining_percent - "%"
             echoparm $bat/remaining_running_time_now - min
             echoparm $bat/remaining_charging_time - min
+            echoparm $bat/force_discharge
             echoparm $bat/power_now - mW
             echo
             echoparm $bat/start_charge_thresh - "%"
