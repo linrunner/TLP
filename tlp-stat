@@ -101,6 +101,7 @@ fi
 
 [ -n "$LSBREL" ] && echo "Release = $($LSBREL -d -s)"
 echo "Kernel = $(uname -r -m)"
+echoparm /proc/cmdline
 echo
 
 echo "+++ System Status"
