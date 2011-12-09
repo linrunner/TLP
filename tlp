@@ -145,8 +145,7 @@ case "$mode" in
     recalibrate) # Recalibrate battery, i.e. discharge and charge to 100%
         check_root
         load_tp_modules
-        setcharge_battery 96 100 $2
-        discharge_battery $2
+        setcharge_battery 96 100 $2 && discharge_battery $2
         ;;        
         
     stat) # Show status
