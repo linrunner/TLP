@@ -895,6 +895,7 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
         sleep 2
         do_force_discharge $bdir/force_discharge 0
         echo_debug "pm" "setcharge_battery.initiated($bat)"
+        sleep 2
     else
         echo "Warning: cannot force thresholds on this ThinkPad model. Please power off to activate."
         echo_debug "pm" "setcharge_battery.force_discharge_not_available($bat): rc=$rc"
