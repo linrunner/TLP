@@ -13,5 +13,5 @@ Recommends: ethtool, wireless-tools
 Suggests: smartmontools
 Conflicts: pm-utils-powersave-policy
 Description: Saves battery power on laptops
- TLP is a collection of scripts enabling laptop-mode and
- implementing power save features for laptop hardware.
+ TLP is a collection of scripts enabling implementing 
+ power save features for laptop hardware.

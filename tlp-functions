@@ -20,6 +20,7 @@ IWC=iwconfig
 MODPRO=modprobe
 LOGGER=logger
 UDEVADM=udevadm
+LAPMODE=laptop_mode
 
 SMAPIDIR=/sys/devices/platform/smapi
 USBD=/sys/bus/usb/devices
@@ -79,11 +80,12 @@ check_tlp_enabled () { # ret: 0=disabled/1=enabled
     fi
 }
 
-check_laptop_mode_tools () { # ret: 0=disabled, 1=enabled
-    [ -f /etc/default/acpi-support ] && . /etc/default/acpi-support
-    if [ "$ENABLE_LAPTOP_MODE" = "true" ] || [ -f /var/run/laptop-mode-tools/enabled ]; then
-        echo "Error: tlp power save is disabled because laptop-mode-tools is active." 1>&2
-        echo "       Set ENABLE_LAPTOP_MODE=false in /etc/default/acpi-support." 1>&2
+check_laptop_mode_tools () { # ret: 0=not installed, 1=installed
+    local lmt=$(which $LAPMODE)
+    
+    if [ -n "$lmt" ] && [ -x "$lmt" ]; then
+        echo "Error: tlp power save is disabled because laptop-mode-tools is installed." 1>&2
+        echo "       Please uninstall laptop-mode-tools." 1>&2
         echo 1>&2
         echo_debug "pm" "check_laptop_mode_tools: yes" 
         return 1

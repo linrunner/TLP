@@ -1,4 +1,4 @@
-tlp (0.3.4.900-1) lucid; urgency=low
+tlp (0.3.4.901-1) lucid; urgency=low
 
   * Development version
   * Features
@@ -20,8 +20,9 @@ tlp (0.3.4.900-1) lucid; urgency=low
     - iterate over all sched_powersave instances
     - i915: rc6/fbc features removed
     - Start upowerd in init script
-    
- -- Thomas Koch <linrunner@gmx.net>  Sat, 10 Dec 2011 01:10:00 +0100
+    - Show error message to uninstall latop-mode-tools if present
+   
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 11 Dec 2011 11:33:00 +0100
 
 tlp (0.3.4-1) lucid; urgency=low
 
