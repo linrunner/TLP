@@ -10,7 +10,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.3.4.900
+TLPVER=0.3.4.901
 DEFAULT_FILE=/etc/default/tlp
 
 ACPWR=on_ac_power
@@ -73,7 +73,7 @@ check_tlp_enabled () { # ret: 0=disabled/1=enabled
     TLP_ENABLE=${TLP_ENABLE:-1}
     
     if [ ! "$TLP_ENABLE" = "1" ]; then
-        echo "Error: tlp power save is disabled. Set TLP_ENABLE=1 in $DEFAULT_FILE." 1>&2
+        echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in $DEFAULT_FILE." 1>&2
         return 1
     else
         return 0
@@ -81,10 +81,10 @@ check_tlp_enabled () { # ret: 0=disabled/1=enabled
 }
 
 check_laptop_mode_tools () { # ret: 0=not installed, 1=installed
-    local lmt=$(which $LAPMODE)
+    local lmt=$(which $LAPMODE 2> /dev/null)
     
     if [ -n "$lmt" ] && [ -x "$lmt" ]; then
-        echo "Error: tlp power save is disabled because laptop-mode-tools is installed." 1>&2
+        echo "Error: TLP power save is disabled because laptop-mode-tools is installed." 1>&2
         echo "       Please uninstall laptop-mode-tools." 1>&2
         echo 1>&2
         echo_debug "pm" "check_laptop_mode_tools: yes" 
@@ -118,9 +118,9 @@ get_power_state () { # ret: 0=ac, 1=battery
 
 echo_started_mode () { # $1: 0=ac mode, 1=battery mode
     if [ "$1" = "0" ]; then
-        echo "tlp started in ac mode."
+        echo "TLP started in ac mode."
     else
-        echo "tlp started in battery mode."
+        echo "TLP started in battery mode."
     fi
     
     return 0

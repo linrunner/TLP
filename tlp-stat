@@ -74,7 +74,7 @@ check_root
 nodebug=1
 load_tp_modules
 
-echo "--- tlp $TLPVER --------------------------------------------"
+echo "--- TLP $TLPVER --------------------------------------------"
 echo
 
 if [ -f $TLPCFG ]; then
@@ -107,9 +107,9 @@ echo
 echo "+++ System Status"
 if check_laptop_mode_tools; then
     if [ "$TLP_ENABLE" = "1" ]; then
-        echo "tlp power save = enabled"
+        echo "TLP power save = enabled"
     else
-        echo "tlp power save = not enabled"
+        echo "TLP power save = not enabled"
     fi
 fi
 
@@ -399,6 +399,6 @@ if [ -x $TLPUSB ]; then
 else
     echo "Error: missing subcommand $TLPUSB."
 fi
-echo
+echo 
 
 exit 0
