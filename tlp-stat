@@ -334,7 +334,20 @@ if [ -d /sys/devices/platform/smapi ]; then
     # ThinkPad via tp_smapi
     for bat in /sys/devices/platform/smapi/BAT[01]; do
         if [ -d $bat ] && [ "$(cat $bat/installed)" = "1" ]; then
-            echo "+++ ThinkPad Battery"
+            case ${bat##/*/} in
+                BAT0) 
+                    echo "+++ ThinkPad Battery (Main)"
+                    ;;
+                    
+                BAT1)
+                    echo "+++ ThinkPad Battery (Ultrabay/Slice)"
+                    ;;
+                    
+                *)
+                    echo "+++ ThinkPad Battery"
+                    ;;
+            esac
+            
             echoparm $bat/manufacturer
             echoparm $bat/model
             echoparm $bat/manufacture_date
