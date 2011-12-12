@@ -22,7 +22,7 @@ tlp (0.3.4.901-1) lucid; urgency=low
     - Start upowerd in init script
     - Show error message to uninstall latop-mode-tools if present
    
- -- Thomas Koch <linrunner@gmx.net>  Sun, 11 Dec 2011 11:33:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 12 Dec 2011 18:24:00 +0100
 
 tlp (0.3.4-1) lucid; urgency=low
 

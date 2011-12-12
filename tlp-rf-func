@@ -51,9 +51,9 @@ get_devc () { # $1: rftype; retval $devc
                 fi
             done
  
-            for i in /sys/bus/pci/drivers/ipw2?00; do
-                if [ -d $i ] && [ -f $i/rf_kill ]; then
-                    devc="$i/rf_kill"
+            for i in /sys/bus/pci/drivers/ipw2?00/*/rfkill; do
+                if [ -f $i ]; then
+                    devc="$i"
                     rfkdev="0"
                     devon="0"
                     devoff="1"
