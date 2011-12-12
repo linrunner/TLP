@@ -675,11 +675,14 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
 }
 
 do_threshold () { # $1: treshold file, $2: new value
-    local rc=0
+    local othr rc=0
     
     if [ -n "$2" ]; then
         if [ -f $1 ]; then
-            if [ "$(cat $1)" != "$2" ]; then
+            othr=$(cat $1 2> /dev/null)
+            if [ -z "$othr" ]; then
+                rc=1
+            elif [ "$othr" != "$2" ]; then
                 echo $2 > $1 2> /dev/null
                 rc=$?
             fi
