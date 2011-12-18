@@ -1,4 +1,4 @@
-tlp (0.3.4.902-1) lucid; urgency=low
+tlp (0.3.4.903-1) lucid; urgency=low
 
   * Development version
   * Features
@@ -7,7 +7,7 @@ tlp (0.3.4.902-1) lucid; urgency=low
                 i915: powersave, lvds_downclock
     - tlp-stat: usb output refactored, new subcommand tlp-usblist
     - tlp-stat: show kernel cmdline
-    - added non-rfkill devices ipw2100, asus_laptop (kristatos)
+    - added non-rfkill device ipw2100 (kristatos)
   * Bug Fixes
     - #27: tlp-stat complains about missing /proc/acpi/ibm/thermal and
              start_charge_thresh on X220/T420(s) et al. (Esc)
@@ -22,7 +22,7 @@ tlp (0.3.4.902-1) lucid; urgency=low
     - Start upowerd in init script
     - Show error message to uninstall latop-mode-tools if present
    
- -- Thomas Koch <linrunner@gmx.net>  Fri, 16 Dec 2011 14:25:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 18 Dec 2011 13:10:00 +0100
 
 tlp (0.3.4-1) lucid; urgency=low
 

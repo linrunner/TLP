@@ -32,14 +32,6 @@ get_devc () { # $1: rftype; retval $devc
                     return 0
                 fi
             done
-            
-            i=/sys/devices/platform/asus_laptop
-            if [ -d $i ] && [ -f $i/$1 ]; then
-                devc="$i/$1"
-                rfkdev="0"
-                echo_debug "rf" "get_devc($1) = $devc [asus]"
-                return 0
-            fi
             ;;
 
         wifi)
@@ -57,18 +49,10 @@ get_devc () { # $1: rftype; retval $devc
                     rfkdev="0"
                     devon="0"
                     devoff="1"
-                    echo_debug "rf" "get_devc($1) = $devc [ipw2X00]"
+                    echo_debug "rf" "get_devc($1) = $devc"
                     return 0
                 fi
             done
-            
-            i=/sys/devices/platform/asus_laptop
-            if [ -d $i ] && [ -f $i/wlan ]; then
-                devc="$i/wlan"
-                rfkdev="0"
-                echo_debug "rf" "get_devc($1) = $devc [asus]"
-                return 0
-            fi
             ;;
         
         *)

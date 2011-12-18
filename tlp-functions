@@ -1,4 +1,5 @@
 #!/bin/sh
+#!/bin/sh
 # tlp - power management functions
 #
 # Copyright (c) 2011 Thomas Koch <linrunner@gmx.net>
@@ -10,7 +11,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.3.4.902
+TLPVER=0.3.4.903
 DEFAULT_FILE=/etc/default/tlp
 
 ACPWR=on_ac_power
@@ -829,7 +830,7 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
     if [ $rc -eq 0 ]; then
         echo "  stop  = $stop_thresh"
     else
-        echo "  stop  = Error:cannot set threshold. Aborting."
+        echo "  stop  => Error: cannot set threshold. Aborting."
         return 1
     fi
 
@@ -839,7 +840,7 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
         if [ $rc -eq 0 ]; then
             echo "  start = $start_thresh"
         else
-            echo "  start = Warning: cannot set start charge threshold."
+            echo "  start => Warning: cannot set threshold."
             return 1
         fi
     else
