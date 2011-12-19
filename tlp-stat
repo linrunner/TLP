@@ -87,13 +87,13 @@ fi
 echo "+++ System Info"
 if [ -n "$DMIDEC" ]; then
     pmanuf="$( $DMIDEC -s system-manufacturer 2> /dev/null | \
-                egrep -iv 'not available|to be filled' )"
+                egrep -iv 'not available|to be filled|DMI table is broken' )"
     pversion="$( $DMIDEC -s system-version 2> /dev/null | \
-                egrep -iv 'not available|to be filled' )"
+                egrep -iv 'not available|to be filled|DMI table is broken' )"
     product="$( $DMIDEC -s system-product-name 2> /dev/null | \
-                egrep -iv 'not available|to be filled' )"
+                egrep -iv 'not available|to be filled|DMI table is broken' )"
     bios="$( $DMIDEC -s bios-version 2> /dev/null | \
-                egrep -iv 'not available|to be filled' )"
+                egrep -iv 'not available|to be filled|DMI table is broken' )"
     
     echo "System = $pmanuf $pversion $product"
     echo "BIOS = $bios"
