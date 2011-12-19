@@ -11,7 +11,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.3.4.903
+TLPVER=0.3.5
 DEFAULT_FILE=/etc/default/tlp
 
 ACPWR=on_ac_power
@@ -760,6 +760,14 @@ do_force_discharge () { # $1: bat sysfile; $2: 0=off/1=on
     return $rc
 }
 
+cancel_setcharge () { # called from trap
+    do_force_discharge $bdir/force_discharge 0
+    echo_debug "pm" "setcharge_battery.cancelled($bat)"
+    echo "Cancelled."
+    
+    exit 0
+}
+
 setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, $3: battery, 
     local bat bdir start_thresh stop_thresh rc
 
@@ -849,6 +857,8 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
     fi
     
     # trigger charging via discharge
+    trap cancel_setcharge INT
+    
     do_force_discharge $bdir/force_discharge 1; rc=$?
     if [ $rc -eq 0 ]; then
         echo -n "Activating..."
