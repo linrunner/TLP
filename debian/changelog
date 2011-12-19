@@ -1,8 +1,7 @@
-tlp (0.3.4.903-1) lucid; urgency=low
+tlp (0.3.5-2) lucid; urgency=low
 
-  * Development version
   * Features
-    - tlp recalibrate 
+    - tlp recalibrate = fullcharge + discharge
     - tlp-stat: show thinkpad fan speed, battery model, power_now,
                 i915: powersave, lvds_downclock
     - tlp-stat: usb output refactored, new subcommand tlp-usblist
@@ -10,19 +9,20 @@ tlp (0.3.4.903-1) lucid; urgency=low
     - added non-rfkill device ipw2100 (kristatos)
   * Bug Fixes
     - #27: tlp-stat complains about missing /proc/acpi/ibm/thermal and
-             start_charge_thresh on X220/T420(s) et al. (Esc)
+           start_charge_thresh on X220/T420(s) et al. (Esc)
     - Check if start_charge_thresh, stop_charge_thresh, force_discharge 
       are writable
     - #28: further mitigate race with gdm when disabling radios 
-             in init script (blackbox)
+           in init script (blackbox)
     - #29: tlp-stat: remove smartctl garbage output (SirVival)
     - #30: supress dmidecode error output (kristatos)
     - iterate over all sched_powersave instances
     - i915: rc6/fbc features removed
     - Start upowerd in init script
-    - Show error message to uninstall latop-mode-tools if present
+    - #32: show error message suggesting to uninstall latop-mode-tools
+           if present (Kuzoku)
    
- -- Thomas Koch <linrunner@gmx.net>  Sun, 18 Dec 2011 13:10:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 19 Dec 2011 21:40:00 +0100
 
 tlp (0.3.4-1) lucid; urgency=low
 
