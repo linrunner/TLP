@@ -2,7 +2,7 @@
 #!/bin/sh
 # tlp - power management functions
 #
-# Copyright (c) 2011 Thomas Koch <linrunner@gmx.net>
+# Copyright (c) 2011 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2.
 #
 # Some concepts and descriptions were adapted from:
