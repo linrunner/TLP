@@ -4,7 +4,12 @@
 # Copyright (c) 2011 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2.
 
+package tlp_usblist;
+use strict;
+use warnings;
+
 my %usbdevices;
+my $udev;
 
 # Get sysfs value, return empty string if nonexistent or not readable 
 sub catsysf {
@@ -19,13 +24,14 @@ sub catsysf {
 # Get list of drivers for usb device
 sub usbdriverlist {
     my $driverlist = "";
+    my $subdev;
     
     # Iterate subdevices
-    foreach $subdev (grep { /:/ } glob "$_[0]/*") {
+    foreach $subdev (glob "$_[0]/*:*") {
         if (-l "$subdev/driver") { 
             ( my $driver = readlink ("$subdev/driver") ) =~ s{.*/}{};
             
-            if (index ($driverlist, $driver) eq -1) {
+            if (index ($driverlist, $driver) == -1) {
                 if ($driverlist) { $driverlist = $driverlist . ", " . $driver; } 
                 else { $driverlist = $driver; }
             } # if index
@@ -41,23 +47,28 @@ foreach $udev (grep { ! /:/ } glob "/sys/bus/usb/devices/*") {
     my $asf = "autosuspend_delay_ms";
     my $asv = catsysf ("$udev/power/$asf");
     
-    if (! $asv) { 
+    if (length ($asv) == 0) { 
         # autosuspend_delay_ms nonexistent or not readable, try autosuspend (deprecated)
         $asf = "autosuspend"; 
         $asv = catsysf ("$udev/power/$asf");
     }
     
-    if ($asv) { 
+    if (length ($asv) > 0) { 
         my $cnf = "control";
-        my $cnv = catsysf ("$udev/$usbdev/power/$cnf");
+        my $cnv = catsysf ("$udev/power/$cnf");
         if (! $cnv) {
             $cnf = "level"; # level is deprecated
-            $cnv = catsysf ("$udev/$usbdev/power/$cnf");
+            $cnv = catsysf ("$udev/power/$cnf");
         }
         my $usbk = sprintf ("%03d_%03d", 
                             catsysf ("$udev/busnum"),
                             catsysf ("$udev/devnum") );
-        my $usbv = sprintf ("%s = %-5s %s = %d", $cnf, $cnv . ",", $asf, $asv);
+        my $usbv;
+        if ($asf eq "autosuspend") {
+            $usbv = sprintf ("%s = %-5s %s = %2d", $cnf, $cnv . ",", $asf, $asv);
+        } else {
+            $usbv = sprintf ("%s = %-5s %s = %5d", $cnf, $cnv . ",", $asf, $asv);
+        }
         @{$usbdevices{$usbk}} = ($udev, $usbv);
     }
 }
