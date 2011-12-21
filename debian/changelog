@@ -1,6 +1,5 @@
-tlp (0.3.5-1) lucid; urgency=low
+tlp (0.3.5-2) lucid; urgency=low
 
-  * Development version
   * Features
     - tlp recalibrate = fullcharge + discharge
     - tlp-stat: show thinkpad fan speed, battery model, power_now,
@@ -23,7 +22,7 @@ tlp (0.3.5-1) lucid; urgency=low
     - #32: show error message suggesting to uninstall latop-mode-tools
            if present (Kuzoku)
    
- -- Thomas Koch <linrunner@gmx.net>  Mon, 19 Dec 2011 19:30:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 19 Dec 2011 21:40:00 +0100
 
 tlp (0.3.4-1) lucid; urgency=low
 
