@@ -213,15 +213,17 @@ for dev in $DISK_DEVICES; do
                 echo 
                 echo "        SMART info:"
                 $SMARTCTL -A /dev/$disk_dev | grep -v '<==' | \
-                  awk -F ' ' '$2 ~ /Start_Stop_Count|Reallocated_Sector_Ct|Load_Cycle_Count/ \
+                  awk -F ' ' '$2 ~ /Start_Stop_Count|Load_Cycle_Count|Reallocated_Sector_Ct|Used_Rsvd_Blk_Cnt_Chip/ \
                                     { printf "          %3d %-25s = %8d \n", $1, $2, $10 } ; \
                               $2 ~ /Power_On_Hours/ \
                                     { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[h]" } ; \
                               $2 ~ /Temperature_Celsius/ \
                                     { printf "          %3d %-25s = %8d %s %s %s %s\n", $1, $2, $10, $11, $12, $13, "[°C]" } ; \
+                              $2 ~ /Airflow_Temperature_Cel/ \
+                                    { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[°C]" } ; \
                               $2 ~ /Host_Writes/ \
                                     { printf "          %3d %-25s = %8.3f %s\n", $1, $2, $10 / 32768.0, "[TB]" } ; \
-                              $2 ~ /Available_Reservd_Space|Media_Wearout_Indicator/ \
+                              $2 ~ /Available_Reservd_Space|Media_Wearout_Indicator|Wear_Leveling_Count/ \
                                     { printf "          %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
             fi
             echo
