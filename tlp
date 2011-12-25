@@ -161,7 +161,8 @@ case "$mode" in
         ;;
         
     *) 
-        echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid"
+        echo "Error: unknown command \"$mode\"."  1>&2
+        echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid" 1>&2
         ;;
 esac
 
