@@ -1,12 +1,13 @@
-tlp (0.3.5.900-1) lucid; urgency=low
+tlp (0.3.5.901-1) lucid; urgency=low
 
   * Development version
   * Features
     - tlp-stat: add smart attributes for samsung ssd
+    - handle usb autosuspend via udev events (when startup completed)
   * Bug Fixes
     - tlp-usblist: cleanup code, add pragmas "strict" and "warnings" (dywisor)
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 24 Dec 2011 12:00:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 25 Dec 2011 19:05:00 +0200
 
 tlp (0.3.5-2) lucid; urgency=low
 

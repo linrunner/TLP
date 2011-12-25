@@ -6,6 +6,7 @@ PMETC = $(DESTDIR)/etc/pm/power.d
 TLIB  = $(DESTDIR)/usr/lib/tlp-pm
 TLREL = ../../../usr/lib/tlp-pm
 PLIB  = $(DESTDIR)/usr/lib/pm-utils
+ULIB  = $(DESTDIR)/lib/udev
 
 all: 
 	@/bin/true 
@@ -25,9 +26,11 @@ install:
 	install -D -m 755 tlp-functions $(TLIB)/tlp-functions
 	install -m 755 tlp-rf-func $(TLIB)/
 	install -m 755 tlp-nop $(TLIB)/
+	install -D -m 755 tlp-udev $(ULIB)/tlp-udev
+	install -D -m 644 tlp.rules $(ULIB)/rules.d/40-tlp.rules
 	[ -f $(DESTDIR)/etc/default/tlp ] || install -D -m 644 default $(DESTDIR)/etc/default/tlp
 	install -D -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
-	install -D -m 755 tlp-ifup $(DESTDIR)/etc/network/if-up.d/tlp-ifup
+	# install -D -m 755 tlp-ifup $(DESTDIR)/etc/network/if-up.d/tlp-ifup
 	install -D -m 755 zztlp $(PLIB)/power.d/zztlp
 	install -D -m 755 49wwan $(PLIB)/sleep.d/49wwan
 	install -m 755 49bay $(PLIB)/sleep.d/49bay
