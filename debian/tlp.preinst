@@ -1,8 +1,9 @@
 #!/bin/sh -e
 #DEBHELPER#
 
-# Remove upstart job from obsolete versions
-LASTVERSION="0.2.8.900-0ubuntu1"
+# Remove obsolete conffiles
+LASTVERSION_C1="0.2.8.900-0ubuntu1" # tlp.conf upstart job
+LASTVERSION_C2="0.3.5.900-1"        # tlp-ifup
 
 rm_conffile() {
     local PKGNAME="$1"
@@ -26,10 +27,15 @@ rm_conffile() {
 case "$1" in
     install|upgrade)
         if dpkg-maintscript-helper supports rm_conffile 2>/dev/null; then
-            dpkg-maintscript-helper rm_conffile /etc/init.d/tlp $LASTVERSION -- "$@"
-            dpkg-maintscript-helper rm_conffile /etc/init/tlp.conf $LASTVERSION -- "$@"
-        elif dpkg --compare-versions "$2" le "$LASTVERSION"; then
-            rm_conffile tlp /etc/init.d/tlp
-            rm_conffile tlp /etc/init/tlp.conf
+            dpkg-maintscript-helper rm_conffile /etc/init/tlp.conf $LASTVERSION_C1 -- "$@"
+            dpkg-maintscript-helper rm_conffile /etc/network/if-up.d/tlp-ifup $LASTVERSION_C2 -- "$@"
+        else
+            if dpkg --compare-versions "$2" le "$LASTVERSION_C1"; then
+                rm_conffile tlp /etc/init.d/tlp; 
+            fi
+            if dpkg --compare-versions "$2" le "$LASTVERSION_C2"; then 
+                rm_conffile tlp /etc/network/if-up.d/tlp-ifup;
+            fi
         fi
+        ;;
 esac
