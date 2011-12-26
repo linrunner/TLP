@@ -12,10 +12,15 @@ USB_DONE=/var/run/tlp.usb-done
 CFG=/etc/default/tlp
 
 # --- Subroutines
+patinstr () { # $1: pattern, $2: target -- test if pattern matches part of target
+    [ -n "$1" -a -n "$2" -a -z "${2##*$1*}" ]
+    return $?
+}
+
 echo_debug () { # $1: tag; $2: msg; echo debug msg if tag matches 
-   if [ -z "${TLP_DEBUG##*$1*}" ] ; then
+    if patinstr "$1" "$TLP_DEBUG"; then
         $LOGGER -p debug -t "tlp[$$,$PPID]" "$2"
-   fi
+    fi
 }
 
 # --- MAIN
@@ -44,7 +49,7 @@ if [ -f $USBD/$usbdev/power/autosuspend ] || [ -f $USBD/$usbdev/power/autosuspen
             
     control="auto"
     hid=""
-    if [ -z "${USB_BLACKLIST##*$usbid*}" ]; then
+    if patinstr "$usbid" "$USB_BLACKLIST"; then
         # device is in blacklist
         control="on"
     else
