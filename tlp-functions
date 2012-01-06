@@ -144,6 +144,23 @@ set_laptopmode () { # $1: 0=ac mode, 1=battery mode
     return 0
 }
 
+set_governors () { # $1: 0=ac mode, 1=battery mode
+   check_sysfs "set_governors" "/sys/devices/system/cpu/cpu0/cpufreq"
+
+   CPU_SCALING_GOVERNOR_BAT=${CPU_SCALING_GOVERNOR_BAT:-"powersave"}
+   CPU_SCALING_GOVERNOR_AC=${CPU_SCALING_GOVERNOR_AC:-"ondemand"}
+
+   if [ "$1" = "1" ]; then
+       echo_debug "pm" "set_governors($1)"
+       for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo $CPU_SCALING_GOVERNOR_BAT > $i; done;
+   else
+       echo_debug "pm" "set_governors($1)"
+       for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo $CPU_SCALING_GOVERNOR_AC > $i; done;
+   fi
+
+   return 0
+}
+
 set_extfs_commit () { # $1: commit
     # remount ext3/4 filesystems with commit=age (concept from laptop-mode-tools)
     local dev mtpoint fstype mopts d1 d2

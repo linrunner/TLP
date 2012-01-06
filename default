@@ -18,6 +18,10 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 SCHED_POWERSAVE_ON_AC=0
 SCHED_POWERSAVE_ON_BAT=1
 
+# select a powersaving cpu frequencey scaling governor
+CPU_SCALING_GOVERNOR_BAT=powersave
+CPU_SCALING_GOVERNOR_AC=ondemand
+
 # Kernel NMI Watchdog
 # 0=disable (default, saves power) / 1=enable (for kernel debugging only)
 NMI_WATCHDOG=0
