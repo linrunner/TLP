@@ -122,10 +122,23 @@ echo
 
 # cpu
 echo "+++ Processor"
+echo "tlp scaling governor on bat = ${CPU_SCALING_GOVERNOR_BAT:=(not configured)}"
+echo "tlp scaling governor on ac = ${CPU_SCALING_GOVERNOR_AC:=(not configured)}"
 for cpup in /sys/devices/system/cpu/cpu?/cpufreq/scaling_governor; do
     echoparm $cpup
 done
 echo
+
+echo "tlp min frequency on bat = ${CPU_SCALING_MIN_FREQUENCY_BAT:=(not configured)}"
+echo "tlp max frequency on bat = ${CPU_SCALING_MAX_FREQUENCY_BAT:=(not configured)}"
+echo "tlp min frequency on ac = ${CPU_SCALING_MIN_FREQUENCY_AC:=(not configured)}"
+echo "tlp max frequency on ac = ${CPU_SCALING_MAX_FREQUENCY_AC:=(not configured)}"
+for minfreq in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
+	echoparm $minfreq
+done
+for maxfreq in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
+	echoparm $maxfreq
+done
 
 for pool in mc smp smt; do
     sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
