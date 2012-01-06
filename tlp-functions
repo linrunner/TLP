@@ -147,10 +147,10 @@ set_laptopmode () { # $1: 0=ac mode, 1=battery mode
 set_minmax_frequencies () { # $1: 0=ac mode, 1=battery mode
    check_sysfs "set_minmax_frequencies" "/sys/devices/system/cpu/cpu0/cpufreq"
 
-   CPU_SCALING_MIN_FREQUENCY_BAT=${CPU_SCALING_MIN_FREQUENCY_BAT:-"$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies | awk '{split($0,array," ")} END{print array[1]}')"}
-   CPU_SCALING_MAX_FREQUENCY_BAT=${CPU_SCALING_MAX_FREQUENCY_BAT:-"$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies | awk '{split($0,array," ")} END{print array[length(array)]}')"}
-   CPU_SCALING_MIN_FREQUENCY_AC=${CPU_SCALING_MIN_FREQUENCY_AC:-"$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies | awk '{split($0,array," ")} END{print array[1]}')"}
-   CPU_SCALING_MAX_FREQUENCY_AC=${CPU_SCALING_MAX_FREQUENCY_AC:-"$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies | awk '{split($0,array," ")} END{print array[length(array)]}')"}
+   CPU_SCALING_MIN_FREQUENCY_BAT=${CPU_SCALING_MIN_FREQUENCY_BAT:-"$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies | awk '{split($0,array," ")} END{print array[length(array)]}')"}
+   CPU_SCALING_MAX_FREQUENCY_BAT=${CPU_SCALING_MAX_FREQUENCY_BAT:-"$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies | awk '{split($0,array," ")} END{print array[1]}')"}
+   CPU_SCALING_MIN_FREQUENCY_AC=${CPU_SCALING_MIN_FREQUENCY_AC:-"$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies | awk '{split($0,array," ")} END{print array[length(array)]}')"}
+   CPU_SCALING_MAX_FREQUENCY_AC=${CPU_SCALING_MAX_FREQUENCY_AC:-"$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies | awk '{split($0,array," ")} END{print array[1]}')"}
 
    if [ "$1" = "1" ]; then
        echo_debug "pm" "set_minmax_frequencies($1)"
