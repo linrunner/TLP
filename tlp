@@ -50,6 +50,7 @@ case "$mode" in
         set_runtime_pm $pwr
         enable_usb_suspend 0
         set_governors $pwr
+	set_minmax_frequencies $pwr
         set_charge_thresholds
         [ "$pwr" = "1" ] && poweroff_drivebay 0
         
@@ -77,6 +78,7 @@ case "$mode" in
         set_runtime_pm 1
         enable_usb_suspend 0
 	set_governors 1
+	set_minmax_frequencies 1
         poweroff_drivebay 0
         
         echo_started_mode 1
@@ -103,6 +105,7 @@ case "$mode" in
         set_runtime_pm 0
         enable_usb_suspend 0
         set_governors 0
+	set_minmax_frequencies 0
 
         echo_started_mode 0
         ;;

@@ -22,6 +22,14 @@ SCHED_POWERSAVE_ON_BAT=1
 CPU_SCALING_GOVERNOR_BAT=powersave
 CPU_SCALING_GOVERNOR_AC=ondemand
 
+# set a min/max frequency available for the scaling governor (for available frequencies look at /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_freq)
+# the possible values strongly depend on your cpu. the values are presented in khz.
+# to use this variable uncomment them, otherwise tlp uses the default values given by the kernel
+#CPU_SCALING_MIN_FREQUENCY_BAT=1900000
+#CPU_SCALING_MAX_FREQUENCY_BAT=2000000
+#CPU_SCALING_MIN_FREQUENCY_AC=900000
+#CPU_SCALING_MAX_FREQUENCY_AC=1500000
+
 # Kernel NMI Watchdog
 # 0=disable (default, saves power) / 1=enable (for kernel debugging only)
 NMI_WATCHDOG=0
