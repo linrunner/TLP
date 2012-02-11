@@ -144,43 +144,22 @@ set_laptopmode () { # $1: 0=ac mode, 1=battery mode
     return 0
 }
 
-set_extfs_commit () { # $1: commit
-    # remount ext3/4 filesystems with commit=age (concept from laptop-mode-tools)
-    local dev mtpoint fstype mopts d1 d2
-    local mtlist=""
-    
-    mount -t ext3 -t ext4 | while read dev d1 mtpoint d2 fstype mopts; do 
-        # skip bind mounts already in list (Fedora sandbox)
-        # skip nonexistent devs/mounts
-        if ! patinstr "$dev" "$mtlist" && [ -b $dev ] && [ -d $mtpoint ]; then 
-            mtlist="$mtlist $dev"
-            mount $mtpoint -o remount,commit=$commit 2> /dev/null
-            echo_debug "pm" "set_extfs_commit($mtpoint, $commit): rc=$?"
-        fi
-    done
-    
-    return 0
-}
-
 set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
     # Concept from laptop-mode-tools
-    local commit age
+    local age
     
     check_sysfs "set_dirty_parms" "/proc/sys/vm"
     
     if [ "$1" = "1" ]; then
-        commit=${MAX_LOST_WORK_SECS_ON_BAT:-15}
+        age=$((${MAX_LOST_WORK_SECS_ON_BAT:-15} * 100))
     else
-        commit=${MAX_LOST_WORK_SECS_ON_AC:-5}
+        age=$((${MAX_LOST_WORK_SECS_ON_AC:-5} * 100))
     fi
-    age=$(($commit * 100))
             
-    echo_debug "pm" "set_dirty_parms($1): $commit $age"
+    echo_debug "pm" "set_dirty_parms($1): $age"
         
     echo $age > /proc/sys/vm/dirty_writeback_centisecs
     echo $age > /proc/sys/vm/dirty_expire_centisecs
-        
-    set_extfs_commit $commit
         
     if [ -d /proc/sys/fs/xfs ]; then
         echo $age > /proc/sys/fs/xfs/age_buffer_centisecs

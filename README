@@ -1,10 +1,10 @@
-TLP README - 12.10.2011
+TLP README - 11.02.2012
 
 TLP brings you the benefits of advanced power management for Linux
 without the need to understand every technical detail. 
 
 Settings depending on the power source ac/bat:
-- Kernel laptop mode, dirty buffer params and file system commit timeout
+- Kernel laptop mode and dirty buffer params
 - Power aware process scheduler for multi-core/hyper-threading
 - Hard disk advanced power magement level and spin down timeout (per disk)
 - SATA aggressive link power management (ALPM)
@@ -21,7 +21,7 @@ Additional functions:
 - Audio power saving mode - hda_intel, ac97
 - Disable integrated Wifi, bluetooth or WWAN devices upon system startup and shutdown
 - Disable Wake On LAN
-- WWAN state is restored after suspend/hibernate
+- Integrated WWAN state is restored after suspend/hibernate
 - Untervolting of Intel processors - requires kernel with PHC-Patch
 - Battery charge thresholds - ThinkPads only
 - Recalibrate battery - ThinkPads only
@@ -29,7 +29,7 @@ Additional functions:
 All TLP settings are stored in /etc/default/tlp. The default configuration
 provides optimized power saving out of the box. 
 
-Read the the extensive documentation at:
+Read the the full documentation at:
 - https://github.com/linrunner/TLP/wiki/TLP-Linux-Advanced-Power-Management
 - http://thinkpad-wiki.org/TLP_-_Linux_Stromsparen (in German)
 
