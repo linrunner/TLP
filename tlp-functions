@@ -570,6 +570,7 @@ set_sound_power_mode () {
 }
 
 set_runtime_pm () { # $1: 0=ac mode, 1=battery mode
+    # Concept from Ubuntu Precise's implementation of pm-utils power.d/pci_devices
     local type device control
     
     if [ "$1" = "1" ]; then
@@ -578,11 +579,45 @@ set_runtime_pm () { # $1: 0=ac mode, 1=battery mode
         control=${RUNTIME_PM_ON_AC:-on}
     fi
     
-    for type in $PCID $SPID $I2CD; do
+    for type in $PCID; do
         for device in $type/*; do
-            if [ -f $device/power/control ]; then
-                echo $control > $device/power/control;
-                echo_debug "pm" "set_runtime_pm($1).$control: $device"
+            if [ -f $device/class ] && [ -f $device/power/control ]; then
+                case $(cat $device/class) in
+                    0x020000) # ethernet
+                        echo $control > $device/power/control;
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Ethernet]"
+                        ;;
+                
+                    0x028000) # wireless
+                        echo $control > $device/power/control;
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Wireless]"
+                        ;;
+              
+                    0x040300) # audio
+                        echo $control > $device/power/control;
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Audio]"
+                        ;;
+				
+                    0x060000) # host bridge
+                        echo $control > $device/power/control;
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Host Bridge]"
+                        ;;
+ 				
+                    0x080500) # SD card reader
+                        echo $control > $device/power/control;
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [SD Card Reader]"
+                        ;;
+ 				
+                    0x088000|0x088001) # card reader
+                        echo $control > $device/power/control;
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Card Reader]"
+                        ;;
+ 				
+                    0x0c0000|0x0c0010) # firewire
+                        echo $control > $device/power/control;
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Firewire]"
+                        ;;
+                esac 
             fi
         done
     done

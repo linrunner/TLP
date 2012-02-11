@@ -399,6 +399,45 @@ elif [ -d /sys/class/power_supply ]; then
     done
 fi
 
+# runtime pm
+echo "+++ Runtime Power Management"
+for type in $PCID; do
+    for device in $type/*; do
+        if [ -f $device/class ] && [ -f $device/power/control ]; then
+            case $(cat $device/class) in
+                0x020000) # ethernet
+                    echoparm $device/power/control - Ethernet
+                    ;;
+                
+                0x028000) # wireless
+                    echoparm $device/power/control - Wireless
+                    ;;
+                                    
+                0x040300) # audio
+                    echoparm $device/power/control - Audio
+                    ;;
+                
+                0x060000) # host bridge
+                    echoparm $device/power/control - Host Bridge
+                    ;;
+                    
+                0x080500) # SD card reader
+                    echoparm $device/power/control - SD Card Reader
+                    ;;
+                    
+                0x088000|0x088001) # card reader
+                    echoparm $device/power/control - Card Reader
+                    ;;
+                    
+                0x0c0000|0x0c0010) # firewire
+                    echoparm $device/power/control - Firewire
+                    ;;
+            esac 
+        fi
+    done
+done
+echo 
+
 # usb autosuspend
 echo "+++ USB"
 if [ "$USB_AUTOSUSPEND" = "1" ]; then

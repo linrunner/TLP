@@ -4,6 +4,8 @@ tlp (0.3.5.901-1) lucid; urgency=low
   * Features
     - tlp-stat: add smart attributes for samsung ssd
     - handle usb autosuspend via udev events (when startup completed)
+    - Restrict runtime pm to a safe subclass of pci devices
+      (from Ubuntu Precise's implementation of pm-utils)
   * Packaging  
     - postinst/postrm: disable power.d/harddrive, pci_devices, readahead, 
         usb_bluetooth to keep up with changes in Ubuntu Precise
