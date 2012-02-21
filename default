@@ -1,3 +1,4 @@
+# ------------------------------------------------------------------------------
 # tlp - Parameters for power save
  
 # Hint: some features are disabled by default, remove the leading # to enable them
@@ -119,3 +120,16 @@ USB_AUTOSUSPEND=1
 # Ultrabay battery (values in %)
 #START_CHARGE_THRESH_BAT1=75
 #STOP_CHARGE_THRESH_BAT1=80
+
+# ------------------------------------------------------------------------------
+# tlp-rdw - Parameters for the radio device wizard
+
+# Hint: parameters are disabled by default, remove the leading # to enable them
+
+# Radio devices to disable on connect 
+#DEVICES_TO_DISABLE_ON_LAN_CONNECT="wifi wwan"
+#DEVICES_TO_DISABLE_ON_WIFI_CONNECT="wwan"
+#DEVICES_TO_DISABLE_ON_WWAN_CONNECT="wifi"
+
+# Radio devices to enable when undocked
+#DEVICES_TO_ENABLE_ON_UNDOCK="wifi"

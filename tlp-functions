@@ -1,7 +1,7 @@
 #!/bin/sh
 # tlp - power management functions
 #
-# Copyright (c) 2011 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2.
 #
 # Some concepts and descriptions were adapted from:
@@ -10,7 +10,7 @@
 
 # ----------------------------------------------------------------------------
 # Definitions
-TLPVER=0.3.5.901
+TLPVER=0.3.5.902
 DEFAULT_FILE=/etc/default/tlp
 
 ACPWR=on_ac_power
@@ -21,6 +21,8 @@ MODPRO=modprobe
 LOGGER=logger
 UDEVADM=udevadm
 LAPMODE=laptop_mode
+NMCLI=nmcli
+IP=ip
 
 SMAPIDIR=/sys/devices/platform/smapi
 USBD=/sys/bus/usb/devices
