@@ -45,23 +45,12 @@ binary-indep: install
 	dh_installdocs
 	dh_installexamples
 #	dh_install
-#	dh_installmenu
-#	dh_installdebconf
-#	dh_installlogrotate
-#	dh_installemacsen
-#	dh_installpam
-#	dh_installmime
-#	dh_python
 	dh_installinit --no-start -- defaults 98 01
-#	dh_installcron
-#	dh_installinfo
 	dh_installman
 	dh_link
 	dh_strip
 	dh_compress
 	dh_fixperms
-#	dh_perl
-#	dh_makeshlibs
 	dh_installdeb
 	dh_shlibdeps
 	dh_gencontrol
@@ -69,8 +58,8 @@ binary-indep: install
 	dh_builddeb
 	
 # Build architecture-dependent files here.
-binary-arch: install
-# We have nothing to do by default.
+binary-arch: 
+	# do nothing
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install configure
