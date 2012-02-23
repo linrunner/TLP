@@ -1,4 +1,4 @@
-TLP README - 11.02.2012
+TLP README - 23.02.2012
 
 TLP brings you the benefits of advanced power management for Linux
 without the need to understand every technical detail. 
@@ -20,6 +20,7 @@ Additional functions:
 - USB autosuspend with blacklist
 - Audio power saving mode - hda_intel, ac97
 - Disable integrated Wifi, bluetooth or WWAN devices upon system startup and shutdown
+- Radio device wizard: switch radios upon network connect or undock
 - Disable Wake On LAN
 - Integrated WWAN state is restored after suspend/hibernate
 - Untervolting of Intel processors - requires kernel with PHC-Patch

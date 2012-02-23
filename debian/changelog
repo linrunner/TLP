@@ -6,15 +6,18 @@ tlp (0.3.5.902-1) lucid; urgency=low
     - handle usb autosuspend via udev events (when startup completed)
     - Restrict runtime pm to a safe subclass of pci devices
       (from Ubuntu Precise's implementation of pm-utils)
-    - tlp radio device wizard (tlp-rdw), depends on network manager
+    - Radio device wizard: switch radios upon network connect or undock
   * Packaging  
     - postinst/postrm: disable power.d/harddrive, pci_devices, readahead, 
         usb_bluetooth to keep up with changes in Ubuntu Precise
+    - split package
+      - tlp: power save functions
+      - tlp-rdw: radio device wizard (depends on network manager)
   * Bug Fixes
     - tlp-usblist: cleanup code, add pragmas "strict" and "warnings" (dywisor)
     - Remove setting of ext3/4 fs commit timeout (see LP #900923)
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 21 Feb 2012 20:40:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 23 Feb 2012 22:22:00 +0100
 
 tlp (0.3.5-2) lucid; urgency=low
 

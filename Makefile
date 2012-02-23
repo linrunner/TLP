@@ -15,7 +15,7 @@ all:
 clean:
 	@/bin/true 
 	
-install: 
+install-tlp: 
 	# Package tlp
 	install -D -m 755 tlp $(SBIN)/tlp
 	install -D -m 755 tlp-rf $(BIN)/bluetooth
@@ -37,13 +37,16 @@ install:
 	install -m 755 49bay $(PLIB)/sleep.d/49bay
 	install -D -m 644 tlp.desktop $(DESTDIR)/etc/xdg/autostart/tlp.desktop
 	install -D -m 644 tlp.bash_completion $(DESTDIR)/etc/bash_completion.d/tlp
-	
+
+install-rdw:	
 	# Package tlp-rdw
 	install -D -m 644 tlp-rdw.rules $(ULIB)/rules.d/40-tlp-rdw.rules
 	install -D -m 755 tlp-rdw-udev $(ULIB)/tlp-rdw-udev
 	install -D -m 755 tlp-rdw-nm $(NMDSP)/99tlp-rdw-nm
 
-uninstall: 
+install: install-tlp install-rdw
+
+uninstall-tlp: 
 	# Package tlp
 	rm $(SBIN)/tlp
 	rm $(BIN)/bluetooth
@@ -63,9 +66,12 @@ uninstall:
 	rm $(PLIB)/sleep.d/49bay
 	rm $(DESTDIR)/etc/xdg/autostart/tlp.desktop
 	rm $(DESTDIR)/etc/bash_completion.d/tlp
-	
+
+uninstall-rdw: 	
 	# Package tlp-rdw
 	rm $(ULIB)/rules.d/40-tlp-rdw.rules
 	rm $(ULIB)/tlp-rdw-udev
 	rm $(NMDSP)/99tlp-rdw-nm
+	
+uninstall: uninstall-tlp uninstall-rdw
 	

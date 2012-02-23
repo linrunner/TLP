@@ -12,6 +12,12 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, pm-utils
 Recommends: ethtool, wireless-tools
 Suggests: smartmontools
 Conflicts: pm-utils-powersave-policy
-Description: Saves battery power on laptops
+Description: Save battery power on laptops
  TLP is a collection of scripts implementing 
  power save features for laptop hardware.
+ 
+Package: tlp-rdw
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, tlp, network-manager
+Description: Radio device wizard
+ Switch radios upon network connect or undock.
