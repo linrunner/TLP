@@ -1,2 +1,3 @@
 # tlp - handle added usb devices
-ACTION=="add", SUBSYSTEM=="usb", RUN+="/lib/udev/tlp-udev %k"
+ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", RUN+="/lib/udev/tlp-udev %p"
+ACTION=="add", SUBSYSTEM=="hid", RUN+="/lib/udev/tlp-udev %p _hid"

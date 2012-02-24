@@ -73,7 +73,6 @@ case "$mode" in
         disable_wake_on_lan 1
         set_sound_power_mode 1
         set_runtime_pm 1
-        enable_usb_suspend 0
         poweroff_drivebay 0
         
         echo_started_mode 1
@@ -98,8 +97,7 @@ case "$mode" in
         disable_wake_on_lan 0
         set_sound_power_mode 0
         set_runtime_pm 0
-        enable_usb_suspend 0
-        
+         
         echo_started_mode 0
         ;;
         
@@ -161,7 +159,7 @@ case "$mode" in
         
     *) 
         echo "Error: unknown command \"$mode\"."  1>&2
-        echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid" 1>&2
+        echo "Usage: tlp start|init|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid" 1>&2
         ;;
 esac
 

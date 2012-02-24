@@ -24,13 +24,8 @@ echo_debug () { # $1: tag; $2: msg; echo debug msg if tag matches
 }
 
 # --- MAIN
-
-# Discard subdevice events
-usbdev=$1
-[ -n "${usbdev##*:*}" ] || exit 0 
-
-# Exit when usb startup flag is not set
-[ -f $USB_DONE ] || exit 0
+usbdevp=/sys$1
+hid=$2
 
 # Read config
 [ -f $CFG ] || exit 0
@@ -39,56 +34,64 @@ usbdev=$1
 # Check if enabled
 [ "$TLP_ENABLE" = "1" ] && [ "$USB_AUTOSUSPEND" = "1" ] || exit 0
 
+# Handle hid subdevices
+if [ "$hid" = "_hid" ]; then
+    usbdevp=${usbdevp%/*} # chop one subdev level from dev path
+    
+    # check subdevice number
+    if [ -f $usbdevp/bInterfaceNumber ]; then
+        # it is a subdev
+        bi=$(cat $usbdevp/bInterfaceNumber)
+        # quit for subdevices > 0
+        [ $bi -eq 0 ] || exit 0
+    else
+        # it is not a subdev
+        exit 0
+    fi
+
+    usbdevp=${usbdevp%/*} # chop another subdev level from dev path
+fi
+
 # Handle device
-if [ -f $USBD/$usbdev/power/autosuspend ] || [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
+if [ -f $usbdevp/power/autosuspend ] || [ -f $usbdevp/power/autosuspend_delay_ms ]; then
     # device is autosuspendable
     ctrlf="control"
     autof="autosuspend_delay_ms"
-    usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
-    busdev="Bus $(cat $USBD/$usbdev/busnum) Dev $(cat $USBD/$usbdev/devnum)"
+    usbid="$(cat $usbdevp/idVendor):$(cat $usbdevp/idProduct)"
+    busdev="Bus $(cat $usbdevp/busnum) Dev $(cat $usbdevp/devnum)"
             
     control="auto"
-    hid=""
-    if patinstr "$usbid" "$USB_BLACKLIST"; then
-        # device is in blacklist
+    if [ "$hid" = "_hid" ]; then
+        # hid devices
         control="on"
-    else
-        # check for hid subdevices
-        for subdev in $USBD/$usbdev/*:*; do
-            if [ -L $subdev/driver ]; then
-                driver=$(readlink $subdev/driver)
-                if [ "${driver##*/}" = "usbhid" ]; then
-                    control="on"
-                    hid="_hid"
-                    break
-                fi
-            fi
-        done    
+    elif patinstr "$usbid" "$USB_BLACKLIST"; then
+        # blacklisted device
+        control="on"
     fi
         
-    if [ -f $USBD/$usbdev/power/control ]; then
-        echo "$control" > $USBD/$usbdev/power/control
+    if [ -f $usbdevp/power/control ]; then
+        echo "$control" > $usbdevp/power/control
     else
         # level is deprecated
-        echo "$control" > $USBD/$usbdev/power/level
+        echo "$control" > $usbdevp/power/level
         ctrlf="level"
     fi
     
-    if [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
-        echo $USB_TIMEOUT_MS > $USBD/$usbdev/power/autosuspend_delay_ms 2> /dev/null
+    if [ -f $usbdevp/power/autosuspend_delay_ms ]; then
+        echo $USB_TIMEOUT_MS > $usbdevp/power/autosuspend_delay_ms 2> /dev/null
         if [ $? != 0 ]; then
             # openSUSE 11.4/2.6.37: writing to autosuspend_delay_ms fails -> fallback to autosuspend
-            echo_debug "usb" "udev_usb.autosuspend_delay_ms_not_writable: $busdev ID $usbid $USBD/$usbdev"
-            echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
+            echo_debug "usb" "udev_usb.autosuspend_delay_ms_not_writable: $busdev ID $usbid $usbdevp"
+            echo $USB_TIMEOUT > $usbdevp/power/autosuspend
             autof="autosuspend"
         fi
     else
         # autosuspend is deprecated
-        echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
+        echo $USB_TIMEOUT > $usbdevp/power/autosuspend
         autof="autosuspend"
     fi
     
-    echo_debug "usb" "udev_usb.$control$hid: $busdev ID $usbid $USBD/$usbdev [$ctrlf $autof]"
+    echo_debug "usb" "udev_usb.$control$hid: $busdev ID $usbid $usbdevp [$ctrlf $autof]"
 fi
 
 exit 0
