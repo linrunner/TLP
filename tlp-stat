@@ -122,10 +122,16 @@ echo
 
 # cpu
 echo "+++ Processor"
-for cpup in /sys/devices/system/cpu/cpu?/cpufreq/scaling_governor; do
-    echoparm $cpup
+for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
+    echoparm $cpuf/scaling_governor
+    printf "%s = %8d [kHz]\n" $cpuf/scaling_min_freq $(cat $cpuf/scaling_min_freq)
+    printf "%s = %8d [kHz]\n" $cpuf/scaling_max_freq $(cat $cpuf/scaling_max_freq)
+    printf "%s = " $cpuf/scaling_available_frequencies
+    for freq in $(cat $cpuf/scaling_available_frequencies); do
+        printf "%8d" $freq
+    done
+    printf " [kHz]\n\n"
 done
-echo
 
 for pool in mc smp smt; do
     sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
@@ -139,7 +145,7 @@ echo
 
 echo "+++ Undervolting"
 phc_avail=0
-for cpuf in /sys/devices/system/cpu/cpu?/cpufreq; do
+for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
     if [ -f $cpuf/phc_controls ]; then
         phc_avail=1
         echoparm "$cpuf/phc_controls        "

@@ -7,6 +7,7 @@ tlp (0.3.5.902-1) lucid; urgency=low
     - Restrict runtime pm to a safe subclass of pci devices
       (from Ubuntu Precise's implementation of pm-utils)
     - Radio device wizard: switch radios upon network connect or undock
+    - Set cpu scaling governor and mix/max frequencies (Alex Lochmann)
   * Packaging  
     - postinst/postrm: disable power.d/harddrive, pci_devices, readahead, 
         usb_bluetooth to keep up with changes in Ubuntu Precise

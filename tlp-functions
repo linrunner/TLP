@@ -175,6 +175,53 @@ set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
     return 0
 }
 
+set_scaling_governor () { # $1: 0=ac mode, 1=battery mode
+    local gov cpu
+
+    if [ "$1" = "1" ]; then
+        gov=$CPU_SCALING_GOVERNOR_ON_BAT
+    else
+        gov=$CPU_SCALING_GOVERNOR_ON_AC
+    fi
+
+    if [ -n "$gov" ]; then
+        echo_debug "pm" "set_scaling_governor($1): $gov"
+        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+            echo $gov > $cpu 2> /dev/null
+        done
+    fi
+    
+    return 0
+}
+
+set_scaling_min_max_freq () { # $1: 0=ac mode, 1=battery mode
+    local minfreq maxfreq cpu
+
+    if [ "$1" = "1" ]; then
+        minfreq=$CPU_SCALING_MIN_FREQ_ON_BAT
+        maxfreq=$CPU_SCALING_MAX_FREQ_ON_BAT
+    else
+        minfreq=$CPU_SCALING_MIN_FREQ_ON_AC
+        maxfreq=$CPU_SCALING_MAX_FREQ_ON_AC
+    fi
+
+    if [ -n "$minfreq" ]; then
+        echo_debug "pm" "set_scaling_min_max_freq($1).min: $minfreq"
+        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
+            echo $minfreq > $cpu 2> /dev/null
+        done
+    fi
+    
+    if [ -n "$maxfreq" ]; then
+        echo_debug "pm" "set_scaling_min_max_freq($1).max: $maxfreq"
+        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
+            echo $maxfreq > $cpu 2> /dev/null
+        done
+    fi
+    
+    return 0
+}
+
 set_sched_powersave () { # $1: 0=ac mode, 1=battery mode
     local pwr pool sdev 
     local avail=0

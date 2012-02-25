@@ -33,6 +33,8 @@ case "$mode" in
         load_tp_modules
         set_laptopmode $pwr
         set_dirty_parms $pwr
+        set_scaling_governor $pwr
+        set_scaling_min_max_freq $pwr
         set_sched_powersave $pwr
         set_nmi_watchdog
         set_phc_controls $pwr
@@ -59,6 +61,8 @@ case "$mode" in
         load_tp_modules
         set_laptopmode 1
         set_dirty_parms 1
+        set_scaling_governor 1
+        set_scaling_min_max_freq 1
         set_sched_powersave 1
         set_nmi_watchdog
         set_phc_controls 1
@@ -83,6 +87,8 @@ case "$mode" in
         load_tp_modules
         set_laptopmode 0
         set_dirty_parms 0
+        set_scaling_governor 0
+        set_scaling_min_max_freq 0
         set_sched_powersave 0
         set_nmi_watchdog
         set_phc_controls 0
@@ -159,7 +165,7 @@ case "$mode" in
         
     *) 
         echo "Error: unknown command \"$mode\"."  1>&2
-        echo "Usage: tlp start|init|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid" 1>&2
+        echo "Usage: tlp start|true|bat|false|ac|wifi|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid" 1>&2
         ;;
 esac
 

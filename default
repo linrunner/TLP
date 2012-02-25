@@ -15,6 +15,23 @@ DISK_IDLE_SECS_ON_BAT=2
 MAX_LOST_WORK_SECS_ON_AC=15
 MAX_LOST_WORK_SECS_ON_BAT=60
 
+# Select a cpu frequency scaling governor: ondemand/powersave/performance/conservative
+# Important:  
+# - You *must* disable your distribution's governor settings or conflicts will occur
+# - ondemand is sufficient for *almost all* workloads, you should know what you're doing!
+#CPU_SCALING_GOVERNOR_ON_AC=ondemand
+#CPU_SCALING_GOVERNOR_ON_BAT=ondemand
+
+# Set the min/max frequency available for the scaling governor.
+# Possible values strongly depend on your cpu. For available frequencies see 
+# tlp-stat output, Section "+++ Processor".
+# Hint: Parameters are disabled by default, remove the leading # to enable them,
+#       otherwise kernel default values are used.
+#CPU_SCALING_MIN_FREQ_ON_AC=0
+#CPU_SCALING_MAX_FREQ_ON_AC=0
+#CPU_SCALING_MIN_FREQ_ON_BAT=0
+#CPU_SCALING_MAX_FREQ_ON_BAT=0
+
 # Minimize number of used cpu cores/hyper-threads under light load conditions
 SCHED_POWERSAVE_ON_AC=0
 SCHED_POWERSAVE_ON_BAT=1
