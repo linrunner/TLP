@@ -736,7 +736,7 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
         [ "$1" = "1" ] && echo "Error: usb autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $DEFAULT_FILE."
     fi
     
-    # Set usb startup flag
+    # Set "startup finished" flag
     [ -f $USB_DONE ] || touch $USB_DONE
     
     return 0

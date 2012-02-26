@@ -31,8 +31,11 @@ hid=$2
 [ -f $CFG ] || exit 0
 . $CFG
 
-# Check if enabled
+# Exit if TLP or autosuspend disabled
 [ "$TLP_ENABLE" = "1" ] && [ "$USB_AUTOSUSPEND" = "1" ] || exit 0
+
+# Exit if batch mode disabled or startup not finished
+[ "$X_USB_NO_BATCH" = "1" ] || [ -f $USB_DONE ] || exit 0
 
 # Handle hid subdevices
 if [ "$hid" = "_hid" ]; then
