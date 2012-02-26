@@ -18,27 +18,41 @@ RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 # --- MAIN
 read_defaults
 check_tlp_enabled || exit 1
-[ -n "$DEVICES_TO_ENABLE_ON_UNDOCK" ] || exit 0
 
-# Wait a moment for new power state to propagate
-sleep 2.0
-
-# Check dock state
+# Get state
 ddir=/sys/devices/platform/$1
 type=$(cat $ddir/type)
 docked=$(cat $ddir/docked)
 get_power_state; bat=$?
 
-echo_debug "udev" "rdw_udev($*): dev=$ddir type=$type docked=$docked bat=$bat"
+echo_debug "udev" "rdw_udev($*).$EVENT dev=$ddir type=$type docked=$docked bat=$bat"
 
-if [ "$bat" = "1" ]; then 
-    # device is a docking station and laptop was undocked = on bat power
-    echo_debug "udev" "tlp-rdw-udev.dock_event_on_bat_power"
+case $EVENT in
+    dock) # laptop was docked
+    
+        # enable configured radios
+        for dev in $DEVICES_TO_ENABLE_ON_DOCK; do 
+            [ -n "$dev" ] && device_on $dev
+        done
+        
+        # disable configured radios
+        for dev in $DEVICES_TO_DISABLE_ON_DOCK; do 
+            [ -n "$dev" ] && device_off $dev
+        done
+        ;;
+        
+    undock) # laptop was undocked
 
-    # enable radios
-    for dev in $DEVICES_TO_ENABLE_ON_UNDOCK; do 
-        [ -n "$dev" ] && device_on $dev
-    done
-fi
+        # enable configured radios
+        for dev in $DEVICES_TO_ENABLE_ON_UNDOCK; do 
+            [ -n "$dev" ] && device_on $dev
+        done
+        
+        # disable configured radios
+        for dev in $DEVICES_TO_DISABLE_ON_UNDOCK; do 
+            [ -n "$dev" ] && device_off $dev
+        done
+        ;;
+esac
 
 exit 0

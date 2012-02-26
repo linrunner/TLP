@@ -19,53 +19,62 @@ RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 read_defaults
 check_tlp_enabled || exit 1
 
-echo_debug "nm" "rdw_nm($*)"
+# Get args
+iface="$1"
+action="$2"
 
-# Check params
-IFACE="$1"
-ACTION="$2"
-
-[ "$ACTION" = "up" ] && [ -n "$IFACE" ] && [ "$IFACE" != "none" ] || exit 0
+# Quit for invalid interfaces
+[ -n "$iface" ] && [ "$iface" != "none" ] || exit 0
 
 # Determine interface type
-case $IFACE in
+case $iface in
     ppp*) # usb wwan: iface != dev
         if [ -n "$($NMCLI dev | egrep 'gsm.*connected')" ]; then 
-            ITYPE="gsm"
+            itype="gsm"
         fi
         ;;
 
     *) # general case: iface = dev
-        ITYPE="$($NMCLI dev | awk '$1 ~ /'$IFACE'/ { print $2; }')"
+        itype="$($NMCLI dev | awk '$1 ~ /'$iface'/ { print $2; }')"
         ;;
 esac
 
-echo_debug "nm" "rdw_nm.rfkill_other: iface=$IFACE type=$ITYPE"
+echo_debug "nm" "rdw_nm($iface).$action: type=$itype"
 
-# rfkill other interfaces
-case $ITYPE in
-    802-3-ethernet)
-	    if [ "$($IP -4 addr show $IFACE)" != "${X_IP_IGNORE:-x.y.z.t}" ]; then
-	        for dev in $DEVICES_TO_DISABLE_ON_LAN_CONNECT; do 
-                [ -n "$dev" ] && device_off $dev
-            done
-        fi
-        ;;
+case $action in
+    up) # interface up, disable configured interfaces
+        case $itype in
+            802-3-ethernet)
+               for dev in $DEVICES_TO_DISABLE_ON_LAN_CONNECT; do 
+                    [ -n "$dev" ] && device_off $dev
+                done
+                ;;
             
-    802-11-wireless)
-        for dev in $DEVICES_TO_DISABLE_ON_WIFI_CONNECT; do 
-            [ -n "$dev" ] && device_off $dev
-        done
-        ;;
+            802-11-wireless)
+                for dev in $DEVICES_TO_DISABLE_ON_WIFI_CONNECT; do 
+                    [ -n "$dev" ] && device_off $dev
+                done
+                ;;
             
-    gsm)
-        for dev in $DEVICES_TO_DISABLE_ON_WWAN_CONNECT; do 
-            [ -n "$dev" ] && device_off $dev
-        done
-        ;;
-            
-    *) # do nothing
-        ;;
-esac
+            gsm)
+                for dev in $DEVICES_TO_DISABLE_ON_WWAN_CONNECT; do 
+                    [ -n "$dev" ] && device_off $dev
+                done
+                ;;
+        esac
+        ;; # up
 
+    down) # interface down, enable configured interfaces
+        case $itype in
+            802-3-ethernet)
+                for dev in $DEVICES_TO_ENABLE_ON_LAN_DISCONNECT; do 
+                    [ -n "$dev" ] && device_on $dev
+                done
+                ;;
+            
+        esac
+        ;; # down
+        
+esac 
+    
 exit 0

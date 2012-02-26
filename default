@@ -140,6 +140,7 @@ USB_AUTOSUSPEND=1
 
 # ------------------------------------------------------------------------------
 # tlp-rdw - Parameters for the radio device wizard
+# Possible devices: bluetooth/wifi/wwan
 
 # Hint: parameters are disabled by default, remove the leading # to enable them
 
@@ -148,5 +149,14 @@ USB_AUTOSUSPEND=1
 #DEVICES_TO_DISABLE_ON_WIFI_CONNECT="wwan"
 #DEVICES_TO_DISABLE_ON_WWAN_CONNECT="wifi"
 
-# Radio devices to enable when undocked
+# Radio devices to enable on disconnect 
+#DEVICES_TO_ENABLE_ON_LAN_DISCONNECT="wifi wwan"
+
+# Radio devices to enable/disable when docked
+#DEVICES_TO_ENABLE_ON_DOCK=""
+#DEVICES_TO_DISABLE_ON_DOCK=""
+
+# Radio devices to enable/disable when undocked
 #DEVICES_TO_ENABLE_ON_UNDOCK="wifi"
+#DEVICES_TO_DISABLE_ON_UNDOCK=""
+
