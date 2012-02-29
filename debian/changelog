@@ -2,13 +2,14 @@ tlp (0.3.5.904-1) lucid; urgency=low
 
   * Development version
   * Features
-    - tlp-stat: add smart attributes for samsung ssd
     - handle usb autosuspend via udev events (after system startup)
     - Restrict runtime pm to a safe subclass of pci devices
       (from Ubuntu Precise's implementation of pm-utils)
     - Radio device wizard: switch radios upon network connect/disconnect
       and dock/undock events (samba)
     - Set cpu scaling governor and mix/max frequencies (Alex Lochmann)
+    - tlp-stat: add smart attributes for samsung ssd
+    - tlp-stat: show settings
   * Packaging  
     - postinst/postrm: disable power.d/harddrive, pci_devices, readahead, 
         usb_bluetooth to keep up with changes in Ubuntu Precise
@@ -19,7 +20,7 @@ tlp (0.3.5.904-1) lucid; urgency=low
     - tlp-usblist: cleanup code, add pragmas "strict" and "warnings" (dywisor)
     - Remove setting of ext3/4 fs commit timeout (see LP #900923)
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 29 Feb 2012 19:57:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 29 Feb 2012 20:20:00 +0100
 
 tlp (0.3.5-2) lucid; urgency=low
 

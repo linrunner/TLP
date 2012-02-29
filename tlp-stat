@@ -79,6 +79,9 @@ echo
 
 if [ -f $TLPCFG ]; then
     . $TLPCFG
+    echo "+++ Configured Settings: $TLPCFG"
+    egrep -v '^#|^\s*$' $TLPCFG
+    echo
 else
     echo "Warning: config file $TLPCFG not present."
     echo
