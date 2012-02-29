@@ -52,13 +52,13 @@ case $action in
             
             802-11-wireless)
                 for dev in $DEVICES_TO_DISABLE_ON_WIFI_CONNECT; do 
-                    [ -n "$dev" ] && device_off $dev
+                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_off $dev
                 done
                 ;;
             
             gsm)
-                for dev in $DEVICES_TO_DISABLE_ON_WWAN_CONNECT; do 
-                    [ -n "$dev" ] && device_off $dev
+                for dev in $DEVICES_TO_DISABLE_ON_WWAN_CONNECT; do
+                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_off $dev
                 done
                 ;;
         esac
@@ -72,6 +72,17 @@ case $action in
                 done
                 ;;
             
+            802-11-wireless)
+                for dev in $DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT; do 
+                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_on $dev
+                done
+                ;;
+            
+            gsm)
+                for dev in $DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT; do 
+                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_on $dev
+                done
+                ;;
         esac
         ;; # down
         

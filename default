@@ -151,6 +151,8 @@ USB_AUTOSUSPEND=1
 
 # Radio devices to enable on disconnect 
 #DEVICES_TO_ENABLE_ON_LAN_DISCONNECT="wifi wwan"
+#DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT=""
+#DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT=""
 
 # Radio devices to enable/disable when docked
 #DEVICES_TO_ENABLE_ON_DOCK=""
