@@ -1,15 +1,18 @@
 #!/bin/sh
 # tlp - handle added usb devices
+#
+# Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2.
 
-# --- Definitions
-LOGGER=logger
+# --- Constants
+readonly LOGGER=logger
 
-USBD=/sys/bus/usb/devices
-USB_TIMEOUT=2
-USB_TIMEOUT_MS=2000
-USB_DONE=/var/run/tlp.usb-done
+readonly USBD=/sys/bus/usb/devices
+readonly USB_TIMEOUT=2
+readonly USB_TIMEOUT_MS=2000
+readonly USB_DONE=/var/run/tlp.usb-done
 
-CFG=/etc/default/tlp
+readonly CONFFILE=/etc/default/tlp
 
 # --- Subroutines
 patinstr () { # $1: pattern, $2: target -- test if pattern matches part of target
@@ -28,14 +31,25 @@ usbdevp=/sys$1
 hid=$2
 
 # Read config
-[ -f $CFG ] || exit 0
-. $CFG
+[ -f $CONFFILE ] || exit 0
+. $CONFFILE
 
 # Exit if TLP or autosuspend disabled
 [ "$TLP_ENABLE" = "1" ] && [ "$USB_AUTOSUSPEND" = "1" ] || exit 0
 
-# Exit if batch mode disabled or startup not finished
-[ "$X_USB_NO_BATCH" = "1" ] || [ -f $USB_DONE ] || exit 0
+# USB autosuspend has two principal operation modes:
+#
+# Mode 1 (default):
+# - System startup is handled by tlp-functions:enable_usb_suspend()
+# - Startup completion is signaled by "flag file" $USB_DONE
+# - Newly added devices are handled by this udev script
+#
+# Mode 2 (EXPERIMENTAL):
+# - Everything - including system startup - is handled by this udev script
+# - Mode 2 is enabled by the private config variable X_TLP_USB_MODE=2
+
+# Do not exit if either mode 2 or startup completion flag
+[ "$X_TLP_USB_MODE" = "2" ] || [ -f $USB_DONE ] || exit 0
 
 # Handle hid subdevices
 if [ "$hid" = "_hid" ]; then

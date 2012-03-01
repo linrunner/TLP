@@ -4,9 +4,9 @@
 # Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2.
 
-# --- Definitions
-LIB=/usr/lib/tlp-pm/tlp-functions
-RFLIB=/usr/lib/tlp-pm/tlp-rf-func
+# --- Constants
+readonly LIB=/usr/lib/tlp-pm/tlp-functions
+readonly RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 
 # --- Source libraries
 [ -f $LIB ] || exit 0

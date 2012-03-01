@@ -4,10 +4,14 @@ SBIN  = $(DESTDIR)/usr/sbin
 BIN   = $(DESTDIR)/usr/bin
 PMETC = $(DESTDIR)/etc/pm/power.d
 TLIB  = $(DESTDIR)/usr/lib/tlp-pm
-TLREL = ../../../usr/lib/tlp-pm
 PLIB  = $(DESTDIR)/usr/lib/pm-utils
 ULIB  = $(DESTDIR)/lib/udev
 NMDSP = $(DESTDIR)/etc/NetworkManager/dispatcher.d
+
+# Location of TLP's config file
+# Hint: solely changing this will render the installation unusable,
+# you have to change constant definitions in scripts too!
+CONFFILE = $(DESTDIR)/etc/default/tlp
 
 all: 
 	@/bin/true 
@@ -28,9 +32,9 @@ install-tlp:
 	install -D -m 755 tlp-functions $(TLIB)/tlp-functions
 	install -m 755 tlp-rf-func $(TLIB)/
 	install -m 755 tlp-nop $(TLIB)/
-	install -D -m 755 tlp-udev $(ULIB)/tlp-udev
+	install -D -m 755 tlp-usb-udev $(ULIB)/tlp-usb-udev
 	install -D -m 644 tlp.rules $(ULIB)/rules.d/40-tlp.rules
-	[ -f $(DESTDIR)/etc/default/tlp ] || install -D -m 644 default $(DESTDIR)/etc/default/tlp
+	[ -f $(CONFFILE) ] || install -D -m 644 default $(CONFFILE)
 	install -D -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
 	install -D -m 755 zztlp $(PLIB)/power.d/zztlp
 	install -D -m 755 49wwan $(PLIB)/sleep.d/49wwan
@@ -59,6 +63,8 @@ uninstall-tlp:
 	rm $(TLIB)/tlp-functions
 	rm $(TLIB)/tlp-rf-func
 	rmdir $(TLIB)
+	rm $(ULIB)/tlp-usb-udev
+	rm $(ULIB)/rules.d/40-tlp.rules
 	rm $(DESTDIR)/etc/init.d/tlp
 	rm $(DESTDIR)/etc/network/if-up.d/tlp-ifup
 	rm $(PLIB)/power.d/zztlp

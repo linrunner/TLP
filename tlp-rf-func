@@ -5,10 +5,10 @@
 # This software is licensed under the GPL v2.
 
 # ----------------------------------------------------------------------------
-# Definitions
-RFKILL="$(which rfkill 2> /dev/null)"
-RFKD="/dev/rfkill"
-TEST="$(which test 2> /dev/null)"
+# Constants
+readonly RFKILL="$(which rfkill 2> /dev/null)"
+readonly RFKD="/dev/rfkill"
+readonly TEST="$(which test 2> /dev/null)"
 
 # ----------------------------------------------------------------------------
 # Functions

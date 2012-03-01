@@ -13,16 +13,15 @@
 TLP=/usr/sbin/tlp
 LIB=/usr/lib/tlp-pm/tlp-functions
 RFLIB=/usr/lib/tlp-pm/tlp-rf-func
-CFG=/etc/default/tlp
 
 [ -x $TLP ] || exit 0
+
 [ -f $LIB ] || exit 0
 [ -f $RFLIB ] || exit 0
-[ -f $CFG ] || exit 0
-
 . $LIB
 . $RFLIB
-read_defaults
+
+read_defaults || exit 0
 
 echo_debug "run" "+++ init.d $1"
 echo_debug "path" "PATH=$PATH"

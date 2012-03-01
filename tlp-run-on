@@ -1,5 +1,9 @@
 #!/bin/sh
 # tlp - run commands depending on power source
+#
+# Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2.
+
 self=${0##*/}
 
 cmd=$1

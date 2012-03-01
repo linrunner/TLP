@@ -1,11 +1,13 @@
 #!/bin/sh
 # tlp - restore ThinkPad wwan state after suspend / hibernate
+#
+# Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2.
 
 . "${PM_FUNCTIONS}"
 
-LIB=/usr/lib/tlp-pm/tlp-functions
-RFLIB=/usr/lib/tlp-pm/tlp-rf-func
-CFG=/etc/default/tlp
+readonly LIB=/usr/lib/tlp-pm/tlp-functions
+readonly RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 
 suspend_device () {
 	local state
@@ -24,10 +26,11 @@ resume_device () {
 
 [ -f $LIB ] || exit 0
 [ -f $RFLIB ] || exit 0
-[ -f $CFG ] || exit 0
 . $LIB
 . $RFLIB
-. $CFG
+
+read_defaults || exit 0
+
 [ "$TLP_ENABLE" = "1" ] || exit 0
 
 echo_debug "pm" "49wwan.$1"

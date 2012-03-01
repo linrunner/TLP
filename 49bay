@@ -1,11 +1,13 @@
 #!/bin/sh
 # tlp - disable Ultrabay on resume if it was disabled on the preceding suspend
+#
+# Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2.
 
 . "${PM_FUNCTIONS}"
 
-LIB=/usr/lib/tlp-pm/tlp-functions
-CFG=/etc/default/tlp
-STATE=tp_bay_off
+readonly LIB=/usr/lib/tlp-pm/tlp-functions
+readonly STATE=tp_bay_off
 
 get_bay () {
 	dock=$(grep -l ata_bay /sys/devices/platform/dock.?/type)
@@ -54,9 +56,10 @@ resume_bay () {
 }
 
 [ -f $LIB ] || exit 0
-[ -f $CFG ] || exit 0
 . $LIB
-. $CFG
+
+read_defaults || exit 0
+
 [ "$TLP_ENABLE" = "1" ] && [ "$BAY_POWEROFF_ON_BAT" = "1" ] || exit 0
 
 echo_debug "49bay $1"

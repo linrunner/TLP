@@ -9,37 +9,33 @@
 # - thinkwiki.org
 
 # ----------------------------------------------------------------------------
-# Definitions
-TLPVER=0.3.5.904
-DEFAULT_FILE=/etc/default/tlp
+# Constants
+readonly TLPVER=0.3.5.904
 
-ACPWR=on_ac_power
-ETHTOOL=ethtool
-HDPARM=hdparm
-IWC=iwconfig
-MODPRO=modprobe
-LOGGER=logger
-UDEVADM=udevadm
-LAPMODE=laptop_mode
-NMCLI=nmcli
-IP=ip
+readonly CONFFILE=/etc/default/tlp
 
-SMAPIDIR=/sys/devices/platform/smapi
-USBD=/sys/bus/usb/devices
-NETD=/sys/class/net
+readonly ACPWR=on_ac_power
+readonly ETHTOOL=ethtool
+readonly HDPARM=hdparm
+readonly IWC=iwconfig
+readonly MODPRO=modprobe
+readonly LOGGER=logger
+readonly UDEVADM=udevadm
+readonly LAPMODE=laptop_mode
+readonly NMCLI=nmcli
+readonly IP=ip
 
-PCID=/sys/bus/pci/devices
-SPID=/sys/bus/spi/devices
-I2CD=/sys/bus/i2c/devices
+readonly SMAPIDIR=/sys/devices/platform/smapi
+readonly NETD=/sys/class/net
+readonly PCID=/sys/bus/pci/devices
+readonly I915D=/sys/module/i915/parameters
 
-I915D=/sys/module/i915/parameters
+readonly USBD=/sys/bus/usb/devices
+readonly USB_TIMEOUT=2
+readonly USB_TIMEOUT_MS=2000
+readonly USB_DONE=/var/run/tlp.usb-done
 
-USB_TIMEOUT=2
-USB_TIMEOUT=2
-USB_TIMEOUT_MS=2000
-USB_DONE=/var/run/tlp.usb-done
-
-TPMODULES="thinkpad_acpi tp_smapi"
+readonly TPMODULES="thinkpad_acpi tp_smapi"
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -72,11 +68,9 @@ check_root () {
     fi
 }
 
-check_tlp_enabled () { # ret: 0=disabled/1=enabled
-    TLP_ENABLE=${TLP_ENABLE:-1}
-    
+check_tlp_enabled () { # ret: 0=disabled/1=enabled    
     if [ ! "$TLP_ENABLE" = "1" ]; then
-        echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in $DEFAULT_FILE." 1>&2
+        echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in $CONFFILE." 1>&2
         return 1
     else
         return 0
@@ -98,11 +92,12 @@ check_laptop_mode_tools () { # ret: 0=not installed, 1=installed
 }
 
 read_defaults () {
-    if [ -f $DEFAULT_FILE ]; then
-        . $DEFAULT_FILE
+    if [ -f $CONFFILE ]; then
+        . $CONFFILE
+        return 0
+    else
+        return 1
     fi
-    
-    return 0
 }
 
 load_tp_modules () {
@@ -736,7 +731,7 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
         [ "$1" = "1" ] && echo "Error: usb autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $DEFAULT_FILE."
     fi
     
-    # Set "startup finished" flag
+    # Set "startup completion" flag for tlp-usb-udev
     [ -f $USB_DONE ] || touch $USB_DONE
     
     return 0

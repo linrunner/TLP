@@ -8,17 +8,16 @@ stop on runlevel [!2345]
 env TLP=/usr/sbin/tlp
 env LIB=/usr/lib/tlp-pm/tlp-functions
 env RFLIB=/usr/lib/tlp-pm/tlp-rf-func
-env CFG=/etc/default/tlp
 
 pre-start script
     [ -x $TLP ] || exit 4
-    [ -f $LIB ] || exit 4
-    [ -f $RFLIB ] || exit 4
-    [ -f $CFG ] || exit 2
 
+    [ -f $LIB ] || exit 4
+    [ -f $RFLIB ] || exit 4    
     . $LIB
     . $RFLIB
-    read_defaults
+    
+    read_defaults || exit 2
     
     echo_debug "run" "+++ upstart pre-start"
     echo_debug "path" "PATH=$PATH"
@@ -53,7 +52,7 @@ post-stop script
     [ -x $TLP ] || exit 4
     [ -f $LIB ] || exit 4
     [ -f $RFLIB ] || exit 4
-    [ -f $CFG ] || exit 2
+    [ -f $CONFFILE ] || exit 2
 
     . $LIB  
     . $RFLIB

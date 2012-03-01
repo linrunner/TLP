@@ -1,26 +1,24 @@
 #!/bin/sh
 # tlp - display power save and usb autosuspend status
 #
-# Copyright (c) 2011 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2.
 
-# --- Definitions
-LIB=/usr/lib/tlp-pm/tlp-functions
-RFLIB=/usr/lib/tlp-pm/tlp-rf-func
-TLPCFG=/etc/default/tlp
-TLPUSB=/usr/bin/tlp-usblist
+# --- Constants
+readonly LIB=/usr/lib/tlp-pm/tlp-functions
+readonly RFLIB=/usr/lib/tlp-pm/tlp-rf-func
+readonly TLPUSB=/usr/bin/tlp-usblist
 
-SMARTCTL=$(which smartctl 2> /dev/null)
-LSBREL=$(which lsb_release 2> /dev/null)
-DMIDEC=$(which dmidecode 2> /dev/null)
+readonly SMARTCTL=$(which smartctl 2> /dev/null)
+readonly LSBREL=$(which lsb_release 2> /dev/null)
+readonly DMIDEC=$(which dmidecode 2> /dev/null)
 
-ASPM=/sys/module/pcie_aspm/parameters/policy
-USBD=/sys/bus/usb/devices
-NMIWD=/proc/sys/kernel/nmi_watchdog
-TPACPI=/sys/devices/platform/thinkpad_acpi
+readonly ASPM=/sys/module/pcie_aspm/parameters/policy
+readonly NMIWD=/proc/sys/kernel/nmi_watchdog
+readonly TPACPI=/sys/devices/platform/thinkpad_acpi
 
-THERMAL=/proc/acpi/ibm/thermal
-FAN=/proc/acpi/ibm/fan
+readonly THERMAL=/proc/acpi/ibm/thermal
+readonly FAN=/proc/acpi/ibm/fan
 
 # --- Functions
 echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
@@ -77,13 +75,13 @@ load_tp_modules
 echo "--- TLP $TLPVER --------------------------------------------"
 echo
 
-if [ -f $TLPCFG ]; then
-    . $TLPCFG
-    echo "+++ Configured Settings: $TLPCFG"
-    egrep -v '^#|^\s*$' $TLPCFG
+if [ -f $CONFFILE ]; then
+    . $CONFFILE
+    echo "+++ Configured Settings: $CONFFILE"
+    egrep -v '^#|^\s*$' $CONFFILE
     echo
 else
-    echo "Warning: config file $TLPCFG not present."
+    echo "Warning: config file $CONFFILE not present."
     echo
 fi
 
