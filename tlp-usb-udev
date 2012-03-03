@@ -10,7 +10,9 @@ readonly LOGGER=logger
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT=2
 readonly USB_TIMEOUT_MS=2000
-readonly USB_DONE=/var/run/tlp.usb-done
+
+readonly RUNDIR=/var/run/tlp
+readonly USB_DONE=usb_done
 
 readonly CONFFILE=/etc/default/tlp
 
@@ -49,7 +51,7 @@ hid=$2
 # - Mode 2 is enabled by the private config variable X_TLP_USB_MODE=2
 
 # Do not exit if either mode 2 or startup completion flag
-[ "$X_TLP_USB_MODE" = "2" ] || [ -f $USB_DONE ] || exit 0
+[ "$X_TLP_USB_MODE" = "2" ] || [ -f $RUNDIR/$USB_DONE ] || exit 0
 
 # Handle hid subdevices
 if [ "$hid" = "_hid" ]; then

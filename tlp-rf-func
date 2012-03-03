@@ -95,11 +95,17 @@ device_state () { # $1: rftype
 
 device_on () { # $1: rftype
     echo_debug "rf" "device_on($1)"
-    
+
     get_devc $1
+
+    # quit if no device
     [ -z "$devc" ] && return 0
-    get_devs $1 
-    
+
+    get_devs $1
+
+    # quit if device is already on
+    [ "$devs" = "1" ] && return 0
+
     if [ "$rfkdev" = "1" ] && [ -x "$RFKILL" ]; then
         if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
             echo_debug "rf" "device_on($1).rfkill"
@@ -115,19 +121,25 @@ device_on () { # $1: rftype
             err_no_root_priv "device_on($1).devc"
         fi
     fi
-    
+
     get_devs $1
-    
+
     return 0
 }
 
 device_off () { # $1: rftype
     echo_debug "rf" "device_off($1)"
-    
+
     get_devc $1
+
+    # quit if no device
     [ -z "$devc" ] && return 0
-    get_devs $1 
-    
+
+    get_devs $1
+
+    # quit if device is already off
+    [ "$devs" = "0" ] && return 0
+
     if [ "$rfkdev" = "1" ] && [ -x "$RFKILL" ]; then
         if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
             echo_debug "rf" "device_off($1).rfkill"
@@ -145,7 +157,7 @@ device_off () { # $1: rftype
     fi
 
     get_devs $1
-        
+
     return 0
 }
 
@@ -153,9 +165,12 @@ device_toggle () { # $1: rftype
     echo_debug "rf" "device_toggle($1)"
 
     get_devc $1
+
+    # quit if no device
     [ -z "$devc" ] && return 0
-    get_devs $1 
-            
+
+    get_devs $1
+
     if [ "$rfkdev" = "1" ] && [ -x "$RFKILL" ]; then
          if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
             echo_debug "rf" "device_toggle($1).rfkill"
@@ -179,9 +194,9 @@ device_toggle () { # $1: rftype
             err_no_root_priv "device_toogle($1).devc"
         fi
     fi
-    
+
     get_devs $1
-    
+
     return 0
 }
 
@@ -203,7 +218,7 @@ echo_device_state () { # $1: rftype, $2: state
             devstr=$1
             ;;
     esac
-    
+
     case $2 in
         0) 
             echo "$devstr = off (software)"
@@ -224,7 +239,7 @@ echo_device_state () { # $1: rftype, $2: state
         *)
             echo "$devstr = unknown state \"$state\""
     esac
-    
+
     return 0
 }
 

@@ -1,5 +1,6 @@
 #!/bin/sh
-# tlp-rdw-nm - network manager dispatcher hook: disable radios on ifup
+# tlp-rdw - network manager dispatcher hook:
+#           enable/disable radios on ifup/ifdown
 #
 # Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2.
@@ -10,14 +11,13 @@ readonly RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 
 # --- Source libraries
 [ -f $LIB ] || exit 0
-. $LIB
-
 [ -f $RFLIB ] || exit 0
+. $LIB
 . $RFLIB
 
 # --- MAIN
 read_defaults
-check_tlp_enabled || exit 1
+check_tlp_enabled || exit 0
 
 # Get args
 iface="$1"
@@ -25,6 +25,14 @@ action="$2"
 
 # Quit for invalid interfaces
 [ -n "$iface" ] && [ "$iface" != "none" ] || exit 0
+
+echo_debug "nm" "rdw_nm($iface).$action"
+
+# Quit if suspend/resume in progress
+check_run_flag $SUSPEND_IN_PROGRESS && exit 0
+
+# Quit if timed lock in progress
+check_timed_lock tlp-rdw-nm && exit 0
 
 # Determine interface type
 case $iface in
@@ -43,11 +51,14 @@ echo_debug "nm" "rdw_nm($iface).$action: type=$itype"
 
 case $action in
     up) # interface up, disable configured interfaces
+
+        set_timed_lock tlp-rdw-nm 5 # lock rdw events for 5 seconds
+
         case $itype in
             802-3-ethernet)
-               for dev in $DEVICES_TO_DISABLE_ON_LAN_CONNECT; do 
+                for dev in $DEVICES_TO_DISABLE_ON_LAN_CONNECT; do
                     [ -n "$dev" ] && device_off $dev
-                done
+                done                
                 ;;
             
             802-11-wireless)

@@ -1,0 +1,33 @@
+#!/bin/sh
+# tlp-rdw - lock events during suspend/hibernate cycle
+#
+# Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2.
+
+. "${PM_FUNCTIONS}"
+
+readonly LIB=/usr/lib/tlp-pm/tlp-functions
+
+[ -f $LIB ] || exit 0
+. $LIB
+
+read_defaults || exit 0
+
+[ "$TLP_ENABLE" = "1" ] || exit 0
+
+echo_debug "pm" "48tlp-rdw-lock.$1"
+
+case $1 in
+	hibernate|suspend)
+		set_run_flag $SUSPEND_IN_PROGRESS
+		;;
+
+	thaw|resume)
+		reset_run_flag $SUSPEND_IN_PROGRESS
+		;;
+
+	*) exit $NA
+		;;
+esac
+
+exit 0

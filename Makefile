@@ -47,6 +47,7 @@ install-rdw:
 	install -D -m 644 tlp-rdw.rules $(ULIB)/rules.d/40-tlp-rdw.rules
 	install -D -m 755 tlp-rdw-udev $(ULIB)/tlp-rdw-udev
 	install -D -m 755 tlp-rdw-nm $(NMDSP)/99tlp-rdw-nm
+	install -D -m 755 48tlp-rdw-lock $(PLIB)/sleep.d/48tlp-rdw-lock
 
 install: install-tlp install-rdw
 
@@ -78,6 +79,7 @@ uninstall-rdw:
 	rm $(ULIB)/rules.d/40-tlp-rdw.rules
 	rm $(ULIB)/tlp-rdw-udev
 	rm $(NMDSP)/99tlp-rdw-nm
+	rm $(PLIB)/sleep.d/48tlp-rdw-lock
 	
 uninstall: uninstall-tlp uninstall-rdw
 	

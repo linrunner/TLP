@@ -1,5 +1,5 @@
 #!/bin/sh
-# tlp-rdw-udev - handle dock/undock events
+# tlp-rdw - handle dock/undock events
 #
 # Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2.
@@ -10,14 +10,13 @@ readonly RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 
 # --- Source libraries
 [ -f $LIB ] || exit 0
-. $LIB
-
 [ -f $RFLIB ] || exit 0
+. $LIB
 . $RFLIB
 
 # --- MAIN
 read_defaults
-check_tlp_enabled || exit 1
+check_tlp_enabled || exit 0
 
 # Get state
 ddir=/sys/devices/platform/$1
