@@ -763,15 +763,12 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
                 else
                     # check for hid subdevices
                     for subdev in $USBD/$usbdev/*:*; do
-                        if [ -L $subdev/driver ]; then
-                            driver=$(readlink $subdev/driver)
-                            if [ "${driver##*/}" = "usbhid" ]; then
-                                control="on"
-                                hid="_hid"
-                                break
-                            fi
+                        if [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
+                            control="on"
+                            hid="_hid"
+                            break
                         fi
-                    done    
+                    done
                 fi
                 
                 if [ -f $USBD/$usbdev/power/control ]; then

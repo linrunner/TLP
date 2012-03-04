@@ -29,8 +29,13 @@ echo_debug () { # $1: tag; $2: msg; echo debug msg if tag matches
 }
 
 # --- MAIN
+
+# Get args
 usbdevp=/sys$1
-hid=$2
+hid=''
+
+# Exit if subdevice
+[ -f $usbdevp/bDeviceClass ] || exit 0
 
 # Read config
 [ -f $CONFFILE ] || exit 0
@@ -53,23 +58,13 @@ hid=$2
 # Do not exit if either mode 2 or startup completion flag
 [ "$X_TLP_USB_MODE" = "2" ] || [ -f $RUNDIR/$USB_DONE ] || exit 0
 
-# Handle hid subdevices
-if [ "$hid" = "_hid" ]; then
-    usbdevp=${usbdevp%/*} # chop one subdev level from dev path
-    
-    # check subdevice number
-    if [ -f $usbdevp/bInterfaceNumber ]; then
-        # it is a subdev
-        bi=$(cat $usbdevp/bInterfaceNumber)
-        # quit for subdevices > 0
-        [ $bi -eq 0 ] || exit 0
-    else
-        # it is not a subdev
-        exit 0
+# Check for hid subdevices
+for subdevp in $usbdevp/*:*; do
+    if [ "$(cat $subdevp/bInterfaceClass)" = "03" ]; then
+        hid="_hid"
+        break
     fi
-
-    usbdevp=${usbdevp%/*} # chop another subdev level from dev path
-fi
+done
 
 # Handle device
 if [ -f $usbdevp/power/autosuspend ] || [ -f $usbdevp/power/autosuspend_delay_ms ]; then
