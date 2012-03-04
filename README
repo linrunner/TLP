@@ -5,24 +5,24 @@ without the need to understand every technical detail.
 
 Settings depending on the power source ac/bat:
 - Kernel laptop mode and dirty buffer params
+- CPU scaling governor and mix/max frequencies
 - Power aware process scheduler for multi-core/hyper-threading
 - Hard disk advanced power magement level and spin down timeout (per disk)
 - SATA aggressive link power management (ALPM)
-- PCI Express active state power management (PCIe ASPM) - Kernel 2.6.35 and above
-- Runtime power management for pci/spi/i2c bus devices - Kernel 2.6.35 and above
-- Intel graphics rc6/fbc power management - Kernel 3.0 and above
+- PCIe active state power management (PCIe ASPM) - Kernel 2.6.35 and above
+- Runtime power management for PCI(e) bus devices - Kernel 2.6.35 and above
 - Radeon graphics KMS power management - Kernel 2.6.35 and above, not fglrx
 - Wifi power saving mode -  depending on kernel/driver
 - Power off optical drive in drive bay (on battery)
 
 Additional functions:
 - I/O scheduler (per disk)
-- USB autosuspend with blacklist
+- USB autosuspend with blacklist (input devices excluded automatically)
 - Audio power saving mode - hda_intel, ac97
-- Disable integrated Wifi, bluetooth or WWAN devices upon system startup and shutdown
+- Disable integrated wifi, bluetooth or wwan devices upon system startup and shutdown
 - Radio device wizard: switch radios upon network connect/disconnect and dock/undock
 - Disable Wake On LAN
-- Integrated WWAN state is restored after suspend/hibernate
+- Integrated wwan state is restored after suspend/hibernate
 - Untervolting of Intel processors - requires kernel with PHC-Patch
 - Battery charge thresholds - ThinkPads only
 - Recalibrate battery - ThinkPads only
