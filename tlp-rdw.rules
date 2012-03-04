@@ -1,2 +1,4 @@
-# tlp-rdw - handle dock/undock events
-KERNEL=="dock.*", ACTION=="change", ATTR{type}=="dock_station", SUBSYSTEM=="platform",RUN+="/lib/udev/tlp-rdw-udev %k"
+# tlp-rdw - udev rules
+
+# handle dock/undock events
+ACTION=="change", SUBSYSTEM=="platform", KERNEL=="dock.*", ATTR{type}=="dock_station", RUN+="/lib/udev/tlp-rdw-udev %k"

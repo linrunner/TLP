@@ -34,9 +34,6 @@ echo_debug () { # $1: tag; $2: msg; echo debug msg if tag matches
 usbdevp=/sys$1
 hid=''
 
-# Exit if subdevice
-[ -f $usbdevp/bDeviceClass ] || exit 0
-
 # Read config
 [ -f $CONFFILE ] || exit 0
 . $CONFFILE
