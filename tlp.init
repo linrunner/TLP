@@ -30,9 +30,6 @@ check_tlp_enabled || exit 0
 
 case $1 in
     start|restart|force-reload)
-        # Remove usb startup flag
-        [ -f $USB_DONE ] && rm $USB_DONE
-    
         echo -n "Loading tp-smapi kernel module..."
         load_tp_modules
         echo "done. "
