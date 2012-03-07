@@ -1,8 +1,8 @@
-tlp (0.3.5.904-1) lucid; urgency=low
+tlp (0.3.5.905-1) lucid; urgency=low
 
   * Development version
   * Features
-    - handle usb autosuspend via udev events (after system startup)
+    - handle usb autosuspend via udev events
     - usb hid detection overhauled (based on subdev/bInterfaceClass)
     - Restrict runtime pm to a safe subclass of pci devices
       (from Ubuntu Precise's implementation of pm-utils)
@@ -21,7 +21,7 @@ tlp (0.3.5.904-1) lucid; urgency=low
     - tlp-usblist: cleanup code, add pragmas "strict" and "warnings" (dywisor)
     - Remove setting of ext3/4 fs commit timeout (see LP #900923)
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 06 Mar 2012 21:12:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 07 Mar 2012 18:56:00 +0100
 
 tlp (0.3.5-2) lucid; urgency=low
 

@@ -43,17 +43,18 @@ hid=''
 
 # USB autosuspend has two principal operation modes:
 #
-# Mode 1 (default):
+# Mode 1 (optional):
 # - System startup is handled by tlp-functions:enable_usb_suspend()
 # - Startup completion is signaled by "flag file" $USB_DONE
 # - Newly added devices are handled by this udev script
+# - Mode 1 is enabled by the private config variable X_TLP_USB_MODE=1
 #
-# Mode 2 (EXPERIMENTAL):
+# Mode 2 (default):
 # - Everything - including system startup - is handled by this udev script
-# - Mode 2 is enabled by the private config variable X_TLP_USB_MODE=2
 
-# Do not exit if either mode 2 or startup completion flag
-[ "$X_TLP_USB_MODE" = "2" ] || [ -f $RUNDIR/$USB_DONE ] || exit 0
+
+# Do exit if mode 1 and no startup completion flag
+[ "$X_TLP_USB_MODE" = "1" ] && [ ! -f $RUNDIR/$USB_DONE ] && exit 0
 
 # Check for hid subdevices
 for subdevp in $usbdevp/*:*; do
