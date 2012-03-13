@@ -1,4 +1,4 @@
-tlp (0.3.5.905-1) lucid; urgency=low
+tlp (0.3.5.906-1) lucid; urgency=low
 
   * Development version
   * Features
@@ -12,8 +12,10 @@ tlp (0.3.5.905-1) lucid; urgency=low
     - tlp-stat: add smart attributes for samsung ssd
     - tlp-stat: show settings
   * Packaging  
-    - postinst/postrm: disable power.d/harddrive, pci_devices, readahead, 
-        usb_bluetooth to keep up with changes in Ubuntu Precise
+    - postinst/postrm:
+      - disable power.d/harddrive, pci_devices, readahead, 
+          usb_bluetooth (Package pm-utils, Ubuntu 12.04)
+      - disable conflicting upstart jobs (Package rfkill, Ubuntu 12.04)
     - split package
       - tlp: power save functions
       - tlp-rdw: radio device wizard (depends on network manager)
@@ -21,7 +23,7 @@ tlp (0.3.5.905-1) lucid; urgency=low
     - tlp-usblist: cleanup code, add pragmas "strict" and "warnings" (dywisor)
     - Remove setting of ext3/4 fs commit timeout (see LP #900923)
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 07 Mar 2012 18:56:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 09 Mar 2012 17:51:00 +0100
 
 tlp (0.3.5-2) lucid; urgency=low
 

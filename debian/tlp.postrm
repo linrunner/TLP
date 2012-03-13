@@ -5,7 +5,12 @@
 for i in 95hdparm-apm disable_wol hal-cd-polling intel-audio-powersave harddrive \
          laptop-mode journal-commit pci_devices pcie_aspm readahead sata_alpm \
          sched-powersave usb_bluetooth wireless xfs_buffer; do
-   if [ "$(readlink /etc/pm/power.d/$i)" = "/usr/lib/tlp-pm/tlp-nop" ]; then
+    if [ "$(readlink /etc/pm/power.d/$i)" = "/usr/lib/tlp-pm/tlp-nop" ]; then
         rm /etc/pm/power.d/$i
     fi
+done
+
+# Re-enable conflicting upstart jobs (Package rfkill, Ubuntu 12.04)
+for i in /etc/init/rfkill-*.override; do
+    rm -f $i
 done

@@ -9,3 +9,10 @@ for i in 95hdparm-apm disable_wol hal-cd-polling intel-audio-powersave harddrive
         ln -sf /usr/lib/tlp-pm/tlp-nop /etc/pm/power.d/$i
     fi
 done
+
+# Disable conflicting upstart jobs (Package rfkill, Ubuntu 12.04)
+for i in /etc/init/rfkill-*.conf; do
+    if [ ! -f ${i%.conf}.override ]; then
+        echo "manual" > ${i%.conf}.override
+    fi
+done
