@@ -66,6 +66,9 @@ done
 
 # Handle device
 if [ -f $usbdevp/power/autosuspend ] || [ -f $usbdevp/power/autosuspend_delay_ms ]; then
+    # wait for sysfs to settle
+    sleep 0.2
+
     # device is autosuspendable
     ctrlf="control"
     autof="autosuspend_delay_ms"

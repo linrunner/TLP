@@ -1,4 +1,4 @@
-tlp (0.3.5.906-1) lucid; urgency=low
+tlp (0.3.5.907-1) lucid; urgency=low
 
   * Development version
   * Features
@@ -23,7 +23,7 @@ tlp (0.3.5.906-1) lucid; urgency=low
     - tlp-usblist: cleanup code, add pragmas "strict" and "warnings" (dywisor)
     - Remove setting of ext3/4 fs commit timeout (see LP #900923)
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 09 Mar 2012 17:51:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 18 Mar 2012 12:06:00 +0100
 
 tlp (0.3.5-2) lucid; urgency=low
 
