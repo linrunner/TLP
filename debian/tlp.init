@@ -13,16 +13,15 @@
 TLP=/usr/sbin/tlp
 LIB=/usr/lib/tlp-pm/tlp-functions
 RFLIB=/usr/lib/tlp-pm/tlp-rf-func
-CONFFILE=/etc/default/tlp
 
 [ -x $TLP ] || exit 0
+
 [ -f $LIB ] || exit 0
 [ -f $RFLIB ] || exit 0
-[ -f $CONFFILE ] || exit 0
-
 . $LIB
 . $RFLIB
-read_defaults
+
+read_defaults || exit 0
 
 echo_debug "run" "+++ init.d $1"
 echo_debug "path" "PATH=$PATH"
@@ -31,19 +30,11 @@ check_tlp_enabled || exit 0
 
 case $1 in
     start|restart|force-reload)
-        # Remove usb startup flag
-        [ -f $USB_DONE ] && rm $USB_DONE
-    
         echo -n "Loading tp-smapi kernel module..."
         load_tp_modules
         echo "done. "
         
-        echo -n "Disabling radios:"
-        for dev in $DEVICES_TO_DISABLE_ON_STARTUP; do
-            echo -n " $dev"
-            device_off $dev
-        done
-        echo "."
+        init_radio_devices start
     
         echo -n "Setting battery charge thresholds..."
         set_charge_thresholds
@@ -59,12 +50,7 @@ case $1 in
         ;;
         
     stop)
-        echo -n "Disabling radios:"
-        for dev in $DEVICES_TO_DISABLE_ON_SHUTDOWN; do
-            echo -n " $dev"
-            device_off $dev
-        done
-        echo "."
+        init_radio_devices stop
         
         # Remove usb startup flag
         [ -f $USB_DONE ] && rm $USB_DONE

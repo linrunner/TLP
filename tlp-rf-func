@@ -10,6 +10,10 @@ readonly RFKILL="$(which rfkill 2> /dev/null)"
 readonly RFKD="/dev/rfkill"
 readonly TEST="$(which test 2> /dev/null)"
 
+readonly ALLDEV="bluetooth wifi wwan"
+readonly STATEDIR="/var/lib/tlp"
+readonly STATEFILE=$STATEDIR/rfkill-saved
+
 # ----------------------------------------------------------------------------
 # Functions
 get_devc () { # $1: rftype; retval $devc
@@ -85,7 +89,7 @@ get_devs () { # $1: rftype; retval $devs: 0=off/1=on
     return 0
 }
 
-device_state () { # $1: rftype 
+device_state () { # $1: rftype; retval $devc, $devs: 0=off/1=on 
     echo_debug "rf" "device_state($1)"
     
     get_devc $1
@@ -200,6 +204,44 @@ device_toggle () { # $1: rftype
     return 0
 }
 
+device_set_state () { # $1: rftype, $2: state 0=off/1=on
+    echo_debug "rf" "device_set_state($1, $2)"
+
+    get_devc $1
+
+    # quit if no device
+    [ -z "$devc" ] && return 0
+
+    # quit if state not 0 nor 1
+    [ "$2" = "0" ] || [ "$2" = "1" ] || return 0
+
+    if [ "$rfkdev" = "1" ] && [ -x "$RFKILL" ]; then
+        if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
+            echo_debug "rf" "device_set_state($1, $2).rfkill"
+            case $2 in
+                0) $RFKILL block $1 ;;
+                1) $RFKILL unblock $1 ;;
+            esac
+        else
+            err_no_root_priv "device_set_state($1).rfkill"
+        fi
+    else
+        if [ "$(id -u)" = "0" ]; then
+            echo_debug "rf" "device_set_state($1, $2).devc"
+            case $2 in
+                0) echo -n $devoff > $devc ;;
+                1) echo -n $devon > $devc ;;
+            esac
+        else
+            err_no_root_priv "device_set_state($1, $2).devc"
+        fi
+    fi
+
+    get_devs $1
+
+    return 0
+}
+
 echo_device_state () { # $1: rftype, $2: state
     case $1 in
         bluetooth)
@@ -240,6 +282,91 @@ echo_device_state () { # $1: rftype, $2: state
             echo "$devstr = unknown state \"$state\""
     esac
 
+    return 0
+}
+
+save_device_states () {
+    local dev
+
+    echo_debug "rf" "save_device_states"
+    
+    # create empty state file
+    mkdir -p $STATEDIR
+    > $STATEFILE
+
+    # iterate over all possible devices -> save state in file
+    for dev in $ALLDEV; do
+        device_state $dev
+        echo "$dev $devs" >> $STATEFILE
+    done
+    
+    return 0
+}
+
+restore_device_states () {
+    local sline
+
+    echo_debug "rf" "restore_device_states"
+
+    if [ -f $STATEFILE ]; then
+        # read state file
+        while read sline; do
+            set -- $sline # read dev, state into $1, $2
+            device_set_state $1 $2 
+        done < $STATEFILE
+
+        return 0
+    else
+        return 1
+    fi
+
+}
+
+init_radio_devices () { # $1: start/stop - called from init scripts
+    local dev devs2stop restore
+
+    # save/restore mode is disabled by default
+    restore=${RESTORE_DEVICE_STATE_ON_STARTUP:-0}
+
+    echo_debug "rf" "init_radio_devices($1): restore=$restore"
+
+    if [ "$restore" = "1" ]; then
+        # "save/restore" mode
+        case $1 in
+            start)
+                restore_device_states
+                if [ $? = 0 ]; then
+                    echo "Radio device states restored."
+                else
+                    echo "No saved radio device states found."
+                fi
+                ;;
+                
+            stop)
+                save_device_states
+                echo "Radio device states saved."
+                ;; 
+        esac
+    else
+        # "disable on startup/shutdown" mode
+        case $1 in
+            start) devs2stop=$DEVICES_TO_DISABLE_ON_STARTUP ;;
+            stop)  devs2stop=$DEVICES_TO_DISABLE_ON_SHUTDOWN ;;
+        esac
+
+        if [ -n "$devs2stop" ]; then
+            echo -n "Disabling radios:"
+            for dev in $devs2stop; do
+                echo -n " $dev"
+                device_off $dev
+            done
+            echo "."
+        fi
+
+        # clean up: discard state file 
+        rm -f $STATEFILE 2> /dev/null
+    fi
+    
     return 0
 }
 

@@ -6,6 +6,7 @@ tlp (0.3.5.907-1) lucid; urgency=low
     - usb hid detection overhauled (based on subdev/bInterfaceClass)
     - Restrict runtime pm to a safe subclass of pci devices
       (from Ubuntu Precise's implementation of pm-utils)
+    - Restore radio device state on system startup (from previous shutdown)
     - Radio device wizard: switch radios upon network connect/disconnect
       and dock/undock events (samba)
     - Set cpu scaling governor and mix/max frequencies (Alex Lochmann)
@@ -23,7 +24,7 @@ tlp (0.3.5.907-1) lucid; urgency=low
     - tlp-usblist: cleanup code, add pragmas "strict" and "warnings" (dywisor)
     - Remove setting of ext3/4 fs commit timeout (see LP #900923)
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 18 Mar 2012 12:06:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 18 Mar 2012 22:44:00 +0100
 
 tlp (0.3.5-2) lucid; urgency=low
 
