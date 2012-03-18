@@ -24,6 +24,7 @@ readonly LOGGER=logger
 readonly UDEVADM=udevadm
 readonly LAPMODE=laptop_mode
 readonly NMCLI=nmcli
+readonly NMTOOL=nm-tool
 readonly IP=ip
 
 readonly SMAPIDIR=/sys/devices/platform/smapi
