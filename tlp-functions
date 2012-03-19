@@ -37,7 +37,7 @@ readonly USB_TIMEOUT=2
 readonly USB_TIMEOUT_MS=2000
 readonly USB_DONE=usb_done
 
-readonly SUSPEND_IN_PROGRESS=suspend_in_progress
+readonly LOCK_RDW=lock.rdw
 
 readonly TPMODULES="thinkpad_acpi tp_smapi"
 

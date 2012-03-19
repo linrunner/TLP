@@ -289,7 +289,7 @@ save_device_states () {
     local dev
 
     echo_debug "rf" "save_device_states"
-    
+
     # create empty state file
     mkdir -p $STATEDIR
     > $STATEFILE
@@ -307,19 +307,22 @@ restore_device_states () {
     local sline
 
     echo_debug "rf" "restore_device_states"
-
+    
     if [ -f $STATEFILE ]; then
+        set_run_flag $LOCK_RDW
+        
         # read state file
         while read sline; do
             set -- $sline # read dev, state into $1, $2
             device_set_state $1 $2 
         done < $STATEFILE
 
+        reset_run_flag $LOCK_RDW
+
         return 0
     else
         return 1
     fi
-
 }
 
 init_radio_devices () { # $1: start/stop - called from init scripts

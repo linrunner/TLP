@@ -19,11 +19,11 @@ echo_debug "pm" "48tlp-rdw-lock.$1"
 
 case $1 in
 	hibernate|suspend)
-		set_run_flag $SUSPEND_IN_PROGRESS
+		set_run_flag $LOCK_RDW
 		;;
 
 	thaw|resume)
-		reset_run_flag $SUSPEND_IN_PROGRESS
+		reset_run_flag $LOCK_RDW
 		;;
 
 	*) exit $NA

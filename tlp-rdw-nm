@@ -30,7 +30,7 @@ itype="unknown"
 echo_debug "nm" "rdw_nm($iface).$action"
 
 # Quit if suspend/resume in progress
-check_run_flag $SUSPEND_IN_PROGRESS && exit 0
+check_run_flag $LOCK_RDW && exit 0
 
 # Quit if timed lock in progress
 check_timed_lock tlp-rdw-nm && exit 0
