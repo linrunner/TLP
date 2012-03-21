@@ -1,11 +1,19 @@
-.TH TLP-STAT 8 "2010-01-23" "Power Management" ""
+.TH TLP-STAT 8 "2012-03-21" "Power Management" ""
 .SH NAME
-tlp-stat \- show system's power management settings
+tlp-stat \- show power management settings
 .SH SYNOPSIS
-.B tlp-stat
+.B tlp-stat \fI[option]\fR
 .SH DESCRIPTION
-This command shows all power management settings that are
-affected by \fBtlp\fR and some additional system info.
+This command shows the configuration, affected power management settings
+and additional system info.
+
+.SH OPTIONS
+.TP
+.B -b, --battery
+Show battery data only.
+.TP
+.B -c, --config
+Show configuration only.
 .SH FILES
 .I /etc/default/tlp
 .RS

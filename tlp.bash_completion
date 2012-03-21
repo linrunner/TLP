@@ -13,7 +13,7 @@ _tlp() {
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
             return 0
             ;;
-            
+
         2)
             if [ "${prev}" = "discharge" -o "${prev}" = "fullcharge" -o "${prev}" = "recalibrate" ]; then
                 # show list of batteries
@@ -23,14 +23,14 @@ _tlp() {
                             echo "${b##/*/} "
                         fi
                     done } )
-                
+
                 if [ -n "$bats" ]; then
                     COMPREPLY=( $(compgen -W "${bats}" -- ${cur}) )
                     return 0
                 fi
             fi
             ;;
-            
+
         4)
             if [ "${COMP_WORDS[1]}" = "setcharge" ]; then
                 # show list of batteries
@@ -40,14 +40,14 @@ _tlp() {
                             echo "${b##/*/} "
                         fi
                     done } )
-                
+
                 if [ -n "$bats" ]; then
                     COMPREPLY=( $(compgen -W "${bats}" -- ${cur}) )
                     return 0
                 fi
             fi
             ;;
-            
+
         *)
             ;;
     esac
@@ -55,19 +55,30 @@ _tlp() {
 complete -F _tlp tlp
 
 _tlp_rf() {
-    local cur prev opts
+    local cur opts
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
     opts="on off toggle"
 
-    if [ "$COMP_CWORD" = "1" ]; then
+    if [ $COMP_CWORD -eq 1 ]; then
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
-    fi 
+    fi
 }
 complete -F _tlp_rf bluetooth
 complete -F _tlp_rf wwan
 complete -F _tlp_rf wifi
 
+_tlp_stat() {
+    local cur opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    opts="-b --battery -c --config"
+
+    if [ $COMP_CWORD -eq 1 ]; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+}
+complete -F _tlp_stat tlp-stat
 

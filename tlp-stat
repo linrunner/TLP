@@ -20,6 +20,14 @@ readonly TPACPI=/sys/devices/platform/thinkpad_acpi
 readonly THERMAL=/proc/acpi/ibm/thermal
 readonly FAN=/proc/acpi/ibm/fan
 
+# --- Variables
+nodebug=1
+
+needs_root_priv=1
+show_all=1
+show_bat=0
+show_conf=0
+
 # --- Functions
 echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
     local val
@@ -51,6 +59,29 @@ echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
     fi
 }
 
+read_args () {
+    for a in $*; do
+        case $a in
+            "-b"|"--battery")
+                show_all=0
+                show_bat=1
+                needs_root_priv=0
+                ;;
+                
+            "-c"|"--config")
+                show_all=0
+                show_conf=1
+                needs_root_priv=0
+                ;;
+
+            *)
+                echo "Usage: tlp-stat [-b|--battery|-c|--config]"
+                exit 1
+                ;;
+        esac
+    done
+}
+    
 # --- Read libraries
 if [ -f $LIB ]; then
     . $LIB
@@ -67,400 +98,413 @@ else
 fi
 
 # --- MAIN
-check_root
+if [ "$needs_root_priv" = "1" ]; then
+    check_root
+    load_tp_modules
+fi
 
-nodebug=1
-load_tp_modules
+read_args $*
 
 echo "--- TLP $TLPVER --------------------------------------------"
 echo
 
-if [ -f $CONFFILE ]; then
-    . $CONFFILE
-    echo "+++ Configured Settings: $CONFFILE"
-    egrep -v '^#|^\s*$' $CONFFILE
-    echo
-else
-    echo "Warning: config file $CONFFILE not present."
-    echo
-fi
-
-echo "+++ System Info"
-if [ -n "$DMIDEC" ]; then
-    pmanuf="$( $DMIDEC -s system-manufacturer 2> /dev/null | \
-                egrep -iv 'not available|to be filled|DMI table is broken' )"
-    pversion="$( $DMIDEC -s system-version 2> /dev/null | \
-                egrep -iv 'not available|to be filled|DMI table is broken' )"
-    product="$( $DMIDEC -s system-product-name 2> /dev/null | \
-                egrep -iv 'not available|to be filled|DMI table is broken' )"
-    bios="$( $DMIDEC -s bios-version 2> /dev/null | \
-                egrep -iv 'not available|to be filled|DMI table is broken' )"
-    
-    echo "System = $pmanuf $pversion $product"
-    echo "BIOS = $bios"
-fi
-
-[ -n "$LSBREL" ] && echo "Release = $($LSBREL -d -s)"
-echo "Kernel = $(uname -r -m)"
-echoparm /proc/cmdline
-echo
-
-echo "+++ System Status"
-if check_laptop_mode_tools; then
-    if [ "$TLP_ENABLE" = "1" ]; then
-        echo "TLP power save = enabled"
+if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
+    if [ -f $CONFFILE ]; then
+        . $CONFFILE
+        echo "+++ Configured Settings: $CONFFILE"
+        egrep -v '^#|^\s*$' $CONFFILE
+        echo
     else
-        echo "TLP power save = not enabled"
-    fi
-fi
-
-if get_power_state; then
-    echo "power source = ac"
-else
-    echo "power source = battery"
-fi
-echo
-
-# cpu
-echo "+++ Processor"
-for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
-    echoparm $cpuf/scaling_governor
-    printf "%s = %8d [kHz]\n" $cpuf/scaling_min_freq $(cat $cpuf/scaling_min_freq)
-    printf "%s = %8d [kHz]\n" $cpuf/scaling_max_freq $(cat $cpuf/scaling_max_freq)
-    printf "%s = " $cpuf/scaling_available_frequencies
-    for freq in $(cat $cpuf/scaling_available_frequencies); do
-        printf "%8d" $freq
-    done
-    printf " [kHz]\n\n"
-done
-
-for pool in mc smp smt; do
-    sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
-    [ -w "$sdev" ] || continue
-    echoparm $sdev
-done
-
-# nmi watchdog
-echoparm $NMIWD
-echo
-
-echo "+++ Undervolting"
-phc_avail=0
-for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
-    if [ -f $cpuf/phc_controls ]; then
-        phc_avail=1
-        echoparm "$cpuf/phc_controls        "
-        echoparm "$cpuf/phc_default_controls"
+        echo "Warning: config file $CONFFILE not present."
         echo
     fi
-done
-if [ $phc_avail = 0 ]; then
-    echo "PHC kernel not available."
-    echo 
 fi
 
-# temperatures
-if [ -d $TPACPI ]; then
-    echo "+++ ThinkPad Temperatures"
-    echoparm $THERMAL
-    if [ -f $FAN ]; then
-        cat $FAN | \
-            awk '$1 ~ /speed:/ { printf "'$FAN'     = speed:        %5d\n", $2 }'
-    else
-        echo "$FAN     = (not available)"
-    fi
-    echo
-fi
-
-
-# laptop-mode, dirty buffers params
-echo "+++ File System"
-echoparm /proc/sys/vm/laptop_mode
-echoparm /proc/sys/vm/dirty_writeback_centisecs
-echoparm /proc/sys/vm/dirty_expire_centisecs
-echoparm /proc/sys/vm/dirty_ratio
-echoparm /proc/sys/vm/dirty_background_ratio
-echoparm /proc/sys/fs/xfs/age_buffer_centisecs
-echoparm /proc/sys/fs/xfs/xfssyncd_centisecs   
-echoparm /proc/sys/fs/xfs/xfsbufd_centisecs
-echo 
-
-# disk apm level
-echo "+++ Storage Devices"
-DISK_DEVICES=${DISK_DEVICES:=sda}
-for dev in $DISK_DEVICES; do
-    get_disk_dev $dev
-
-    if [ -b /dev/$disk_dev ]; then
-        check_disk_hdparm_cap $disk_dev
-        if [ $? = 0 ]; then
-            echo "/dev/$disk_dev:"
-                
-            if [ -n "$disk_id" ]; then
-                echo "          Disk ID   = $disk_id"
-            fi
-            
-            echo -n "          Model     = "
-            echo_disk_model $disk_dev
-            
-            echo -n "          Firmware  = "
-            echo_disk_firmware $disk_dev
-            
-            get_disk_apm_level $disk_dev
-            apm=$?
-            echo -n "          APM Level = "
-            case $apm in
-                0|255) echo "none/disabled" ;;
-                *)     echo $apm ;;
-            esac
-            
-            echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
+if [ "$show_all" = "1" ]; then
+    echo "+++ System Info"
+    if [ -n "$DMIDEC" ]; then
+        pmanuf="$( $DMIDEC -s system-manufacturer 2> /dev/null | \
+                    egrep -iv 'not available|to be filled|DMI table is broken' )"
+        pversion="$( $DMIDEC -s system-version 2> /dev/null | \
+                    egrep -iv 'not available|to be filled|DMI table is broken' )"
+        product="$( $DMIDEC -s system-product-name 2> /dev/null | \
+                    egrep -iv 'not available|to be filled|DMI table is broken' )"
+        bios="$( $DMIDEC -s bios-version 2> /dev/null | \
+                    egrep -iv 'not available|to be filled|DMI table is broken' )"
         
-            if [ -n "$SMARTCTL" ]; then
-                echo 
-                echo "        SMART info:"
-                $SMARTCTL -A /dev/$disk_dev | grep -v '<==' | \
-                  awk -F ' ' '$2 ~ /Start_Stop_Count|Load_Cycle_Count|Reallocated_Sector_Ct|Used_Rsvd_Blk_Cnt_Chip/ \
-                                    { printf "          %3d %-25s = %8d \n", $1, $2, $10 } ; \
-                              $2 ~ /Power_On_Hours/ \
-                                    { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[h]" } ; \
-                              $2 ~ /Temperature_Celsius/ \
-                                    { printf "          %3d %-25s = %8d %s %s %s %s\n", $1, $2, $10, $11, $12, $13, "[°C]" } ; \
-                              $2 ~ /Airflow_Temperature_Cel/ \
-                                    { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[°C]" } ; \
-                              $2 ~ /Host_Writes/ \
-                                    { printf "          %3d %-25s = %8.3f %s\n", $1, $2, $10 / 32768.0, "[TB]" } ; \
-                              $2 ~ /Available_Reservd_Space|Media_Wearout_Indicator|Wear_Leveling_Count/ \
-                                    { printf "          %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
-            fi
-            echo
+        echo "System = $pmanuf $pversion $product"
+        echo "BIOS = $bios"
+    fi
+    
+    [ -n "$LSBREL" ] && echo "Release = $($LSBREL -d -s)"
+    echo "Kernel = $(uname -r -m)"
+    echoparm /proc/cmdline
+    echo
+    
+    echo "+++ System Status"
+    if check_laptop_mode_tools; then
+        if [ "$TLP_ENABLE" = "1" ]; then
+            echo "TLP power save = enabled"
+        else
+            echo "TLP power save = not enabled"
         fi
     fi
-done
-echo
-
-# sata alpm
-echo "+++ SATA Aggressive Link Power Management"
-cnt=0
-for i in /sys/class/scsi_host/host* ; do
-    if [ -f $i/link_power_management_policy ]; then
-        echoparm $i/link_power_management_policy
-        cnt=$((cnt+1))
-    fi
-done
-if [ $cnt = 0 ]; then
-    echo "No AHCI-enabled host controller detected."
-fi  
-echo 
-
-# pcie aspm
-echo "+++ PCIe Active State Power Management"
-if [ -f $ASPM ]; then
-    pol=$(cat $ASPM | sed -r 's/.*\[(.*)\].*/\1/')
-    echo "$pol" > $ASPM 2> /dev/null
-    if [ $? = 0 ]; then
-        echo "$ASPM = $pol"
-    else
-        echo "$ASPM = $pol (disabled by kernel)"
-    fi 
-else
-    echo "$ASPM = (not available)"
-fi
-echo
-
-# i915 power mgmt
-if [ -d $I915D ]; then 
-    echo "+++ Intel Graphics"
-    echoparm $I915D/powersave
-    echoparm $I915D/i915_enable_rc6
-    echoparm $I915D/i915_enable_fbc
-    echoparm $I915D/lvds_downclock
-    echoparm $I915D/semaphores
-    echo
-fi
-
-# radeon power profile
-for card in /sys/class/drm/card[0-9]/device ; do
-    if [ -f $card/power_method ] && [ -f $card/power_profile ]; then
-        echo "+++ Radeon Graphics"
-        echoparm $card/power_method
-        echoparm $card/power_profile
-        echo
-        break
-    fi
-done
-
-echo "+++ Wireless"
-# rfkill state
-for i in bluetooth wifi wwan; do
-    get_devc $i
-    get_devs $i
-    echo_device_state $i $devs
-done
-echo
-
-# wifi power mode
-get_wifi_ifaces
-for iface in $WIFACES; do
-    if [ -n "$iface" ]; then
-        wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
-          sed -r 's/.*Power Management:(on|off).*/\1/')
-        get_wifi_driver $iface
-        echo -n "$iface($WIFIDRV): power management = "
-        case $wifipm in
-            on)
-                echo "on"
-                ;;
-                
-            off)
-                if [ -z "$($IWC $iface power off 2>&1)" ]; then
-                    echo "off"
-                else
-                    echo "off (disabled by kernel)"
-                fi
-                ;;
-                
-            *) 
-                echo "unknown"
-                ;;
-        esac
-    fi
-done
-[ -n "$WIFACES" ] && echo
     
-# sound power mode
-echo "+++ Audio"
-if [ -d /sys/module/snd_hda_intel ]; then
-    echoparm /sys/module/snd_hda_intel/parameters/power_save
-    echoparm /sys/module/snd_hda_intel/parameters/power_save_controller
-fi
-if [ -d /sys/module/snd_ac97_codec ]; then
-    echoparm /sys/module/snd_ac97_codec/parameters/power_save
-fi
-echo 
-
-# battery info & charge thresholds 
-if [ -d /sys/devices/platform/smapi ]; then
-    # ThinkPad via tp_smapi
-    for bat in /sys/devices/platform/smapi/BAT[01]; do
-        if [ -d $bat ] && [ "$(cat $bat/installed)" = "1" ]; then
-            case ${bat##/*/} in
-                BAT0) 
-                    echo "+++ ThinkPad Battery (Main)"
+    if get_power_state; then
+        echo "power source = ac"
+    else
+        echo "power source = battery"
+    fi
+    echo
+    
+    # cpu
+    echo "+++ Processor"
+    for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
+        echoparm $cpuf/scaling_governor
+        printf "%s = %8d [kHz]\n" $cpuf/scaling_min_freq $(cat $cpuf/scaling_min_freq)
+        printf "%s = %8d [kHz]\n" $cpuf/scaling_max_freq $(cat $cpuf/scaling_max_freq)
+        printf "%s = " $cpuf/scaling_available_frequencies
+        for freq in $(cat $cpuf/scaling_available_frequencies); do
+            printf "%8d" $freq
+        done
+        printf " [kHz]\n\n"
+    done
+    
+    for pool in mc smp smt; do
+        sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
+        [ -w "$sdev" ] || continue
+        echoparm $sdev
+    done
+    
+    # nmi watchdog
+    echoparm $NMIWD
+    echo
+    
+    echo "+++ Undervolting"
+    phc_avail=0
+    for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
+        if [ -f $cpuf/phc_controls ]; then
+            phc_avail=1
+            echoparm "$cpuf/phc_controls        "
+            echoparm "$cpuf/phc_default_controls"
+            echo
+        fi
+    done
+    if [ $phc_avail = 0 ]; then
+        echo "PHC kernel not available."
+        echo 
+    fi
+    
+    # temperatures
+    if [ -d $TPACPI ]; then
+        echo "+++ ThinkPad Temperatures"
+        echoparm $THERMAL
+        if [ -f $FAN ]; then
+            cat $FAN | \
+                awk '$1 ~ /speed:/ { printf "'$FAN'     = speed:        %5d\n", $2 }'
+        else
+            echo "$FAN     = (not available)"
+        fi
+        echo
+    fi
+    
+    
+    # laptop-mode, dirty buffers params
+    echo "+++ File System"
+    echoparm /proc/sys/vm/laptop_mode
+    echoparm /proc/sys/vm/dirty_writeback_centisecs
+    echoparm /proc/sys/vm/dirty_expire_centisecs
+    echoparm /proc/sys/vm/dirty_ratio
+    echoparm /proc/sys/vm/dirty_background_ratio
+    echoparm /proc/sys/fs/xfs/age_buffer_centisecs
+    echoparm /proc/sys/fs/xfs/xfssyncd_centisecs   
+    echoparm /proc/sys/fs/xfs/xfsbufd_centisecs
+    echo 
+    
+    # disk apm level
+    echo "+++ Storage Devices"
+    DISK_DEVICES=${DISK_DEVICES:=sda}
+    for dev in $DISK_DEVICES; do
+        get_disk_dev $dev
+    
+        if [ -b /dev/$disk_dev ]; then
+            check_disk_hdparm_cap $disk_dev
+            if [ $? = 0 ]; then
+                echo "/dev/$disk_dev:"
+                    
+                if [ -n "$disk_id" ]; then
+                    echo "          Disk ID   = $disk_id"
+                fi
+                
+                echo -n "          Model     = "
+                echo_disk_model $disk_dev
+                
+                echo -n "          Firmware  = "
+                echo_disk_firmware $disk_dev
+                
+                get_disk_apm_level $disk_dev
+                apm=$?
+                echo -n "          APM Level = "
+                case $apm in
+                    0|255) echo "none/disabled" ;;
+                    *)     echo $apm ;;
+                esac
+                
+                echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
+            
+                if [ -n "$SMARTCTL" ]; then
+                    echo 
+                    echo "        SMART info:"
+                    $SMARTCTL -A /dev/$disk_dev | grep -v '<==' | \
+                      awk -F ' ' '$2 ~ /Start_Stop_Count|Load_Cycle_Count|Reallocated_Sector_Ct|Used_Rsvd_Blk_Cnt_Chip/ \
+                                        { printf "          %3d %-25s = %8d \n", $1, $2, $10 } ; \
+                                  $2 ~ /Power_On_Hours/ \
+                                        { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[h]" } ; \
+                                  $2 ~ /Temperature_Celsius/ \
+                                        { printf "          %3d %-25s = %8d %s %s %s %s\n", $1, $2, $10, $11, $12, $13, "[°C]" } ; \
+                                  $2 ~ /Airflow_Temperature_Cel/ \
+                                        { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[°C]" } ; \
+                                  $2 ~ /Host_Writes/ \
+                                        { printf "          %3d %-25s = %8.3f %s\n", $1, $2, $10 / 32768.0, "[TB]" } ; \
+                                  $2 ~ /Available_Reservd_Space|Media_Wearout_Indicator|Wear_Leveling_Count/ \
+                                        { printf "          %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
+                fi
+                echo
+            fi
+        fi
+    done
+    echo
+    
+    # sata alpm
+    echo "+++ SATA Aggressive Link Power Management"
+    cnt=0
+    for i in /sys/class/scsi_host/host* ; do
+        if [ -f $i/link_power_management_policy ]; then
+            echoparm $i/link_power_management_policy
+            cnt=$((cnt+1))
+        fi
+    done
+    if [ $cnt = 0 ]; then
+        echo "No AHCI-enabled host controller detected."
+    fi  
+    echo 
+    
+    # pcie aspm
+    echo "+++ PCIe Active State Power Management"
+    if [ -f $ASPM ]; then
+        pol=$(cat $ASPM | sed -r 's/.*\[(.*)\].*/\1/')
+        echo "$pol" > $ASPM 2> /dev/null
+        if [ $? = 0 ]; then
+            echo "$ASPM = $pol"
+        else
+            echo "$ASPM = $pol (disabled by kernel)"
+        fi 
+    else
+        echo "$ASPM = (not available)"
+    fi
+    echo
+    
+    # i915 power mgmt
+    if [ -d $I915D ]; then 
+        echo "+++ Intel Graphics"
+        echoparm $I915D/powersave
+        echoparm $I915D/i915_enable_rc6
+        echoparm $I915D/i915_enable_fbc
+        echoparm $I915D/lvds_downclock
+        echoparm $I915D/semaphores
+        echo
+    fi
+    
+    # radeon power profile
+    for card in /sys/class/drm/card[0-9]/device ; do
+        if [ -f $card/power_method ] && [ -f $card/power_profile ]; then
+            echo "+++ Radeon Graphics"
+            echoparm $card/power_method
+            echoparm $card/power_profile
+            echo
+            break
+        fi
+    done
+    
+    echo "+++ Wireless"
+    # rfkill state
+    for i in bluetooth wifi wwan; do
+        get_devc $i
+        get_devs $i
+        echo_device_state $i $devs
+    done
+    echo
+    
+    # wifi power mode
+    get_wifi_ifaces
+    for iface in $WIFACES; do
+        if [ -n "$iface" ]; then
+            wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
+              sed -r 's/.*Power Management:(on|off).*/\1/')
+            get_wifi_driver $iface
+            echo -n "$iface($WIFIDRV): power management = "
+            case $wifipm in
+                on)
+                    echo "on"
                     ;;
                     
-                BAT1)
-                    echo "+++ ThinkPad Battery (Ultrabay/Slice)"
+                off)
+                    if [ -z "$($IWC $iface power off 2>&1)" ]; then
+                        echo "off"
+                    else
+                        echo "off (disabled by kernel)"
+                    fi
                     ;;
                     
-                *)
-                    echo "+++ ThinkPad Battery"
+                *) 
+                    echo "unknown"
                     ;;
             esac
-            
-            echoparm $bat/manufacturer
-            echoparm $bat/model
-            echoparm $bat/manufacture_date
-            echoparm $bat/first_use_date
-            echoparm $bat/cycle_count
-            echoparm $bat/design_capacity - mWh
-            echoparm $bat/last_full_capacity - mWh
-            echoparm $bat/remaining_capacity - mWh
-            echoparm $bat/remaining_percent - "%"
-            echoparm $bat/remaining_running_time_now - min
-            echoparm $bat/remaining_charging_time - min
-            echoparm $bat/force_discharge
-            echoparm $bat/power_now - mW
-            echo
-            echoparm $bat/start_charge_thresh - "%"
-            echoparm $bat/stop_charge_thresh - "%"
-            echo
         fi
     done
-elif [ -d /sys/class/power_supply ]; then
-    echo "+++ Battery"
-    if [ -d /sys/devices/platform/thinkpad_acpi ]; then
-        echo "ThinkPad extended battery info not available (missing tp_smapi kernel module)."
+    [ -n "$WIFACES" ] && echo
+        
+    # sound power mode
+    echo "+++ Audio"
+    if [ -d /sys/module/snd_hda_intel ]; then
+        echoparm /sys/module/snd_hda_intel/parameters/power_save
+        echoparm /sys/module/snd_hda_intel/parameters/power_save_controller
     fi
-    # generic
-    for bat in /sys/class/power_supply/*; do
-        if [ -d $bat ] \
-           && [ "$(cat $bat/type)" = "Battery" ] \
-           && [ "$(cat $bat/present)" = "1" ]; then
-            echoparm $bat/manufacturer
-            echoparm $bat/model_name
-            echoparm $bat/cycle_count 
-            if [ -f $bat/energy_full ]; then 
-                echoparm $bat/energy_full_design - mWh 000
-                echoparm $bat/energy_full - mWh 000
-                echoparm $bat/energy_now - mWh 000
-                echoparm $bat/power_now - mW 000
-            elif [ -f $bat/charge_full ]; then
-                echoparm $bat/charge_full_design - mAh 000
-                echoparm $bat/charge_full - mAh 000
-                echoparm $bat/charge_now - mAh 000
-                echoparm $bat/current_now - mA 000
+    if [ -d /sys/module/snd_ac97_codec ]; then
+        echoparm /sys/module/snd_ac97_codec/parameters/power_save
+    fi
+    echo
+    
+fi # show_all
+
+if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
+    # battery info & charge thresholds 
+    if [ -d /sys/devices/platform/smapi ]; then
+        # ThinkPad via tp_smapi
+        for bat in /sys/devices/platform/smapi/BAT[01]; do
+            if [ -d $bat ] && [ "$(cat $bat/installed)" = "1" ]; then
+                case ${bat##/*/} in
+                    BAT0) 
+                        echo "+++ ThinkPad Battery (Main)"
+                        ;;
+                        
+                    BAT1)
+                        echo "+++ ThinkPad Battery (Ultrabay/Slice)"
+                        ;;
+                        
+                    *)
+                        echo "+++ ThinkPad Battery"
+                        ;;
+                esac
+                
+                echoparm $bat/manufacturer
+                echoparm $bat/model
+                echoparm $bat/manufacture_date
+                echoparm $bat/first_use_date
+                echoparm $bat/cycle_count
+                echoparm $bat/design_capacity - mWh
+                echoparm $bat/last_full_capacity - mWh
+                echoparm $bat/remaining_capacity - mWh
+                echoparm $bat/remaining_percent - "%"
+                echoparm $bat/remaining_running_time_now - min
+                echoparm $bat/remaining_charging_time - min
+                echoparm $bat/force_discharge
+                echoparm $bat/power_now - mW
+                echo
+                echoparm $bat/start_charge_thresh - "%"
+                echoparm $bat/stop_charge_thresh - "%"
+                echo
             fi
-            echoparm $bat/status
-            echo
+        done
+    elif [ -d /sys/class/power_supply ]; then
+        echo "+++ Battery"
+        if [ -d /sys/devices/platform/thinkpad_acpi ]; then
+            echo "ThinkPad extended battery info not available (missing tp_smapi kernel module)."
         fi
+        # generic
+        for bat in /sys/class/power_supply/*; do
+            if [ -d $bat ] \
+               && [ "$(cat $bat/type)" = "Battery" ] \
+               && [ "$(cat $bat/present)" = "1" ]; then
+                echoparm $bat/manufacturer
+                echoparm $bat/model_name
+                echoparm $bat/cycle_count 
+                if [ -f $bat/energy_full ]; then 
+                    echoparm $bat/energy_full_design - mWh 000
+                    echoparm $bat/energy_full - mWh 000
+                    echoparm $bat/energy_now - mWh 000
+                    echoparm $bat/power_now - mW 000
+                elif [ -f $bat/charge_full ]; then
+                    echoparm $bat/charge_full_design - mAh 000
+                    echoparm $bat/charge_full - mAh 000
+                    echoparm $bat/charge_now - mAh 000
+                    echoparm $bat/current_now - mA 000
+                fi
+                echoparm $bat/status
+                echo
+            fi
+        done
+    fi
+    
+fi # show_bat
+
+if [ "$show_all" = "1" ]; then
+    # runtime pm
+    echo "+++ Runtime Power Management"
+    for type in $PCID; do
+        for device in $type/*; do
+            if [ -f $device/class ] && [ -f $device/power/control ]; then
+                case $(cat $device/class) in
+                    0x020000) # ethernet
+                        echoparm $device/power/control - Ethernet
+                        ;;
+                    
+                    0x028000) # wireless
+                        echoparm $device/power/control - Wireless
+                        ;;
+                                        
+                    0x040300) # audio
+                        echoparm $device/power/control - Audio
+                        ;;
+                    
+                    0x060000) # host bridge
+                        echoparm $device/power/control - Host Bridge
+                        ;;
+                        
+                    0x080500) # SD card reader
+                        echoparm $device/power/control - SD Card Reader
+                        ;;
+                        
+                    0x088000|0x088001) # card reader
+                        echoparm $device/power/control - Card Reader
+                        ;;
+                        
+                    0x0c0000|0x0c0010) # firewire
+                        echoparm $device/power/control - Firewire
+                        ;;
+                esac 
+            fi
+        done
     done
-fi
+    echo 
+    
+    # usb autosuspend
+    echo "+++ USB"
+    if [ "$USB_AUTOSUSPEND" = "1" ]; then
+        echo "tlp usb autosuspend = enabled"
+    else
+        echo "tlp usb autosuspend = not enabled"
+    fi
+    echo "tlp usb blacklist = ${USB_BLACKLIST:=(not configured)}"
+    echo
+    
+    if [ -x $TLPUSB ]; then
+        $TLPUSB 
+    else
+        echo "Error: missing subcommand $TLPUSB."
+    fi
+    echo 
 
-# runtime pm
-echo "+++ Runtime Power Management"
-for type in $PCID; do
-    for device in $type/*; do
-        if [ -f $device/class ] && [ -f $device/power/control ]; then
-            case $(cat $device/class) in
-                0x020000) # ethernet
-                    echoparm $device/power/control - Ethernet
-                    ;;
-                
-                0x028000) # wireless
-                    echoparm $device/power/control - Wireless
-                    ;;
-                                    
-                0x040300) # audio
-                    echoparm $device/power/control - Audio
-                    ;;
-                
-                0x060000) # host bridge
-                    echoparm $device/power/control - Host Bridge
-                    ;;
-                    
-                0x080500) # SD card reader
-                    echoparm $device/power/control - SD Card Reader
-                    ;;
-                    
-                0x088000|0x088001) # card reader
-                    echoparm $device/power/control - Card Reader
-                    ;;
-                    
-                0x0c0000|0x0c0010) # firewire
-                    echoparm $device/power/control - Firewire
-                    ;;
-            esac 
-        fi
-    done
-done
-echo 
-
-# usb autosuspend
-echo "+++ USB"
-if [ "$USB_AUTOSUSPEND" = "1" ]; then
-    echo "tlp usb autosuspend = enabled"
-else
-    echo "tlp usb autosuspend = not enabled"
-fi
-echo "tlp usb blacklist = ${USB_BLACKLIST:=(not configured)}"
-echo
-
-if [ -x $TLPUSB ]; then
-    $TLPUSB 
-else
-    echo "Error: missing subcommand $TLPUSB."
-fi
-echo 
+fi # show_all
 
 exit 0
