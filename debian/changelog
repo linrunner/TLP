@@ -1,3 +1,10 @@
+tlp (0.3.6-2) lucid; urgency=low
+
+  * Packaging:
+    - Fix tlp.postinst for systems without upstart dir /etc/init/
+
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 24 Mar 2012 14:14:00 +0100
+
 tlp (0.3.6-1) lucid; urgency=low
 
   * Features

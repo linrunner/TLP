@@ -12,7 +12,7 @@ done
 
 # Disable conflicting upstart jobs (Package rfkill, Ubuntu 12.04)
 for i in /etc/init/rfkill-*.conf; do
-    if [ ! -f ${i%.conf}.override ]; then
+    if [ -f "$i" ] && [ ! -f "${i%.conf}.override" ]; then
         echo "manual" > ${i%.conf}.override
     fi
 done

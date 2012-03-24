@@ -12,5 +12,5 @@ done
 
 # Re-enable conflicting upstart jobs (Package rfkill, Ubuntu 12.04)
 for i in /etc/init/rfkill-*.override; do
-    rm -f $i
+    [ ! -f "$i" ] || rm -f $i
 done
