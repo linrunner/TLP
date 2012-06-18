@@ -7,59 +7,10 @@
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: tlp start/stop script
-# Description:       Initialize tlp settings
+# Description:       Initialize tlp
 ### END INIT INFO
 
 TLP=/usr/sbin/tlp
-LIB=/usr/lib/tlp-pm/tlp-functions
-RFLIB=/usr/lib/tlp-pm/tlp-rf-func
-
-[ -x $TLP ] || exit 0
-
-[ -f $LIB ] || exit 0
-[ -f $RFLIB ] || exit 0
-. $LIB
-. $RFLIB
-
-read_defaults || exit 0
-
-echo_debug "run" "+++ init.d $1"
-echo_debug "path" "PATH=$PATH"
-
-check_tlp_enabled || exit 0
-
-case $1 in
-    start|restart|force-reload)
-        echo -n "Loading tp-smapi kernel module..."
-        load_tp_modules
-        echo "done. "
-        
-        init_radio_devices start
-    
-        echo -n "Setting battery charge thresholds..."
-        set_charge_thresholds
-        echo "done."
-
-        UPWR=$(which upower)
-        if [ -n "$UPWR" ]; then
-            echo -n "Starting upowerd..."
-            $UPWR -e > /dev/null 2>&1
-            echo "done."
-            echo_debug "run" "upower_start"
-        fi
-        ;;
-        
-    stop)
-        init_radio_devices stop
-        
-        # Remove usb startup flag
-        [ -f $USB_DONE ] && rm $USB_DONE
-        ;;
-
-    *)
-        echo "Usage: tlp {start|stop|restart|force-reload}" >&2
-        exit 3
-        ;;
-esac
+[ -x $TLP ] && $TLP init $1
 
 exit 0

@@ -6,6 +6,7 @@
 
 # --- Constants
 readonly LIB=/usr/lib/tlp-pm/tlp-functions
+readonly RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 
 # --- Source libraries
 if [ ! -f $LIB ]; then
@@ -14,18 +15,61 @@ if [ ! -f $LIB ]; then
 fi
 . $LIB
 
+if [ ! -f $RFLIB ]; then
+    echo "Error: missing function library \'$RFLIB\'."
+    exit 1
+fi
+. $RFLIB
+
 # --- MAIN
 read_defaults
 check_tlp_enabled || exit 1
 check_laptop_mode_tools || exit 2
 
-# Get cmd line arg
+# Get cmd line args
 mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
+mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
 
-echo_debug "run" "+++ mode=$mode"
+echo_debug "run" "+++ mode=$mode $mode2"
 echo_debug "path" "PATH=$PATH"
 
 case "$mode" in
+    init) # System initialization/shutdown: sysv, upstart, systemd, ...
+        case $mode2 in
+            start|restart|force-reload)
+                echo -n "Loading tp-smapi kernel module..."
+                load_tp_modules
+                echo "done. "
+        
+                init_radio_devices start
+    
+                echo -n "Setting battery charge thresholds..."
+                set_charge_thresholds
+                echo "done."
+
+                UPWR=$(which upower)
+                if [ -n "$UPWR" ]; then
+                    echo -n "Starting upowerd..."
+                    $UPWR -e > /dev/null 2>&1
+                    echo "done."
+                    echo_debug "run" "upower_start"
+                fi
+                ;;
+        
+            stop)
+                init_radio_devices stop
+        
+                # Remove usb startup flag
+                [ -f $USB_DONE ] && rm $USB_DONE
+                ;;
+
+            *)
+                echo "Usage: tlp init {start|stop|restart|force-reload}" >&2
+                exit 3
+                ;;
+        esac
+        ;;
+
     start) # Set start power mode depending on state
         check_root
         get_power_state

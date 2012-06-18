@@ -441,9 +441,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     echoparm $bat/current_now - mA 000
                 fi
                 echoparm $bat/status
-                echo
             fi
         done
+        echo
     fi
     
 fi # show_bat

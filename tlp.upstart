@@ -6,58 +6,16 @@ start on ( virtual-filesystems and runlevel [2345] )
 stop on runlevel [!2345]
 
 env TLP=/usr/sbin/tlp
-env LIB=/usr/lib/tlp-pm/tlp-functions
-env RFLIB=/usr/lib/tlp-pm/tlp-rf-func
 
 pre-start script
     [ -x $TLP ] || exit 4
+    $TLP init start
 
-    [ -f $LIB ] || exit 4
-    [ -f $RFLIB ] || exit 4    
-    . $LIB
-    . $RFLIB
-    
-    read_defaults || exit 2
-    
-    echo_debug "run" "+++ upstart pre-start"
-    echo_debug "path" "PATH=$PATH"
-    check_tlp_enabled || exit 1
-    
-    echo -n "Loading tp-smapi kernel module..."
-    load_tp_modules
-    echo "done. "
-    
-    init_radio_devices start
-        
-    echo -n "Setting battery charge thresholds..."
-    set_charge_thresholds
-    echo "done."
-
-    UPWR=$(which upower)
-    if [ -n "$UPWR" ]; then
-        echo -n "Starting upowerd..."
-        $UPWR -e > /dev/null 2&>1
-        echo "done."
-        echo_debug "run" "upower_start"
-    fi
-    
 end script
 
 post-stop script
     [ -x $TLP ] || exit 4
-    [ -f $LIB ] || exit 4
-    [ -f $RFLIB ] || exit 4
-    [ -f $CONFFILE ] || exit 2
-
-    . $LIB  
-    . $RFLIB
-    read_defaults
-    
-    echo_debug "run" "+++ upstart post-stop"
-    echo_debug "path" "PATH=$PATH"
-    check_tlp_enabled || exit 1
-
-    init_radio_devices stop
+    $TLP init stop
     
 end script
 

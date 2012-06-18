@@ -1,3 +1,15 @@
+tlp (0.3.6.900-1) lucid; urgency=low
+
+  *** Development Version ***
+
+  * Packaging
+    - implement startup/shutdown code as a command: tlp init
+    - systemd support: tlp-init.service
+  * Features
+  * Bug fixes
+
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 18 Jun 2012 19:18:13 +0200
+
 tlp (0.3.6-2) lucid; urgency=low
 
   * Packaging:
