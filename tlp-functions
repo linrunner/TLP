@@ -395,6 +395,22 @@ get_disk_apm_level () { # $1: dev; ret: apm
     
 }
 
+get_disk_trim_capability () { # $1: dev; ret: 0=no, 1=yes, 254=no ssd device
+    local trim
+
+    if [ -n "$($HDPARM -I /dev/$1 2>&1 | grep 'Solid State Device')" ]; then
+        if [ -n "$($HDPARM -I /dev/$1 2>&1 | grep 'TRIM supported')" ]; then
+            trim=1
+        else
+            trim=0
+        fi
+    else
+        trim=255
+    fi
+    
+    return $trim
+}
+
 get_disk_dev () { # $1: id or dev; ret: disk_dev, disk_id
     if [ -L /dev/disk/by-id/$1 ]; then
         # $1 is disk id

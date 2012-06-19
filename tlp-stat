@@ -249,6 +249,13 @@ if [ "$show_all" = "1" ]; then
                     0|255) echo "none/disabled" ;;
                     *)     echo $apm ;;
                 esac
+
+                get_disk_trim_capability $disk_dev
+                trim=$?
+                case $trim in
+                    0) echo "          TRIM      = not supported" ;;
+                    1) echo "          TRIM      = supported" ;;
+                esac
                 
                 echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
             
