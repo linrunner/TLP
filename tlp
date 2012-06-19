@@ -199,7 +199,8 @@ case "$mode" in
         ;;        
         
     stat) # Show status
-        tlp-stat
+        shift
+        tlp-stat $*
         ;;
 
     diskid) # Show disk-by-id
