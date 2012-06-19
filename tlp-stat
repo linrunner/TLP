@@ -20,6 +20,8 @@ readonly TPACPI=/sys/devices/platform/thinkpad_acpi
 readonly THERMAL=/proc/acpi/ibm/thermal
 readonly FAN=/proc/acpi/ibm/fan
 
+readonly DEBUGLOG=/var/log/debug
+
 # --- Variables
 nodebug=1
 
@@ -27,6 +29,9 @@ needs_root_priv=1
 show_all=1
 show_bat=0
 show_conf=0
+show_rfkill=0
+show_temp=0
+show_trace=0
 
 # --- Functions
 echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
@@ -71,6 +76,24 @@ read_args () {
             "-c"|"--config")
                 show_all=0
                 show_conf=1
+                needs_root_priv=0
+                ;;
+
+            "-r"|"--rfkill")
+                show_all=0
+                show_rfkill=1
+                needs_root_priv=0
+                ;;
+
+            "-t"|"--temp")
+                show_all=0
+                show_temp=1
+                needs_root_priv=0
+                ;;
+                
+            "-T"|"--trace")
+                show_all=0
+                show_trace=1
                 needs_root_priv=0
                 ;;
 
@@ -195,6 +218,9 @@ if [ "$show_all" = "1" ]; then
         echo 
     fi
     
+fi # show_all
+
+if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then    
     # temperatures
     if [ -d $TPACPI ]; then
         echo "+++ ThinkPad Temperatures"
@@ -207,8 +233,9 @@ if [ "$show_all" = "1" ]; then
         fi
         echo
     fi
-    
-    
+fi # show_temp
+
+if [ "$show_all" = "1" ]; then    
     # laptop-mode, dirty buffers params
     echo "+++ File System"
     echoparm /proc/sys/vm/laptop_mode
@@ -334,7 +361,9 @@ if [ "$show_all" = "1" ]; then
             break
         fi
     done
-    
+fi # show_all
+
+if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then    
     echo "+++ Wireless"
     # rfkill state
     for i in bluetooth wifi wwan; do
@@ -343,7 +372,9 @@ if [ "$show_all" = "1" ]; then
         echo_device_state $i $devs
     done
     echo
-    
+fi # show_rfkill
+
+if [ "$show_all" = "1" ]; then        
     # wifi power mode
     get_wifi_ifaces
     for iface in $WIFACES; do
@@ -372,7 +403,7 @@ if [ "$show_all" = "1" ]; then
         fi
     done
     [ -n "$WIFACES" ] && echo
-        
+
     # sound power mode
     echo "+++ Audio"
     if [ -d /sys/module/snd_hda_intel ]; then
@@ -515,5 +546,21 @@ if [ "$show_all" = "1" ]; then
     echo 
 
 fi # show_all
+
+if [ "$show_trace" = "1" ]; then
+    if [ -f $DEBUGLOG ]; then
+        grep "tlp\[" $DEBUGLOG
+    else
+        echo "Error: $DEBUGLOG does not exist."
+        echo 
+        echo "Solution: create an rsyslog conffile /etc/rsyslog.conf/90-debug.conf with the following contents"
+        echo " *.=debug;\\"
+        echo " mail,authpriv,cron.none;\\"
+        echo " local0,local1,local3,local4,\\"
+        echo " local5,local6,local7.none    -/var/log/debug"
+        echo "and restart the rsyslog daemon."
+        echo
+    fi
+fi # show_trace
 
 exit 0

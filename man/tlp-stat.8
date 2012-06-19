@@ -1,4 +1,4 @@
-.TH TLP-STAT 8 "2012-03-21" "Power Management" ""
+.TH TLP-STAT 8 "2012-06-19" "Power Management" ""
 .SH NAME
 tlp-stat \- show power management settings
 .SH SYNOPSIS
@@ -14,6 +14,16 @@ Show battery data only.
 .TP
 .B -c, --config
 Show configuration only.
+.TP
+.B -r, --rfkill
+Show radio devices switch state only.
+.TP
+.B -t, --config
+Show temperatures and fan speed only.
+.TP
+.B -T, --trace
+Show trace output from /var/log/debug.
+
 .SH FILES
 .I /etc/default/tlp
 .RS
