@@ -18,6 +18,7 @@ readonly NMIWD=/proc/sys/kernel/nmi_watchdog
 readonly TPACPI=/sys/devices/platform/thinkpad_acpi
 
 readonly THERMAL=/proc/acpi/ibm/thermal
+readonly CORETEMP=/sys/devices/platform/coretemp.0/temp1_input
 readonly FAN=/proc/acpi/ibm/fan
 
 readonly DEBUGLOG=/var/log/debug
@@ -98,7 +99,7 @@ read_args () {
                 ;;
 
             *)
-                echo "Usage: tlp-stat [-b|--battery|-c|--config]"
+                echo "Usage: tlp-stat [-b|--battery|-c|--config|-r|--rfkill|-t|--temp|-T|--trace]"
                 exit 1
                 ;;
         esac
@@ -121,12 +122,12 @@ else
 fi
 
 # --- MAIN
+read_args $*
+
 if [ "$needs_root_priv" = "1" ]; then
     check_root
     load_tp_modules
 fi
-
-read_args $*
 
 echo "--- TLP $TLPVER --------------------------------------------"
 echo
@@ -222,17 +223,29 @@ fi # show_all
 
 if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then    
     # temperatures
-    if [ -d $TPACPI ]; then
-        echo "+++ ThinkPad Temperatures"
-        echoparm $THERMAL
-        if [ -f $FAN ]; then
-            cat $FAN | \
-                awk '$1 ~ /speed:/ { printf "'$FAN'     = speed:        %5d\n", $2 }'
-        else
-            echo "$FAN     = (not available)"
-        fi
-        echo
+    echo "+++ Temperatures"
+    if [ -f $THERMAL ]; then
+        echo "$THERMAL = $(cat $THERMAL | cut -f2) [°C]"
+    else
+        printf "CPU temp               = %5d [°C]\n" $(( $(cat $CORETEMP) / 1000 ))
     fi
+        
+    if [ -f $FAN ]; then
+        cat $FAN | \
+            awk '$1 ~ /speed:/ { printf "'$FAN'     = %5d [/min]\n", $2 }'
+    else
+        for fan in /sys/class/hwmon/hwmon*/device/fan1_input; do
+            if [ -f $fan ]; then
+                printf "Fan speed              = %5d [/min]\n" $(cat $fan)
+                break;
+            fi
+        done
+        if [ ! -f $fan ]; then
+            printf "Fan speed              = (not available)\n"
+        fi
+    fi
+    echo
+    
 fi # show_temp
 
 if [ "$show_all" = "1" ]; then    

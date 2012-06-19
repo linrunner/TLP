@@ -10,6 +10,8 @@ tlp (0.3.6.900-1) lucid; urgency=low
       - show TRIM capabilty for SSDs
       - add SMART attributes (179, 241)
       - new cmdline options -r, -t, -T
+      - show cpu temp, fan speed even if /proc/acpi/ibm/{thermal|fan}
+        are not available.
   * Bug fixes
 
  -- Thomas Koch <linrunner@gmx.net>  Mon, 18 Jun 2012 19:18:13 +0200
