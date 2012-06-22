@@ -71,7 +71,6 @@ read_args () {
             "-b"|"--battery")
                 show_all=0
                 show_bat=1
-                needs_root_priv=0
                 ;;
                 
             "-c"|"--config")
@@ -127,6 +126,7 @@ read_args $*
 if [ "$needs_root_priv" = "1" ]; then
     check_root
     load_tp_modules
+    check_tpacpi
 fi
 
 echo "--- TLP $TLPVER --------------------------------------------"
@@ -439,14 +439,17 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 case ${bat##/*/} in
                     BAT0) 
                         echo "+++ ThinkPad Battery (Main)"
+                        bati=1
                         ;;
                         
                     BAT1)
                         echo "+++ ThinkPad Battery (Ultrabay/Slice)"
+                        bati=2
                         ;;
                         
                     *)
                         echo "+++ ThinkPad Battery"
+                        bati=0
                         ;;
                 esac
                 
@@ -461,11 +464,38 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 echoparm $bat/remaining_percent - "%"
                 echoparm $bat/remaining_running_time_now - min
                 echoparm $bat/remaining_charging_time - min
-                echoparm $bat/force_discharge
                 echoparm $bat/power_now - mW
                 echo
-                echoparm $bat/start_charge_thresh - "%"
-                echoparm $bat/stop_charge_thresh - "%"
+
+                if [ "$tpacpi" = "0" ]; then
+                    start_thresh=$($TPACPIBAT startChargeThreshold $bati 2> /dev/null)
+                    if [ -n "$start_thresh" ]; then
+                        [ $start_thresh -eq 0 ] && start_thresh=96
+                        printf "tpacpi-bat.${bat##/*/}.startChargeThreshold = %5d [%%]\n" $start_thresh
+                    else
+                        printf "tpacpi-bat.${bat##/*/}.startChargeThreshold = (not available)\n"
+                    fi
+
+                    stop_thresh=$($TPACPIBAT stopChargeThreshold $bati 2> /dev/null)
+                    if [ -n "$stop_thresh" ]; then
+                        [ $stop_thresh -eq 0 ] && stop_thresh=100
+                        printf "tpacpi-bat.${bat##/*/}.stopChargeThreshold  = %5d [%%]\n" $stop_thresh
+                    else
+                        printf "tpacpi-bat.${bat##/*/}.stopChargeThreshold  = (not available)\n"
+                    fi
+
+                    get_force_discharge $bati; force=$?
+                    if [ $force -ne 2 ]; then
+                        echo "tpacpi-bat.${bat##/*/}.forceDischarge = $force"
+                    else
+                        echo "tpacpi-bat.${bat##/*/}.forceDischarge = (not available)"
+                    fi
+                    
+                else
+                    echoparm $bat/start_charge_thresh - "%"
+                    echoparm $bat/stop_charge_thresh - "%"
+                    echoparm $bat/force_discharge
+                fi
                 echo
             fi
         done

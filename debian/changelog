@@ -6,6 +6,8 @@ tlp (0.3.6.900-1) lucid; urgency=low
     - implement startup/shutdown code as a command: tlp init
     - systemd support: tlp-init.service
   * Features
+    - Battery charge thresholds for Sandy Bridge models (X220/T420/...)
+      by means of tpacpi-bat
     - tlp-stat:
       - show TRIM capabilty for SSDs
       - add SMART attributes (179, 241)

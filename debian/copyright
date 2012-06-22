@@ -7,7 +7,7 @@ Upstream Author:
 
 Copyright:
 
-    Copyright (c) 2011 Thomas Koch
+    Copyright (c) 2012 Thomas Koch
     
     Some code and descriptions were adapted from:
     - laptop-mode-tools 
@@ -15,9 +15,15 @@ Copyright:
          Andrew Morton, Herve Eychenne, Dax Kelson, Jan Topinski
 	- http://thinkwiki.org
 
+    Thinkpad ACPI Battery Control (tpacpi-bat):
+    Copyright (c) 2011 Elliot Wolk 
+
 License:
 
-    This software is licensed under the GPL v2, see `/usr/share/common-licenses/GPL-2
+    This software is licensed under the GPL v2, see '/usr/share/common-licenses/GPL-2'
+
+    tpacpi-bat is licensed under the GPL v3 or later, see '/usr/share/common-licenses/GPL-3'
+    
 
 The Debian packaging is copyright 2009, Thomas Koch <linrunner at gmx.net> and
 is licensed under the GPL v2, see `/usr/share/common-licenses/GPL-2'.

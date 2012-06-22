@@ -25,7 +25,7 @@ readonly UDEVADM=udevadm
 readonly LAPMODE=laptop_mode
 readonly NMCLI=nmcli
 readonly NMTOOL=nm-tool
-readonly IP=ip
+readonly TPACPIBAT=tpacpi-bat
 
 readonly SMAPIDIR=/sys/devices/platform/smapi
 readonly NETD=/sys/class/net
@@ -39,7 +39,7 @@ readonly USB_DONE=usb_done
 
 readonly LOCK_RDW=lock.rdw
 
-readonly TPMODULES="thinkpad_acpi tp_smapi coretemp"
+readonly TPMODULES="thinkpad_acpi tp_smapi coretemp acpi_call"
 
 
 # ----------------------------------------------------------------------------
@@ -823,112 +823,231 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
     return 0
 }
 
-do_threshold () { # $1: threshold sysfile, $2: new value
-    local old_thresh rc=0
-    
-    if [ -f $1 ]; then
-        old_thresh=$(cat $1 2> /dev/null)
-        if [ -z "$old_thresh" ]; then
-            rc=1
-        elif [ "$old_thresh" != "$2" ]; then
-            echo $2 > $1 2> /dev/null; rc=$?
+check_tpacpi () { # check if tpacpi-bat is supported
+                  # ret: 0=supported/2=module acpi_call not loaded/255=not supported
+                  # retval: $tpacpi
+
+    $TPACPIBAT forceDischarge 1 > /dev/null 2>&1
+    tpacpi=$?
+
+    echo_debug "bat" "check_tpacpi: rc=$tpacpi"
+    return $tpacpi
+}
+
+do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
+                  # global param: $tpacpi
+                  
+    local bati bsys
+    local old_thresh=-1
+    local new_thresh=$3
+    local rc=0
+
+    [ $3 -eq -1 ] && return 0 # -1 = do not set threshold
+
+    if [ $tpacpi -eq 0 ]; then
+        case $2 in
+            BAT0) bati=1 ;;
+            BAT1) bati=2 ;;
+        esac
+ 
+        # replace factory default values with 0 for tpacpi
+        case $1 in
+            start) [ $new_thresh -eq  96 ] && new_thresh=0 ;;
+            stop)  [ $new_thresh -eq 100 ] && new_thresh=0 ;;
+        esac
+
+        old_thresh=$($TPACPIBAT ${1}ChargeThreshold $bati 2> /dev/null)
+
+        if [ $new_thresh -ne $old_thresh ]; then
+            $TPACPIBAT ${1}ChargeThreshold $bati $new_thresh > /dev/null 2>&1; rc=$?
         fi
     else
-        rc=2
+       bsys=$SMAPIDIR/$2/${1}_charge_thresh
+        
+       if [ -f $bsys ]; then
+            old_thresh=$(cat $bsys 2> /dev/null)
+            if [ -z "$old_thresh" ]; then
+                rc=1
+            elif [ "$old_thresh" -ne "$new_thresh" ]; then
+                echo $new_thresh > $bsys 2> /dev/null; rc=$?
+            fi
+        else
+            rc=2
+        fi
     fi
+    
+    echo_debug "bat" "do_threshold($1, $2): tpacpi-bat=$tpacpi; old=$old_thresh; new=$new_thresh; rc=$rc"
     
     return $rc
 }
 
-check_thresh () { # $1: threshold; ret: 0=invalid/1..100=valid
-    local thresh
-    
-    thresh=$(echo $1 | egrep '^[0-9]{1,3}$') # check for 1..3 digits
-    [ -z "$thresh" ] && thresh=0 # replace empty value with 0
-    [ $thresh -gt 100 ] && thresh=0 # replace values > 100 with 0
-    
-    return $thresh
+normalize_thresholds () { # $1: start threshold; $2: stop_threshold
+                          # global param: $tpacpi
+                          # retval: $start_thresh, $stop_thresh
+                          # check values and enforce start < stop - 3
+    local type thresh
+
+    for type in start stop; do
+        case $type in
+            start) thresh=$1 ;;
+            stop)  thresh=$2 ;;
+        esac
+        
+        thresh=$(echo $thresh | egrep '^[0-9]{1,3}$') # check for 1..3 digits
+        [ -z "$thresh" ] && thresh=-1 # replace empty value with -1
+
+        # ensure min/max values; replace 0 with defaults 96/100
+        case $type in 
+            start)
+                [ $thresh -eq 0 ] || [ $thresh -gt 96 ] && thresh=96
+                start_thresh=$thresh
+                ;;
+                
+            stop)
+                [ $thresh -eq 0 ] || [ $thresh -gt 100 ] && thresh=100
+                [ $thresh -ne -1 ] && [ $thresh -lt 5 ] && thresh=5
+                stop_thresh=$thresh
+                ;;
+        esac
+    done
+
+    # enforce start < stop - 3
+    if [ $start_thresh -ne -1 ] && [ $stop_thresh -ne -1 ]; then
+        [ $start_thresh -ge $(($stop_thresh - 3)) ] && start_thresh=$(($stop_thresh - 4))
+    fi
+
+    echo_debug "bat" "normalize_thresholds($1, $2): start=$start_thresh; stop=$stop_thresh"
+
+    return 0
 }
 
-set_charge_thresholds () {
-    local thresh rc
+set_charge_thresholds () { # set all charge thresholds from configuration
+    local rc
     
-    echo_debug "pm" "set_charge_thresholds.enter"
+    echo_debug "bat" "set_charge_thresholds.enter"
     [ -d $SMAPIDIR ] || return 0
-    echo_debug "pm" "set_charge_thresholds.tp-smapi_present"
+    
+    check_tpacpi
+    echo_debug "bat" "set_charge_thresholds: tp_smapi=1 tpacpi-bat=$tpacpi"
     
     if [ -d $SMAPIDIR/BAT0 ] && [ "$(cat $SMAPIDIR/BAT0/installed)" = "1" ]; then
-        check_thresh "$START_CHARGE_THRESH_BAT0"; thresh=$?
-        if [ $thresh -gt 0 ]; then
-            do_threshold $SMAPIDIR/BAT0/start_charge_thresh $thresh; rc=$?
-            echo_debug "pm" "set_charge_thresholds.start(BAT0): $thresh; rc=$rc"
+        normalize_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0"
+        
+        if [ $start_thresh -ne -1 ]; then
+            do_threshold start BAT0 $start_thresh; rc=$?
+            echo_debug "bat" "set_charge_thresholds.start(BAT0): $start_thresh; rc=$rc"
         else
-            echo_debug "pm" "set_charge_thresholds.start(BAT0).not_set"
+            echo_debug "bat" "set_charge_thresholds.start(BAT0).not_set"
         fi
         
-        check_thresh "$STOP_CHARGE_THRESH_BAT0"; thresh=$?
-        if [ $thresh -gt 0 ]; then
-            do_threshold $SMAPIDIR/BAT0/stop_charge_thresh $thresh; rc=$?
-            echo_debug "pm" "set_charge_thresholds.stop(BAT0): $thresh; rc=$rc"
+        if [ $stop_thresh -ne -1 ]; then
+            do_threshold stop BAT0 $stop_thresh; rc=$?
+            echo_debug "bat" "set_charge_thresholds.stop(BAT0): $stop_thresh; rc=$rc"
         else
-            echo_debug "pm" "set_charge_thresholds.stop(BAT0).not_set"
+            echo_debug "bat" "set_charge_thresholds.stop(BAT0).not_set"
         fi
     fi
     
-    if [ -d $SMAPIDIR/BAT1 ] &&  [ "$(cat $SMAPIDIR/BAT1/installed)" = "1" ]; then
-        check_thresh "$START_CHARGE_THRESH_BAT1"; thresh=$?
-        if [ $thresh -gt 0 ]; then
-            do_threshold $SMAPIDIR/BAT1/start_charge_thresh $thresh; rc=$?
-            echo_debug "pm" "set_charge_thresholds.start(BAT1): $thresh; rc=$rc"
-         else
-            echo_debug "pm" "set_charge_thresholds.start(BAT1).not_set"
-       fi
+    if [ -d $SMAPIDIR/BAT1 ] && [ "$(cat $SMAPIDIR/BAT1/installed)" = "1" ]; then
+        normalize_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1"
         
-        check_thresh "$STOP_CHARGE_THRESH_BAT1"; thresh=$?
-        if [ $thresh -gt 0 ]; then
-            do_threshold $SMAPIDIR/BAT1/stop_charge_thresh $thresh; rc=$?
-            echo_debug "pm" "set_charge_thresholds.stop(BAT1): $thresh; rc=$rc"
+        if [ $start_thresh -ne -1 ]; then
+            do_threshold start BAT1 $start_thresh; rc=$?
+            echo_debug "bat" "set_charge_thresholds.start(BAT1): $start_thresh; rc=$rc"
         else
-            echo_debug "pm" "set_charge_thresholds.stop(BAT1).not_set"
+            echo_debug "bat" "set_charge_thresholds.start(BAT1).not_set"
+        fi
+        
+        if [ $stop_thresh -ne -1 ]; then
+            do_threshold stop BAT1 $stop_thresh; rc=$?
+            echo_debug "bat" "set_charge_thresholds.stop(BAT1): $stop_thresh; rc=$rc"
+        else
+            echo_debug "bat" "set_charge_thresholds.stop(BAT1).not_set"
         fi
     fi
     
     return 0
 }
 
-do_force_discharge () { # $1: bat sysfile; $2: 0=off/1=on
-    local rc
+do_force_discharge () { # $1: BAT0/BAT1, $2: 0=off/1=on
+                        # global param: $tpacpi 
+    local bati bsys rc=0
+
+    if [ $tpacpi -eq 0 ]; then
+        case $1 in
+            BAT0) bati=1 ;;
+            BAT1) bati=2 ;;
+        esac
+
+        $TPACPIBAT forceDischarge $bati $2 > /dev/null 2>&1; rc=$?
+        echo_debug "bat" "do_force_discharge.tpacpi-bat($2): rc=$rc"
+    else
+        bsys=$SMAPIDIR/$1/force_discharge
+ 
+        if [ -f $bsys ]; then
+            echo $2 > $bsys 2> /dev/null; rc=$?
+        else 
+            rc=2
+        fi
+        echo_debug "bat" "do_force_discharge.tp_smapi($2): rc=$rc"
+    fi
     
-    if [ -f $1 ]; then
-        echo $2 > $1 2> /dev/null; rc=$?
-    else 
-        rc=2
+    return $rc
+}
+
+get_force_discharge () { # $1: BAT0/BAT1, 
+                         # global param: $tpacpi 
+    local bati bsys rc=0
+
+    if [ $tpacpi -eq 0 ]; then
+        case $1 in
+            BAT0) bati=1 ;;
+            BAT1) bati=2 ;;
+        esac
+
+        case $($TPACPIBAT forceDischarge $bati 2> /dev/null) in
+            yes) rc=1 ;;
+            no)  rc=0 ;;
+            *)   rc=2 ;;
+        esac
+    else
+        bsys=$SMAPIDIR/$1/force_discharge
+ 
+        if [ -f $bsys ]; then
+            rc=$(echo $bsys 2> /dev/null)
+        else 
+            rc=2
+        fi
     fi
     
     return $rc
 }
 
 cancel_setcharge () { # called from trap
-    do_force_discharge $bdir/force_discharge 0
-    echo_debug "pm" "setcharge_battery.cancelled($bat)"
+    do_force_discharge $bat 0
+    echo_debug "bat" "setcharge_battery.cancelled($bat)"
     echo "Cancelled."
     
     exit 0
 }
 
 setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, $3: battery, 
-    local bat bdir start_thresh stop_thresh rc
+    local bat bdir rc
+    local act=0
 
     # check prerequisites: tp-smapi 
     if [ ! -d $SMAPIDIR ]; then
-        echo_debug "pm" "fullcharge_battery.nosmapi"
+        echo_debug "bat" "setcharge_battery.nosmapi"
         echo "Error: ThinkPad battery functions not available (missing tp_smapi kernel module)."
         return 1
     fi
 
+    check_tpacpi
+    echo_debug "bat" "setcharge_battery($1, $2, $3): tp_smapi=1; tpacpi-bat=$tpacpi"
+
     # check prerequisites: must be on ac power
     if ! get_power_state ; then
-        echo_debug "pm" "setcharge_battery.no_ac_power"
+        echo_debug "bat" "setcharge_battery.no_ac_power"
         echo "Error: setting charge thresholds is possible on ac power only."
         return 1
     fi  
@@ -943,90 +1062,79 @@ setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, 
         
         if [ ! -f $bdir/installed ] || [ "$(cat $bdir/installed)" = "0" ]; then
             echo "Error: battery $bat not present."
-            echo_debug "pm" "setcharge_battery.not_present($bat)"
+            echo_debug "bat" "setcharge_battery.not_present($bat)"
             return 1
         fi
         
-        # get thresholds args
-        start_thresh=$1
-        stop_thresh=${2:-0}
-               
+        # get and check thresholds args
+        normalize_thresholds "$1" "$2"
     else 
         # no parameters given, assume BAT0 and take thresholds from config file
         bat=BAT0
         bdir=$SMAPIDIR/$bat
-        start_thresh=${START_CHARGE_THRESH_BAT0:-0}
-        stop_thresh=${STOP_CHARGE_THRESH_BAT0:-0}
-        
-    fi
- 
-    # check thresholds 
-    check_thresh $start_thresh; start_thresh=$?
-    check_thresh $stop_thresh; stop_thresh=$?
-  
-    # check if thresholds != 0    
-    if [ $start_thresh -eq 0 ] && [ $stop_thresh -eq 0 ]; then
-        echo "Error: no thresholds configured for $bat."        
-        echo_debug "pm" "setcharge_battery.no_thresholds_configured($bat)"
-        return 1
-    fi
-    
-    # check if stop > start + 3 
-    if [ $(($start_thresh + 3)) -ge $stop_thresh ]; then
-        echo "Error: invalid threshold values for $bat (start=$start_thresh, stop=$stop_thresh)."        
-        echo_debug "pm" "setcharge_battery.invalid_thresh($bat): $start_thresh $stop_thresh"
-        return 1
+        normalize_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0"
     fi
 
     # write threshold values
     echo "Setting temporary charge thresholds for $bat:"
-    
-    do_threshold $bdir/stop_charge_thresh "$stop_thresh"; rc=$?
-    echo_debug "pm" "setcharge_battery.stop($bat): $stop_thresh; rc=$rc"
-    if [ $rc -eq 0 ]; then
-        echo "  stop  = $stop_thresh"
+  
+    if [ $stop_thresh -ne -1 ]; then
+        do_threshold stop $bat $stop_thresh; rc=$?  
+        
+        echo_debug "bat" "setcharge_battery.stop($bat): $stop_thresh; rc=$rc"
+        if [ $rc -eq 0 ]; then
+            echo "  stop  = $stop_thresh"
+            act=1
+        else
+            echo "  stop  => Error: cannot set threshold. Aborting."
+            return 1
+        fi
     else
-        echo "  stop  => Error: cannot set threshold. Aborting."
-        return 1
+        echo_debug "bat" "setcharge_battery.stop($bat).not_configured"
+        echo "  stop = not configured"
     fi
+ 
+    if [ $start_thresh -ne -1 ]; then
+        do_threshold start $bat $start_thresh; rc=$?  
 
-    if [ $start_thresh -gt 0 ]; then
-        do_threshold $bdir/start_charge_thresh "$start_thresh"; rc=$?
-        echo_debug "pm" "setcharge_battery.start($bat): $start_thresh; rc=$rc"
+        echo_debug "bat" "setcharge_battery.start($bat): $start_thresh; rc=$rc"
         if [ $rc -eq 0 ]; then
             echo "  start = $start_thresh"
+            act=1
         else
             echo "  start => Warning: cannot set threshold."
             return 1
         fi
     else
-        echo_debug "pm" "setcharge_battery.start($bat).not_configured"
+        echo_debug "bat" "setcharge_battery.start($bat).not_configured"
         echo "  start = not configured"
     fi
     
     # trigger charging via discharge
-    trap cancel_setcharge INT
+    if [ $act -eq 1 ]; then
+        trap cancel_setcharge INT
     
-    do_force_discharge $bdir/force_discharge 1; rc=$?
-    if [ $rc -eq 0 ]; then
-        echo -n "Activating..."
-        sleep 2
-        do_force_discharge $bdir/force_discharge 0
-        echo_debug "pm" "setcharge_battery.initiated($bat)"
-        sleep 2
-        echo "done."
-    else
-        echo_debug "pm" "setcharge_battery.force_discharge_not_available($bat): rc=$rc"
-        echo "Cannot activate immediately on this ThinkPad model. Please power off."
-        return 1
+        do_force_discharge $bat 1; rc=$?
+        if [ $rc -eq 0 ]; then
+            echo -n "Activating..."
+            sleep 2
+            do_force_discharge $bat 0
+            echo_debug "bat" "setcharge_battery.initiated($bat)"
+            sleep 2
+            echo "done."
+        else
+            echo_debug "bat" "setcharge_battery.force_discharge_not_available($bat): rc=$rc"
+            echo "Cannot activate immediately on this ThinkPad model. Please power off."
+            return 1
+        fi
     fi
     
     return 0
 }
 
 cancel_discharge () { # called from trap
-    do_force_discharge $bdir/force_discharge 0
-    echo_debug "pm" "discharge_battery.cancelled($bat)"
+    do_force_discharge $bat 0
+    echo_debug "bat" "discharge_battery.cancelled($bat)"
     echo
     echo "Discharging of battery $bat cancelled."
     
@@ -1037,16 +1145,19 @@ discharge_battery () { # $1: battery
     local bat bdir rc
     
     if [ ! -d $SMAPIDIR ]; then
-        echo_debug "pm" "discharge_battery.no_tp-smapi($bat)"
+        echo_debug "bat" "discharge_battery.no_tp-smapi($bat)"
         echo "Error: ThinkPad battery functions not available (missing tp_smapi kernel module)."
         return 1
     fi
         
     if ! get_power_state ; then
-        echo_debug "pm" "discharge_battery.no_ac_power"
+        echo_debug "bat" "discharge_battery.no_ac_power"
         echo "Error: discharge is possible on ac power only."
         return 1
-    fi  
+    fi
+
+    check_tpacpi
+    echo_debug "bat" "discharge_battery: tp_smapi=1 tpacpi=$tpacpi"
 
     bat=$1
     bat=${bat:=BAT0} # default is BAT0
@@ -1054,24 +1165,24 @@ discharge_battery () { # $1: battery
     bdir=$SMAPIDIR/$bat
     
     if [ ! -f $bdir/installed ] || [ "$(cat $bdir/installed)" = "0" ]; then
-        echo_debug "pm" "discharge_battery.not_present($bat)"
+        echo_debug "bat" "discharge_battery.not_present($bat)"
         echo "Error: battery $bat not present."
         return 1
     fi
         
-    do_force_discharge $bdir/force_discharge 1; rc=$?
+    do_force_discharge $bat 1; rc=$?
     if [ $rc -ne 0 ]; then
-        echo_debug "pm" "discharge_battery.force_discharge_not_available($bat)"
+        echo_debug "bat" "discharge_battery.force_discharge_not_available($bat)"
         echo "Error: discharge function not available for this ThinkPad model."
         return 1
     fi
    
     trap cancel_discharge INT
     
-    while [ "$(cat $bdir/force_discharge)" = "0" ]; do :; done
-    echo_debug "pm" "discharge_battery.running($bat)"
+    while get_force_discharge; do :; done
+    echo_debug "bat" "discharge_battery.running($bat)"
 
-    while [ "$(cat $bdir/force_discharge)" = "1" ]; do
+    while ! get_force_discharge; do
         clear
         echo "Currently discharging battery $bat:"
         echo "voltage            = $(cat $bdir/voltage) [mV]"
@@ -1084,7 +1195,7 @@ discharge_battery () { # $1: battery
 
     echo
     echo "Done: battery $bat was completely discharged."
-    echo_debug "pm" "discharge_battery.complete($bat)"
+    echo_debug "bat" "discharge_battery.complete($bat)"
     return 0
 }
 
@@ -1140,4 +1251,3 @@ poweroff_drivebay () { # $1: 0=conditional+quiet mode, 1=force+verbose mode
     
     return 0
 }
-

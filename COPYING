@@ -1,15 +1,22 @@
 Author:
 
-    Thomas Koch <linrunner at gmx.net>
+    Thomas Koch <linrunner at gmx.net> 
 
 Copyright:
 
     Copyright (c) 2012 Thomas Koch
     
-	Some concepts and descriptions were adapted from:
-	- laptop-mode-tools
-	- thinkwiki.org
+    Some code and descriptions were adapted from:
+    - laptop-mode-tools 
+         Copyright (c) 2004 by Bart Samwel, Kiko Piris, Micha Feigin, 
+         Andrew Morton, Herve Eychenne, Dax Kelson, Jan Topinski
+	- http://thinkwiki.org
+
+    Thinkpad ACPI Battery Control (tpacpi-bat):
+    Copyright (c) 2011 Elliot Wolk 
 
 License:
 
-    This software is licensed under the GPL v2 (see LICENSE).
+    This software is licensed under the GPL v2, see '/usr/share/common-licenses/GPL-2'
+
+    tpacpi-bat is licensed under the GPL v3 or later, see '/usr/share/common-licenses/GPL-3'

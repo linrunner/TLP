@@ -1,0 +1,337 @@
+#!/usr/bin/perl
+##########################################################################
+# Thinkpad ACPI Battery Control
+# Copyright 2011 Elliot Wolk
+##########################################################################
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##########################################################################
+# Exposes inhibitCharge, start/stop charge threshold, and force discharge
+# through ACPI as an alternative to SMAPI, which is broken in W520, etc.
+#
+# Makes ACPI calls using the acpi_call kernel module, which is REQUIRED.
+#
+# Supports 2011-released thinkpads, and possibly later ones.
+# Tested and works on: W520, T420, X220
+# Tested and does NOT work on: T400, X201S
+#
+# Limitations/Known Issues:
+# 1) you cant force discharge on battery, so balancing is still impossible
+# 2) sometimes you cant convince a slice battery to charge before the main
+#    ANYONE who figures out this second issue gets a cookie!
+#    if my main is above 80, and my slice is at 80, my main charges.
+#    i can inhibit the main, but i CANNOT trick the slice into charging
+# 3) you can only inhibit for 720 minutes instead of 1440 minutes
+#    this seems like a BIOS error
+##########################################################################
+use strict;
+use warnings;
+use File::Basename;
+
+my $acpiCallDev = '/proc/acpi/call';
+my $aslBase = '\_SB.PCI0.LPC.EC.HKEY';
+
+sub readPeakShiftState($);
+sub readInhibitCharge($);
+sub readStartChargeThreshold($);
+sub readStopChargeThreshold($);
+sub readForceDischarge($);
+
+sub writePeakShiftState($$);
+sub writeInhibitCharge($$$);
+sub writeStartChargeThreshold($$);
+sub writeStopChargeThreshold($$);
+sub writeForceDischarge($$$);
+
+sub acpiCallGet($$);
+sub acpiCallSet($$);
+
+sub revpadzero($$);
+
+sub bitRangeToDec(\@$$);
+sub parseArgDecToBin($);
+sub parseStatusHexToBitArray($);
+sub decToBin($);
+sub binToDec($);
+sub hexToBin($);
+sub binToHex($);
+
+our $verbose = 0;
+
+my $name = File::Basename::basename $0;
+my $usage = "Usage:
+  Set inhibit charge / force discharge / thresholds:
+    $name [-v] peakShiftState <inhibit> <min>
+    $name [-v] inhibitCharge <bat> <inhibit> [<min>]
+    $name [-v] startChargeThreshold <bat> <percent>
+    $name [-v] stopChargeThreshold <bat> <percent>
+    $name [-v] forceDischarge <bat> <discharge> [<acbreak>]
+
+  Read inhibit charge / force discharge / thresholds:
+    $name [-v] inhibitCharge <bat>
+    $name [-v] startChargeThreshold <bat>
+    $name [-v] stopChargeThreshold <bat>
+    $name [-v] forceDischarge <bat>
+
+  -v          show ASL call and response
+  <min>       1-720 minutes, or 0 for never, or 65535 for forever *
+  <bat>       1 for main, 2 for secondary, 0 for either/both
+  <inhibit>   1 for inhibit, 0 for dont inhibit
+  <percent>   0 for default, 1-99 for percentage
+  <discharge> 1 for force discharge, 0 for stop discharge
+  <acbreak>   1 for break by AC detaching, 0 for do not
+  [] means optional: defaults to 0
+  
+  *likely bug in BIOS code
+   looking at peak-shift-state its obviously supposed to be 1440 min
+";
+
+
+sub main(@){
+  if($_[0] eq '-v'){
+    $verbose = 1;
+    shift;
+  }
+  my $cmd = shift() || '';
+  my @args = map {parseArgDecToBin $_} @_;
+  
+  #GETTERS
+  if($cmd eq 'inhibitCharge' and @args == 1){
+    my ($bat) = @args;
+    #this is actually reading peak shift state
+    print readInhibitCharge(acpiCallGet 'PSSG', $bat) . "\n";
+  }elsif($cmd eq 'startChargeThreshold' and @args == 1){
+    my ($bat) = @args;
+    print readStartChargeThreshold(acpiCallGet 'BCTG', $bat) . "\n";
+  }elsif($cmd eq 'stopChargeThreshold' and @args == 1){
+    my ($bat) = @args;
+    print readStopChargeThreshold(acpiCallGet 'BCSG', $bat) . "\n";
+  }elsif($cmd eq 'forceDischarge' and @args == 1){
+    my ($bat) = @args;
+    print readForceDischarge(acpiCallGet 'BDSG', $bat) . "\n";
+  #SETTERS
+  }elsif($cmd eq 'peakShiftState' and @args == 2){
+    my ($inhibit, $min) = @args;
+    acpiCallSet 'PSSS', writePeakShiftState($inhibit, $min);
+  }elsif($cmd eq 'inhibitCharge' and (@args == 2 or @args == 3)){
+    my ($bat, $inhibit, $min) = (@args, 0);
+    ############################################################
+    #they are shifting a bit somewhere; the limit should be 1440
+    #the same range in peakShiftState is used, except shifted to the left
+    #the value returned by peakShiftState is the REAL duration, though
+    $min .= '0';
+    ############################################################
+    acpiCallSet 'BICS', writeInhibitCharge($bat, $inhibit, $min);
+  }elsif($cmd eq 'startChargeThreshold' and @args == 2){
+    my ($bat, $percent) = @args;
+    acpiCallSet 'BCCS', writeStartChargeThreshold($bat, $percent);
+  }elsif($cmd eq 'stopChargeThreshold' and @args == 2){
+    my ($bat, $percent) = @args;
+    acpiCallSet 'BCSS', writeStopChargeThreshold($bat, $percent);
+  }elsif($cmd eq 'forceDischarge' and (@args == 2 or @args == 3)){
+    my ($bat, $discharge, $acBreak) = (@args, 0);
+    acpiCallSet 'BDSS', writeForceDischarge($bat, $discharge, $acBreak);
+  }else{
+    die $usage;
+  }
+}
+
+sub readInhibitCharge($){
+  my @bits = parseStatusHexToBitArray $_[0];
+  if($bits[5] != 1){
+    die "<inhibit charge unsupported>\n";
+  }
+  my $val;
+  if($bits[0] == 1){
+    $val = "yes";
+    my $min = bitRangeToDec @bits, 8, 23;
+    if($min == 0){
+      $val .= " (unspecified min)";
+    }elsif($min == 65535){
+      $val .= " (forever)";
+    }else{
+      $val .= " ($min min)";
+    }
+  }else{
+    $val = "no";
+  }
+
+  return $val;
+}
+sub readStartChargeThreshold($){
+  my @bits = parseStatusHexToBitArray $_[0];
+  if($bits[8] != 1 and $bits[9] != 1){
+    die "<start charge threshold unsupported>\n";
+  }
+  return bitRangeToDec @bits, 0, 7;
+}
+
+sub readStopChargeThreshold($){
+  my @bits = parseStatusHexToBitArray $_[0];
+  if($bits[8] != 1 and $bits[9] != 1){
+    die "<start charge threshold unsupported>\n";
+  }
+  return bitRangeToDec @bits, 0, 7;
+}
+
+sub readForceDischarge($){
+  my @bits = parseStatusHexToBitArray $_[0];
+  if($bits[8] != 1 and $bits[9] != 1){
+    die "<force discharge unsupported>\n";
+  }
+  my $val;
+  if($bits[0] == 1){
+    $val = 'yes';
+  }else{
+    $val = 'no';
+  }
+  if($bits[1] == 1){
+    $val .= ' (break on AC detach)';
+  }
+
+  return $val;
+}
+
+
+
+
+sub writePeakShiftState($$){
+  my ($inhibit, $min) = @_;
+  return reverse ''
+    . revpadzero( 1, $inhibit)
+    . revpadzero( 3, 0)
+    . revpadzero( 4, 0)
+    . revpadzero(16, $min)
+    . revpadzero( 8, 0)
+  ;
+}
+
+sub writeInhibitCharge($$$){
+  my ($bat, $inhibit, $min) = @_;
+  return reverse ''
+    . revpadzero( 1, $inhibit)
+    . revpadzero( 3, 0)
+    . revpadzero( 2, $bat)
+    . revpadzero( 2, 0)
+    . revpadzero(16, $min)
+    . revpadzero( 8, 0)
+  ;
+}
+
+sub writeStartChargeThreshold($$){
+  my ($bat, $percent) = @_;
+  return reverse ''
+    . revpadzero( 8, $percent)
+    . revpadzero( 2, $bat)
+    . revpadzero(22, 0)
+  ;
+}
+
+sub writeStopChargeThreshold($$){
+  my ($bat, $percent) = @_;
+  return reverse ''
+    . revpadzero( 8, $percent)
+    . revpadzero( 2, $bat)
+    . revpadzero(22, 0)
+  ;
+}
+
+sub writeForceDischarge($$$){
+  my ($bat, $discharge, $acBreak) = @_;
+  return reverse ''
+    . revpadzero( 1, $discharge)
+    . revpadzero( 1, $acBreak)
+    . revpadzero( 6, 0)
+    . revpadzero( 2, $bat)
+    . revpadzero(22, 0)
+  ;
+}
+
+
+sub acpiCall($){
+  my $call = shift;
+
+  if(not -e $acpiCallDev){
+    die "Could not find $acpiCallDev. Is module acpi_call loaded?\n";
+  }
+
+  open FH, "> $acpiCallDev" or die "Cannot write to $acpiCallDev: $!";
+  print FH "$call\n";
+  close FH;
+  open FH, "< $acpiCallDev" or die "Cannot read $acpiCallDev: $!";
+  my $val = <FH>;
+  close FH;
+  return $val;
+}
+sub acpiCallGet($$){
+  my ($method, $bits) = @_;
+  my $call = "$aslBase.$method 0x" . binToHex($bits);
+  print "Call    : $call\n" if $verbose;
+  my $val = acpiCall $call;
+  print "Response: $val\n" if $verbose;
+  if($val eq '0x80000000'){
+    die "Call failure status returned: $val";
+  }
+  return $val;
+}
+sub acpiCallSet($$){
+  my ($method, $bits) = @_;
+  my $call = "$aslBase.$method 0x" . binToHex($bits);
+  print "Call    : $call\n" if $verbose;
+  my $val = acpiCall $call;
+  print "Response: $val\n" if $verbose;
+  if($val eq '0x80000000'){
+    die "Call failure status returned: $val";
+  }
+}
+
+sub revpadzero($$){
+  return reverse ('0' x ($_[0] - length $_[1]) . $_[1]);
+}
+
+sub bitRangeToDec(\@$$){
+  my @bits = @{shift()};
+  my $start = shift;
+  my $end = shift;
+  my $bin = reverse(join '', @bits[$start .. $end]);
+  return binToDec $bin;
+}
+sub parseArgDecToBin($){
+  my $dec = shift;
+  die "not a positive integer: " . $dec . "\n\n$usage" if $dec !~ /^\d+$/;
+  return decToBin $dec;
+}
+sub parseStatusHexToBitArray($){
+  my $hex = shift;
+  if($hex !~ /0x([0-9a-f]+)/i){
+    die "Bad status returned: $hex\n";
+  }
+  return split //, revpadzero 32, hexToBin($1);
+}
+
+sub decToBin($){
+  my $bits = unpack("B32", pack("N", $_[0]));
+  $bits =~ s/^0*//;
+  return $bits;
+}
+sub binToDec($){
+  return oct "0b$_[0]";
+}
+sub hexToBin($){
+  return decToBin(oct "0x$_[0]");
+}
+sub binToHex($){
+  return sprintf("%x", binToDec $_[0]);
+}
+
+&main(@ARGV);
