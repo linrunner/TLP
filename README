@@ -1,7 +1,7 @@
-TLP README - 18.03.2012
+TLP README - 22.06.2012
 
-TLP brings you the benefits of advanced power management for Linux
-without the need to understand every technical detail. 
+TLP implements advanced power management for Linux. TLP is a pure command line tool with
+automated background tasks. It does not contain a GUI.
 
 Settings depending on the power source ac/bat:
 - Kernel laptop mode and dirty buffer params
@@ -32,8 +32,7 @@ All TLP settings are stored in /etc/default/tlp. The default configuration
 provides optimized power saving out of the box. 
 
 Read the the full documentation at:
-- https://github.com/linrunner/TLP/wiki/TLP-Linux-Advanced-Power-Management
-- http://thinkpad-wiki.org/TLP_-_Linux_Stromsparen (in German)
+- http://linrunner.de/tlp
 
 Or take a look at the manpages:
 - tlp

@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Thomas Koch <linrunner@gmx.net>
 Build-Depends: debhelper (>= 7)
 Standards-Version: 3.8.4
-Homepage: https://github.com/linrunner/TLP/wiki/TLP-Linux-Advanced-Power-Management
+Homepage: http://linrunner.de/tlp
 
 Package: tlp
 Architecture: all
@@ -13,8 +13,9 @@ Recommends: ethtool, wireless-tools
 Suggests: smartmontools
 Conflicts: pm-utils-powersave-policy
 Description: Save battery power on laptops
- TLP is a collection of scripts implementing 
- power save features for laptop hardware.
+ TLP implements advanced power management for Linux. TLP is a pure
+ command line tool with automated background tasks. It does not
+ contain a GUI.
  
 Package: tlp-rdw
 Architecture: all
