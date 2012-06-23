@@ -185,13 +185,15 @@ if [ "$show_all" = "1" ]; then
     echo "+++ Processor"
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
         echoparm $cpuf/scaling_governor
-        printf "%s = %8d [kHz]\n" $cpuf/scaling_min_freq $(cat $cpuf/scaling_min_freq)
-        printf "%s = %8d [kHz]\n" $cpuf/scaling_max_freq $(cat $cpuf/scaling_max_freq)
-        printf "%s = " $cpuf/scaling_available_frequencies
-        for freq in $(cat $cpuf/scaling_available_frequencies); do
-            printf "%8d" $freq
-        done
-        printf " [kHz]\n\n"
+        if [ -f $cpuf/scaling_governor ]; then
+            printf "%s = %8d [kHz]\n" $cpuf/scaling_min_freq $(cat $cpuf/scaling_min_freq)
+            printf "%s = %8d [kHz]\n" $cpuf/scaling_max_freq $(cat $cpuf/scaling_max_freq)
+            printf "%s = " $cpuf/scaling_available_frequencies
+            for freq in $(cat $cpuf/scaling_available_frequencies); do
+                printf "%8d" $freq
+            done
+            printf " [kHz]\n\n"
+        fi
     done
     
     for pool in mc smp smt; do
