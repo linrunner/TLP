@@ -465,6 +465,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 echoparm $bat/remaining_running_time_now - min
                 echoparm $bat/remaining_charging_time - min
                 echoparm $bat/power_now - mW
+                echoparm $bat/power_avg - mW
                 echo
 
                 if [ "$tpacpi" = "0" ]; then
