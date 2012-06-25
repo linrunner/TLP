@@ -1014,12 +1014,13 @@ get_force_discharge () { # $1: BAT0/BAT1,
         bsys=$SMAPIDIR/$1/force_discharge
  
         if [ -f $bsys ]; then
-            rc=$(echo $bsys 2> /dev/null)
+            rc=$(cat $bsys 2> /dev/null)
         else 
             rc=2
         fi
     fi
-    
+
+    echo_debug "bat" "get_force_discharge($1): rc=$rc"
     return $rc
 }
 
@@ -1179,10 +1180,10 @@ discharge_battery () { # $1: battery
    
     trap cancel_discharge INT
     
-    while get_force_discharge; do :; done
+    while get_force_discharge $bat; do :; done
     echo_debug "bat" "discharge_battery.running($bat)"
 
-    while ! get_force_discharge; do
+    while ! get_force_discharge $bat; do
         clear
         echo "Currently discharging battery $bat:"
         echo "voltage            = $(cat $bdir/voltage) [mV]"
