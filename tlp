@@ -5,21 +5,23 @@
 # This software is licensed under the GPL v2.
 
 # --- Constants
-readonly LIB=/usr/lib/tlp-pm/tlp-functions
-readonly RFLIB=/usr/lib/tlp-pm/tlp-rf-func
+readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
+readonly LIBS="tlp-functions tlp-rf-func"
 
-# --- Source libraries
-if [ ! -f $LIB ]; then
-    echo "Error: missing function library \'$LIB\'."
+# --- Locate and source libraries
+for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
+if [ ! -d $libdir ]; then
+    echo "Error: missing library directory ($LIBDIRS)."
     exit 1
 fi
-. $LIB
 
-if [ ! -f $RFLIB ]; then
-    echo "Error: missing function library \'$RFLIB\'."
-    exit 1
-fi
-. $RFLIB
+for lib in $LIBS; do 
+    if [ ! -f $libdir/$lib ]; then
+        echo "Error: missing function library \'$libdir/$lib\'."
+        exit 1
+    fi
+    . $libdir/$lib
+done
 
 # --- MAIN
 read_defaults

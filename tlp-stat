@@ -5,8 +5,9 @@
 # This software is licensed under the GPL v2.
 
 # --- Constants
-readonly LIB=/usr/lib/tlp-pm/tlp-functions
-readonly RFLIB=/usr/lib/tlp-pm/tlp-rf-func
+readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
+readonly LIBS="tlp-functions tlp-rf-func"
+
 readonly TLPUSB=/usr/bin/tlp-usblist
 
 readonly SMARTCTL=$(which smartctl 2> /dev/null)
@@ -105,20 +106,20 @@ read_args () {
     done
 }
     
-# --- Read libraries
-if [ -f $LIB ]; then
-    . $LIB
-else
-    echo "Fatal error: library $LIB not installed."
+# --- Locate and source libraries
+for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
+if [ ! -d $libdir ]; then
+    echo "Error: missing library directory ($LIBDIRS)."
     exit 1
 fi
 
-if [ -f $RFLIB ]; then
-    . $RFLIB
-else
-    echo "Fatal error: library $RFLIB not installed."
-    exit 1
-fi
+for lib in $LIBS; do 
+    if [ ! -f $libdir/$lib ]; then
+        echo "Error: missing function library \'$libdir/$lib\'."
+        exit 1
+    fi
+    . $libdir/$lib
+done
 
 # --- MAIN
 read_args $*

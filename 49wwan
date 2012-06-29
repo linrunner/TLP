@@ -6,8 +6,8 @@
 
 . "${PM_FUNCTIONS}"
 
-readonly LIB=/usr/lib/tlp-pm/tlp-functions
-readonly RFLIB=/usr/lib/tlp-pm/tlp-rf-func
+readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
+readonly LIBS="tlp-functions tlp-rf-func"
 
 suspend_device () {
 	local state
@@ -24,10 +24,13 @@ resume_device () {
 	echo_debug "pm" "49wwan.resume wwan=$(cat $2)"
 }
 
-[ -f $LIB ] || exit 0
-[ -f $RFLIB ] || exit 0
-. $LIB
-. $RFLIB
+for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
+[ -d $libdir ] || exit 0
+
+for lib in $LIBS; do 
+    [ -f $libdir/$lib ] || exit 0
+    . $libdir/$lib
+done
 
 read_defaults || exit 0
 

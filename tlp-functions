@@ -25,7 +25,8 @@ readonly UDEVADM=udevadm
 readonly LAPMODE=laptop_mode
 readonly NMCLI=nmcli
 readonly NMTOOL=nm-tool
-readonly TPACPIBAT=tpacpi-bat
+
+readonly TPACPIBAT=$libdir/tpacpi-bat
 
 readonly SMAPIDIR=/sys/devices/platform/smapi
 readonly NETD=/sys/class/net

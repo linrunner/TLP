@@ -29,8 +29,8 @@ install-tlp:
 	ln -f $(BIN)/run-on-ac $(BIN)/run-on-bat
 	install -m 755 tlp-stat $(BIN)/
 	install -m 755 tlp-usblist $(BIN)/
-	install -D -m 755 tpacpi-bat $(SBIN)/
-	install -D -m 755 tlp-functions $(TLIB)/tlp-functions
+	install -D -m 755 tpacpi-bat $(TLIB)/tpacpi-bat
+	install -m 755 tlp-functions $(TLIB)/
 	install -m 755 tlp-rf-func $(TLIB)/
 	install -m 755 tlp-nop $(TLIB)/
 	install -D -m 755 tlp-usb-udev $(ULIB)/tlp-usb-udev
@@ -62,7 +62,7 @@ uninstall-tlp:
 	rm $(BIN)/run-on-bat
 	rm $(BIN)/tlp-stat
 	rm $(BIN)/tlp-usblist
-	rm $(SBIN)/tpacpi-bat
+	rm $(TLIB)/tpacpi-bat
 	rm $(TLIB)/tlp-functions
 	rm $(TLIB)/tlp-rf-func
 	rmdir $(TLIB)
