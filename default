@@ -123,16 +123,23 @@ USB_AUTOSUSPEND=1
 
 # Restore radio device state (bluetooth, wifi, wwan) from previous shutdown
 # on system startup: 0=disable/1=enable
-# Hint: the parameters DEVICES_TO_DISABLE_ON_STARTUP/SHUTDOWN below
+# Hint: the parameters DEVICES_TO_DISABLE/ENABLE_ON_STARTUP/SHUTDOWN below
 #       are ignored when this is enabled!
 RESTORE_DEVICE_STATE_ON_STARTUP=0
  
 # Radio devices to disable on startup: bluetooth wifi wwan
 #DEVICES_TO_DISABLE_ON_STARTUP="bluetooth wifi wwan"
+
+# Radio devices to enable on startup: bluetooth wifi wwan
+#DEVICES_TO_ENABLE_ON_STARTUP="wifi"
  
 # Radio devices to disable on shutdown: bluetooth wifi wwan
 # (workaround for devices that are blocking shutdown)
 #DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi wwan"
+
+# Radio devices to enable on shutdown: bluetooth wifi wwan
+# (to prevent other operating systems from missing radios)
+#DEVICES_TO_ENABLE_ON_SHUTDOWN="wwan"
  
 # Battery charge thresholds (ThinkPad only, tp-smapi kernel module required)
 # Charging starts when the remaining capacity falls below the START_CHARGE_TRESH
@@ -143,6 +150,10 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 # Ultrabay battery (values in %)
 #START_CHARGE_THRESH_BAT1=75
 #STOP_CHARGE_THRESH_BAT1=80
+
+# Set to 1 to disable use of tpacpi-bat on Sandy Bridge Thinkpad models
+# and force usage of tp-smapi instead
+#DISABLE_TPACPIBAT=1
 
 # ------------------------------------------------------------------------------
 # tlp-rdw - Parameters for the radio device wizard

@@ -326,7 +326,7 @@ restore_device_states () {
 }
 
 init_radio_devices () { # $1: start/stop - called from init scripts
-    local dev devs2stop restore
+    local dev devs2disable devs2enable restore
 
     # save/restore mode is disabled by default
     restore=${RESTORE_DEVICE_STATE_ON_STARTUP:-0}
@@ -351,17 +351,35 @@ init_radio_devices () { # $1: start/stop - called from init scripts
                 ;; 
         esac
     else
-        # "disable on startup/shutdown" mode
+        # "disable/enable on startup/shutdown" mode
         case $1 in
-            start) devs2stop=$DEVICES_TO_DISABLE_ON_STARTUP ;;
-            stop)  devs2stop=$DEVICES_TO_DISABLE_ON_SHUTDOWN ;;
+            start)
+                devs2disable="$DEVICES_TO_DISABLE_ON_STARTUP"
+                devs2enable="$DEVICES_TO_ENABLE_ON_STARTUP"
+                ;;
+                
+            stop)
+                devs2disable="$DEVICES_TO_DISABLE_ON_SHUTDOWN"
+                devs2enable="$DEVICES_TO_ENABLE_ON_SHUTDOWN"
+                ;;
         esac
 
-        if [ -n "$devs2stop" ]; then
+        # Disable configured radios
+        if [ -n "$devs2disable" ]; then
             echo -n "Disabling radios:"
-            for dev in $devs2stop; do
+            for dev in $devs2disable; do
                 echo -n " $dev"
                 device_off $dev
+            done
+            echo "."
+        fi
+
+        # Enable configured radios
+        if [ -n "$devs2enable" ]; then
+            echo -n "Enabling radios:"
+            for dev in $devs2enable; do
+                echo -n " $dev"
+                device_on $dev
             done
             echo "."
         fi

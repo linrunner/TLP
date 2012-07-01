@@ -825,11 +825,15 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
 }
 
 check_tpacpi () { # check if tpacpi-bat is supported
-                  # ret: 0=supported/2=module acpi_call not loaded/255=not supported
+                  # ret: 0=supported/2=module acpi_call not loaded/4=disabled/255=not supported
                   # retval: $tpacpi
 
-    $TPACPIBAT forceDischarge 1 > /dev/null 2>&1
-    tpacpi=$?
+    if [ "$DISABLE_TPACPIBAT" != "1" ]; then
+        $TPACPIBAT forceDischarge 1 > /dev/null 2>&1
+        tpacpi=$?
+    else
+        tpacpi=4
+    fi
 
     echo_debug "bat" "check_tpacpi: rc=$tpacpi"
     return $tpacpi

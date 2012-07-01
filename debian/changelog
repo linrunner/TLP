@@ -8,6 +8,9 @@ tlp (0.3.6.900-1) lucid; urgency=low
   * Features
     - Battery charge thresholds for Sandy Bridge models (X220/T420/...)
       by means of tpacpi-bat
+    - DEVICES_TO_ENABLE_ON_SHUTDOWN to prevent other operating systems
+      from missing radios
+    - DEVICES_TO_ENABLE_ON_STARTUP 
     - tlp-stat:
       - show TRIM capabilty for SSDs
       - add SMART attributes (179, 241)
@@ -17,7 +20,7 @@ tlp (0.3.6.900-1) lucid; urgency=low
       - show tp_smapi/power_avg
   * Bug fixes
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 22 Jun 2012 22:55:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 01 Jul 2012 21:42:00 +0200
 
 tlp (0.3.6-2) lucid; urgency=low
 
