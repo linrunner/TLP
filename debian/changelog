@@ -20,8 +20,10 @@ tlp (0.3.6.900-1) lucid; urgency=low
       - show tp_smapi/power_avg
   * Bug fixes
     - #34: system start hangs in Fedora 17 (DigitalFlow)
+    - #35: shutdown results in reboot; new config param
+           USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN (Thubo)
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 01 Jul 2012 21:42:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 15 Jul 2012 20:40:00 +0200
 
 tlp (0.3.6-2) lucid; urgency=low
 

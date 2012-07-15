@@ -33,7 +33,7 @@ mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
 mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
 mode3=$(echo $3 | tr "[:upper:]" "[:lower:]")
 
-echo_debug "run" "+++ mode=$mode $mode2"
+echo_debug "run" "+++ mode=$mode $mode2 $mode3"
 echo_debug "path" "PATH=$PATH"
 
 case "$mode" in
@@ -62,7 +62,13 @@ case "$mode" in
         
             stop)
                 init_radio_devices stop
-        
+
+                if [ "$USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN" = "1" ]; then
+                    echo -n "Disabling usb autosuspend..."
+                    set_usb_suspend 0 on
+                    echo "done."
+                fi
+                
                 # Remove usb startup flag
                 [ -f $USB_DONE ] && rm $USB_DONE
                 ;;
@@ -97,7 +103,7 @@ case "$mode" in
         disable_wake_on_lan $pwr
         set_sound_power_mode $pwr
         set_runtime_pm $pwr
-        enable_usb_suspend 0
+        set_usb_suspend 0 auto
         set_charge_thresholds
         [ "$pwr" = "1" ] && poweroff_drivebay 0
         
@@ -125,7 +131,7 @@ case "$mode" in
         disable_wake_on_lan 1
         set_sound_power_mode 1
         set_runtime_pm 1
-        [ "$X_TLP_USB_MODE" = "1" ] && enable_usb_suspend 0
+        [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
         poweroff_drivebay 0
         
         echo_started_mode 1
@@ -166,7 +172,7 @@ case "$mode" in
 
     usb) # Enable usb autosuspend
         check_root
-        enable_usb_suspend 1
+        set_usb_suspend 1 auto
         ;;
         
     bayoff) # Power off drive bay

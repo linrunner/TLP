@@ -121,6 +121,10 @@ USB_AUTOSUSPEND=1
 # Note: input devices (usbhid) are excluded automatically
 #USB_BLACKLIST="1111:2222 3333:4444"
 
+# Set to 1 to disable autosuspend before shutdown/0 to do nothing 
+# (workaround for usb devices that cause shutdown problems)
+#USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN=1
+
 # Restore radio device state (bluetooth, wifi, wwan) from previous shutdown
 # on system startup: 0=disable/1=enable
 # Hint: the parameters DEVICES_TO_DISABLE/ENABLE_ON_STARTUP/SHUTDOWN below

@@ -11,6 +11,6 @@
 ### END INIT INFO
 
 TLP=/usr/sbin/tlp
-[ -x $TLP ] && $TLP init $1
+[ -x $TLP ] && $TLP init $1 upwr
 
 exit 0

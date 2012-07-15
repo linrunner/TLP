@@ -759,7 +759,7 @@ set_runtime_pm () { # $1: 0=ac mode, 1=battery mode
     return 0
 }
 
-enable_usb_suspend () { # $1: 0=silent/1=report result
+set_usb_suspend () { # $1: 0=silent/1=report result; $2: on/auto
     local devices usbdev subdev control hid usbid busdev
     local ctrlf="control"
     local autof="autosuspend_delay_ms"
@@ -773,22 +773,25 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
                 usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
                 busdev="Bus $(cat $USBD/$usbdev/busnum) Dev $(cat $USBD/$usbdev/devnum)"
             
-                control="auto"
+                control="$2"
                 hid=""
-                if patinstr "$usbid" "$USB_BLACKLIST"; then
-                    # device is in blacklist
-                    control="on"
-                else
-                    # check for hid subdevices
-                    for subdev in $USBD/$usbdev/*:*; do
-                        if [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
-                            control="on"
-                            hid="_hid"
-                            break
-                        fi
-                    done
+
+                if [ "$control" != "on" ]; then
+                    if patinstr "$usbid" "$USB_BLACKLIST"; then
+                        # device is in blacklist
+                        control="on"
+                    else
+                        # check for hid subdevices
+                        for subdev in $USBD/$usbdev/*:*; do
+                            if [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
+                                control="on"
+                                hid="_hid"
+                                break
+                            fi
+                        done
+                    fi
                 fi
-                
+                    
                 if [ -f $USBD/$usbdev/power/control ]; then
                     echo "$control" > $USBD/$usbdev/power/control
                 else
@@ -801,7 +804,7 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
                     echo $USB_TIMEOUT_MS > $USBD/$usbdev/power/autosuspend_delay_ms 2> /dev/null
                     if [ $? != 0 ]; then
                         # openSUSE 11.4/2.6.37: writing to autosuspend_delay_ms fails -> fallback to autosuspend
-                        echo_debug "usb" "enable_usb_suspend.autosuspend_delay_ms_not_writable: $busdev ID $usbid $USBD/$usbdev"
+                        echo_debug "usb" "set_usb_suspend.autosuspend_delay_ms_not_writable: $busdev ID $usbid $USBD/$usbdev"
                         echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
                         autof="autosuspend"
                     fi
@@ -810,7 +813,7 @@ enable_usb_suspend () { # $1: 0=silent/1=report result
                     echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
                     autof="autosuspend"
                 fi
-                echo_debug "usb" "enable_usb_suspend.$control$hid: $busdev ID $usbid $USBD/$usbdev [$ctrlf $autof]"
+                echo_debug "usb" "set_usb_suspend.$control$hid: $busdev ID $usbid $USBD/$usbdev [$ctrlf $autof]"
             fi
         done
         [ "$1" = "1" ] && echo "usb autosuspend settings applied."
