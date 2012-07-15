@@ -19,6 +19,7 @@ tlp (0.3.6.900-1) lucid; urgency=low
         are not available
       - show tp_smapi/power_avg
   * Bug fixes
+    - #34: system start hangs in Fedora 17 (DigitalFlow)
 
  -- Thomas Koch <linrunner@gmx.net>  Sun, 01 Jul 2012 21:42:00 +0200
 

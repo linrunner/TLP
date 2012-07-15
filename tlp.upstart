@@ -9,13 +9,13 @@ env TLP=/usr/sbin/tlp
 
 pre-start script
     [ -x $TLP ] || exit 4
-    $TLP init start
+    $TLP init start upwr
 
 end script
 
 post-stop script
     [ -x $TLP ] || exit 4
-    $TLP init stop
+    $TLP init stop 
     
 end script
 

@@ -31,6 +31,7 @@ check_laptop_mode_tools || exit 2
 # Get cmd line args
 mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
 mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
+mode3=$(echo $3 | tr "[:upper:]" "[:lower:]")
 
 echo_debug "run" "+++ mode=$mode $mode2"
 echo_debug "path" "PATH=$PATH"
@@ -49,8 +50,9 @@ case "$mode" in
                 set_charge_thresholds
                 echo "done."
 
+                # Wake upowerd only if present & arg "upwr" is given
                 UPWR=$(which upower)
-                if [ -n "$UPWR" ]; then
+                if [ -n "$UPWR" ] && [ "$mode3" = "upwr" ]; then
                     echo -n "Starting upowerd..."
                     $UPWR -e > /dev/null 2>&1
                     echo "done."

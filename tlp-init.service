@@ -6,16 +6,17 @@
 #  (at your option) any later version.
 
 [Unit]
-Description=Initialisation for tlp 
+Description=Initialisation for TLP 
 DefaultDependencies=no
-After=sysinit.target
+Requires=upower.target
+After=upower.target
 Before=shutdown.target
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/sbin/tlp init start
-ExecStop=/usr/sbin/tlp init stop
+ExecStart=/usr/sbin/tlp-init start
+ExecStop=/usr/sbin/tlp-init stop
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=graphical.target
