@@ -25,9 +25,9 @@ check_tlp_enabled || exit 0
 ddir=/sys/devices/platform/$1
 type=$(cat $ddir/type)
 docked=$(cat $ddir/docked)
-get_power_state; bat=$?
+get_power_state; onbat=$?
 
-echo_debug "udev" "rdw_udev($*).$EVENT dev=$ddir type=$type docked=$docked bat=$bat"
+echo_debug "udev" "rdw_udev($*).$EVENT dev=$ddir type=$type docked=$docked onbat=$onbat"
 
 case $EVENT in
     dock) # laptop was docked

@@ -66,6 +66,33 @@ echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
     fi
 }
 
+show_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
+    local start_thresh stop_thresh force
+    
+    start_thresh=$($TPACPIBAT startChargeThreshold $2 2> /dev/null)
+    if [ -n "$start_thresh" ]; then
+        [ $start_thresh -eq 0 ] && start_thresh=96
+        printf "tpacpi-bat.${1}.startChargeThreshold = %5d [%%]\n" $start_thresh
+    else
+        printf "tpacpi-bat.${1}.startChargeThreshold = (not available)\n"
+    fi
+
+    stop_thresh=$($TPACPIBAT stopChargeThreshold $2 2> /dev/null)
+    if [ -n "$stop_thresh" ]; then
+        [ $stop_thresh -eq 0 ] && stop_thresh=100
+        printf "tpacpi-bat.${1}.stopChargeThreshold  = %5d [%%]\n" $stop_thresh
+    else
+        printf "tpacpi-bat.${1}.stopChargeThreshold  = (not available)\n"
+    fi
+
+    get_force_discharge $2; force=$?
+    if [ $force -ne 2 ]; then
+        echo "tpacpi-bat.${1}.forceDischarge = $force"
+    else
+        echo "tpacpi-bat.${1}.forceDischarge = (not available)"
+    fi
+}
+
 read_args () {
     for a in $*; do
         case $a in
@@ -128,11 +155,13 @@ if [ "$needs_root_priv" = "1" ]; then
     check_root
     load_tp_modules
     check_tpacpi
+    check_tpsmapi
 fi
 
 echo "--- TLP $TLPVER --------------------------------------------"
 echo
 
+# --- show configuration
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
     if [ -f $CONFFILE ]; then
         . $CONFFILE
@@ -146,6 +175,8 @@ if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
 fi
 
 if [ "$show_all" = "1" ]; then
+
+    # --- show system info
     echo "+++ System Info"
     if [ -n "$DMIDEC" ]; then
         pmanuf="$( $DMIDEC -s system-manufacturer 2> /dev/null | \
@@ -160,12 +191,14 @@ if [ "$show_all" = "1" ]; then
         echo "System = $pmanuf $pversion $product"
         echo "BIOS = $bios"
     fi
-    
+
+    # --- show release & kernel info
     [ -n "$LSBREL" ] && echo "Release = $($LSBREL -d -s)"
     echo "Kernel = $(uname -r -m)"
     echoparm /proc/cmdline
     echo
-    
+
+    # --- show TLP status
     echo "+++ System Status"
     if check_laptop_mode_tools; then
         if [ "$TLP_ENABLE" = "1" ]; then
@@ -174,7 +207,8 @@ if [ "$show_all" = "1" ]; then
             echo "TLP power save = not enabled"
         fi
     fi
-    
+
+    # --- show power source
     if get_power_state; then
         echo "power source = ac"
     else
@@ -182,7 +216,7 @@ if [ "$show_all" = "1" ]; then
     fi
     echo
     
-    # cpu
+    # --- show cpu info
     echo "+++ Processor"
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
         echoparm $cpuf/scaling_governor
@@ -203,10 +237,11 @@ if [ "$show_all" = "1" ]; then
         echoparm $sdev
     done
     
-    # nmi watchdog
+    # --- show nmi watchdog
     echoparm $NMIWD
     echo
-    
+
+    # --- show voltages
     echo "+++ Undervolting"
     phc_avail=0
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
@@ -225,18 +260,23 @@ if [ "$show_all" = "1" ]; then
 fi # show_all
 
 if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then    
-    # temperatures
+    # --- show temperatures
     echo "+++ Temperatures"
     if [ -f $THERMAL ]; then
+        # use thinkpad-specific sysfile
         echo "$THERMAL = $(cat $THERMAL | cut -f2) [°C]"
     else
+        # use sensors
         printf "CPU temp               = %5d [°C]\n" $(( $(cat $CORETEMP) / 1000 ))
     fi
-        
+
+    # --- show fan speeed
     if [ -f $FAN ]; then
+        # use thinkpad-specific sysfile
         cat $FAN | \
             awk '$1 ~ /speed:/ { printf "'$FAN'     = %5d [/min]\n", $2 }'
     else
+        # use hwmon
         for fan in /sys/class/hwmon/hwmon*/device/fan1_input; do
             if [ -f $fan ]; then
                 printf "Fan speed              = %5d [/min]\n" $(cat $fan)
@@ -252,7 +292,7 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
 fi # show_temp
 
 if [ "$show_all" = "1" ]; then    
-    # laptop-mode, dirty buffers params
+    # --- show laptop-mode, dirty buffers params
     echo "+++ File System"
     echoparm /proc/sys/vm/laptop_mode
     echoparm /proc/sys/vm/dirty_writeback_centisecs
@@ -264,10 +304,10 @@ if [ "$show_all" = "1" ]; then
     echoparm /proc/sys/fs/xfs/xfsbufd_centisecs
     echo 
     
-    # disk apm level
+    # --- show disk info form hdparm
     echo "+++ Storage Devices"
     DISK_DEVICES=${DISK_DEVICES:=sda}
-    for dev in $DISK_DEVICES; do
+    for dev in $DISK_DEVICES; do # iterate all devices
         get_disk_dev $dev
     
         if [ -b /dev/$disk_dev ]; then
@@ -303,6 +343,7 @@ if [ "$show_all" = "1" ]; then
                 echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
             
                 if [ -n "$SMARTCTL" ]; then
+                    # --- show SMART data
                     echo 
                     echo "        SMART info:"
                     $SMARTCTL -A /dev/$disk_dev | grep -v '<==' | \
@@ -327,7 +368,7 @@ if [ "$show_all" = "1" ]; then
     done
     echo
     
-    # sata alpm
+    # --- show sata alpm mode
     echo "+++ SATA Aggressive Link Power Management"
     cnt=0
     for i in /sys/class/scsi_host/host* ; do
@@ -341,7 +382,7 @@ if [ "$show_all" = "1" ]; then
     fi  
     echo 
     
-    # pcie aspm
+    # --- show pcie aspm state
     echo "+++ PCIe Active State Power Management"
     if [ -f $ASPM ]; then
         pol=$(cat $ASPM | sed -r 's/.*\[(.*)\].*/\1/')
@@ -356,7 +397,7 @@ if [ "$show_all" = "1" ]; then
     fi
     echo
     
-    # i915 power mgmt
+    # --- show i915 power mgmt
     if [ -d $I915D ]; then 
         echo "+++ Intel Graphics"
         echoparm $I915D/powersave
@@ -367,7 +408,7 @@ if [ "$show_all" = "1" ]; then
         echo
     fi
     
-    # radeon power profile
+    # --- show radeon power profile
     for card in /sys/class/drm/card[0-9]/device ; do
         if [ -f $card/power_method ] && [ -f $card/power_profile ]; then
             echo "+++ Radeon Graphics"
@@ -381,7 +422,7 @@ fi # show_all
 
 if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then    
     echo "+++ Wireless"
-    # rfkill state
+    # --- show rfkill state
     for i in bluetooth wifi wwan; do
         get_devc $i
         get_devs $i
@@ -391,7 +432,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 fi # show_rfkill
 
 if [ "$show_all" = "1" ]; then        
-    # wifi power mode
+    # --- show wifi power mode
     get_wifi_ifaces
     for iface in $WIFACES; do
         if [ -n "$iface" ]; then
@@ -420,7 +461,7 @@ if [ "$show_all" = "1" ]; then
     done
     [ -n "$WIFACES" ] && echo
 
-    # sound power mode
+    # --- show sound power mode
     echo "+++ Audio"
     if [ -d /sys/module/snd_hda_intel ]; then
         echoparm /sys/module/snd_hda_intel/parameters/power_save
@@ -434,109 +475,129 @@ if [ "$show_all" = "1" ]; then
 fi # show_all
 
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
-    # battery info & charge thresholds 
-    if [ -d /sys/devices/platform/smapi ]; then
-        # ThinkPad via tp_smapi
-        for bat in /sys/devices/platform/smapi/BAT[01]; do
-            if [ -d $bat ] && [ "$(cat $bat/installed)" = "1" ]; then
-                case ${bat##/*/} in
-                    BAT0) 
-                        echo "+++ ThinkPad Battery (Main)"
-                        bati=1
-                        ;;
-                        
-                    BAT1)
-                        echo "+++ ThinkPad Battery (Ultrabay/Slice)"
-                        bati=2
-                        ;;
-                        
-                    *)
-                        echo "+++ ThinkPad Battery"
-                        bati=0
-                        ;;
+    # --- show battery info & charge thresholds
+    
+    if [ $tpsmapi -eq 0 ]; then
+        # it's a ThinkPad with tp-smapi
+        
+        for batd in /sys/devices/platform/smapi/BAT[01]; do
+            batt=${batd##/*/}
+            
+            if bat_exists $batt ; then
+                case $batt in
+                    BAT0) bati=1; echo "+++ ThinkPad Battery (Main)" ;;
+                    BAT1) bati=2; echo "+++ ThinkPad Battery (Ultrabay/Slice)" ;;
+                    *)    bati=1  echo "+++ ThinkPad Battery" ;;
                 esac
                 
-                echoparm $bat/manufacturer
-                echoparm $bat/model
-                echoparm $bat/manufacture_date
-                echoparm $bat/first_use_date
-                echoparm $bat/cycle_count
-                echoparm $bat/design_capacity - mWh
-                echoparm $bat/last_full_capacity - mWh
-                echoparm $bat/remaining_capacity - mWh
-                echoparm $bat/remaining_percent - "%"
-                echoparm $bat/remaining_running_time_now - min
-                echoparm $bat/remaining_charging_time - min
-                echoparm $bat/power_now - mW
-                echoparm $bat/power_avg - mW
+                echoparm $batd/manufacturer
+                echoparm $batd/model
+                echoparm $batd/manufacture_date
+                echoparm $batd/first_use_date
+                echoparm $batd/cycle_count
+                echoparm $batd/design_capacity - mWh
+                echoparm $batd/last_full_capacity - mWh
+                echoparm $batd/remaining_capacity - mWh
+                echoparm $batd/remaining_percent - "%"
+                echoparm $batd/remaining_running_time_now - min
+                echoparm $batd/remaining_charging_time - min
+                echoparm $batd/power_now - mW
+                echoparm $batd/power_avg - mW
                 echo
 
                 if [ "$tpacpi" = "0" ]; then
+                    # show thresholds via tpacpi-bat
                     start_thresh=$($TPACPIBAT startChargeThreshold $bati 2> /dev/null)
                     if [ -n "$start_thresh" ]; then
                         [ $start_thresh -eq 0 ] && start_thresh=96
-                        printf "tpacpi-bat.${bat##/*/}.startChargeThreshold = %5d [%%]\n" $start_thresh
+                        printf "tpacpi-bat.${batt}.startChargeThreshold = %5d [%%]\n" $start_thresh
                     else
-                        printf "tpacpi-bat.${bat##/*/}.startChargeThreshold = (not available)\n"
+                        printf "tpacpi-bat.${batt}.startChargeThreshold = (not available)\n"
                     fi
 
                     stop_thresh=$($TPACPIBAT stopChargeThreshold $bati 2> /dev/null)
                     if [ -n "$stop_thresh" ]; then
                         [ $stop_thresh -eq 0 ] && stop_thresh=100
-                        printf "tpacpi-bat.${bat##/*/}.stopChargeThreshold  = %5d [%%]\n" $stop_thresh
+                        printf "tpacpi-bat.${batt}.stopChargeThreshold  = %5d [%%]\n" $stop_thresh
                     else
-                        printf "tpacpi-bat.${bat##/*/}.stopChargeThreshold  = (not available)\n"
+                        printf "tpacpi-bat.${batt}.stopChargeThreshold  = (not available)\n"
                     fi
 
                     get_force_discharge $bati; force=$?
                     if [ $force -ne 2 ]; then
-                        echo "tpacpi-bat.${bat##/*/}.forceDischarge = $force"
+                        echo "tpacpi-bat.${batt}.forceDischarge = $force"
                     else
-                        echo "tpacpi-bat.${bat##/*/}.forceDischarge = (not available)"
+                        echo "tpacpi-bat.${batt}.forceDischarge = (not available)"
                     fi
-                    
                 else
-                    echoparm $bat/start_charge_thresh - "%"
-                    echoparm $bat/stop_charge_thresh - "%"
-                    echoparm $bat/force_discharge
+                    # show thresholds via tp-smapi
+                    echoparm $batd/start_charge_thresh - "%"
+                    echoparm $batd/stop_charge_thresh - "%"
+                    echoparm $batd/force_discharge
                 fi
                 echo
             fi
         done
     elif [ -d /sys/class/power_supply ]; then
-        echo "+++ Battery"
-        if [ -d /sys/devices/platform/thinkpad_acpi ]; then
-            echo "ThinkPad extended battery info not available (missing tp_smapi kernel module)."
-        fi
-        # generic
-        for bat in /sys/class/power_supply/*; do
-            if [ -d $bat ] \
-               && [ "$(cat $bat/type)" = "Battery" ] \
-               && [ "$(cat $bat/present)" = "1" ]; then
-                echoparm $bat/manufacturer
-                echoparm $bat/model_name
-                echoparm $bat/cycle_count 
-                if [ -f $bat/energy_full ]; then 
-                    echoparm $bat/energy_full_design - mWh 000
-                    echoparm $bat/energy_full - mWh 000
-                    echoparm $bat/energy_now - mWh 000
-                    echoparm $bat/power_now - mW 000
-                elif [ -f $bat/charge_full ]; then
-                    echoparm $bat/charge_full_design - mAh 000
-                    echoparm $bat/charge_full - mAh 000
-                    echoparm $bat/charge_now - mAh 000
-                    echoparm $bat/current_now - mA 000
+        # --- show ACPI data
+        
+        for batd in /sys/class/power_supply/*; do
+            if [ -d $batd ] \
+                && [ "$(cat $batd/type)" = "Battery" ] \
+                && [ "$(cat $batd/present)" = "1" ]; then
+
+                batt=${batd##/*/}
+                
+                if [ $tpacpi -eq 0 ]; then
+                    # it's a ThinkPad with tpacpi-bat only
+                    case $batt in
+                        BAT0) bati=1; echo "+++ ThinkPad Battery (Main)" ;;
+                        BAT1) bati=2; echo "+++ ThinkPad Battery (Ultrabay/Slice)" ;;
+                        *)    bati=1; echo "+++ ThinkPad Battery" ;;
+                    esac
+                else
+                    # it's some other laptop model or brand 
+                    echo "+++ Battery"
                 fi
-                echoparm $bat/status
-            fi
-        done
-        echo
-    fi
+                if [ -d /sys/devices/platform/thinkpad_acpi ]; then
+                    echo -n "Hint: ThinkPad extended battery info not available "
+                    case $tpsmapi in
+                        2)   echo "(tp-smapi kernel module not loaded)."    ;;
+                        255) echo "(tp-smapi kernel module not installed)." ;;
+                    esac
+                fi
+    
+                echoparm $batd/manufacturer
+                echoparm $batd/model_name
+                echoparm $batd/cycle_count 
+                if [ -f $batd/energy_full ]; then 
+                    echoparm $batd/energy_full_design - mWh 000
+                    echoparm $batd/energy_full - mWh 000
+                    echoparm $batd/energy_now - mWh 000
+                    echoparm $batd/power_now - mW 000
+                elif [ -f $bat/charge_full ]; then
+                    echoparm $batd/charge_full_design - mAh 000
+                    echoparm $batd/charge_full - mAh 000
+                    echoparm $batd/charge_now - mAh 000
+                    echoparm $batd/current_now - mA 000
+                fi
+                echoparm $batd/status
+                echo
+
+                if [ $tpacpi -eq 0 ]; then
+                    # --- show ThinkPad charge thresholds via tpacpi-bat
+                    show_tpacpi_thresholds $batt $bati
+                    echo
+                fi # if $tpcacpi
+            fi # if $batd
+        done # $batd
+    
+    fi # if /sys/class/power_supply
     
 fi # show_bat
 
 if [ "$show_all" = "1" ]; then
-    # runtime pm
+    # -- show runtime pm
     echo "+++ Runtime Power Management"
     for type in $PCID; do
         for device in $type/*; do
@@ -575,7 +636,7 @@ if [ "$show_all" = "1" ]; then
     done
     echo 
     
-    # usb autosuspend
+    # -- show usb autosuspend
     echo "+++ USB"
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
         echo "tlp usb autosuspend = enabled"
@@ -595,6 +656,7 @@ if [ "$show_all" = "1" ]; then
 fi # show_all
 
 if [ "$show_trace" = "1" ]; then
+    # --- show debug log
     if [ -f $DEBUGLOG ]; then
         grep "tlp\[" $DEBUGLOG
     else

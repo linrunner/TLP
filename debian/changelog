@@ -6,8 +6,10 @@ tlp (0.3.6.900-1) lucid; urgency=low
     - implement startup/shutdown code as a command: tlp init
     - systemd support: tlp-init.service
   * Features
-    - Battery charge thresholds for Sandy Bridge models (X220/T420/...)
-      by means of tpacpi-bat
+    - Battery charge thresholds for Sandy Bridge and later models
+      (X220/T420/...) by means of tpacpi-bat
+    - Use tpacpi-bat even when tp-smapi is not available; for
+      Ivy Bridge models (X230/T430/...)
     - DEVICES_TO_ENABLE_ON_SHUTDOWN to prevent other operating systems
       from missing radios
     - DEVICES_TO_ENABLE_ON_STARTUP 
@@ -23,7 +25,7 @@ tlp (0.3.6.900-1) lucid; urgency=low
     - #35: shutdown results in reboot; new config param
            USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN (Thubo)
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 15 Jul 2012 20:40:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 27 Jul 2012 22:55:00 +0200
 
 tlp (0.3.6-2) lucid; urgency=low
 
