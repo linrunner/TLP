@@ -39,20 +39,20 @@ get_devc () { # $1: rftype; retval $devc
             ;;
 
         wifi)
-            for i in /sys/class/rfkill/rfkill* ; do
-                if [ -f $i/type ] && [ "$(cat $i/type)" = "wlan" ]; then 
-                    devc="$i/state"
-                    echo_debug "rf" "get_devc($1) = $devc"
-                    return 0
-                fi
-            done
- 
             for i in /sys/bus/pci/drivers/ipw2?00/*/rf_kill; do
                 if [ -f $i ]; then
                     devc="$i"
                     rfkdev="0"
                     devon="0"
                     devoff="1"
+                    echo_debug "rf" "get_devc($1) = $devc"
+                    return 0
+                fi
+            done
+            
+            for i in /sys/class/rfkill/rfkill* ; do
+                if [ -f $i/type ] && [ "$(cat $i/type)" = "wlan" ]; then 
+                    devc="$i/state"
                     echo_debug "rf" "get_devc($1) = $devc"
                     return 0
                 fi

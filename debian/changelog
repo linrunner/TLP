@@ -24,8 +24,9 @@ tlp (0.3.6.900-1) lucid; urgency=low
     - #34: system start hangs in Fedora 17 (DigitalFlow)
     - #35: shutdown results in reboot; new config param
            USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN (Thubo)
+    - #38: wifi on/off not working with ipw2100/2200 (kristatos)
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 27 Jul 2012 22:55:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 29 Jul 2012 12:59:00 +0200
 
 tlp (0.3.6-2) lucid; urgency=low
 
