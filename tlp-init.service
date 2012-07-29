@@ -8,15 +8,15 @@
 [Unit]
 Description=Initialisation for TLP 
 DefaultDependencies=no
-Requires=upower.target
-After=upower.target
+Requires=upower.service
+After=upower.service
 Before=shutdown.target
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/sbin/tlp-init start
-ExecStop=/usr/sbin/tlp-init stop
+ExecStart=/usr/sbin/tlp init start
+ExecStop=/usr/sbin/tlp init stop
 
 [Install]
 WantedBy=graphical.target
