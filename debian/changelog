@@ -5,6 +5,7 @@ tlp (0.3.6.900-1) lucid; urgency=low
   * Packaging
     - implement startup/shutdown code as a command: tlp init
     - systemd support: tlp-init.service
+    - deb recommends: tlp-rdw; suggests: acpi-call, tp-smapi
   * Features
     - Battery charge thresholds for Sandy Bridge and later models
       (X220/T420/...) by means of tpacpi-bat
@@ -26,7 +27,7 @@ tlp (0.3.6.900-1) lucid; urgency=low
            USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN (Thubo)
     - #38: wifi on/off not working with ipw2100/2200 (kristatos)
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 29 Jul 2012 12:59:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 02 Aug 2012 21:28:00 +0200
 
 tlp (0.3.6-2) lucid; urgency=low
 

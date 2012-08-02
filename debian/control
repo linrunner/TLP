@@ -9,8 +9,8 @@ Homepage: http://linrunner.de/tlp
 Package: tlp
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, pm-utils
-Recommends: ethtool, wireless-tools
-Suggests: smartmontools
+Recommends: ethtool, wireless-tools, tlp-rdw
+Suggests: acpi-call, smartmontools, tp-smapi-dkms
 Conflicts: pm-utils-powersave-policy
 Description: Save battery power on laptops
  TLP implements advanced power management for Linux. TLP is a pure
@@ -19,6 +19,6 @@ Description: Save battery power on laptops
  
 Package: tlp-rdw
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, tlp, network-manager
+Depends: ${shlibs:Depends}, ${misc:Depends}, network-manager, tlp
 Description: Radio device wizard
  Switch radios upon network connect or undock.
