@@ -75,7 +75,7 @@ check_root () {
     fi
 }
 
-check_tlp_enabled () { # ret: 0=disabled/1=enabled    
+check_tlp_enabled () { # rc: 0=disabled/1=enabled    
     if [ ! "$TLP_ENABLE" = "1" ]; then
         echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in $CONFFILE." 1>&2
         return 1
@@ -84,7 +84,7 @@ check_tlp_enabled () { # ret: 0=disabled/1=enabled
     fi
 }
 
-check_laptop_mode_tools () { # ret: 0=not installed, 1=installed
+check_laptop_mode_tools () { # rc: 0=not installed, 1=installed
     local lmt=$(which $LAPMODE 2> /dev/null)
     
     if [ -n "$lmt" ] && [ -x "$lmt" ]; then
@@ -116,7 +116,7 @@ load_tp_modules () {
     return 0
 }
 
-get_power_state () { # ret: 0=ac, 1=battery
+get_power_state () { # rc: 0=ac, 1=battery
     $ACPWR
     return $? 
 }
@@ -356,7 +356,7 @@ set_phc_controls () {
     return 0
 }
 
-check_disk_hdparm_cap () { # $1: dev; ret: 0=none/1=available
+check_disk_hdparm_cap () { # $1: dev; rc: 0=none/1=available
     if [ -z "$($HDPARM -I /dev/$1 2>&1 | grep 'Invalid exchange')" ]; then
         return 0
     else
@@ -384,7 +384,7 @@ echo_disk_firmware () { # $1: dev
     return 0
 }
 
-get_disk_apm_level () { # $1: dev; ret: apm
+get_disk_apm_level () { # $1: dev; rc: apm
     local apm
     
     apm=$($HDPARM -I /dev/$1 2>&1 | grep 'Advanced power management level' | \
@@ -397,7 +397,7 @@ get_disk_apm_level () { # $1: dev; ret: apm
     
 }
 
-get_disk_trim_capability () { # $1: dev; ret: 0=no, 1=yes, 254=no ssd device
+get_disk_trim_capability () { # $1: dev; rc: 0=no, 1=yes, 254=no ssd device
     local trim
 
     if [ -n "$($HDPARM -I /dev/$1 2>&1 | grep 'Solid State Device')" ]; then
@@ -413,7 +413,7 @@ get_disk_trim_capability () { # $1: dev; ret: 0=no, 1=yes, 254=no ssd device
     return $trim
 }
 
-get_disk_dev () { # $1: id or dev; ret: disk_dev, disk_id
+get_disk_dev () { # $1: id or dev; rc: disk_dev, disk_id
     if [ -L /dev/disk/by-id/$1 ]; then
         # $1 is disk id
         disk_id=$1
@@ -828,8 +828,8 @@ set_usb_suspend () { # $1: 0=silent/1=report result; $2: on/auto
     return 0
 }
 
-check_tpsmapi () { # check if tp_smapi is supported and loaded
-                    # ret: 0=supported/2=module tp_smapi not loaded/255=not installed
+check_tpsmapi () {  # check if tp_smapi is supported and loaded
+                    # rc: 0=supported/2=module tp_smapi not loaded/255=not installed
                     # retval: $tpsmapi
 
     if [ -d $SMAPIDIR ]; then
@@ -850,7 +850,7 @@ check_tpsmapi () { # check if tp_smapi is supported and loaded
 }
 
 check_tpacpi () { # check if tpacpi-bat is supported
-                  # ret: 0=supported/2=module acpi_call not loaded/4=disabled/255=not supported
+                  # rc: 0=supported/2=module acpi_call not loaded/4=disabled/255=not supported
                   # retval: $tpacpi
 
     if [ "$DISABLE_TPACPIBAT" != "1" ]; then
@@ -866,7 +866,7 @@ check_tpacpi () { # check if tpacpi-bat is supported
 
 do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
                   # global param: $tpacpi, $tpsmapi 
-                  
+                  # rc: 0=ok/1=read error/2=thresh not present/255=no thresh api
     local bati bsys
     local old_thresh=-1
     local new_thresh=$3
@@ -913,10 +913,12 @@ do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
     return $rc
 }
 
-normalize_thresholds () { # $1: start threshold; $2: stop_threshold
-                          # global param: $tpacpi, $tpsmapi 
+normalize_thresholds () { # check values and enforce start < stop - 3
+                          # $1: start threshold; $2: stop_threshold
+                          # global param: $tpacpi, $tpsmapi
+                          # rc: 0
                           # retval: $start_thresh, $stop_thresh
-                          # check values and enforce start < stop - 3
+                          
     local type thresh
 
     for type in start stop; do
@@ -953,8 +955,10 @@ normalize_thresholds () { # $1: start threshold; $2: stop_threshold
     return 0
 }
 
-bat_exists () { # $1: BAT0/BAT1; retval: 0=bat exists/1=bat nonexistent/255=no thresh api available
-                # global param: $tpacpi, $tpsmapi 
+bat_exists () { # check battery presence
+                # $1: BAT0/BAT1; retval: 0=bat exists/1=bat nonexistent/255=no thresh api available
+                # global param: $tpacpi, $tpsmapi
+                # rc: 0=present/1=absent/255=no thresh api
     local rc
 
     if [ $tpacpi -eq 0 ]; then # use tpacpi-bat
@@ -971,8 +975,9 @@ bat_exists () { # $1: BAT0/BAT1; retval: 0=bat exists/1=bat nonexistent/255=no t
     return $rc
 }
 
-set_charge_thresholds () { # set all charge thresholds from configuration
-                           # global param: $tpacpi, $tpsmapi 
+set_charge_thresholds () { # write all charge thresholds from configuration
+                           # global param: $tpacpi, $tpsmapi
+                           # rc: 0
     local rc
     
     check_tpacpi; check_tpsmapi
@@ -1017,8 +1022,10 @@ set_charge_thresholds () { # set all charge thresholds from configuration
     return 0
 }
 
-do_force_discharge () { # $1: BAT0/BAT1, $2: 0=off/1=on
-                        # global param: $tpacpi, $tpsmapi 
+do_force_discharge () { # write force discharge state
+                        # $1: BAT0/BAT1, $2: 0=off/1=on
+                        # global param: $tpacpi, $tpsmapi
+                        # rc: 0=done/1=write error/2=discharge not present/255=no thresh api 
     local bati bsys rc=0
 
     if [ $tpacpi -eq 0 ]; then # use tpacpi-bat
@@ -1048,6 +1055,7 @@ do_force_discharge () { # $1: BAT0/BAT1, $2: 0=off/1=on
 
 get_force_discharge () { # $1: BAT0/BAT1, 
                          # global param: $tpacpi, $tpsmapi
+                         # rc: 0=done/1=read error/2=discharge not present/255=no thresh api
                          
     local bati bsys rc=0
 
@@ -1087,9 +1095,11 @@ cancel_setcharge () { # called from trap
     exit 0
 }
 
-setcharge_battery () { # $1: start charge threshold, $2: stop charge threshold, $3: battery
-                       # global param: $tpacpi, $tpsmapi 
-    local bdir rc
+setcharge_battery () { # write charge thresholds (called form cmd line)
+                       # $1: start charge threshold, $2: stop charge threshold, $3: battery
+                       # global param: $tpacpi, $tpsmapi
+                       # rc: 0=ok/1=error
+    local rc
     # $bat is global for cancel_setcharge () trap
     local act=0
 
@@ -1200,9 +1210,11 @@ cancel_discharge () { # called from trap
     exit 0
 }
 
-discharge_battery () { # $1: battery
-                       # global param: $tpacpi, $tpsmapi 
-    local bdir rc
+discharge_battery () { # discharge battery 
+                       # $1: battery
+                       # global param: $tpacpi, $tpsmapi
+                       # rc: 0=ok/1=error
+    local bdir ef pn rc 
     # $bat is global for cancel_setcharge () trap
     
     # check prerequisites: must be on ac power
@@ -1228,7 +1240,7 @@ discharge_battery () { # $1: battery
     bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
  
     # check if selected battery is present
-    if ! bat_exists $bat ; then
+    if ! bat_exists $bat ; then # returns $bdir
         echo_debug "bat" "discharge_battery.not_present($bat)"
         echo "Error: battery $bat not present."
         return 1
@@ -1249,10 +1261,38 @@ discharge_battery () { # $1: battery
     while ! get_force_discharge $bat; do
         clear
         echo "Currently discharging battery $bat:"
-        echo "voltage            = $(cat $bdir/voltage) [mV]"
-        echo "remaining percent  = $(cat $bdir/remaining_percent) [%]"
-        echo "remaining capacity = $(cat $bdir/remaining_capacity) [mWh]"
-        echo "remaining time     = $(cat $bdir/remaining_running_time_now) [min]"
+
+        if [ $tpsmapi -eq 0 ]; then # use tp_smapi
+            bdir=$SMAPIDIR/$bat
+            
+            printf "voltage            = %6s [mv]\n"  $(cat $bdir/voltage)
+            printf "remaining capacity = %6s [mWh]\n" $(cat $bdir/remaining_capacity)
+            printf "remaining percent  = %6s [%%]\n"  $(cat $bdir/remaining_percent)
+            printf "remaining time     = %6s [min]\n" $(cat $bdir/remaining_running_time_now)
+        else # use acpi
+            bdir=$ACPIBATDIR/$bat
+
+            if [ -d $bdir ]; then
+                printf "voltage            = %6s [mV]\n"  $(cat $bdir/voltage_now | sed 's/\(.*\).../\1/')
+                printf "remaining capacity = %6s [mWh]\n" $(cat $bdir/energy_now | sed 's/\(.*\).../\1/')
+                
+                ef=$(cat $bdir/energy_full)
+                if [ "$ef" != "0" ]; then
+                    printf "remaining percent  = %6s [%%]\n" \
+                        $(( 100 * $(cat $bdir/energy_now) / $(cat $bdir/energy_full) ))
+                else
+                    printf "remaining percent  = not available [%]\n"
+                fi
+    
+                pn=$(cat $bdir/power_now)
+                if [ "$pn" != "0" ]; then
+                    printf "remaining time     = %6s [min]\n" \
+                        $(( 60 * $(cat $bdir/energy_now) / $(cat $bdir/power_now) ))
+                else
+                    printf "remaining time     = not discharging [min]\n"
+                fi
+            fi 
+        fi
         echo "Press Ctrl+C to cancel."
         sleep 2
     done
