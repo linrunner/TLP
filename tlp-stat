@@ -662,7 +662,7 @@ if [ "$show_trace" = "1" ]; then
     else
         echo "Error: $DEBUGLOG does not exist."
         echo 
-        echo "Solution: create an rsyslog conffile /etc/rsyslog.conf/90-debug.conf with the following contents"
+        echo "Solution: create an rsyslog conffile /etc/rsyslog.d/90-debug.conf with the following contents"
         echo " *.=debug;\\"
         echo " mail,authpriv,cron.none;\\"
         echo " local0,local1,local3,local4,\\"

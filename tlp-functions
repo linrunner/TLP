@@ -100,16 +100,21 @@ check_laptop_mode_tools () { # rc: 0=not installed, 1=installed
 
 read_defaults () {
     if [ -f $CONFFILE ]; then
-        . $CONFFILE
+        . $CONFFILE --
         return 0
     else
         return 1
     fi
 }
 
-load_tp_modules () {
+load_tp_modules () { # load ThinkPad specific kernel modules
     local mod
-    
+
+    # verify module loading is allowed (else explicitly disabled)
+    # and possible (else implicitly disabled)
+    [ "${TLP_LOAD_MODULES:-y}" = "y" ] && [ -e /proc/modules ] || return 0
+
+    # load modules, ignore any errors
     for mod in $TPMODULES; do
         $MODPRO $mod > /dev/null 2>&1 
     done
@@ -141,7 +146,7 @@ set_run_flag () { # $1: flag name
         rc=$?
         echo_debug "lock" "set_run_flag.touch: $1; rc=$rc"
         
-        return $?
+        return $rc
     else
         # mkdir failed
         echo_debug "lock" "set_run_flag.mkdir_failed"
@@ -222,7 +227,7 @@ set_laptopmode () { # $1: 0=ac mode, 1=battery mode
 }
 
 set_dirty_parms () { # $1: 0=ac mode, 1=battery mode
-    # Concept from laptop-mode-tools
+    # concept from laptop-mode-tools
     local age
     
     check_sysfs "set_dirty_parms" "/proc/sys/vm"
@@ -883,18 +888,22 @@ do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
         case $2 in
             BAT0) bati=1 ;;
             BAT1) bati=2 ;;
-        esac
- 
-        # replace factory default values with 0 for tpacpi
-        case $1 in
-            start) [ $new_thresh -eq  96 ] && new_thresh=0 ;;
-            stop)  [ $new_thresh -eq 100 ] && new_thresh=0 ;;
+            *) bati=255; rc=2 ;; # invalid bat argument
         esac
 
-        old_thresh=$($TPACPIBAT ${1}ChargeThreshold $bati 2> /dev/null)
+        if [ $bati -ne 255 ]; then
+            # replace factory default values with 0 for tpacpi
+            case $1 in
+                start) [ $new_thresh -eq  96 ] && new_thresh=0 ;;
+                stop)  [ $new_thresh -eq 100 ] && new_thresh=0 ;;
+            esac
 
-        if [ $new_thresh -ne $old_thresh ]; then
-            $TPACPIBAT ${1}ChargeThreshold $bati $new_thresh > /dev/null 2>&1; rc=$?
+            old_thresh=$($TPACPIBAT ${1}ChargeThreshold $bati 2> /dev/null)
+
+            if [ $new_thresh -ne $old_thresh ]; then
+                $TPACPIBAT ${1}ChargeThreshold $bati $new_thresh > /dev/null 2>&1
+                rc=$?
+            fi
         fi
     elif [ $tpsmapi -eq 0 ]; then # use tp_smapi
         bsys=$SMAPIDIR/$2/${1}_charge_thresh
@@ -904,13 +913,14 @@ do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
             if [ -z "$old_thresh" ]; then
                 rc=1
             elif [ "$old_thresh" -ne "$new_thresh" ]; then
-                echo $new_thresh > $bsys 2> /dev/null; rc=$?
+                echo $new_thresh > $bsys 2> /dev/null
+                rc=$?
             fi
         else
-            rc=2
+            rc=2 # invalid bat argument
         fi        
     else
-        # No threshold API available
+        # no threshold API available
         rc=255
     fi
     
@@ -976,7 +986,7 @@ bat_exists () { # check battery presence
         rc=255
     fi
     
-    echo_debug "bat" "bat_exist($1): rc=$rc"
+    echo_debug "bat" "bat_exists($1): rc=$rc"
     return $rc
 }
 
