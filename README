@@ -1,4 +1,4 @@
-TLP README - 22.06.2012
+TLP README - 11.08.2012
 
 TLP implements advanced power management for Linux. TLP is a pure command line tool with
 automated background tasks. It does not contain a GUI.
@@ -19,7 +19,7 @@ Additional functions:
 - I/O scheduler (per disk)
 - USB autosuspend with blacklist (input devices excluded automatically)
 - Audio power saving mode - hda_intel, ac97
-- Disable integrated wifi, bluetooth or wwan devices upon system startup and shutdown
+- Enable or disable integrated radio devices upon system startup and shutdown
 - Restore radio device state on system startup (from previous shutdown).
 - Radio device wizard: switch radios upon network connect/disconnect and dock/undock
 - Disable Wake On LAN

@@ -10,7 +10,7 @@
 
 # ----------------------------------------------------------------------------
 # Constants
-readonly TLPVER=0.3.6.900
+readonly TLPVER=0.3.6.902
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -183,7 +183,12 @@ check_timed_lock () { # $1: lock id
     for lockfile in $RUNDIR/${lockid}_timed_lock_*; do
         if [ -f $lockfile ]; then
             locktime=${lockfile#${RUNDIR}/${lockid}_timed_lock_}
-            if [ $time -lt $locktime ]; then
+            if [ $time -lt $(( $locktime - 120 )) ]; then
+                # timestamp is more than 120 secs in the future,
+                # something weird has happened -> remove it
+                rm $lockfile
+                echo_debug "lock" "check_timed_lock.remove_invalid: ${lockfile#${RUNDIR}/}"
+            elif [ $time -lt $locktime ]; then
                 # timestamp in the future -> we're locked
                 echo_debug "lock" "check_timed_lock.locked: $time, $locktime"
                 return 0

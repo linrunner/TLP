@@ -1,4 +1,4 @@
-tlp (0.3.6.901-1) lucid; urgency=low
+tlp (0.3.6.902-1) lucid; urgency=low
 
   *** Development Version ***
 
@@ -27,7 +27,7 @@ tlp (0.3.6.901-1) lucid; urgency=low
            USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN (Thubo)
     - #38: wifi on/off not working with ipw2100/2200 (kristatos)
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 08 Aug 2012 22:42:00 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 12 Aug 2012 00:33:00 +0200
 
 tlp (0.3.6-2) lucid; urgency=low
 
