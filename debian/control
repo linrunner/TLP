@@ -21,4 +21,4 @@ Package: tlp-rdw
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, network-manager, tlp
 Description: Radio device wizard
- Switch radios upon network connect or undock.
+ Switch radios upon network connect/disconnect and dock/undock.
