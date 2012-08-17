@@ -1,3 +1,11 @@
+tlp (0.3.7.1-1) lucid; urgency=low
+
+  * Bug fixes
+    - #39: tlp-stat: /sys/devices/platform/coretemp.0/temp1_input 
+           does not exist (Laurent Bonnaud)
+
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 17 Aug 2012 17:51:00 +0200
+
 tlp (0.3.7-1) lucid; urgency=low
 
   * Packaging
