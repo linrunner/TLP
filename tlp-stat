@@ -18,9 +18,10 @@ readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
 readonly TPACPI=/sys/devices/platform/thinkpad_acpi
 
-readonly THERMAL=/proc/acpi/ibm/thermal
-readonly CORETEMP=/sys/devices/platform/coretemp.0/temp1_input
-readonly FAN=/proc/acpi/ibm/fan
+readonly IBMTHERMAL=/proc/acpi/ibm/thermal
+readonly CORETEMP='/sys/devices/platform/coretemp.0'
+readonly IBMFAN=/proc/acpi/ibm/fan
+readonly HWMONFAN='/sys/class/hwmon/hwmon*/device'
 
 readonly DEBUGLOG=/var/log/debug
 
@@ -262,22 +263,39 @@ fi # show_all
 if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then    
     # --- show temperatures
     echo "+++ Temperatures"
-    if [ -f $THERMAL ]; then
+    if [ -f $IBMTHERMAL ]; then
         # use thinkpad-specific sysfile
-        echo "$THERMAL = $(cat $THERMAL | cut -f2) [°C]"
+        echo "$IBMTHERMAL = $(cat $IBMTHERMAL | cut -f2) [°C]"
     else
         # use sensors
-        printf "CPU temp               = %5d [°C]\n" $(( $(cat $CORETEMP) / 1000 ))
+        cmax=0
+        for sens in $CORETEMP/temp?_input; do
+            if [ -f $sens ]; then
+                if cat ${sens%input}label | grep -q "Physical"; then
+                    # package info is available -> ignore remaining sensors
+                    cmax=$(cat $sens)
+                    break
+                else
+                    # core info -> find max value
+                    ctemp=$(cat $sens)
+                    [ $ctemp -gt $cmax ] && cmax=$ctemp
+                fi
+            fi
+        done
+        if [ $cmax -gt 0 ]; then
+            printf "CPU temp               = %5d [°C]\n" $(( $cmax / 1000 ))
+        fi
+        
     fi
 
     # --- show fan speeed
-    if [ -f $FAN ]; then
+    if [ -f $IBMFAN ]; then
         # use thinkpad-specific sysfile
-        cat $FAN | \
-            awk '$1 ~ /speed:/ { printf "'$FAN'     = %5d [/min]\n", $2 }'
+        cat $IBMFAN | \
+            awk '$1 ~ /speed:/ { printf "'$IBMFAN'     = %5d [/min]\n", $2 }'
     else
         # use hwmon
-        for fan in /sys/class/hwmon/hwmon*/device/fan1_input; do
+        for fan in $HWMONFAN/fan?_input; do
             if [ -f $fan ]; then
                 printf "Fan speed              = %5d [/min]\n" $(cat $fan)
                 break;
