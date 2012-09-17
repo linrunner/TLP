@@ -12,7 +12,6 @@ EOF
 case "$1" in
     true|false)
         [ -x $TLP ] || exit 0
-        sleep 2
         $TLP $1
         ;;
         

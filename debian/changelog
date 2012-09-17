@@ -1,3 +1,14 @@
+tlp (0.3.7.900-1) lucid; urgency=low
+
+  *** Development version ***
+
+  * Packaging
+  * Features
+    - Remove 2s delay in applying settings upon change of the power source
+  * Bugfixes
+
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 17 Sep 2012 18:37:20 +0200
+
 tlp (0.3.7.1-1) lucid; urgency=low
 
   * Bug fixes
