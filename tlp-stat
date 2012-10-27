@@ -12,11 +12,11 @@ readonly TLPUSB=/usr/bin/tlp-usblist
 
 readonly SMARTCTL=$(which smartctl 2> /dev/null)
 readonly LSBREL=$(which lsb_release 2> /dev/null)
-readonly DMIDEC=$(which dmidecode 2> /dev/null)
 
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
 readonly TPACPI=/sys/devices/platform/thinkpad_acpi
+readonly DMID=/sys/class/dmi/id/
 
 readonly IBMTHERMAL=/proc/acpi/ibm/thermal
 readonly CORETEMP='/sys/devices/platform/coretemp.0'
@@ -65,6 +65,23 @@ echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
             echo "$1 = (not available)"
         fi
     fi
+}
+
+read_dmi () { # $*: keywords
+    local ds key
+
+    dmirslt=""
+    for key in $*; do
+        ds="$( cat ${DMID}/$key 2> /dev/null | \
+                egrep -iv 'not available|to be filled|DMI table is broken' )"
+        if [ -n "$dmirslt" ]; then
+            [ -n "$ds" ] && dmirslt="$dmirslt $ds"
+        else
+            dmirslt="$ds"
+        fi
+    done
+    
+    return 0
 }
 
 show_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
@@ -179,19 +196,10 @@ if [ "$show_all" = "1" ]; then
 
     # --- show system info
     echo "+++ System Info"
-    if [ -n "$DMIDEC" ]; then
-        pmanuf="$( $DMIDEC -s system-manufacturer 2> /dev/null | \
-                    egrep -iv 'not available|to be filled|DMI table is broken' )"
-        pversion="$( $DMIDEC -s system-version 2> /dev/null | \
-                    egrep -iv 'not available|to be filled|DMI table is broken' )"
-        product="$( $DMIDEC -s system-product-name 2> /dev/null | \
-                    egrep -iv 'not available|to be filled|DMI table is broken' )"
-        bios="$( $DMIDEC -s bios-version 2> /dev/null | \
-                    egrep -iv 'not available|to be filled|DMI table is broken' )"
-        
-        echo "System = $pmanuf $pversion $product"
-        echo "BIOS = $bios"
-    fi
+    read_dmi sys_vendor product_version product_name
+    echo "System = $dmirslt"
+    read_dmi bios_version
+    echo "BIOS = $dmirslt"
 
     # --- show release & kernel info
     [ -n "$LSBREL" ] && echo "Release = $($LSBREL -d -s)"

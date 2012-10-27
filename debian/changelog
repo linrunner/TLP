@@ -5,6 +5,7 @@ tlp (0.3.7.900-1) lucid; urgency=low
   * Packaging
   * Features
     - Remove 2s delay in applying settings upon change of the power source
+    - tlp-stat: remove dmidecode; get dmi data from /sys/class/dmi/id/ 
   * Bugfixes
 
  -- Thomas Koch <linrunner@gmx.net>  Mon, 17 Sep 2012 18:37:20 +0200
