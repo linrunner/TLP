@@ -416,7 +416,7 @@ if [ "$show_all" = "1" ]; then
         if [ $? = 0 ]; then
             echo "$ASPM = $pol"
         else
-            echo "$ASPM = $pol (disabled by kernel)"
+            echo "$ASPM = $pol (using bios preferences)"
         fi 
     else
         echo "$ASPM = (not available)"
