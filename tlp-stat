@@ -37,37 +37,42 @@ show_temp=0
 show_trace=0
 
 # --- Functions
-echoparm () { # $1: file, $2: n/a message, $3: unit, $4: cutoff
-    local val
-    
-    if [ -f $1 ]; then
-        val=$(cat $1 2> /dev/null)
+printparm () { # $1: format, $2: file, $3: namsg, $4: cutoff
+    local format="$1"
+    local sysf="$2"
+    local namsg="$3"
+    local cutoff="$4"
+    local val=""
+
+    if [ -f $sysf ]; then
+        # sysfile exists
+        val=$(cat $sysf 2> /dev/null)
         if [ $? = 0 ]; then
-            if [ -n "$4" ]; then
-                val=${val%$4}
+            # sysfile read successful
+            if [ -n "$cutoff" ]; then
+                val=${val%$cutoff}
             fi
-            if [ -n "$3" ]; then    
-                echo "$1 = $val [$3]"
-            else
-                echo "$1 = $val"
-            fi
-        else
-            if [ -n "$2" ] && [ "$2" != "-" ]; then
-                echo "$1 = ($2)"
-            else
-                echo "$1 = (not available)"
-            fi
-        fi
-    else
-        if [ -n "$2" ] && [ "$2" != "-" ]; then
-            echo "$1 = ($2)"
-        else
-            echo "$1 = (not available)"
         fi
     fi
+
+    if [ -z "$val" ]; then
+        # replace empty value with n/a text
+        if [ -n "$namsg" ]; then
+            format=$( echo $format | sed -r "s/##(.*)##/($namsg)/" | sed -r "s/\[.*\]//" )
+        else
+            format=$( echo $format | sed -r "s/##(.*)##/(not available)/" | sed -r "s/\[.*\]//" )
+        fi
+        printf "$format\n" "$sysf"
+    else
+        # non empty value: strip delimiters from format str
+        format=$( echo $format | sed -r "s/##(.*)##/\1/" )
+        printf "$format\n" "$sysf" "$val"
+    fi
+    
+    return 0
 }
 
-echoparm_i915 () { # $1: file
+printparm_i915 () { # $1: file
     local val b
 
     if [ -f $1 ]; then
@@ -103,6 +108,36 @@ echoparm_i915 () { # $1: file
         echo "$1 = (not available)"
     fi
 
+    return 0
+}
+
+print_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
+    local start_thresh stop_thresh force
+    
+    start_thresh=$($TPACPIBAT startChargeThreshold $2 2> /dev/null)
+    if [ -n "$start_thresh" ]; then
+        [ $start_thresh -eq 0 ] && start_thresh=96
+        printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.startChargeThreshold" $start_thresh
+    else
+        printf "%-59s = (not available)\n" "tpacpi-bat.${1}.startChargeThreshold"
+    fi
+
+    stop_thresh=$($TPACPIBAT stopChargeThreshold $2 2> /dev/null)
+    if [ -n "$stop_thresh" ]; then
+        [ $stop_thresh -eq  0 ] && stop_thresh=100
+        printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.stopChargeThreshold" $stop_thresh
+    else
+        printf "%-59s = (not available)\n" "tpacpi-bat.${1}.stopChargeThreshold"
+    fi
+
+    get_force_discharge $2; force=$?
+    if [ $force -ne 2 ]; then
+        printf "%-59s = %6d" "tpacpi-bat.${1}.forceDischarge" "$force"
+    else
+        printf "%-59s = %s" "tpacpi-bat.${1}.forceDischarge" "(not available)"
+    fi
+
+    return 0
 }
 
 read_dmi () { # $*: keywords
@@ -120,33 +155,6 @@ read_dmi () { # $*: keywords
     done
     
     return 0
-}
-
-show_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
-    local start_thresh stop_thresh force
-    
-    start_thresh=$($TPACPIBAT startChargeThreshold $2 2> /dev/null)
-    if [ -n "$start_thresh" ]; then
-        [ $start_thresh -eq 0 ] && start_thresh=96
-        printf "tpacpi-bat.${1}.startChargeThreshold = %5d [%%]\n" $start_thresh
-    else
-        printf "tpacpi-bat.${1}.startChargeThreshold = (not available)\n"
-    fi
-
-    stop_thresh=$($TPACPIBAT stopChargeThreshold $2 2> /dev/null)
-    if [ -n "$stop_thresh" ]; then
-        [ $stop_thresh -eq  ] && stop_thresh=100
-        printf "tpacpi-bat.${1}.stopChargeThreshold  = %5d [%%]\n" $stop_thresh
-    else
-        printf "tpacpi-bat.${1}.stopChargeThreshold  = (not available)\n"
-    fi
-
-    get_force_discharge $2; force=$?
-    if [ $force -ne 2 ]; then
-        echo "tpacpi-bat.${1}.forceDischarge = $force"
-    else
-        echo "tpacpi-bat.${1}.forceDischarge = (not available)"
-    fi
 }
 
 read_args () {
@@ -235,14 +243,14 @@ if [ "$show_all" = "1" ]; then
     # --- show system info
     echo "+++ System Info"
     read_dmi sys_vendor product_version product_name
-    echo "System = $dmirslt"
+    echo "System         = $dmirslt"
     read_dmi bios_version
-    echo "BIOS = $dmirslt"
+    echo "BIOS           = $dmirslt"
 
     # --- show release & kernel info
-    [ -n "$LSBREL" ] && echo "Release = $($LSBREL -d -s)"
-    echo "Kernel = $(uname -r -m)"
-    echoparm /proc/cmdline
+    [ -n "$LSBREL" ] && echo "Release        = $($LSBREL -d -s)"
+    echo "Kernel         = $(uname -r -m)"
+    printparm "%-14s = %s" /proc/cmdline
     echo
 
     # --- show TLP status
@@ -257,35 +265,35 @@ if [ "$show_all" = "1" ]; then
 
     # --- show power source
     if get_power_state; then
-        echo "power source = ac"
+        echo "power source   = ac"
     else
-        echo "power source = battery"
+        echo "power source   = battery"
     fi
     echo
     
     # --- show cpu info
     echo "+++ Processor"
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
-        echoparm $cpuf/scaling_governor
+        printparm "%-54s = ##%s##" $cpuf/scaling_governor
         if [ -f $cpuf/scaling_governor ]; then
-            printf "%s = %8d [kHz]\n" $cpuf/scaling_min_freq $(cat $cpuf/scaling_min_freq)
-            printf "%s = %8d [kHz]\n" $cpuf/scaling_max_freq $(cat $cpuf/scaling_max_freq)
+            printf "%-54s = %5d [MHz]\n" $cpuf/scaling_min_freq $(( $(cat $cpuf/scaling_min_freq) / 1000 ))
+            printf "%-54s = %5d [MHz]\n" $cpuf/scaling_max_freq $(( $(cat $cpuf/scaling_max_freq) / 1000 ))
             printf "%s = " $cpuf/scaling_available_frequencies
             for freq in $(cat $cpuf/scaling_available_frequencies); do
-                printf "%8d" $freq
+                printf "%s " $(( $freq / 1000 ))
             done
-            printf " [kHz]\n\n"
+            printf "[MHz]\n\n"
         fi
     done
     
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
         [ -w "$sdev" ] || continue
-        echoparm $sdev
+        printparm "%-54s = ##%d##" $sdev
     done
     
     # --- show nmi watchdog
-    echoparm $NMIWD
+    printparm "%-54s = ##%d##" $NMIWD
     echo
 
     # --- show voltages
@@ -294,8 +302,8 @@ if [ "$show_all" = "1" ]; then
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
         if [ -f $cpuf/phc_controls ]; then
             phc_avail=1
-            echoparm "$cpuf/phc_controls        "
-            echoparm "$cpuf/phc_default_controls"
+            printparm "%-58s = ##%s##" $cpuf/phc_controls
+            printparm "%-58s = ##%s##" $cpuf/phc_default_controls
             echo
         fi
     done
@@ -358,14 +366,14 @@ fi # show_temp
 if [ "$show_all" = "1" ]; then    
     # --- show laptop-mode, dirty buffers params
     echo "+++ File System"
-    echoparm /proc/sys/vm/laptop_mode
-    echoparm /proc/sys/vm/dirty_writeback_centisecs
-    echoparm /proc/sys/vm/dirty_expire_centisecs
-    echoparm /proc/sys/vm/dirty_ratio
-    echoparm /proc/sys/vm/dirty_background_ratio
-    echoparm /proc/sys/fs/xfs/age_buffer_centisecs
-    echoparm /proc/sys/fs/xfs/xfssyncd_centisecs   
-    echoparm /proc/sys/fs/xfs/xfsbufd_centisecs
+    printparm "%-38s = ##%5d##" /proc/sys/vm/laptop_mode
+    printparm "%-38s = ##%5d##" /proc/sys/vm/dirty_writeback_centisecs
+    printparm "%-38s = ##%5d##" /proc/sys/vm/dirty_expire_centisecs
+    printparm "%-38s = ##%5d##" /proc/sys/vm/dirty_ratio
+    printparm "%-38s = ##%5d##" /proc/sys/vm/dirty_background_ratio
+    printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/age_buffer_centisecs
+    printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/xfssyncd_centisecs   
+    printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/xfsbufd_centisecs
     echo 
     
     # --- show disk info form hdparm
@@ -434,10 +442,10 @@ if [ "$show_all" = "1" ]; then
     
     # --- show sata alpm mode
     echo "+++ SATA Aggressive Link Power Management"
-    cnt=0
+    cnt=0    
     for i in /sys/class/scsi_host/host* ; do
         if [ -f $i/link_power_management_policy ]; then
-            echoparm $i/link_power_management_policy
+            printparm "%-56s = ##%s##" $i/link_power_management_policy
             cnt=$((cnt+1))
         fi
     done
@@ -464,11 +472,11 @@ if [ "$show_all" = "1" ]; then
     # --- show i915 power mgmt
     if [ -d $I915D ]; then 
         echo "+++ Intel Graphics"
-        echoparm_i915 $I915D/powersave
-        echoparm_i915 $I915D/i915_enable_rc6
-        echoparm_i915 $I915D/i915_enable_fbc
-        echoparm_i915 $I915D/lvds_downclock
-        echoparm_i915 $I915D/semaphores
+        printparm_i915 $I915D/powersave
+        printparm_i915 $I915D/i915_enable_rc6
+        printparm_i915 $I915D/i915_enable_fbc
+        printparm_i915 $I915D/lvds_downclock
+        printparm_i915 $I915D/semaphores
         echo
     fi
     
@@ -476,8 +484,8 @@ if [ "$show_all" = "1" ]; then
     for card in /sys/class/drm/card[0-9]/device ; do
         if [ -f $card/power_method ] && [ -f $card/power_profile ]; then
             echo "+++ Radeon Graphics"
-            echoparm $card/power_method
-            echoparm $card/power_profile
+            printparm "%-25s = ##%s##" $card/power_method
+            printparm "%-25s = ##%s##" $card/power_profile
             echo
             break
         fi
@@ -528,11 +536,11 @@ if [ "$show_all" = "1" ]; then
     # --- show sound power mode
     echo "+++ Audio"
     if [ -d /sys/module/snd_hda_intel ]; then
-        echoparm /sys/module/snd_hda_intel/parameters/power_save
-        echoparm /sys/module/snd_hda_intel/parameters/power_save_controller
+        printparm "%-58s = ##%s##" /sys/module/snd_hda_intel/parameters/power_save
+        printparm "%-58s = ##%s##" /sys/module/snd_hda_intel/parameters/power_save_controller
     fi
     if [ -d /sys/module/snd_ac97_codec ]; then
-        echoparm /sys/module/snd_ac97_codec/parameters/power_save
+        printparm "%s = ##%s##" /sys/module/snd_ac97_codec/parameters/power_save
     fi
     echo
     
@@ -553,51 +561,31 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     BAT1) bati=2; echo "+++ ThinkPad Battery (Ultrabay/Slice)" ;;
                     *)    bati=1  echo "+++ ThinkPad Battery" ;;
                 esac
-                
-                echoparm $batd/manufacturer
-                echoparm $batd/model
-                echoparm $batd/manufacture_date
-                echoparm $batd/first_use_date
-                echoparm $batd/cycle_count
-                echoparm $batd/design_capacity - mWh
-                echoparm $batd/last_full_capacity - mWh
-                echoparm $batd/remaining_capacity - mWh
-                echoparm $batd/remaining_percent - "%"
-                echoparm $batd/remaining_running_time_now - min
-                echoparm $batd/remaining_charging_time - min
-                echoparm $batd/power_now - mW
-                echoparm $batd/power_avg - mW
+
+                printparm "%-59s = ##%s##" $batd/manufacturer
+                printparm "%-59s = ##%s##" $batd/model
+                printparm "%-59s = ##%s##" $batd/manufacture_date
+                printparm "%-59s = ##%s##" $batd/first_use_date
+                printparm "%-59s = ##%6d##" $batd/cycle_count
+                printparm "%-59s = ##%6d## [mWh]" $batd/design_capacity
+                printparm "%-59s = ##%6d## [mWh]" $batd/last_full_capacity
+                printparm "%-59s = ##%6d## [mWh]" $batd/remaining_capacity
+                printparm "%-59s = ##%6d## [%%]" $batd/remaining_percent
+                printparm "%-59s = ##%6s## [min]" $batd/remaining_running_time_now
+                printparm "%-59s = ##%6s## [min]" $batd/remaining_charging_time
+                printparm "%-59s = ##%6d## [mW]" $batd/power_now
+                printparm "%-59s = ##%6d## [mW]" $batd/power_avg
                 echo
 
-                if [ "$tpacpi" = "0" ]; then
-                    # show thresholds via tpacpi-bat
-                    start_thresh=$($TPACPIBAT startChargeThreshold $bati 2> /dev/null)
-                    if [ -n "$start_thresh" ]; then
-                        [ $start_thresh -eq 0 ] && start_thresh=96
-                        printf "tpacpi-bat.${batt}.startChargeThreshold = %5d [%%]\n" $start_thresh
-                    else
-                        printf "tpacpi-bat.${batt}.startChargeThreshold = (not available)\n"
-                    fi
-
-                    stop_thresh=$($TPACPIBAT stopChargeThreshold $bati 2> /dev/null)
-                    if [ -n "$stop_thresh" ]; then
-                        [ $stop_thresh -eq 0 ] && stop_thresh=100
-                        printf "tpacpi-bat.${batt}.stopChargeThreshold  = %5d [%%]\n" $stop_thresh
-                    else
-                        printf "tpacpi-bat.${batt}.stopChargeThreshold  = (not available)\n"
-                    fi
-
-                    get_force_discharge $bati; force=$?
-                    if [ $force -ne 2 ]; then
-                        echo "tpacpi-bat.${batt}.forceDischarge = $force"
-                    else
-                        echo "tpacpi-bat.${batt}.forceDischarge = (not available)"
-                    fi
+                if [ $tpacpi -eq 0 ]; then
+                    # --- show ThinkPad charge thresholds via tpacpi-bat
+                    print_tpacpi_thresholds $batt $bati
+                    echo
                 else
                     # show thresholds via tp-smapi
-                    echoparm $batd/start_charge_thresh - "%"
-                    echoparm $batd/stop_charge_thresh - "%"
-                    echoparm $batd/force_discharge
+                    printparm "%-59s = ##%6d## [%%]" $batd/start_charge_thresh
+                    printparm "%-59s = ##%6d## [%%]" $batd/stop_charge_thresh 
+                    printparm "%-59s = ##%6d##" $batd/force_discharge
                 fi
                 echo
             fi
@@ -630,27 +618,27 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                         255) echo "(tp-smapi kernel module not installed)." ;;
                     esac
                 fi
-    
-                echoparm $batd/manufacturer
-                echoparm $batd/model_name
-                echoparm $batd/cycle_count 
+
+                printparm "%-59s = ##%s##" $batd/manufacturer
+                printparm "%-59s = ##%s##" $batd/model_name
+                printparm "%-59s = ##%6d##" $batd/cycle_count 
                 if [ -f $batd/energy_full ]; then 
-                    echoparm $batd/energy_full_design - mWh 000
-                    echoparm $batd/energy_full - mWh 000
-                    echoparm $batd/energy_now - mWh 000
-                    echoparm $batd/power_now - mW 000
+                    printparm "%-59s = ##%6d## [mWh]" $batd/energy_full_design "" 000
+                    printparm "%-59s = ##%6d## [mWh]" $batd/energy_full "" 000
+                    printparm "%-59s = ##%6d## [mWh]" $batd/energy_now "" 000
+                    printparm "%-59s = ##%6d## [mW]" $batd/power_now "" 000
                 elif [ -f $bat/charge_full ]; then
-                    echoparm $batd/charge_full_design - mAh 000
-                    echoparm $batd/charge_full - mAh 000
-                    echoparm $batd/charge_now - mAh 000
-                    echoparm $batd/current_now - mA 000
+                    printparm "%-59s = ##%6d## [mAh]" $batd/charge_full_design "" 000
+                    printparm "%-59s = ##%6d## [mAh]" $batd/charge_full "" 000
+                    printparm "%-59s = ##%6d## [mAh]" $batd/charge_now "" 000
+                    printparm "%-59s = ##%6d## [mA]" $batd/current_now "" 000
                 fi
-                echoparm $batd/status
+                printparm "%-59s = ##%s##" $batd/status
                 echo
 
                 if [ $tpacpi -eq 0 ]; then
                     # --- show ThinkPad charge thresholds via tpacpi-bat
-                    show_tpacpi_thresholds $batt $bati
+                    print_tpacpi_thresholds $batt $bati
                     echo
                 fi # if $tpcacpi
             fi # if $batd
@@ -668,31 +656,31 @@ if [ "$show_all" = "1" ]; then
             if [ -f $device/class ] && [ -f $device/power/control ]; then
                 case $(cat $device/class) in
                     0x020000) # ethernet
-                        echoparm $device/power/control - Ethernet
+                        printparm "%-s = ##%s## (Ethernet)" $device/power/control
                         ;;
                     
                     0x028000) # wireless
-                        echoparm $device/power/control - Wireless
+                        printparm "%-s = ##%s## (Wireless)" $device/power/control
                         ;;
                                         
                     0x040300) # audio
-                        echoparm $device/power/control - Audio
+                        printparm "%-s = ##%s## (Audio)" $device/power/control
                         ;;
                     
                     0x060000) # host bridge
-                        echoparm $device/power/control - Host Bridge
+                        printparm "%-s = ##%s## (Host Bridge)" $device/power/control
                         ;;
                         
                     0x080500) # SD card reader
-                        echoparm $device/power/control - SD Card Reader
+                        printparm "%-s = ##%s## (SD Card Reader)" $device/power/control
                         ;;
                         
                     0x088000|0x088001) # card reader
-                        echoparm $device/power/control - Card Reader
+                        printparm "%-s = ##%s## (Card Reader)" $device/power/control
                         ;;
                         
                     0x0c0000|0x0c0010) # firewire
-                        echoparm $device/power/control - Firewire
+                        printparm "%-s = ##%s## (Firewire)" $device/power/control
                         ;;
                 esac 
             fi
@@ -707,7 +695,7 @@ if [ "$show_all" = "1" ]; then
     else
         echo "tlp usb autosuspend = not enabled"
     fi
-    echo "tlp usb blacklist = ${USB_BLACKLIST:=(not configured)}"
+    echo "tlp usb blacklist   = ${USB_BLACKLIST:=(not configured)}"
     echo
     
     if [ -x $TLPUSB ]; then
