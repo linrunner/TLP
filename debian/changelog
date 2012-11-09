@@ -11,6 +11,7 @@ tlp (0.3.7.900-1) lucid; urgency=low
         - when aspm policy is not writable show "using bios prefs"
         - show interpretation for i915 params
         - show disk status
+        - show tp-smapi, tpacpi-bat availability and status
   * Bugfixes
     - tlp-stat: exclude usb media from "Storage Devices" section
 

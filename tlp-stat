@@ -203,6 +203,11 @@ done
 
 read_args $*
 
+# check for and read conffile
+read_defaults
+conf_present=$?
+
+# check prereqisites
 if [ "$needs_root_priv" = "1" ]; then
     check_root
     load_tp_modules
@@ -215,8 +220,7 @@ echo
 
 # --- show configuration
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
-    if [ -f $CONFFILE ]; then
-        . $CONFFILE
+    if [ $conf_present -eq 0 ]; then
         echo "+++ Configured Settings: $CONFFILE"
         egrep -v '^#|^\s*$' $CONFFILE
         echo
@@ -227,7 +231,6 @@ if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
 fi
 
 if [ "$show_all" = "1" ]; then
-
     # --- show system info
     echo "+++ System Info"
     read_dmi sys_vendor product_version product_name
@@ -542,6 +545,28 @@ fi # show_all
 
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show battery info & charge thresholds
+
+    # --- show availability of ThinkPad battery functions
+    if [ -d $TPACPI ]; then
+        echo "+++ ThinkPad Extended Battery Functions"
+        echo -n "tp-smapi   = "
+        case $tpsmapi in
+            0)   echo "active" ;;
+            2)   echo "inactive (kernel module 'tp_smapi' load error)" ;;
+            127) echo "inactive (kernel module 'tp_smapi' not installed)" ;;
+            *)   echo "unknown status"
+        esac
+
+        echo -n "tpacpi-bat = "
+        case $tpacpi in
+            0)   echo "active" ;;
+            2)   echo "inactive (kernel module 'acpi_call' load error)" ;;
+            4)   echo "inactive (disabled by user configuration)" ;;
+            127) echo "inactive (kernel module 'acpi_call' not installed)" ;;
+            255) echo "inactive (unsupported hardware)" ;;
+        esac
+        echo
+    fi
     
     if [ $tpsmapi -eq 0 ]; then
         # it's a ThinkPad with tp-smapi
@@ -551,9 +576,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
             
             if bat_exists $batt ; then
                 case $batt in
-                    BAT0) bati=1; echo "+++ ThinkPad Battery (Main)" ;;
-                    BAT1) bati=2; echo "+++ ThinkPad Battery (Ultrabay/Slice)" ;;
-                    *)    bati=1  echo "+++ ThinkPad Battery" ;;
+                    BAT0) bati=1; echo "+++ ThinkPad Battery Status (Main)" ;;
+                    BAT1) bati=2; echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
+                    *)    bati=1  echo "+++ ThinkPad Battery Status" ;;
                 esac
 
                 printparm "%-59s = ##%s##" $batd/manufacturer
@@ -597,22 +622,15 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 if [ $tpacpi -eq 0 ]; then
                     # it's a ThinkPad with tpacpi-bat only
                     case $batt in
-                        BAT0) bati=1; echo "+++ ThinkPad Battery (Main)" ;;
-                        BAT1) bati=2; echo "+++ ThinkPad Battery (Ultrabay/Slice)" ;;
-                        *)    bati=1; echo "+++ ThinkPad Battery" ;;
+                        BAT0) bati=1; echo "+++ ThinkPad Battery Status (Main)" ;;
+                        BAT1) bati=2; echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
+                        *)    bati=1; echo "+++ ThinkPad Battery Status" ;;
                     esac
                 else
                     # it's some other laptop model or brand 
-                    echo "+++ Battery"
+                    echo "+++ Battery Status"
                 fi
-                if [ -d /sys/devices/platform/thinkpad_acpi ]; then
-                    echo -n "Hint: ThinkPad extended battery info not available "
-                    case $tpsmapi in
-                        2)   echo "(tp-smapi kernel module not loaded)."    ;;
-                        255) echo "(tp-smapi kernel module not installed)." ;;
-                    esac
-                fi
-
+                
                 printparm "%-59s = ##%s##" $batd/manufacturer
                 printparm "%-59s = ##%s##" $batd/model_name
                 printparm "%-59s = ##%6d##" $batd/cycle_count 

@@ -896,19 +896,19 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
 # --- ThinkPad Battery Functions
 
 check_tpsmapi () {  # check if tp_smapi is supported and loaded
-    # rc: 0=supported/2=module tp_smapi not loaded/255=not installed
+    # rc: 0=supported/2=module tp_smapi not loaded/127=not installed
     # retval: $tpsmapi
 
     if [ -d $SMAPIDIR ]; then
         # module loaded
         tpsmapi=0
     else
-        if [ -n "$(modinfo tp_smapi 2> /dev/null)" ] ; then
+        if [ -n "$(modinfo tp_smapi 2> /dev/null)" ]; then
             # module installed but not loaded
             tpsmapi=2
         else
             # module not installed
-            tpsmapi=255
+            tpsmapi=127
         fi
     fi
 
@@ -917,14 +917,20 @@ check_tpsmapi () {  # check if tp_smapi is supported and loaded
 }
 
 check_tpacpi () { # check if tpacpi-bat is supported
-    # rc: 0=supported/2=module acpi_call not loaded/4=disabled/255=not supported
+    # rc: 0=supported/2=acpi_call not loaded/4=disabled/
+    #     127=acpi_call not installed/255=not supported
     # retval: $tpacpi
 
-    if [ "$DISABLE_TPACPIBAT" != "1" ]; then
+    if [ -z "$(modinfo acpi_call 2> /dev/null)" ]; then
+        # module not installed
+        tpacpi=127
+    else
         $TPACPIBAT forceDischarge 1 > /dev/null 2>&1
         tpacpi=$?
-    else
-        tpacpi=4
+
+        if [ $tpacpi -eq 0 ] && [ "$DISABLE_TPACPIBAT" = "1" ]; then
+            tpacpi=4
+        fi
     fi
 
     echo_debug "bat" "check_tpacpi: rc=$tpacpi"
