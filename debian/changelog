@@ -10,6 +10,7 @@ tlp (0.3.7.900-1) lucid; urgency=low
         - remove dmidecode; get dmi data from /sys/class/dmi/id/
         - when aspm policy is not writable show "using bios prefs"
         - show interpretation for i915 params
+        - show disk status
   * Bugfixes
 
  -- Thomas Koch <linrunner@gmx.net>  Sun, 04 Nov 2012 18:19:20 +0200

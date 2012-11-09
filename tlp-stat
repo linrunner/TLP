@@ -140,23 +140,6 @@ print_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
     return 0
 }
 
-read_dmi () { # $*: keywords
-    local ds key
-
-    dmirslt=""
-    for key in $*; do
-        ds="$( cat ${DMID}/$key 2> /dev/null | \
-                egrep -iv 'not available|to be filled|DMI table is broken' )"
-        if [ -n "$dmirslt" ]; then
-            [ -n "$ds" ] && dmirslt="$dmirslt $ds"
-        else
-            dmirslt="$ds"
-        fi
-    done
-    
-    return 0
-}
-
 read_args () {
     for a in $*; do
         case $a in
@@ -383,6 +366,7 @@ if [ "$show_all" = "1" ]; then
         get_disk_dev $dev
     
         if [ -b /dev/$disk_dev ]; then
+            get_disk_state $disk_dev
             check_disk_hdparm_cap $disk_dev
             if [ $? = 0 ]; then
                 echo "/dev/$disk_dev:"
@@ -404,6 +388,8 @@ if [ "$show_all" = "1" ]; then
                     0|255) echo "none/disabled" ;;
                     *)     echo $apm ;;
                 esac
+
+                echo "          Status    = $disk_state"
 
                 get_disk_trim_capability $disk_dev
                 trim=$?
@@ -435,6 +421,9 @@ if [ "$show_all" = "1" ]; then
                                         { printf "          %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
                 fi
                 echo
+
+                # restore standby state 
+                [ "$disk_state" = "standby" ] && spindown_disk $disk_dev
             fi
         fi
     done

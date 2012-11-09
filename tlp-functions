@@ -121,6 +121,23 @@ load_tp_modules () { # load ThinkPad specific kernel modules
     return 0
 }
 
+read_dmi () { # $*: keywords; retval: $dmirslt
+    local ds key
+
+    dmirslt=""
+    for key in $*; do
+        ds="$( cat ${DMID}/$key 2> /dev/null | \
+                egrep -iv 'not available|to be filled|DMI table is broken' )"
+        if [ -n "$dmirslt" ]; then
+            [ -n "$ds" ] && dmirslt="$dmirslt $ds"
+        else
+            dmirslt="$ds"
+        fi
+    done
+    
+    return 0
+}
+
 get_power_state () { # rc: 0=ac, 1=battery
     $ACPWR
     return $? 
@@ -394,6 +411,19 @@ echo_disk_firmware () { # $1: dev
     return 0
 }
 
+get_disk_state () { # $1: dev; retval: $disk_state
+    disk_state=$($HDPARM -C /dev/$1 2>&1 | awk -F ':' '/drive state is/ { gsub(/ /,"",$2); print $2; }')
+    [ -z "$disk_state" ] && disk_state="(not available)"
+    
+    return 0
+}
+
+spindown_disk () { # $1: dev
+    $HDPARM -y /dev/$1 2>&1 > /dev/null
+    
+    return 0
+}
+
 get_disk_apm_level () { # $1: dev; rc: apm
     local apm
     
@@ -423,7 +453,7 @@ get_disk_trim_capability () { # $1: dev; rc: 0=no, 1=yes, 254=no ssd device
     return $trim
 }
 
-get_disk_dev () { # $1: id or dev; rc: disk_dev, disk_id
+get_disk_dev () { # $1: id or dev; retval: $disk_dev, $disk_id
     if [ -L /dev/disk/by-id/$1 ]; then
         # $1 is disk id
         disk_id=$1
