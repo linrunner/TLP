@@ -5,6 +5,7 @@
 # This software is licensed under the GPL v2.
 
 # --- Constants
+
 readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
 readonly LIBS="tlp-functions tlp-rf-func"
 
@@ -26,6 +27,7 @@ readonly HWMONFAN='/sys/class/hwmon/hwmon*/device'
 readonly DEBUGLOG=/var/log/debug
 
 # --- Variables
+
 nodebug=1
 
 needs_root_priv=1
@@ -37,6 +39,7 @@ show_temp=0
 show_trace=0
 
 # --- Functions
+
 printparm () { # $1: format, $2: file, $3: namsg, $4: cutoff
     local format="$1"
     local sysf="$2"
@@ -181,6 +184,7 @@ read_args () {
 }
     
 # --- Locate and source libraries
+
 for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
 if [ ! -d $libdir ]; then
     echo "Error: missing library directory ($LIBDIRS)."
@@ -196,6 +200,7 @@ for lib in $LIBS; do
 done
 
 # --- MAIN
+
 read_args $*
 
 if [ "$needs_root_priv" = "1" ]; then
