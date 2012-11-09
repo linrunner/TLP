@@ -12,6 +12,7 @@ tlp (0.3.7.900-1) lucid; urgency=low
         - show interpretation for i915 params
         - show disk status
   * Bugfixes
+    - tlp-stat: exclude usb media from "Storage Devices" section
 
  -- Thomas Koch <linrunner@gmx.net>  Sun, 04 Nov 2012 18:19:20 +0200
 

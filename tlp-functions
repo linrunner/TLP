@@ -384,7 +384,7 @@ set_phc_controls () {
 }
 
 check_disk_hdparm_cap () { # $1: dev; rc: 0=none/1=available
-    if [ -z "$($HDPARM -I /dev/$1 2>&1 | grep 'Invalid exchange')" ]; then
+    if [ -z "$($HDPARM -I /dev/$1 2>&1 | egrep 'Invalid exchange|missing sense data')" ]; then # 
         return 0
     else
         return 1
