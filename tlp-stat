@@ -1,4 +1,5 @@
 #!/bin/sh
+#!/bin/sh
 # tlp - display power save and usb autosuspend status
 #
 # Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
@@ -237,7 +238,7 @@ if [ "$show_all" = "1" ]; then
     echo "System         = $dmirslt"
     read_dmi bios_version
     echo "BIOS           = $dmirslt"
-
+    
     # --- show release & kernel info
     [ -n "$LSBREL" ] && echo "Release        = $($LSBREL -d -s)"
     echo "Kernel         = $(uname -r -m)"
@@ -264,6 +265,9 @@ if [ "$show_all" = "1" ]; then
     
     # --- show cpu info
     echo "+++ Processor"
+    sed -rn 's/model name[ \t]+: (.+)/CPU Model      = \1/p' /proc/cpuinfo | head -1
+    echo
+
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
         printparm "%-54s = ##%s##" $cpuf/scaling_governor
         if [ -f $cpuf/scaling_governor ]; then
