@@ -28,7 +28,7 @@ read_defaults
 check_tlp_enabled || exit 1
 check_laptop_mode_tools || exit 2
 
-# Get cmd line args
+# get cmd line args
 mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
 mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
 mode3=$(echo $3 | tr "[:upper:]" "[:lower:]")
@@ -37,7 +37,7 @@ echo_debug "run" "+++ mode=$mode $mode2 $mode3"
 echo_debug "path" "PATH=$PATH"
 
 case "$mode" in
-    init) # System initialization/shutdown: sysv, upstart, systemd, ...
+    init) # system initialization/shutdown: sysv, upstart, systemd, ...
         case $mode2 in
             start|restart|force-reload)
                 echo -n "Loading tp-smapi kernel module..."
@@ -50,7 +50,7 @@ case "$mode" in
                 set_charge_thresholds
                 echo "done."
 
-                # Wake upowerd only if present & arg "upwr" is given
+                # wake upowerd only if present & arg "upwr" is given
                 UPWR=$(which upower)
                 if [ -n "$UPWR" ] && [ "$mode3" = "upwr" ]; then
                     echo -n "Starting upowerd..."
@@ -69,7 +69,7 @@ case "$mode" in
                     echo "done."
                 fi
                 
-                # Remove usb startup flag
+                # remove usb startup flag
                 [ -f $USB_DONE ] && rm $USB_DONE
                 ;;
 
@@ -80,7 +80,7 @@ case "$mode" in
         esac
         ;;
 
-    start) # Set start power mode depending on state
+    start) # set start power mode depending on state
         check_root
         get_power_state
         pwr=$?
@@ -109,7 +109,7 @@ case "$mode" in
         echo_started_mode $pwr
         ;;
 
-    true|bat*) # Set battery power mode
+    true|bat*) # set battery power mode
         check_root
         load_tp_modules
         set_laptopmode 1
@@ -135,7 +135,7 @@ case "$mode" in
         echo_started_mode 1
         ;;
         
-    false|ac) # Set ac power mode
+    false|ac) # set ac power mode
         check_root
         load_tp_modules
         set_laptopmode 0
@@ -172,45 +172,51 @@ case "$mode" in
         set_usb_suspend 1 auto
         ;;
         
-    bayoff) # Power off drive bay
+    bayoff) # power off drive bay
         check_root
         poweroff_drivebay 1
         ;;
         
-    xlogin) # Called on desktop login
+    xlogin) # called on desktop login
         ;;
 
-    discharge) # Discharge battery completely (to recalibrate)
-        check_root
-        load_tp_modules
-        discharge_battery $2
-        ;;
-        
-    setcharge) # Set charge thresholds (temporarily)
+    setcharge) # set charge thresholds (temporarily)
         check_root
         load_tp_modules
         setcharge_battery $2 $3 $4
         ;;
 
-    fullcharge) # Charge battery up to 100% (temporarily)
+    fullcharge) # charge battery up to 100% (temporarily)
         check_root
         load_tp_modules
         setcharge_battery 96 100 $2
         ;;
+
+    chargeonce) # charge battery to upper threshold once
+        check_root
+        load_tp_modules
+        chargeonce_battery $2
+        ;;
+
+    discharge) # discharge battery completely (to recalibrate)
+        check_root
+        load_tp_modules
+        discharge_battery $2
+        ;;
         
-    recalibrate) # Recalibrate battery, i.e. discharge and charge to 100%
+    recalibrate) # recalibrate battery, i.e. discharge and charge to 100%
         check_root
         load_tp_modules
         setcharge_battery 96 100 $2
         discharge_battery $2
         ;;        
         
-    stat) # Show status
+    stat) # show status
         shift
         tlp-stat $*
         ;;
 
-    diskid) # Show disk-by-id
+    diskid) # show disk-by-id
         { for dev in $(ls /dev/disk/by-id/ | egrep '^ata' | egrep -v '\-part[1-9]+'); do
             get_disk_dev $dev
             echo "$disk_dev: $disk_id"

@@ -1,5 +1,4 @@
 #!/bin/sh
-#!/bin/sh
 # tlp - display power save and usb autosuspend status
 #
 # Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
@@ -18,7 +17,7 @@ readonly LSBREL=$(which lsb_release 2> /dev/null)
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
 readonly TPACPI=/sys/devices/platform/thinkpad_acpi
-readonly DMID=/sys/class/dmi/id/
+
 
 readonly IBMTHERMAL=/proc/acpi/ibm/thermal
 readonly CORETEMP='/sys/devices/platform/coretemp.0'
@@ -575,7 +574,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     if [ $tpsmapi -eq 0 ]; then
         # it's a ThinkPad with tp-smapi
         
-        for batd in /sys/devices/platform/smapi/BAT[01]; do
+        for batd in $SMAPIDIR/BAT[01]; do
             batt=${batd##/*/}
             
             if bat_exists $batt ; then
@@ -613,10 +612,10 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 echo
             fi
         done
-    elif [ -d /sys/class/power_supply ]; then
+    elif [ -d $ACPIBATDIR ]; then
         # --- show ACPI data
         
-        for batd in /sys/class/power_supply/*; do
+        for batd in $ACPIBATDIR/*; do
             if [ -d $batd ] \
                 && [ "$(cat $batd/type)" = "Battery" ] \
                 && [ "$(cat $batd/present)" = "1" ]; then
@@ -643,7 +642,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mWh]" $batd/energy_full "" 000
                     printparm "%-59s = ##%6d## [mWh]" $batd/energy_now "" 000
                     printparm "%-59s = ##%6d## [mW]" $batd/power_now "" 000
-                elif [ -f $bat/charge_full ]; then
+                elif [ -f $batd/charge_full ]; then
                     printparm "%-59s = ##%6d## [mAh]" $batd/charge_full_design "" 000
                     printparm "%-59s = ##%6d## [mAh]" $batd/charge_full "" 000
                     printparm "%-59s = ##%6d## [mAh]" $batd/charge_now "" 000

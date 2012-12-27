@@ -34,6 +34,7 @@ readonly ACPIBATDIR=/sys/class/power_supply
 readonly NETD=/sys/class/net
 readonly PCID=/sys/bus/pci/devices
 readonly I915D=/sys/module/i915/parameters
+readonly DMID=/sys/class/dmi/id/
 
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT=2
@@ -1006,7 +1007,7 @@ normalize_thresholds () { # check values and enforce start < stop - 3
             stop)  thresh=$2 ;;
         esac
         
-        thresh=$(echo $thresh | egrep '^[0-9]{1,3}$') # check for 1..3 digits
+        thresh=$(echo "$thresh" | egrep '^[0-9]{1,3}$') # check for 1..3 digits
         [ -z "$thresh" ] && thresh=-1 # replace empty value with -1
 
         # ensure min/max values; replace 0 with defaults 96/100
@@ -1198,7 +1199,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
 
     if [ $tpacpi -ne 0 ] && [ $tpsmapi -ne 0 ]; then
         echo_debug "bat" "setcharge_battery.noapi"
-        echo "Error: ThinkPad battery functions not available."
+        echo "Error: ThinkPad extended battery functions not available."
         return 1
     fi
 
@@ -1282,6 +1283,117 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     return 0
 }
 
+get_sysval () { # $1: file; rc: sysfile value
+    local sysf="$1"
+    local val=""
+
+    [ -f $sysf ] && val=$(cat $sysf 2> /dev/null)
+    val=$(echo "$val" | egrep '^[0-9]+$') # check for non-numeric chars 
+    [ -z "$val" ] && val=0 # empty string
+    
+    return $val
+}
+
+chargeonce_battery () { # charge battery to upper threshold once
+    # $1: battery
+    # global param: $tpacpi, $tpsmapi
+    # rc: 0=ok/1=error
+
+    local bat bdir temp_start_thresh
+    local start_thresh=""
+    local stop_thresh=""
+    local efull=0
+    local enow=0
+    local ccharge=0
+
+    # check params
+    if [ $# -gt 0 ]; then 
+        # some parameters given, check them
+        
+        # get battery arg
+        bat=${1:-BAT0} # default is BAT0
+        bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
+    else 
+        # no parameters given, assume BAT0
+        bat=BAT0
+    fi
+
+    # check prerequisites: tpacpi-bat or tp-smapi 
+    check_tpacpi; check_tpsmapi
+    echo_debug "bat" "chargeonce_battery($bat): tpacpi-bat=$tpacpi; tp_smapi=$tpsmapi"
+    if [ $tpacpi -ne 0 ] && [ $tpsmapi -ne 0 ]; then
+        echo_debug "bat" "chargeonce_battery.noapi"
+        echo "Error: ThinkPad extended battery functions not available."
+        return 1
+    fi
+
+    # check if selected battery is present
+    if ! bat_exists $bat ; then 
+        echo_debug "bat" "chargeonce_battery($bat).not_present"
+        echo "Error: battery $bat not present."
+        return 1
+    fi
+
+    # get and check thresholds from configuration
+    case $bat in
+        BAT0)
+            stop_thresh=$STOP_CHARGE_THRESH_BAT0
+            start_thresh=$START_CHARGE_THRESH_BAT0
+            ;;
+            
+        BAT1)
+            stop_thresh=$STOP_CHARGE_THRESH_BAT1
+            start_thresh=$START_CHARGE_THRESH_BAT1
+            ;;
+    esac
+    [ -z "$stop_thresh" ] && stop_thresh=100
+    if [ -z "$start_thresh" ] ; then
+        echo_debug "bat" "chargeonce_battery($bat).start_threshold_not_configured"
+        echo "Error: no start charge threshold configured for $bat."
+        return 1
+    fi
+
+    # get current charge level (in %)
+    if [ $tpsmapi -eq 0 ]; then
+        # use tp-smapi
+        bdir="$SMAPIDIR/$bat"
+        get_sysval $bdir/remaining_percent; ccharge=$?
+    else
+        # use ACPI data
+        bdir="$ACPIBATDIR/$bat"
+        if [ -f $bdir/energy_full ]; then 
+            get_sysval $bdir/energy_full; efull=$?
+            get_sysval $dir/energy_now; enow=$?
+        fi
+        
+        if [ $efull -ne 0 ]; then
+            ccharge=$(( 100 * $enow / $efull ))
+        else
+            ccharge=-1
+        fi
+    fi
+    
+    if [ $ccharge -eq -1 ] ; then
+        echo_debug "bat" "chargeonce_battery($bat).charge_level_unknown: enow=$enow; efull=$efull; ccharge=$ccharge"
+        echo "Error: cannot determine charge level for $bat."
+        return 1
+    else
+        echo_debug "bat" "chargeonce_battery($bat).charge_level: enow=$enow; efull=$efull; ccharge=$ccharge"
+    fi
+
+    temp_start_thresh=$(( $stop_thresh - 4 ))
+    if [ $temp_start_thresh -le $ccharge ] ; then
+        echo_debug "bat" "chargeonce_battery($bat).charge_level_too_high: $temp_start_thresh $stop_thresh"
+        echo "Error: current charge level ($ccharge) of $bat is higher than stop charge threshold - 4 ($temp_start_thresh)."
+        return 1
+    else
+        echo_debug "bat" "chargeonce_battery($bat).setcharge: $temp_start_thresh $stop_thresh"
+    fi
+    
+    setcharge_battery $temp_start_thresh $stop_thresh $bat
+    return $?
+}
+
 cancel_discharge () { # called from trap -- global param: $bat
     do_force_discharge $bat 0
     echo_debug "bat" "discharge_battery.cancelled($bat)"
@@ -1312,7 +1424,7 @@ discharge_battery () { # discharge battery
 
     if [ $tpacpi -ne 0 ] && [ $tpsmapi -ne 0 ]; then
         echo_debug "bat" "setcharge_battery.noapi"
-        echo "Error: ThinkPad battery functions not available."
+        echo "Error: ThinkPad extended battery functions not available."
         return 1
     fi
 
@@ -1322,7 +1434,7 @@ discharge_battery () { # discharge battery
     bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
  
     # check if selected battery is present
-    if ! bat_exists $bat ; then # returns $bdir
+    if ! bat_exists $bat ; then
         echo_debug "bat" "discharge_battery.not_present($bat)"
         echo "Error: battery $bat not present."
         return 1

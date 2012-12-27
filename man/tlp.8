@@ -1,4 +1,4 @@
-.TH TLP 8 "2011-10-15" "Power Management" ""
+.TH TLP 8 "2012-12-27" "Power Management" ""
 .SH NAME
 tlp \- apply laptop power management settings
 .SH SYNOPSIS
@@ -33,17 +33,20 @@ Enable autosuspend for all usb devices, except blacklisted ones.
 Turn off optical drive in drive bay (or ThinkPad UltrayBay). 
 The drive may be reenabled by pulling the eject lever or pushing the media eject button on newer models.
 .TP
-.B discharge [BAT0|BAT1] \fR(ThinkPads only)
-Force discharge of main (BAT0) or Ultrabay battery (BAT1).
-.TP
 .B setcharge [START_CHARGE STOP_CHARGE [BAT0|BAT1]] \fR(ThinkPads only)
-Set charge thresholds temporarily. Values must be between 1 and 100, Stop > Start + 3. Configured thresholds are restored upon next system start. When called without arguments, configured thresholds are set.
+Set charge thresholds of main (BAT0) or Ultrabay (BAT1) battery temporarily. Values must be between 1 and 100, Stop > Start + 3. Configured thresholds are restored upon next system start. When called without arguments, configured thresholds are set.
 .TP
 .B fullcharge [BAT0|BAT1] \fR(ThinkPads only)
-Set charge thresholds to factory preset (96/100) temporarily. Configured thresholds are restored upon next system start.
+Set charge thresholds of main (BAT0) or Ultrabay (BAT1) battery to factory preset (96/100) temporarily (causing a full charge). Configured thresholds are restored upon next system start.
+.TP
+.B chargeonce [BAT0|BAT1] \fR(ThinkPads only)
+Charge main (BAT0) or Ultrabay (BAT1) battery to upper charge threshold once (bypassing lower threshold). Configured thresholds are restored upon next system start.
+.TP
+.B discharge [BAT0|BAT1] \fR(ThinkPads only)
+Force complete discharge of main (BAT0) or Ultrabay (BAT1) battery.
 .TP
 .B recalibrate [BAT0|BAT1] \fR(ThinkPads only)
-Battery recalibration: discharge und recharge to 100%.
+Battery recalibration: completely discharge main (BAT0) or Ultrabay (BAT1) battery and recharge to 100%.
 .TP
 .B stat
 Same as tlp-stat.

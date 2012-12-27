@@ -1,10 +1,10 @@
-tlp (0.3.7.900-1) lucid; urgency=low
+tlp (0.3.7.901-1) lucid; urgency=low
 
   *** Development version ***
 
   * Packaging
   * Features
-    - Remove 2s delay in applying settings upon change of the power source
+    - tlp chargeonce: charge battery to upper threshold once
     - tlp-stat:
         - nicer output, code refactored
         - remove dmidecode; get dmi data from /sys/class/dmi/id/
@@ -13,10 +13,11 @@ tlp (0.3.7.900-1) lucid; urgency=low
         - show disk status
         - show tp-smapi, tpacpi-bat availability and status
         - show cpu model
+    - Remove 2s delay in applying settings upon change of the power source
   * Bugfixes
     - tlp-stat: exclude usb media from "Storage Devices" section
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 10 Nov 2012 12:54:59 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 27 Dec 2012 23:24:21 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 
