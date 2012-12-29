@@ -40,7 +40,6 @@ install-tlp:
 	install -D -m 755 zztlp $(PLIB)/power.d/zztlp
 	install -D -m 755 49wwan $(PLIB)/sleep.d/49wwan
 	install -m 755 49bay $(PLIB)/sleep.d/49bay
-	install -D -m 644 tlp.desktop $(DESTDIR)/etc/xdg/autostart/tlp.desktop
 	install -D -m 644 tlp.bash_completion $(DESTDIR)/etc/bash_completion.d/tlp
 
 install-rdw:	
@@ -73,7 +72,6 @@ uninstall-tlp:
 	rm $(PLIB)/power.d/zztlp
 	rm $(PLIB)/sleep.d/49wwan
 	rm $(PLIB)/sleep.d/49bay
-	rm $(DESTDIR)/etc/xdg/autostart/tlp.desktop
 	rm $(DESTDIR)/etc/bash_completion.d/tlp
 
 uninstall-rdw: 	

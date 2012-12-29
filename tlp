@@ -177,9 +177,6 @@ case "$mode" in
         poweroff_drivebay 1
         ;;
         
-    xlogin) # called on desktop login
-        ;;
-
     setcharge) # set charge thresholds (temporarily)
         check_root
         load_tp_modules

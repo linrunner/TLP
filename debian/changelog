@@ -3,6 +3,7 @@ tlp (0.3.7.901-1) lucid; urgency=low
   *** Development version ***
 
   * Packaging
+    - Remove desktop autostart hook
   * Features
     - tlp chargeonce: charge battery to upper threshold once
     - tlp-stat:
