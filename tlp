@@ -51,8 +51,7 @@ case "$mode" in
                 echo "done."
 
                 # wake upowerd only if present & arg "upwr" is given
-                UPWR=$(which upower)
-                if [ -n "$UPWR" ] && [ "$mode3" = "upwr" ]; then
+                if cmd_exists $UPWR && [ "$mode3" = "upwr" ]; then
                     echo -n "Starting upowerd..."
                     $UPWR -e > /dev/null 2>&1
                     echo "done."

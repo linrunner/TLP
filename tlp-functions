@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER=0.3.7.900
+readonly TLPVER=0.3.7.901
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -26,6 +26,7 @@ readonly UDEVADM=udevadm
 readonly LAPMODE=laptop_mode
 readonly NMCLI=nmcli
 readonly NMTOOL=nm-tool
+readonly UPWR=upower
 
 readonly TPACPIBAT=$libdir/tpacpi-bat
 
@@ -64,6 +65,10 @@ echo_debug () { # write debug msg if tag matches -- $1: tag; $2: msg;
     fi
 }
 
+cmd_exists () { # test if command exists -- $1: command
+    command -v $1 > /dev/null 2>&1
+}
+
 check_sysfs ()  { # check if sysfile exists -- $1: routine; $2: sysfs path 
     if patinstr "sysfs" "$TLP_DEBUG"; then
         if [ ! -e $2 ]; then
@@ -72,8 +77,12 @@ check_sysfs ()  { # check if sysfile exists -- $1: routine; $2: sysfs path
     fi
 }
 
-check_root () { # check for root privilege
-    if [ "$(id -u)" != "0" ]; then
+test_root () { # test root privilege -- rc: 0=root, 1=not root
+    [ "$(id -u)" = "0" ]
+}
+
+check_root () { # show error message and exit when root privilege missing
+    if ! test_root; then
         echo "Error: missing root privilege." 1>&2
         exit 1
     fi
@@ -91,9 +100,7 @@ check_tlp_enabled () { # check if TLP is enabled in config file
 }
 
 check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=installed
-    local lmt=$(which $LAPMODE 2> /dev/null)
-    
-    if [ -n "$lmt" ] && [ -x "$lmt" ]; then
+    if cmd_exists $LAPMODE; then
         echo "Error: TLP power save is disabled because laptop-mode-tools is installed." 1>&2
         echo "       Please uninstall laptop-mode-tools." 1>&2
         echo 1>&2

@@ -18,7 +18,7 @@ tlp (0.3.7.901-1) lucid; urgency=low
   * Bugfixes
     - tlp-stat: exclude usb media from "Storage Devices" section
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 27 Dec 2012 23:24:21 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 03 Jan 2013 17:38:51 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 

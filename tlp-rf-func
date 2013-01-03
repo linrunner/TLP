@@ -7,9 +7,8 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly RFKILL="$(which rfkill 2> /dev/null)"
+readonly RFKILL="rfkill"
 readonly RFKD="/dev/rfkill"
-readonly TEST="$(which test 2> /dev/null)"
 
 readonly ALLDEV="bluetooth wifi wwan"
 readonly STATEDIR="/var/lib/tlp"
@@ -91,6 +90,10 @@ get_devs () { # get radio device state -- $1: rftype; retval $devs: 0=off/1=on
     return 0
 }
 
+test_rfkill_perms () { # test if either root priv or rfkill device writable
+    test_root || [ -w $RFKD ]
+}
+
 device_state () { # get radio type state -- $1: rftype; retval $devc, $devs: 0=off/1=on 
     echo_debug "rf" "device_state($1)"
     
@@ -111,15 +114,15 @@ device_on () { # enable radio type -- $1: rftype
     # quit if device is already on
     [ "$devs" = "1" ] && return 0
 
-    if [ "$rfkdev" = "1" ] && [ -x "$RFKILL" ]; then
-        if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
+    if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
+        if test_rfkill_perms ; then
             echo_debug "rf" "device_on($1).rfkill"
             $RFKILL unblock $1
         else
             err_no_root_priv "device_on($1).rfkill"
         fi
     else
-        if [ "$(id -u)" = "0" ]; then
+        if test_root ; then
             echo_debug "rf" "device_on($1).devc"
             echo -n $devon > $devc
         else
@@ -145,15 +148,15 @@ device_off () { # disable radio type -- $1: rftype
     # quit if device is already off
     [ "$devs" = "0" ] && return 0
 
-    if [ "$rfkdev" = "1" ] && [ -x "$RFKILL" ]; then
-        if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
-            echo_debug "rf" "device_off($1).rfkill"
+    if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
+        if test_rfkill_perms ; then
+           echo_debug "rf" "device_off($1).rfkill"
             $RFKILL block $1
         else
             err_no_root_priv "device_off($1).rfkill"
         fi
     else
-        if [ "$(id -u)" = "0" ]; then
+        if test_root ; then
             echo_debug "rf" "device_off($1).devc"
             echo -n $devoff > $devc
         else
@@ -176,8 +179,8 @@ device_toggle () { # toggle radio type state -- $1: rftype
 
     get_devs $1
 
-    if [ "$rfkdev" = "1" ] && [ -x "$RFKILL" ]; then
-         if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
+    if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
+        if test_rfkill_perms ; then
             echo_debug "rf" "device_toggle($1).rfkill"
             case $devs in
                 0) $RFKILL unblock $1 ;;
@@ -188,7 +191,7 @@ device_toggle () { # toggle radio type state -- $1: rftype
             err_no_root_priv "device_toogle($1).rfkill"
         fi
     else
-        if [ "$(id -u)" = "0" ]; then
+        if test_root ; then
             echo_debug "rf" "device_toggle($1).devc"
             case $devs in
                 0) echo -n $devon > $devc ;;
@@ -216,8 +219,8 @@ device_set_state () { # set radio type state -- $1: rftype, $2: state 0=off/1=on
     # quit if state not 0 nor 1
     [ "$2" = "0" ] || [ "$2" = "1" ] || return 0
 
-    if [ "$rfkdev" = "1" ] && [ -x "$RFKILL" ]; then
-        if $TEST "$(id -u)" = "0" -o -w $RFKD ; then
+    if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
+        if test_rfkill_perms ; then
             echo_debug "rf" "device_set_state($1, $2).rfkill"
             case $2 in
                 0) $RFKILL block $1 ;;
@@ -227,7 +230,7 @@ device_set_state () { # set radio type state -- $1: rftype, $2: state 0=off/1=on
             err_no_root_priv "device_set_state($1).rfkill"
         fi
     else
-        if [ "$(id -u)" = "0" ]; then
+        if test_root ; then
             echo_debug "rf" "device_set_state($1, $2).devc"
             case $2 in
                 0) echo -n $devoff > $devc ;;

@@ -39,9 +39,7 @@ check_run_flag $LOCK_RDW && exit 0
 check_timed_lock tlp-rdw-nm && exit 0
 
 # Determine interface type
-nmcli=$(which $NMCLI 2> /dev/null)
-
-if [ -n "$nmcli" ] && [ -x "$nmcli" ]; then
+if cmd_exists $NMCLI ; then
     # nmcli is available
     case $iface in
         ppp*) # iface != device -> maybe 3g usb stick?

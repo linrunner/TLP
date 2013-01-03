@@ -11,8 +11,8 @@ readonly LIBS="tlp-functions tlp-rf-func"
 
 readonly TLPUSB=/usr/bin/tlp-usblist
 
-readonly SMARTCTL=$(which smartctl 2> /dev/null)
-readonly LSBREL=$(which lsb_release 2> /dev/null)
+readonly SMARTCTL=smartctl
+readonly LSBREL=lsb_release
 
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
@@ -239,7 +239,7 @@ if [ "$show_all" = "1" ]; then
     echo "BIOS           = $dmirslt"
     
     # --- show release & kernel info
-    [ -n "$LSBREL" ] && echo "Release        = $($LSBREL -d -s)"
+    cmd_exists $LSBREL && echo "Release        = $($LSBREL -d -s)"
     echo "Kernel         = $(uname -r -m)"
     printparm "%-14s = %s" /proc/cmdline
     echo
@@ -411,7 +411,7 @@ if [ "$show_all" = "1" ]; then
                 
                 echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
             
-                if [ -n "$SMARTCTL" ]; then
+                if cmd_exists $SMARTCTL ; then
                     # --- show SMART data
                     echo 
                     echo "        SMART info:"
