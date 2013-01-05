@@ -88,6 +88,7 @@ case "$mode" in
         set_dirty_parms $pwr
         set_scaling_governor $pwr
         set_scaling_min_max_freq $pwr
+        set_cpu_boost_all $pwr
         set_sched_powersave $pwr
         set_nmi_watchdog
         set_phc_controls $pwr
@@ -115,6 +116,7 @@ case "$mode" in
         set_dirty_parms 1
         set_scaling_governor 1
         set_scaling_min_max_freq 1
+        set_cpu_boost_all 1
         set_sched_powersave 1
         set_nmi_watchdog
         set_phc_controls 1
@@ -141,6 +143,7 @@ case "$mode" in
         set_dirty_parms 0
         set_scaling_governor 0
         set_scaling_min_max_freq 0
+        set_cpu_boost_all 0
         set_sched_powersave 0
         set_nmi_watchdog
         set_phc_controls 0

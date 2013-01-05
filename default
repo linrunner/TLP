@@ -32,6 +32,16 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #CPU_SCALING_MIN_FREQ_ON_BAT=0
 #CPU_SCALING_MAX_FREQ_ON_BAT=0
 
+# Enable/Disable the cpu core performance boost feature
+#  0=disable boosting / 1=allow boosting / ''=do not control (default)
+# Requires a cpu with the "Turbo Boost"/"Turbo-Core" feature (e.g.
+# Intel Sandy/Ivy Bridge Core processors) and kernel 3.7 or later.
+# Important:
+# - This may conflict with your distribution's governor settings
+# - A value of 1 does *not* activate boosting, it just allows it
+#CPU_BOOST_ON_AC=1
+#CPU_BOOST_ON_BAT=0
+
 # Minimize number of used cpu cores/hyper-threads under light load conditions
 SCHED_POWERSAVE_ON_AC=0
 SCHED_POWERSAVE_ON_BAT=1
