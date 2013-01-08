@@ -6,6 +6,8 @@ tlp (0.3.7.901-1) lucid; urgency=low
     - Remove desktop autostart hook
   * Features
     - tlp chargeonce: charge battery to upper threshold once
+    - [experimental] option RUNTIME_PM_ALL to activate runtime pm for
+      all PCI(e) devices
     - tlp-stat:
         - nicer output, code refactored
         - remove dmidecode; get dmi data from /sys/class/dmi/id/
@@ -16,9 +18,11 @@ tlp (0.3.7.901-1) lucid; urgency=low
         - show cpu model
     - Remove 2s delay in applying settings upon change of the power source
   * Bugfixes
-    - tlp-stat: exclude usb media from "Storage Devices" section
+    - tlp-stat:
+        - exclude usb media from "Storage Devices" section
+        - fix display of data in /sys/class/power_supply/BAT?/
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 03 Jan 2013 17:38:51 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 08 Jan 2013 21:07:51 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 

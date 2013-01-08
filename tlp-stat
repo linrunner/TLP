@@ -666,6 +666,8 @@ fi # show_bat
 if [ "$show_all" = "1" ]; then
     # -- show runtime pm
     echo "+++ Runtime Power Management"
+    doall=${RUNTIME_PM_ALL:-0}
+    
     for type in $PCID; do
         for device in $type/*; do
             if [ -f $device/class ] && [ -f $device/power/control ]; then
@@ -696,6 +698,10 @@ if [ "$show_all" = "1" ]; then
                         
                     0x0c0000|0x0c0010) # firewire
                         printparm "%-s = ##%s## (Firewire)" $device/power/control
+                        ;;
+
+                    *) # other
+                        printparm "%-s = ##%s##" $device/power/control
                         ;;
                 esac 
             fi

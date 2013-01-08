@@ -113,6 +113,10 @@ BAY_DEVICE="sr0"
 RUNTIME_PM_ON_AC=on
 RUNTIME_PM_ON_BAT=auto
 
+# Runtime PM for *all* pci(e) bus devices: 0=disable / 1=enable
+# Warning: experimental option, could cause system instabilities
+RUNTIME_PM_ALL=0
+
 # Set to 0 to disable/1 to enable usb autosuspend feature
 USB_AUTOSUSPEND=1
  

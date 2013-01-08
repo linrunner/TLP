@@ -28,7 +28,7 @@ readonly NMCLI=nmcli
 readonly NMTOOL=nm-tool
 readonly UPWR=upower
 
-readonly TPACPIBAT=$libdir/tpacpi-bat
+readonly TPACPIBAT=$libdir/tpacpi-bat # libdir is initialized by main program
 
 readonly SMAPIDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
@@ -711,13 +711,15 @@ set_runtime_pm () { # set runtime power management
     # $1: 0=ac mode, 1=battery mode
     # concept from Ubuntu Precise's implementation of pm-utils power.d/pci_devices
     
-    local type device control
+    local type device control doall
     
     if [ "$1" = "1" ]; then
         control=${RUNTIME_PM_ON_BAT:-on}
     else
         control=${RUNTIME_PM_ON_AC:-on}
     fi
+
+    doall=${RUNTIME_PM_ALL:-0}
     
     for type in $PCID; do
         for device in $type/*; do
@@ -756,6 +758,13 @@ set_runtime_pm () { # set runtime power management
                     0x0c0000|0x0c0010) # firewire
                         echo $control > $device/power/control;
                         echo_debug "pm" "set_runtime_pm($1).$control: $device [Firewire]"
+                        ;;
+
+                    *) # other
+                        if [ "$doall" = "1" ]; then
+                            echo $control > $device/power/control;
+                            echo_debug "pm" "set_runtime_pm($1).$control: $device"
+                        fi
                         ;;
                 esac 
             fi
