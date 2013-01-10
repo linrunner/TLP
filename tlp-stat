@@ -30,7 +30,7 @@ readonly DEBUGLOG=/var/log/debug
 
 nodebug=1
 
-needs_root_priv=1
+needs_root_priv=
 show_all=1
 show_bat=0
 show_conf=0
@@ -148,30 +148,31 @@ read_args () {
             "-b"|"--battery")
                 show_all=0
                 show_bat=1
+                needs_root_priv=1
                 ;;
                 
             "-c"|"--config")
                 show_all=0
                 show_conf=1
-                needs_root_priv=0
+                : ${needs_root_priv:=0}
                 ;;
 
             "-r"|"--rfkill")
                 show_all=0
                 show_rfkill=1
-                needs_root_priv=0
+                : ${needs_root_priv:=0}
                 ;;
 
             "-t"|"--temp")
                 show_all=0
                 show_temp=1
-                needs_root_priv=0
+                : ${needs_root_priv:=0}
                 ;;
                 
             "-T"|"--trace")
                 show_all=0
                 show_trace=1
-                needs_root_priv=0
+                : ${needs_root_priv:=0}
                 ;;
 
             *)
@@ -201,6 +202,7 @@ done
 # --- MAIN
 
 read_args $*
+: ${needs_root_priv:=1}
 
 # check for and read conffile
 read_defaults
