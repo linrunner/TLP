@@ -1483,6 +1483,7 @@ discharge_battery () { # discharge battery
             printf "remaining capacity = %6s [mWh]\n" $(cat $bdir/remaining_capacity)
             printf "remaining percent  = %6s [%%]\n"  $(cat $bdir/remaining_percent)
             printf "remaining time     = %6s [min]\n" $(cat $bdir/remaining_running_time_now)
+            printf "power              = %6s [mW]\n"  $(cat $bdir/power_avg)
         else # use acpi
             bdir=$ACPIBATDIR/$bat
 
@@ -1502,9 +1503,11 @@ discharge_battery () { # discharge battery
                 if [ "$pn" != "0" ]; then
                     printf "remaining time     = %6s [min]\n" \
                         $(( 60 * $(cat $bdir/energy_now) / $(cat $bdir/power_now) ))
+                    printf "power              = %6s [mW]\n" $(( $pn / 1000 ))
                 else
                     printf "remaining time     = not discharging [min]\n"
                 fi
+                    
             fi 
         fi
         echo "Press Ctrl+C to cancel."
