@@ -10,7 +10,15 @@
 # Description:       Initialize tlp
 ### END INIT INFO
 
-TLP=/usr/sbin/tlp
-[ -x $TLP ] && $TLP init $1 upwr
+case "$1" in
+    start|\
+    stop|\
+    restart|\
+    force-reload|\
+    *)
+        TLP=/usr/sbin/tlp
+        [ -x $TLP ] && $TLP init $1 upwr
+        ;;
+esac
 
 exit 0

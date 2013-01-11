@@ -5,6 +5,8 @@ tlp (0.3.7.901-1) lucid; urgency=low
   * Packaging
     - Remove desktop autostart hook
     - New format for debian/copyright
+    - Add dummy case construct to tlp.init to make lintian happy
+    - Rename tlp-init.service to tlp.service
   * Features
     - tlp chargeonce: charge battery to upper threshold once
     - [experimental] option RUNTIME_PM_ALL to activate runtime pm for
@@ -23,7 +25,7 @@ tlp (0.3.7.901-1) lucid; urgency=low
         - exclude usb media from "Storage Devices" section
         - fix display of data in /sys/class/power_supply/BAT?/
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 11 Jan 2013 19:11:29 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 11 Jan 2013 19:47:11 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 
