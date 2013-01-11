@@ -1,8 +1,8 @@
 #!/bin/sh
 # tlp - display power save and usb autosuspend status
 #
-# Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
-# This software is licensed under the GPL v2.
+# Copyright (c) 2013 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2 or later.
 
 # --- Constants
 
@@ -42,8 +42,7 @@ show_trace=0
 
 printparm () { # $1: format, $2: file, $3: namsg, $4: cutoff
     local format="$1"
-    local sysf="$2"
-    local namsg="$3"
+    local sysf="$2"    local namsg="$3"
     local cutoff="$4"
     local val=""
 

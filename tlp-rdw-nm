@@ -2,8 +2,8 @@
 # tlp-rdw - network manager dispatcher hook:
 #           enable/disable radios on ifup/ifdown
 #
-# Copyright (c) 2012 Thomas Koch <linrunner at gmx.net>
-# This software is licensed under the GPL v2.
+# Copyright (c) 2013 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2 or later.
 
 # --- Constants
 readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"

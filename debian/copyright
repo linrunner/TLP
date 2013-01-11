@@ -1,29 +1,30 @@
-This package was debianized by Thomas Koch <linrunner at gmx.net> on
-Thu, 05 Nov 2009 21:19:09 +0100.
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: TLP
+Upstream-Contact: Thomas Koch <linrunner at gmx.net>
+Source: https://github.com/linrunner/TLP/
 
-Upstream Author:
+Files: *
+Copyright: 2013 Thomas Koch
+License: GPL-2+
+Comment: 
+ Some code and descriptions were adapted from:
+ - laptop-mode-tools 
+     Copyright (c) 2004 by Bart Samwel, Kiko Piris, Micha Feigin, 
+     Andrew Morton, Herve Eychenne, Dax Kelson, Jan Topinski
+ - http://thinkwiki.org
 
-    Thomas Koch <linrunner at gmx.net>
+Files: tpacpi-bat
+Copyright: 2011 Elliot Wolk
+License: GPL-3+
 
-Copyright:
+Files: debian/*
+Copyright: 2013 Thomas Koch
+License: GPL-2+
 
-    Copyright (c) 2012 Thomas Koch
-    
-    Some code and descriptions were adapted from:
-    - laptop-mode-tools 
-         Copyright (c) 2004 by Bart Samwel, Kiko Piris, Micha Feigin, 
-         Andrew Morton, Herve Eychenne, Dax Kelson, Jan Topinski
-	- http://thinkwiki.org
+License: GPL-2+
+ On Debian/Ubuntu systems, the full text of the GPL v2 can be found in 
+ `/usr/share/common-licenses/GPL-2'.
 
-    Thinkpad ACPI Battery Control (tpacpi-bat):
-    Copyright (c) 2011 Elliot Wolk 
-
-License:
-
-    This software is licensed under the GPL v2, see '/usr/share/common-licenses/GPL-2'
-
-    tpacpi-bat is licensed under the GPL v3 or later, see '/usr/share/common-licenses/GPL-3'
-    
-
-The Debian packaging is copyright 2009, Thomas Koch <linrunner at gmx.net> and
-is licensed under the GPL v2, see `/usr/share/common-licenses/GPL-2'.
+License: GPL-3+
+ On Debian/Ubuntu systems, the full text of the GPL v3 can be found in
+ `/usr/share/common-licenses/GPL-3'.
