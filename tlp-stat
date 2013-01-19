@@ -280,6 +280,8 @@ if [ "$show_all" = "1" ]; then
             printf "[MHz]\n\n"
         fi
     done
+
+    printparm "%-54s = ##%d##" /sys/devices/system/cpu/cpufreq/boost
     
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
