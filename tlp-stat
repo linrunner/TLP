@@ -281,7 +281,20 @@ if [ "$show_all" = "1" ]; then
         fi
     done
 
-    printparm "%-54s = ##%d##" /sys/devices/system/cpu/cpufreq/boost
+    
+    if [ -f $CPU_BOOST_ALL_CTRL ]; then
+        get_sysval $CPU_BOOST_ALL_CTRL; boost=$?
+
+        # simple test for attribute "w" doesn't work, so actually write
+        if ( echo "$boost" > $CPU_BOOST_ALL_CTRL ) 2> /dev/null; then 
+            printparm "%-54s = ##%d##" $CPU_BOOST_ALL_CTRL
+        else
+            printparm "%-54s = ##%d## (cpu not supported)" $CPU_BOOST_ALL_CTRL
+        fi
+    else
+         printparm "%-54s = (not available)" $CPU_BOOST_ALL_CTRL
+    fi
+    
     
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"

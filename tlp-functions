@@ -36,6 +36,7 @@ readonly NETD=/sys/class/net
 readonly PCID=/sys/bus/pci/devices
 readonly I915D=/sys/module/i915/parameters
 readonly DMID=/sys/class/dmi/id/
+readonly CPU_BOOST_ALL_CTRL=/sys/devices/system/cpu/cpufreq/boost
 
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT=2
@@ -352,33 +353,35 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
 }
 
 set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
-   # global cpu boost behavior control based on the current power mode
-   #
-   # Relevant config option(s): CPU_BOOST_ON_{AC,BAT} with values {'',0,1}
-   #
-   # Note:
-   #  * needs commit #615b7300717b9ad5c23d1f391843484fe30f6c12
-   #     (linux-2.6 tree), "Add support for disabling dynamic overclocking",
-   #    => requires linux 3.7 or later
-   #
-   local CPU_BOOST_ALL_CTRL='/sys/devices/system/cpu/cpufreq/boost'
-   local val
+    # global cpu boost behavior control based on the current power mode
+    #
+    # Relevant config option(s): CPU_BOOST_ON_{AC,BAT} with values {'',0,1}
+    #
+    # Note:
+    #  * needs commit #615b7300717b9ad5c23d1f391843484fe30f6c12
+    #     (linux-2.6 tree), "Add support for disabling dynamic overclocking",
+    #    => requires linux 3.7 or later
+   
+    local val
 
-   if [ "$1" = "1" ]; then
-      val="${CPU_BOOST_ON_BAT:-}"
-   else
-      val="${CPU_BOOST_ON_AC:-}"
-   fi
+    if [ "$1" = "1" ]; then
+        val="${CPU_BOOST_ON_BAT:-}"
+    else
+        val="${CPU_BOOST_ON_AC:-}"
+    fi
 
-   if [ -n "${val}" ]; then
-      if [ -w "${CPU_BOOST_ALL_CTRL}" ]; then
-         echo_debug "pm" "set_cpu_boost_all(${1}): ${val}"
-
-         echo "${val}" > "${CPU_BOOST_ALL_CTRL}"
-      else
-         echo_debug "pm" "set_cpu_boost_all(${1}).not_available"
-      fi
-   fi
+    if [ -n "$val" ]; then
+        if [ -f $CPU_BOOST_ALL_CTRL ]; then
+            # simple test for attribute "w" doesn't work, so actually write
+            if ( echo "$val" > $CPU_BOOST_ALL_CTRL ) 2> /dev/null; then 
+                echo_debug "pm" "set_cpu_boost_all($1): $val"
+            else
+                echo_debug "pm" "set_cpu_boost_all($1).cpu_not_supported"
+            fi
+        else
+            echo_debug "pm" "set_cpu_boost_all($1).not_available"
+        fi
+    fi
 }
 
 set_sched_powersave () { # set multi-core/-thread powersave policy

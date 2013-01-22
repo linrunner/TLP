@@ -27,7 +27,7 @@ tlp (0.3.7.901-1) lucid; urgency=low
         - exclude usb media from "Storage Devices" section
         - fix display of data in /sys/class/power_supply/BAT?/
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 19 Jan 2013 13:14:12 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 23 Jan 2013 18:38:58 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 
