@@ -21,13 +21,16 @@ tlp (0.3.7.901-1) lucid; urgency=low
         - show disk status
         - show tp-smapi, tpacpi-bat availability and status
         - show cpu model
+    - Use iw for wifi power save if available; iwconfig is considered deprecated
+    - Remove tlp wifi subcommand
     - Remove 2s delay in applying settings upon change of the power source
+
   * Bugfixes
     - tlp-stat:
         - exclude usb media from "Storage Devices" section
         - fix display of data in /sys/class/power_supply/BAT?/
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 23 Jan 2013 18:38:58 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 24 Jan 2013 19:51:13 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 

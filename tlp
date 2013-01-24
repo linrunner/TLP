@@ -161,13 +161,6 @@ case "$mode" in
          
         echo_started_mode 0
         ;;
-        
-    wifi) # Set wifi power mode depending on state
-        check_root
-        get_power_state
-        pwr=$?
-        set_wifi_power_mode $pwr $2
-        ;;
 
     usb) # Enable usb autosuspend
         check_root

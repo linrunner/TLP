@@ -20,6 +20,7 @@ readonly ACPWR=on_ac_power
 readonly ETHTOOL=ethtool
 readonly HDPARM=hdparm
 readonly IWC=iwconfig
+readonly IW=iw
 readonly MODPRO=modprobe
 readonly LOGGER=logger
 readonly UDEVADM=udevadm
@@ -809,25 +810,34 @@ set_runtime_pm () { # set runtime power management
 
 # --- Wifi Power Management 
 
-get_wifi_ifaces () { # get all wifi devices -- retval: $WIFACES
-    WIFACES=$($IWC 2> /dev/null | grep 'IEEE' | sed -r 's/^(.*)[ \t]+IEEE.*/\1/')
+get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
+    wifaces=""
+    
+    for wi in /sys/class/net/*/wireless; do
+        if [ -n "$wi" ]; then
+            wi=${wi%/wireless}; wi=${wi##*/}
+            
+            [ -n "$wifaces" ] && wifaces="$wifaces "
+            wifaces="$wifaces$wi"
+        fi
+    done
     
     return 0
 }
 
-get_wifi_driver () { # get driver associated with interface -- $1: iface; retval: $WIFIDRV
+get_wifi_driver () { # get driver associated with interface -- $1: iface; retval: $wifidrv
     local drvl
     
-    WIFIDRV=""
+    wifidrv=""
     if [ -d $NETD/$1 ]; then
         drvl=$(readlink $NETD/$1/device/driver)
-        [ -n "$drvl" ] && WIFIDRV=${drvl##*/}
+        [ -n "$drvl" ] && wifidrv=${drvl##*/}
     fi
     
     return 0
 }
 
-set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery mode; $2 iface
+set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery mode
     local pwr iface
     
     if [ "$1" = "1" ]; then
@@ -840,17 +850,25 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
         2|3|4|5|6|Y)    pwr="on"  ;;
     esac
     
-    if [ -n "$2" ]; then
-        echo_debug "pm" "set_wifi_power_mode($1, $2): $pwr"     
-        $IWC $2 power $pwr > /dev/null 2>&1 
-    else
-        get_wifi_ifaces
-        
-        for iface in $WIFACES; do
-            echo_debug "pm" "set_wifi_power_mode($1, $iface): $pwr"
-            $IWC $iface power $pwr > /dev/null 2>&1 
-        done
-    fi
+    get_wifi_ifaces
+    
+    for iface in $wifaces; do
+        if cmd_exists $IW; then
+            $IW dev $iface set power_save $pwr > /dev/null 2>&1
+            if [ $? = 0 ]; then
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr"
+            else
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).iw.not_supported"
+            fi
+        else
+            $IWC $iface power $pwr > /dev/null 2>&1
+            if [ $? = 0 ]; then
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig: $pwr"
+            else
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig.not_supported"
+            fi
+        fi
+    done
     
     return 0
 }

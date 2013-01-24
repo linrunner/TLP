@@ -522,22 +522,34 @@ fi # show_rfkill
 if [ "$show_all" = "1" ]; then        
     # --- show wifi power mode
     get_wifi_ifaces
-    for iface in $WIFACES; do
+    for iface in $wifaces; do
         if [ -n "$iface" ]; then
-            wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
-              sed -r 's/.*Power Management:(on|off).*/\1/')
+            if cmd_exists $IW; then
+                wifipm=$($IW dev $iface get power_save 2> /dev/null | \
+                    sed -r 's/.*(on|off).*/\1/')
+            else
+                wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
+                    sed -r 's/.*Power Management:(on|off).*/\1/')
+            fi
+
             get_wifi_driver $iface
-            echo -n "$iface($WIFIDRV): power management = "
+            echo -n "$iface($wifidrv): power management = "
             case $wifipm in
                 on)
                     echo "on"
                     ;;
                     
                 off)
-                    if [ -z "$($IWC $iface power off 2>&1)" ]; then
+                    if cmd_exists $IW; then
+                        $IW dev $iface set power_save off > /dev/null 2>&1
+                    else
+                        $IWC $iface power off > /dev/null 2>&1
+                    fi
+                    
+                    if [ $? = 0 ] ; then
                         echo "off"
                     else
-                        echo "off (disabled by kernel)"
+                        echo "off (not supported)"
                     fi
                     ;;
                     
@@ -547,7 +559,7 @@ if [ "$show_all" = "1" ]; then
             esac
         fi
     done
-    [ -n "$WIFACES" ] && echo
+    [ -n "$wifaces" ] && echo
 
     # --- show sound power mode
     echo "+++ Audio"
