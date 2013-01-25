@@ -758,46 +758,47 @@ set_runtime_pm () { # set runtime power management
     for type in $PCID; do
         for device in $type/*; do
             if [ -f $device/class ] && [ -f $device/power/control ]; then
-                case $(cat $device/class) in
+                class=$(cat $device/class)
+                case $class in
                     0x020000) # ethernet
                         echo $control > $device/power/control;
-                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Ethernet]"
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [$class Ethernet controller]"
                         ;;
                 
                     0x028000) # wireless
                         echo $control > $device/power/control;
-                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Wireless]"
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [$class Wireless]"
                         ;;
               
-                    0x040300) # audio
+                    0x040300) # audio device
                         echo $control > $device/power/control;
-                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Audio]"
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [$class Audio device]"
                         ;;
 				
                     0x060000) # host bridge
                         echo $control > $device/power/control;
-                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Host Bridge]"
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [$class Host Bridge]"
                         ;;
  				
                     0x080500) # SD card reader
                         echo $control > $device/power/control;
-                        echo_debug "pm" "set_runtime_pm($1).$control: $device [SD Card Reader]"
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [$class SD Card Reader]"
                         ;;
  				
                     0x088000|0x088001) # card reader
                         echo $control > $device/power/control;
-                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Card Reader]"
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [$class Card Reader]"
                         ;;
  				
                     0x0c0000|0x0c0010) # firewire
                         echo $control > $device/power/control;
-                        echo_debug "pm" "set_runtime_pm($1).$control: $device [Firewire]"
+                        echo_debug "pm" "set_runtime_pm($1).$control: $device [$class Firewire]"
                         ;;
 
                     *) # other
                         if [ "$doall" = "1" ]; then
                             echo $control > $device/power/control;
-                            echo_debug "pm" "set_runtime_pm($1).$control: $device"
+                            echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]"
                         fi
                         ;;
                 esac 

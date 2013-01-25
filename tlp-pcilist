@@ -1,0 +1,29 @@
+#!/usr/bin/perl
+# tlp-pcilist - list pci devices with runtime pm mode and device class
+#
+# Copyright (c) 2013 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2 or later.
+
+
+package tlp_pcilist;
+use strict;
+use warnings;
+
+# Get sysfs value, return empty string if nonexistent or not readable 
+sub catsysf {
+    my $sysval = "";
+    if (open SYSF, "$_[0]") {
+        chomp ($sysval = <SYSF>);
+        close SYSF;
+    }
+    return $sysval;
+}
+
+# Output device list with runtime pm mode and device class
+foreach (`lspci -m`) {
+    my ($dev, $classdesc) = /(\S+) \"(.+?)\"/;
+    my $devp = "/sys/bus/pci/devices/0000:$dev";
+    my $pmode = catsysf ("$devp/power/control");
+    my $class = catsysf ("$devp/class");
+    printf "%s/power/control = %-4s (%s %s)\n", $devp, $pmode, $class, $classdesc;
+}

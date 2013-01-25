@@ -9,7 +9,8 @@
 readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
 readonly LIBS="tlp-functions tlp-rf-func"
 
-readonly TLPUSB=/usr/bin/tlp-usblist
+readonly TLPUSB=tlp-usblist
+readonly TLPPCI=tlp-pcilist
 
 readonly SMARTCTL=smartctl
 readonly LSBREL=lsb_release
@@ -696,46 +697,12 @@ if [ "$show_all" = "1" ]; then
     echo "+++ Runtime Power Management"
     doall=${RUNTIME_PM_ALL:-0}
     
-    for type in $PCID; do
-        for device in $type/*; do
-            if [ -f $device/class ] && [ -f $device/power/control ]; then
-                case $(cat $device/class) in
-                    0x020000) # ethernet
-                        printparm "%-s = ##%s## (Ethernet)" $device/power/control
-                        ;;
-                    
-                    0x028000) # wireless
-                        printparm "%-s = ##%s## (Wireless)" $device/power/control
-                        ;;
-                                        
-                    0x040300) # audio
-                        printparm "%-s = ##%s## (Audio)" $device/power/control
-                        ;;
-                    
-                    0x060000) # host bridge
-                        printparm "%-s = ##%s## (Host Bridge)" $device/power/control
-                        ;;
-                        
-                    0x080500) # SD card reader
-                        printparm "%-s = ##%s## (SD Card Reader)" $device/power/control
-                        ;;
-                        
-                    0x088000|0x088001) # card reader
-                        printparm "%-s = ##%s## (Card Reader)" $device/power/control
-                        ;;
-                        
-                    0x0c0000|0x0c0010) # firewire
-                        printparm "%-s = ##%s## (Firewire)" $device/power/control
-                        ;;
-
-                    *) # other
-                        printparm "%-s = ##%s##" $device/power/control
-                        ;;
-                esac 
-            fi
-        done
-    done
-    echo 
+    if cmd_exists $TLPPCI; then
+        $TLPPCI 
+    else
+        echo "Error: missing subcommand $TLPPCI."
+    fi
+    echo  
     
     # -- show usb autosuspend
     echo "+++ USB"
@@ -747,7 +714,7 @@ if [ "$show_all" = "1" ]; then
     echo "tlp usb blacklist   = ${USB_BLACKLIST:=(not configured)}"
     echo
     
-    if [ -x $TLPUSB ]; then
+    if cmd_exists $TLPUSB; then
         $TLPUSB 
     else
         echo "Error: missing subcommand $TLPUSB."
