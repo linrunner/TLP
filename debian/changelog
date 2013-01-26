@@ -7,6 +7,7 @@ tlp (0.3.7.901-1) lucid; urgency=low
     - New format for debian/copyright
     - Add dummy case construct to tlp.init to make lintian happy
     - Rename tlp-init.service to tlp.service
+    - postinst/postrm: restart acpid for thinkpad-radiosw event
   * Features
     - Set cpu turbo boost feature (kernel 3.7 or later)
     - option DEVICES_TO_DISABLE_ON_RADIOSW to disable radios when hardware
@@ -33,7 +34,7 @@ tlp (0.3.7.901-1) lucid; urgency=low
         - exclude usb media from "Storage Devices" section
         - fix display of data in /sys/class/power_supply/BAT?/
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 26 Jan 2013 14:25:36 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 26 Jan 2013 17:54:00 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 

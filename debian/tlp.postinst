@@ -16,3 +16,6 @@ for i in /etc/init/rfkill-*.conf; do
         echo "manual" > ${i%.conf}.override
     fi
 done
+
+# Restart acpid to insert thinkpad-radiosw event
+invoke-rc.d acpid restart > /dev/null
