@@ -156,6 +156,9 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 # Radio devices to enable on shutdown: bluetooth wifi wwan
 # (to prevent other operating systems from missing radios)
 #DEVICES_TO_ENABLE_ON_SHUTDOWN="wwan"
+
+# Radio devices to disable when hardware radio switch is turned on (ThinkPad only)
+#DEVICES_TO_DISABLE_ON_RADIOSW="bluetooth"
  
 # Battery charge thresholds (ThinkPad only, tp-smapi kernel module required)
 # Charging starts when the remaining capacity falls below the START_CHARGE_TRESH

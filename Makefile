@@ -6,6 +6,7 @@ PMETC = $(DESTDIR)/etc/pm/power.d
 TLIB  = $(DESTDIR)/usr/lib/tlp-pm
 PLIB  = $(DESTDIR)/usr/lib/pm-utils
 ULIB  = $(DESTDIR)/lib/udev
+ACPI  = $(DESTDIR)/etc/acpi
 NMDSP = $(DESTDIR)/etc/NetworkManager/dispatcher.d
 
 # Location of TLP's config file
@@ -41,6 +42,8 @@ install-tlp:
 	install -D -m 755 zztlp $(PLIB)/power.d/zztlp
 	install -D -m 755 49wwan $(PLIB)/sleep.d/49wwan
 	install -m 755 49bay $(PLIB)/sleep.d/49bay
+	install -D -m 644 thinkpad-radiosw $(ACPI)/events/thinkpad-radiosw
+	install -m 755 thinkpad-radiosw.sh $(ACPI)/
 	install -D -m 644 tlp.bash_completion $(DESTDIR)/etc/bash_completion.d/tlp
 
 install-rdw:	
@@ -74,6 +77,8 @@ uninstall-tlp:
 	rm $(PLIB)/power.d/zztlp
 	rm $(PLIB)/sleep.d/49wwan
 	rm $(PLIB)/sleep.d/49bay
+	rm $(ACPI)/events/thinkpad-radiosw
+	rm $(ACPI)/thinkpad-radiosw.sh
 	rm $(DESTDIR)/etc/bash_completion.d/tlp
 
 uninstall-rdw: 	

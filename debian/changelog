@@ -9,10 +9,12 @@ tlp (0.3.7.901-1) lucid; urgency=low
     - Rename tlp-init.service to tlp.service
   * Features
     - Set cpu turbo boost feature (kernel 3.7 or later)
-    - tlp chargeonce: charge battery to upper threshold once
-    - tlp discharge: show current power consumption
+    - option DEVICES_TO_DISABLE_ON_RADIOSW to disable radios when hardware
+      radio switch is turned on (ThinkPad only)
     - [experimental] option RUNTIME_PM_ALL to activate runtime pm for
       all PCI(e) devices
+    - tlp chargeonce: charge battery to upper threshold once
+    - tlp discharge: show current power consumption
     - tlp-stat:
         - nicer output, code refactored
         - remove dmidecode; get dmi data from /sys/class/dmi/id/
@@ -31,7 +33,7 @@ tlp (0.3.7.901-1) lucid; urgency=low
         - exclude usb media from "Storage Devices" section
         - fix display of data in /sys/class/power_supply/BAT?/
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 25 Jan 2013 20:42:41 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 26 Jan 2013 14:25:36 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 
