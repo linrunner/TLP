@@ -58,7 +58,7 @@ hid=''
 
 # Check for hid subdevices
 for subdevp in $usbdevp/*:*; do
-    if [ "$(cat $subdevp/bInterfaceClass)" = "03" ]; then
+    if [ -d $subdevp ] && [ "$(cat $subdevp/bInterfaceClass)" = "03" ]; then
         hid="_hid"
         break
     fi

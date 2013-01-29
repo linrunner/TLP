@@ -318,7 +318,7 @@ set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mod
     if [ -n "$gov" ]; then
         echo_debug "pm" "set_scaling_governor($1): $gov"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-            echo $gov > $cpu 2> /dev/null
+            [ -f $cpu ] && echo $gov > $cpu 2> /dev/null
         done
     fi
     
@@ -339,14 +339,14 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
     if [ -n "$minfreq" ]; then
         echo_debug "pm" "set_scaling_min_max_freq($1).min: $minfreq"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
-            echo $minfreq > $cpu 2> /dev/null
+            [ -f $cpu ] && echo $minfreq > $cpu 2> /dev/null
         done
     fi
     
     if [ -n "$maxfreq" ]; then
         echo_debug "pm" "set_scaling_min_max_freq($1).max: $maxfreq"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
-            echo $maxfreq > $cpu 2> /dev/null
+            [ -f $cpu ] && echo $maxfreq > $cpu 2> /dev/null
         done
     fi
     
@@ -629,14 +629,16 @@ set_disk_io_sched () { # set disk io scheduler
     for dev in $DISK_DEVICES; do
         get_disk_dev $dev
         
-        # parse list, add cfq as default when list is too short
-        sched=$(echo -n $schedlist | sed -r 's/^(\w+) .*/\1/')
-        schedlist=$(echo -n "$schedlist cfq"| sed -r 's/^\w+ (.*)/\1/')
-        schedctrl="/sys/block/$disk_dev/queue/scheduler"
-        
-        if [ -f $schedctrl ]; then
-            echo_debug "pm" "set_disk_io_sched: $disk_dev [$disk_id] $sched"
-            echo -n $sched > $schedctrl
+        if [ -b /dev/$disk_dev ]; then
+            # parse list, add cfq as default when list is too short
+            sched=$(echo -n $schedlist | sed -r 's/^(\w+) .*/\1/')
+            schedlist=$(echo -n "$schedlist cfq"| sed -r 's/^\w+ (.*)/\1/')
+            schedctrl="/sys/block/$disk_dev/queue/scheduler"
+            
+            if [ -f $schedctrl ]; then
+                echo_debug "pm" "set_disk_io_sched: $disk_dev [$disk_id] $sched"
+                echo -n $sched > $schedctrl
+            fi
         fi
     done
     
@@ -854,19 +856,21 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
     get_wifi_ifaces
     
     for iface in $wifaces; do
-        if cmd_exists $IW; then
-            $IW dev $iface set power_save $pwr > /dev/null 2>&1
-            if [ $? = 0 ]; then
-                echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr"
+        if [ -n "$iface" ]; then
+            if cmd_exists $IW; then
+                $IW dev $iface set power_save $pwr > /dev/null 2>&1
+                if [ $? = 0 ]; then
+                    echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr"
+                else
+                    echo_debug "pm" "set_wifi_power_mode($1, $iface).iw.not_supported"
+                fi
             else
-                echo_debug "pm" "set_wifi_power_mode($1, $iface).iw.not_supported"
-            fi
-        else
-            $IWC $iface power $pwr > /dev/null 2>&1
-            if [ $? = 0 ]; then
-                echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig: $pwr"
-            else
-                echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig.not_supported"
+                $IWC $iface power $pwr > /dev/null 2>&1
+                if [ $? = 0 ]; then
+                    echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig: $pwr"
+                else
+                    echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig.not_supported"
+                fi
             fi
         fi
     done

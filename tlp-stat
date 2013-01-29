@@ -270,8 +270,8 @@ if [ "$show_all" = "1" ]; then
     echo
 
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
-        printparm "%-54s = ##%s##" $cpuf/scaling_governor
         if [ -f $cpuf/scaling_governor ]; then
+            printparm "%-54s = ##%s##" $cpuf/scaling_governor
             printf "%-54s = %5d [MHz]\n" $cpuf/scaling_min_freq $(( $(cat $cpuf/scaling_min_freq) / 1000 ))
             printf "%-54s = %5d [MHz]\n" $cpuf/scaling_max_freq $(( $(cat $cpuf/scaling_max_freq) / 1000 ))
             printf "%s = " $cpuf/scaling_available_frequencies
@@ -603,41 +603,43 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         # it's a ThinkPad with tp-smapi
         
         for batd in $SMAPIDIR/BAT[01]; do
-            batt=${batd##/*/}
+            if [ -d $batd ]; then
+                batt=${batd##/*/}
             
-            if bat_exists $batt ; then
-                case $batt in
-                    BAT0) bati=1; echo "+++ ThinkPad Battery Status (Main)" ;;
-                    BAT1) bati=2; echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
-                    *)    bati=1  echo "+++ ThinkPad Battery Status" ;;
-                esac
-
-                printparm "%-59s = ##%s##" $batd/manufacturer
-                printparm "%-59s = ##%s##" $batd/model
-                printparm "%-59s = ##%s##" $batd/manufacture_date
-                printparm "%-59s = ##%s##" $batd/first_use_date
-                printparm "%-59s = ##%6d##" $batd/cycle_count
-                printparm "%-59s = ##%6d## [mWh]" $batd/design_capacity
-                printparm "%-59s = ##%6d## [mWh]" $batd/last_full_capacity
-                printparm "%-59s = ##%6d## [mWh]" $batd/remaining_capacity
-                printparm "%-59s = ##%6d## [%%]" $batd/remaining_percent
-                printparm "%-59s = ##%6s## [min]" $batd/remaining_running_time_now
-                printparm "%-59s = ##%6s## [min]" $batd/remaining_charging_time
-                printparm "%-59s = ##%6d## [mW]" $batd/power_now
-                printparm "%-59s = ##%6d## [mW]" $batd/power_avg
-                echo
-
-                if [ $tpacpi -eq 0 ]; then
-                    # --- show ThinkPad charge thresholds via tpacpi-bat
-                    print_tpacpi_thresholds $batt $bati
+                if bat_exists $batt ; then
+                    case $batt in
+                        BAT0) bati=1; echo "+++ ThinkPad Battery Status (Main)" ;;
+                        BAT1) bati=2; echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
+                        *)    bati=1  echo "+++ ThinkPad Battery Status" ;;
+                    esac
+    
+                    printparm "%-59s = ##%s##" $batd/manufacturer
+                    printparm "%-59s = ##%s##" $batd/model
+                    printparm "%-59s = ##%s##" $batd/manufacture_date
+                    printparm "%-59s = ##%s##" $batd/first_use_date
+                    printparm "%-59s = ##%6d##" $batd/cycle_count
+                    printparm "%-59s = ##%6d## [mWh]" $batd/design_capacity
+                    printparm "%-59s = ##%6d## [mWh]" $batd/last_full_capacity
+                    printparm "%-59s = ##%6d## [mWh]" $batd/remaining_capacity
+                    printparm "%-59s = ##%6d## [%%]" $batd/remaining_percent
+                    printparm "%-59s = ##%6s## [min]" $batd/remaining_running_time_now
+                    printparm "%-59s = ##%6s## [min]" $batd/remaining_charging_time
+                    printparm "%-59s = ##%6d## [mW]" $batd/power_now
+                    printparm "%-59s = ##%6d## [mW]" $batd/power_avg
                     echo
-                else
-                    # show thresholds via tp-smapi
-                    printparm "%-59s = ##%6d## [%%]" $batd/start_charge_thresh
-                    printparm "%-59s = ##%6d## [%%]" $batd/stop_charge_thresh 
-                    printparm "%-59s = ##%6d##" $batd/force_discharge
+    
+                    if [ $tpacpi -eq 0 ]; then
+                        # --- show ThinkPad charge thresholds via tpacpi-bat
+                        print_tpacpi_thresholds $batt $bati
+                        echo
+                    else
+                        # show thresholds via tp-smapi
+                        printparm "%-59s = ##%6d## [%%]" $batd/start_charge_thresh
+                        printparm "%-59s = ##%6d## [%%]" $batd/stop_charge_thresh 
+                        printparm "%-59s = ##%6d##" $batd/force_discharge
+                    fi
+                    echo
                 fi
-                echo
             fi
         done
     elif [ -d $ACPIBATDIR ]; then
