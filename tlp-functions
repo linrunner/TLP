@@ -399,11 +399,11 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
     
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
-        [ -w "$sdev" ] || continue
-        
-        echo_debug "pm" "set_sched_powersave($1): ${sdev##/*/} $pwr"
-        echo $pwr > "$sdev"
-        avail=1
+        if [ -f $sdev ]; then
+            echo_debug "pm" "set_sched_powersave($1): ${sdev##/*/} $pwr"
+            echo $pwr > "$sdev"
+            avail=1
+        fi
     done
     
     [ "$avail" = "1" ] || echo_debug "pm" "set_sched_powersave($1).not_available"
@@ -815,7 +815,7 @@ get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
     wifaces=""
     
     for wi in /sys/class/net/*/wireless; do
-        if [ -n "$wi" ]; then
+        if [ -f $wi ]; then
             wi=${wi%/wireless}; wi=${wi##*/}
             
             [ -n "$wifaces" ] && wifaces="$wifaces "

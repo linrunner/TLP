@@ -299,8 +299,7 @@ if [ "$show_all" = "1" ]; then
     
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
-        [ -w "$sdev" ] || continue
-        printparm "%-54s = ##%d##" $sdev
+        [ -f $sdev ] && printparm "%-54s = ##%d##" $sdev
     done
     
     # --- show nmi watchdog
