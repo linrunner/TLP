@@ -1,11 +1,11 @@
-TLP README - 11.08.2012
+TLP README - 02.02.2013
 
 TLP implements advanced power management for Linux. TLP is a pure command line tool with
 automated background tasks. It does not contain a GUI.
 
 Settings depending on the power source ac/bat:
 - Kernel laptop mode and dirty buffer params
-- CPU scaling governor and mix/max frequencies
+- CPU scaling governor, mix/max frequencies and turbo boost
 - Power aware process scheduler for multi-core/hyper-threading
 - Hard disk advanced power magement level and spin down timeout (per disk)
 - SATA aggressive link power management (ALPM)
