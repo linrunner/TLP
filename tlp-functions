@@ -113,6 +113,12 @@ check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=
     fi
 }
 
+is_thinkpad () { # check if running on a ThinkPad w/ thinkpad_acpi loaded
+                 # rc: 0=ThinkPad, 1=other hardware
+
+    [ -d /sys/devices/platform/thinkpad_acpi ]
+}
+
 # --- Configuration
 
 read_defaults () { # read config file

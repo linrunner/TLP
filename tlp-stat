@@ -720,7 +720,42 @@ if [ "$show_all" = "1" ]; then
     else
         echo "Error: missing subcommand $TLPUSB."
     fi
-    echo 
+    echo
+
+    # -- show suggestions
+    suout=""
+
+    if is_thinkpad; then
+        # Add ThinkPad specific suggestions
+        read_dmi product_version
+        model=${dmirslt#ThinkPad }
+
+        case $model in
+            X230*|T430*|T530|W530)
+                [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
+                ;;
+
+            X220*|T420*|T520|W520)
+                [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
+                [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
+                ;;
+
+            SL?00) ;;
+
+            *) [ $tpsmapi -eq 127 ]  && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
+                ;;
+        esac
+    fi
+
+    # Add other suggestions
+    cmd_exists ethtool || suout="${suout}Install ethtool to disable Wake on LAN\n"
+    cmd_exists smartctl || suout="${suout}Install smartmontools for disk drive health info\n"
+
+    if [ -n "$suout" ]; then
+        echo "+++ Suggestions"
+        echo -n $suout | sed -r 's/^/\* /'
+        echo
+    fi
 
 fi # show_all
 
