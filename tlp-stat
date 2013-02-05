@@ -272,13 +272,13 @@ if [ "$show_all" = "1" ]; then
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
         if [ -f $cpuf/scaling_governor ]; then
             printparm "%-54s = ##%s##" $cpuf/scaling_governor
-            printf "%-54s = %5d [MHz]\n" $cpuf/scaling_min_freq $(( $(cat $cpuf/scaling_min_freq) / 1000 ))
-            printf "%-54s = %5d [MHz]\n" $cpuf/scaling_max_freq $(( $(cat $cpuf/scaling_max_freq) / 1000 ))
+            printf "%-54s = %8d [kHz]\n" $cpuf/scaling_min_freq $(cat $cpuf/scaling_min_freq)
+            printf "%-54s = %8d [kHz]\n" $cpuf/scaling_max_freq $(cat $cpuf/scaling_max_freq)
             printf "%s = " $cpuf/scaling_available_frequencies
             for freq in $(cat $cpuf/scaling_available_frequencies); do
-                printf "%s " $(( $freq / 1000 ))
+                printf "%s " $freq 
             done
-            printf "[MHz]\n\n"
+            printf "[kHz]\n\n"
         fi
     done
 
