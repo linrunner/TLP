@@ -1,4 +1,4 @@
-tlp (0.3.7.901-1) lucid; urgency=low
+tlp (0.3.7.902-1) lucid; urgency=low
 
   *** Development version ***
 
@@ -8,6 +8,7 @@ tlp (0.3.7.901-1) lucid; urgency=low
     - Add dummy case construct to tlp.init to make lintian happy
     - Rename tlp-init.service to tlp.service
     - postinst/postrm: restart acpid for thinkpad-radiosw event
+    - Move smartmontools to recommends:
   * Features
     - Set cpu turbo boost feature (kernel 3.7 or later)
     - option DEVICES_TO_DISABLE_ON_RADIOSW to disable radios when hardware
@@ -35,7 +36,7 @@ tlp (0.3.7.901-1) lucid; urgency=low
         - exclude usb media from "Storage Devices" section
         - fix display of data in /sys/class/power_supply/BAT?/
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 02 Feb 2013 16:09:23 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 06 Feb 2013 13:26:39 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 
