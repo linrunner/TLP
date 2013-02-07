@@ -23,7 +23,10 @@ sub catsysf {
 foreach (`lspci -m`) {
     my ($dev, $classdesc) = /(\S+) \"(.+?)\"/;
     my $devp = "/sys/bus/pci/devices/0000:$dev";
-    my $pmode = catsysf ("$devp/power/control");
-    my $class = catsysf ("$devp/class");
-    printf "%s/power/control = %-4s (%s %s)\n", $devp, $pmode, $class, $classdesc;
+    my $devc = "$devp/power/control";
+    if (-f $devc) {
+        my $pmode = catsysf ("$devc");
+        my $class = catsysf ("$devp/class");
+        printf "%s/power/control = %-4s (%s %s)\n", $devp, $pmode, $class, $classdesc;
+    }
 }
