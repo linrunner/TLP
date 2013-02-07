@@ -826,7 +826,7 @@ get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
     wifaces=""
     
     for wi in /sys/class/net/*/wireless; do
-        if [ -f $wi ]; then
+        if [ -d $wi ]; then
             wi=${wi%/wireless}; wi=${wi##*/}
             
             [ -n "$wifaces" ] && wifaces="$wifaces "
