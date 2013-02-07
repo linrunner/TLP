@@ -807,6 +807,9 @@ set_runtime_pm () { # set runtime power management
                         if [ "$doall" = "1" ]; then
                             echo $control > $device/power/control;
                             echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]"
+                        else
+                            echo on > $device/power/control;
+                            echo_debug "pm" "set_runtime_pm($1).on: $device [$class]"
                         fi
                         ;;
                 esac 
