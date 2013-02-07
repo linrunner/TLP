@@ -524,10 +524,15 @@ if [ "$show_all" = "1" ]; then
     get_wifi_ifaces
     for iface in $wifaces; do
         if [ -n "$iface" ]; then
+            iwrc=1
             if cmd_exists $IW; then
-                wifipm=$($IW dev $iface get power_save 2> /dev/null | \
-                    sed -r 's/.*(on|off).*/\1/')
-            else
+                wifipm=$($IW dev $iface get power_save 2> /dev/null)
+                iwrc=$?
+                if [ $iwrc = 0 ]; then
+                    wifipm=$(echo $wifipm | sed -r 's/.*(on|off).*/\1/')
+                fi
+            fi
+            if [ $iwrc != 0 ]; then
                 wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
                     sed -r 's/.*Power Management:(on|off).*/\1/')
             fi
@@ -540,7 +545,7 @@ if [ "$show_all" = "1" ]; then
                     ;;
                     
                 off)
-                    if cmd_exists $IW; then
+                    if cmd_exists $IW && [ $iwrc = 0 ]; then
                         $IW dev $iface set power_save off > /dev/null 2>&1
                     else
                         $IWC $iface power off > /dev/null 2>&1

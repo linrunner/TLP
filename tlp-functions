@@ -825,9 +825,9 @@ set_runtime_pm () { # set runtime power management
 get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
     wifaces=""
     
-    for wi in /sys/class/net/*/wireless; do
+    for wi in /sys/class/net/*/phy80211; do
         if [ -d $wi ]; then
-            wi=${wi%/wireless}; wi=${wi##*/}
+            wi=${wi%/phy80211}; wi=${wi##*/}
             
             [ -n "$wifaces" ] && wifaces="$wifaces "
             wifaces="$wifaces$wi"
@@ -851,6 +851,7 @@ get_wifi_driver () { # get driver associated with interface -- $1: iface; retval
 
 set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery mode
     local pwr iface
+    local iwrc=1
     
     if [ "$1" = "1" ]; then
         pwr=${WIFI_PWR_ON_BAT:-5}
@@ -868,12 +869,12 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
         if [ -n "$iface" ]; then
             if cmd_exists $IW; then
                 $IW dev $iface set power_save $pwr > /dev/null 2>&1
-                if [ $? = 0 ]; then
+                iwrc=$?
+                if [ $iwrc = 0 ]; then
                     echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr"
-                else
-                    echo_debug "pm" "set_wifi_power_mode($1, $iface).iw.not_supported"
                 fi
-            else
+            fi
+            if [ $iwrc != 0 ]; then
                 $IWC $iface power $pwr > /dev/null 2>&1
                 if [ $? = 0 ]; then
                     echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig: $pwr"
