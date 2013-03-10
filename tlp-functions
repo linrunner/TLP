@@ -891,14 +891,11 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
 # --- LAN
 
 disable_wake_on_lan () {  # disable WOL
-    WOL_DISABLE=${WOL_DISABLE:-Y}
+    WOL_DISABLE=${WOL_DISABLE:-N}
     
     if [ "$WOL_DISABLE" = "Y" ]; then
         echo_debug "pm" "disable_wake_on_lan: y"
         $ETHTOOL -s eth0 wol d > /dev/null 2>&1
-    else
-        echo_debug "pm" "disable_wake_on_lan: n"
-        $ETHTOOL -s eth0 wol e > /dev/null 2>&1
     fi
     
     return 0
