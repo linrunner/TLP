@@ -105,10 +105,10 @@ printparm_i915 () { # $1: file
                     ;;
             esac
         else
-            echo "$1 = (not available)"
+            printf "%-44s = (not available)\n" $1
         fi
     else
-        echo "$1 = (not available)"
+        printf "%-44s = (not available)\n" $1
     fi
 
     return 0
