@@ -82,28 +82,19 @@ printparm_i915 () { # $1: file
         val=$(cat $1 2> /dev/null)
         if [ $? = 0 ]; then
             printf "%-44s = %2d " $1 $val
-            case $val in
-                -1)
-                    echo "(use per-chip default)"
-                    ;;
-                *)
-                    echo -n "("
-                    for b in 1 2 4; do
-                        case $b in
-                            1)  if [ $(( $val & 1 )) -ne 0 ]; then
-                                    echo -n "enabled"
-                                else
-                                    echo -n "disabled"
-                                fi
-                                ;;
-                                    
-                            2) [ $(( $val & 2 )) -ne 0 ] && echo -n " + deep" ;;
-                            4) [ $(( $val & 4 )) -ne 0 ] && echo -n " + deepest" ;;
-                        esac
-                    done
-                    echo ")"
-                    ;;
-            esac
+            if [ "$val" = "-1" ]; then
+                echo "(use per-chip default)"
+            else
+                echo -n "("
+                if [ $(( $val & 1 )) -ne 0 ]; then
+                    echo -n "enabled"
+                else
+                    echo -n "disabled"
+                fi
+                [ $(( $val & 2 )) -ne 0 ] && echo -n " + deep"
+                [ $(( $val & 4 )) -ne 0 ] && echo -n " + deepest"
+                echo ")"
+            fi
         else
             printf "%-44s = (not available)\n" $1
         fi
