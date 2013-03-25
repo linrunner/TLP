@@ -1,4 +1,4 @@
-tlp (0.3.7.904-1) lucid; urgency=low
+tlp (0.3.7.905-1) lucid; urgency=low
 
   *** Development version ***
 
@@ -15,6 +15,8 @@ tlp (0.3.7.904-1) lucid; urgency=low
       radio switch is turned on (ThinkPad only)
     - [experimental] option RUNTIME_PM_ALL to activate runtime pm for
       all PCI(e) devices
+    - tpacpi-bat: new upstream version (24.03.2013, commit 2d13163)
+        - support for X121e, L430, E420s, S420
     - tlp chargeonce: charge battery to upper threshold once
     - tlp discharge: show current power consumption
     - tlp-stat:
@@ -36,7 +38,7 @@ tlp (0.3.7.904-1) lucid; urgency=low
         - exclude usb media from "Storage Devices" section
         - fix display of data in /sys/class/power_supply/BAT?/
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 17 Mar 2013 11:00:24 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 25 Mar 2013 13:52:26 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 

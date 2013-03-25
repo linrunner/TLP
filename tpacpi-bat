@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##########################################################################
-# Exposes inhibitCharge, start/stop charge threshold, and force discharge
+# Exposes inhibit charge, start/stop charge threshold, and force discharge
 # through ACPI as an alternative to SMAPI, which is broken in W520, etc.
 #
 # Makes ACPI calls using the acpi_call kernel module, which is REQUIRED.
@@ -39,7 +39,17 @@ use warnings;
 use File::Basename;
 
 my $acpiCallDev = '/proc/acpi/call';
-my $aslBase = '\_SB.PCI0.LPC.EC.HKEY';
+my $aslBases = {
+  'default'        => '\_SB.PCI0.LPC.EC.HKEY',
+  'ThinkPad W520'  => '\_SB.PCI0.LPC.EC.HKEY',
+  'ThinkPad X121e' => '\_SB.PCI0.LPCB.EC.HKEY',
+  'ThinkPad L430'  => '\_SB.PCI0.LPCB.H_EC.HKEY',
+  'ThinkPad E420s' => '\_SB.PCI0.LPCB.EC0.HKEY',
+  'ThinkPad S420'  => '\_SB.PCI0.LPCB.EC0.HKEY',
+};
+
+sub getMethod($$$);
+sub setMethod($$$@);
 
 sub readPeakShiftState($);
 sub readInhibitCharge($);
@@ -47,14 +57,16 @@ sub readStartChargeThreshold($);
 sub readStopChargeThreshold($);
 sub readForceDischarge($);
 
-sub writePeakShiftState($$);
-sub writeInhibitCharge($$$);
-sub writeStartChargeThreshold($$);
-sub writeStopChargeThreshold($$);
-sub writeForceDischarge($$$);
+sub writePeakShiftState($);
+sub writeInhibitCharge($);
+sub writeStartChargeThreshold($);
+sub writeStopChargeThreshold($);
+sub writeForceDischarge($);
 
-sub acpiCallGet($$);
-sub acpiCallSet($$);
+sub getASLBase();
+sub acpiCall($);
+sub acpiCallGet($$$);
+sub acpiCallSet($$$);
 
 sub revpadzero($$);
 
@@ -65,82 +77,185 @@ sub decToBin($);
 sub binToDec($);
 sub hexToBin($);
 sub binToHex($);
+sub synList(@);
 
 our $verbose = 0;
 
+my ($methodST, $methodSP, $methodIC, $methodFD, $methodPS) =
+  ("ST", "SP", "IC", "FD", "PS");
+my $methodSyns = {
+  $methodST => synList ("st", "startThreshold", "start"),
+  $methodSP => synList ("sp", "stopThreshold", "stop"),
+  $methodIC => synList ("ic", "inhibitCharge", "inhibit"),
+  $methodFD => synList ("fd", "forceDischarge"),
+  $methodPS => synList ("ps", "peakShiftState"),
+};
+
 my $name = File::Basename::basename $0;
 my $usage = "Usage:
-  Set inhibit charge / force discharge / thresholds:
-    $name [-v] peakShiftState <inhibit> <min>
-    $name [-v] inhibitCharge <bat> <inhibit> [<min>]
-    $name [-v] startChargeThreshold <bat> <percent>
-    $name [-v] stopChargeThreshold <bat> <percent>
-    $name [-v] forceDischarge <bat> <discharge> [<acbreak>]
+  Show this message:
+    $name [-h|--help]
 
-  Read inhibit charge / force discharge / thresholds:
-    $name [-v] inhibitCharge <bat>
-    $name [-v] startChargeThreshold <bat>
-    $name [-v] stopChargeThreshold <bat>
-    $name [-v] forceDischarge <bat>
+  Get charge thresholds / inhibit charge / force discharge:
+    $name [-v] -g $methodST <bat{1,2}>
+    $name [-v] -g $methodSP <bat{1,2}>
+    $name [-v] -g $methodIC <bat{1,2,0}>
+    $name [-v] -g $methodFD <bat{1,2}>
 
-  -v          show ASL call and response
-  <min>       1-720 minutes, or 0 for never, or 65535 for forever *
-  <bat>       1 for main, 2 for secondary, 0 for either/both
-  <inhibit>   1 for inhibit, 0 for dont inhibit
-  <percent>   0 for default, 1-99 for percentage
-  <discharge> 1 for force discharge, 0 for stop discharge
-  <acbreak>   1 for break by AC detaching, 0 for do not
-  [] means optional: defaults to 0
-  
-  *likely bug in BIOS code
-   looking at peak-shift-state its obviously supposed to be 1440 min
+  Set charge thresholds / inhibit charge / force discharge:
+    $name [-v] -s $methodST <bat{1,2,0}> <percent{0,1-99}>
+    $name [-v] -s $methodSP <bat{1,2,0}> <percent{0,1-99}>
+    $name [-v] -s $methodIC <bat{1,2,0}> <inhibit{1,0}> [<min{0,1-720,65535}>]
+    $name [-v] -s $methodFD <bat{1,2}> <discharge{1,0}> [<acbreak{1,0}>]
+
+  Set peak shift state, which is mysterious and inhibits charge:
+    $name [-v] -s $methodPS <inhibit{1,0}> [<min{0,1-1440,65535}>]
+
+
+  Synonyms:
+    $methodST -> $$methodSyns{$methodST}
+    $methodSP -> $$methodSyns{$methodSP}
+    $methodIC -> $$methodSyns{$methodIC}
+    $methodFD -> $$methodSyns{$methodFD}
+    $methodPS -> $$methodSyns{$methodPS}
+
+  Options:
+    -v           show ASL call and response
+    <bat>        1 for main, 2 for secondary, 0 for either/both
+    <min>        number of minutes, or 0 for never, or 65535 for forever
+    <percent>    0 for default, 1-99 for percentage
+    <inhibit>    1 for inhibit charge, 0 for stop inhibiting charge
+    <discharge>  1 for force discharge, 0 for stop forcing discharge
+    <acbreak>    1 for stop forcing when AC is detached, 0 for do not
+    [] means optional: sets value to 0
 ";
 
+my $noReadMethods = join "|", ($methodPS);
+my $noBothReadMethods = join "|", ($methodST, $methodSP, $methodFD);
+my $noBothWriteMethods = join "|", ($methodFD);
 
 sub main(@){
-  if($_[0] eq '-v'){
+  if(@_ == 1 and $_[0] =~ /^(-h|--help)$/){
+    print $usage;
+    exit 0;
+  }
+  if(@_ > 0 and $_[0] eq '-v'){
     $verbose = 1;
     shift;
   }
   my $cmd = shift() || '';
-  my @args = map {parseArgDecToBin $_} @_;
-  
-  #GETTERS
-  if($cmd eq 'inhibitCharge' and @args == 1){
-    my ($bat) = @args;
+  my $method;
+  my $methodSyn = shift() || '';
+  for my $m(keys %$methodSyns){
+    $method = $m if $methodSyn eq $m or $methodSyn =~ /^($$methodSyns{$m})$/;
+  }
+  die $usage if not defined $method or $cmd !~ /^(-g|-s)$/;
+
+  my $aslBase = getASLBase();
+
+  my $bat;
+  if($method eq $methodPS){
+    $bat = 0;
+  }else{
+    $bat = shift;
+  }
+  die "<bat> missing or incorrect\n" if not defined $bat or $bat !~ /^0|1|2$/;
+
+  if($cmd eq '-g' and @_ == 0){
+    print getMethod($aslBase, $method, $bat) . "\n";
+  }elsif($cmd eq '-s'){
+    print setMethod($aslBase, $method, $bat, @_);
+  }
+}
+
+sub getMethod($$$){
+  my $aslBase = shift;
+  my $method = shift;
+  my $bat = shift;
+
+  if($method =~ /^($noReadMethods)$/){
+    die "Cannot read $method\n";
+  }
+  if($bat == 0 and $method =~ /^($noBothReadMethods)$/){
+    die "Cannot specify 'either/both' for reading $method\n";
+  }
+
+  $bat = parseArgDecToBin $bat;
+
+  if($method eq $methodST){
+    return readStartChargeThreshold(acpiCallGet $aslBase, 'BCTG', $bat);
+  }elsif($method eq $methodSP){
+    return readStopChargeThreshold(acpiCallGet $aslBase, 'BCSG', $bat);
+  }elsif($method eq $methodIC){
     #this is actually reading peak shift state
-    print readInhibitCharge(acpiCallGet 'PSSG', $bat) . "\n";
-  }elsif($cmd eq 'startChargeThreshold' and @args == 1){
-    my ($bat) = @args;
-    print readStartChargeThreshold(acpiCallGet 'BCTG', $bat) . "\n";
-  }elsif($cmd eq 'stopChargeThreshold' and @args == 1){
-    my ($bat) = @args;
-    print readStopChargeThreshold(acpiCallGet 'BCSG', $bat) . "\n";
-  }elsif($cmd eq 'forceDischarge' and @args == 1){
-    my ($bat) = @args;
-    print readForceDischarge(acpiCallGet 'BDSG', $bat) . "\n";
-  #SETTERS
-  }elsif($cmd eq 'peakShiftState' and @args == 2){
-    my ($inhibit, $min) = @args;
-    acpiCallSet 'PSSS', writePeakShiftState($inhibit, $min);
-  }elsif($cmd eq 'inhibitCharge' and (@args == 2 or @args == 3)){
-    my ($bat, $inhibit, $min) = (@args, 0);
+    return readInhibitCharge(acpiCallGet $aslBase, 'PSSG', $bat);
+  }elsif($method eq $methodFD){
+    return readForceDischarge(acpiCallGet $aslBase, 'BDSG', $bat);
+  }else{
+    die $usage;
+  }
+}
+sub setMethod($$$@){
+  my $aslBase = shift;
+  my $method = shift;
+  my $bat = shift;
+
+  if($bat == 0 and $method =~ /^($noBothWriteMethods)$/){
+    die "Cannot specify 'either/both' for writing $method\n";
+  }
+
+  my %info;
+  $info{bat} = $bat;
+
+  if($method =~ /^($methodIC|$methodPS)$/){
+    $info{inhibit} = shift @_;
+    if(not defined $info{inhibit} or $info{inhibit} !~ /^0|1$/){
+      die "missing or invalid value for <inhibit>\n";
+    }
+
+    $info{min} = shift @_;
+    $info{min} = 0 if not defined $info{min};
     ############################################################
     #they are shifting a bit somewhere; the limit should be 1440
-    #the same range in peakShiftState is used, except shifted to the left
-    #the value returned by peakShiftState is the REAL duration, though
-    $min .= '0';
+    #the same range in peak-shift-state is used, except shifted to the left
+    #the value returned by peak-shift-state is the REAL duration, though
+    $info{min} *= 2 if $method eq $methodIC;
     ############################################################
-    acpiCallSet 'BICS', writeInhibitCharge($bat, $inhibit, $min);
-  }elsif($cmd eq 'startChargeThreshold' and @args == 2){
-    my ($bat, $percent) = @args;
-    acpiCallSet 'BCCS', writeStartChargeThreshold($bat, $percent);
-  }elsif($cmd eq 'stopChargeThreshold' and @args == 2){
-    my ($bat, $percent) = @args;
-    acpiCallSet 'BCSS', writeStopChargeThreshold($bat, $percent);
-  }elsif($cmd eq 'forceDischarge' and (@args == 2 or @args == 3)){
-    my ($bat, $discharge, $acBreak) = (@args, 0);
-    acpiCallSet 'BDSS', writeForceDischarge($bat, $discharge, $acBreak);
+
+    if($info{min} !~ /^\d+$/ or ($info{min} > 1440 and $info{min} != 65535)){
+      die "invalid value for <min>\n";
+    }
+  }elsif($method =~ /^($methodFD)$/){
+    $info{discharge} = shift @_;
+    if(not defined $info{discharge} or $info{discharge} !~ /^0|1$/){
+      die "missing or invalid value for <discharge>\n";
+    }
+
+    $info{acbreak} = shift @_;
+    $info{acbreak} = 0 if not defined $info{acbreak};
+    if($info{acbreak} !~ /^0|1$/){
+      die "invalid value for <acbreak>\n";
+    }
+  }elsif($method =~ /^($methodST|$methodSP)$/){
+    $info{percent} = shift @_;
+    if(not defined $info{percent} or $info{percent} !~ /^\d+$/ or $info{percent} > 99){
+      die "missing or invalid value for <percent>\n";
+    }
+  }
+  die $usage if @_ > 0;
+
+  %info = map {$_ => parseArgDecToBin $info{$_}} keys %info;
+
+  if($method eq $methodST){
+    acpiCallSet $aslBase, 'BCCS', writeStartChargeThreshold(\%info);
+  }elsif($method eq $methodSP){
+    acpiCallSet $aslBase, 'BCSS', writeStopChargeThreshold(\%info);
+  }elsif($method eq $methodIC){
+    acpiCallSet $aslBase, 'BICS', writeInhibitCharge(\%info);
+  }elsif($method eq $methodFD){
+    acpiCallSet $aslBase, 'BDSS', writeForceDischarge(\%info);
+  }elsif($method eq $methodPS){
+    acpiCallSet $aslBase, 'PSSS', writePeakShiftState(\%info);
   }else{
     die $usage;
   }
@@ -173,7 +288,15 @@ sub readStartChargeThreshold($){
   if($bits[8] != 1 and $bits[9] != 1){
     die "<start charge threshold unsupported>\n";
   }
-  return bitRangeToDec @bits, 0, 7;
+  my $val = bitRangeToDec @bits, 0, 7;
+  if($val == 0){
+    $val .= " (default)";
+  }elsif($val > 0 and $val < 100){
+    $val .= " (relative percent)";
+  }else{
+    $val .= " (unknown)";
+  }
+  return $val;
 }
 
 sub readStopChargeThreshold($){
@@ -181,7 +304,15 @@ sub readStopChargeThreshold($){
   if($bits[8] != 1 and $bits[9] != 1){
     die "<start charge threshold unsupported>\n";
   }
-  return bitRangeToDec @bits, 0, 7;
+  my $val = bitRangeToDec @bits, 0, 7;
+  if($val == 0){
+    $val .= " (default)";
+  }elsif($val > 0 and $val < 100){
+    $val .= " (relative percent)";
+  }else{
+    $val .= " (unknown)";
+  }
+  return $val;
 }
 
 sub readForceDischarge($){
@@ -203,64 +334,75 @@ sub readForceDischarge($){
 }
 
 
-
-
-sub writePeakShiftState($$){
-  my ($inhibit, $min) = @_;
+sub writePeakShiftState($){
+  my $info = shift;
   return reverse ''
-    . revpadzero( 1, $inhibit)
+    . revpadzero( 1, $$info{inhibit})
     . revpadzero( 3, 0)
     . revpadzero( 4, 0)
-    . revpadzero(16, $min)
+    . revpadzero(16, $$info{min})
     . revpadzero( 8, 0)
   ;
 }
 
-sub writeInhibitCharge($$$){
-  my ($bat, $inhibit, $min) = @_;
+sub writeInhibitCharge($){
+  my $info = shift;
   return reverse ''
-    . revpadzero( 1, $inhibit)
+    . revpadzero( 1, $$info{inhibit})
     . revpadzero( 3, 0)
-    . revpadzero( 2, $bat)
+    . revpadzero( 2, $$info{bat})
     . revpadzero( 2, 0)
-    . revpadzero(16, $min)
+    . revpadzero(16, $$info{min})
     . revpadzero( 8, 0)
   ;
 }
 
-sub writeStartChargeThreshold($$){
-  my ($bat, $percent) = @_;
+sub writeStartChargeThreshold($){
+  my $info = shift;
   return reverse ''
-    . revpadzero( 8, $percent)
-    . revpadzero( 2, $bat)
+    . revpadzero( 8, $$info{percent})
+    . revpadzero( 2, $$info{bat})
     . revpadzero(22, 0)
   ;
 }
 
-sub writeStopChargeThreshold($$){
-  my ($bat, $percent) = @_;
+sub writeStopChargeThreshold($){
+  my $info = shift;
   return reverse ''
-    . revpadzero( 8, $percent)
-    . revpadzero( 2, $bat)
+    . revpadzero( 8, $$info{percent})
+    . revpadzero( 2, $$info{bat})
     . revpadzero(22, 0)
   ;
 }
 
-sub writeForceDischarge($$$){
-  my ($bat, $discharge, $acBreak) = @_;
+sub writeForceDischarge($){
+  my $info = shift;
   return reverse ''
-    . revpadzero( 1, $discharge)
-    . revpadzero( 1, $acBreak)
+    . revpadzero( 1, $$info{discharge})
+    . revpadzero( 1, $$info{acbreak})
     . revpadzero( 6, 0)
-    . revpadzero( 2, $bat)
+    . revpadzero( 2, $$info{bat})
     . revpadzero(22, 0)
   ;
 }
 
+sub getASLBase(){
+  my $dmiVersion = `dmidecode --string=system-version 2>&1`;
+  chomp $dmiVersion;
+  for my $v(keys %$aslBases){
+    if($v eq $dmiVersion){
+      return $$aslBases{$v};
+    }
+  }
+  return $$aslBases{default};
+}
 
 sub acpiCall($){
   my $call = shift;
 
+  if(not -e $acpiCallDev){
+    system "insmod /lib/modules/\$(uname -r)/extra/acpi_call.ko";
+  }
   if(not -e $acpiCallDev){
     die "Could not find $acpiCallDev. Is module acpi_call loaded?\n";
   }
@@ -273,8 +415,8 @@ sub acpiCall($){
   close FH;
   return $val;
 }
-sub acpiCallGet($$){
-  my ($method, $bits) = @_;
+sub acpiCallGet($$$){
+  my ($aslBase, $method, $bits) = @_;
   my $call = "$aslBase.$method 0x" . binToHex($bits);
   print "Call    : $call\n" if $verbose;
   my $val = acpiCall $call;
@@ -284,8 +426,8 @@ sub acpiCallGet($$){
   }
   return $val;
 }
-sub acpiCallSet($$){
-  my ($method, $bits) = @_;
+sub acpiCallSet($$$){
+  my ($aslBase, $method, $bits) = @_;
   my $call = "$aslBase.$method 0x" . binToHex($bits);
   print "Call    : $call\n" if $verbose;
   my $val = acpiCall $call;
@@ -334,4 +476,7 @@ sub binToHex($){
   return sprintf("%x", binToDec $_[0]);
 }
 
+sub synList(@){
+  return join "|", ((map {"--$_"} @_), @_);
+}
 &main(@ARGV);

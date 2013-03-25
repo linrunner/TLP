@@ -108,7 +108,7 @@ printparm_i915 () { # $1: file
 print_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
     local start_thresh stop_thresh force
     
-    start_thresh=$($TPACPIBAT startChargeThreshold $2 2> /dev/null)
+    start_thresh=$($TPACPIBAT -g ST $2 2> /dev/null | cut -f1 -d' ')
     if [ -n "$start_thresh" ]; then
         [ $start_thresh -eq 0 ] && start_thresh=96
         printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.startChargeThreshold" $start_thresh
@@ -116,7 +116,7 @@ print_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
         printf "%-59s = (not available)\n" "tpacpi-bat.${1}.startChargeThreshold"
     fi
 
-    stop_thresh=$($TPACPIBAT stopChargeThreshold $2 2> /dev/null)
+    stop_thresh=$($TPACPIBAT -g SP $2 2> /dev/null | cut -f1 -d' ')
     if [ -n "$stop_thresh" ]; then
         [ $stop_thresh -eq  0 ] && stop_thresh=100
         printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.stopChargeThreshold" $stop_thresh

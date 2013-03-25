@@ -1005,7 +1005,7 @@ check_tpacpi () { # check if tpacpi-bat is supported
         # module not installed
         tpacpi=127
     else
-        $TPACPIBAT forceDischarge 1 > /dev/null 2>&1
+        $TPACPIBAT -g FD 1 > /dev/null 2>&1
         tpacpi=$?
 
         if [ $tpacpi -eq 0 ] && [ "$DISABLE_TPACPIBAT" = "1" ]; then
@@ -1021,7 +1021,7 @@ do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
     # global param: $tpacpi, $tpsmapi 
     # rc: 0=ok/1=read error/2=thresh not present/255=no thresh api
     
-    local bati bsys
+    local bati bsys ts
     local old_thresh=-1
     local new_thresh=$3
     local rc=0
@@ -1038,14 +1038,20 @@ do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
         if [ $bati -ne 255 ]; then
             # replace factory default values with 0 for tpacpi
             case $1 in
-                start) [ $new_thresh -eq  96 ] && new_thresh=0 ;;
-                stop)  [ $new_thresh -eq 100 ] && new_thresh=0 ;;
+                start)
+                    [ $new_thresh -eq  96 ] && new_thresh=0
+                    ts="ST"
+                    ;;
+                stop)
+                    [ $new_thresh -eq 100 ] && new_thresh=0
+                    ts="SP"
+                    ;;
             esac
 
-            old_thresh=$($TPACPIBAT ${1}ChargeThreshold $bati 2> /dev/null)
+            old_thresh=$($TPACPIBAT -g $ts $bati 2> /dev/null | cut -f1 -d' ')
 
             if [ $new_thresh -ne $old_thresh ]; then
-                $TPACPIBAT ${1}ChargeThreshold $bati $new_thresh > /dev/null 2>&1
+                $TPACPIBAT -s $ts $bati $new_thresh > /dev/null 2>&1
                 rc=$?
             fi
         fi
@@ -1196,7 +1202,7 @@ do_force_discharge () { # write force discharge state
             BAT1) bati=2 ;;
         esac
 
-        $TPACPIBAT forceDischarge $bati $2 > /dev/null 2>&1; rc=$?
+        $TPACPIBAT -s FD $bati $2 > /dev/null 2>&1; rc=$?
         echo_debug "bat" "do_force_discharge.tpacpi-bat($1, $2): rc=$rc"
     elif [ $tpsmapi -eq 0 ]; then # use tp_smapi
         bsys=$SMAPIDIR/$1/force_discharge
@@ -1227,7 +1233,7 @@ get_force_discharge () { # $1: BAT0/BAT1,
             BAT1) bati=2 ;;
         esac
 
-        case $($TPACPIBAT forceDischarge $bati 2> /dev/null) in
+        case $($TPACPIBAT -g FD $bati 2> /dev/null) in
             yes) rc=1 ;;
             no)  rc=0 ;;
             *)   rc=2 ;;
