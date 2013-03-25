@@ -63,6 +63,7 @@ sub writeStartChargeThreshold($);
 sub writeStopChargeThreshold($);
 sub writeForceDischarge($);
 
+sub readSysFile();
 sub getASLBase();
 sub acpiCall($);
 sub acpiCallGet($$$);
@@ -386,8 +387,17 @@ sub writeForceDischarge($){
   ;
 }
 
+sub readSysFile {
+    my $sysval = "";
+    if (open SYSF, "$_[0]") {
+        chomp ($sysval = <SYSF>);
+        close SYSF;
+    }
+    return $sysval;
+}
+
 sub getASLBase(){
-  my $dmiVersion = `dmidecode --string=system-version 2>&1`;
+  my $dmiVersion = readSysFile ("/sys/class/dmi/id/product_version");
   chomp $dmiVersion;
   for my $v(keys %$aslBases){
     if($v eq $dmiVersion){
