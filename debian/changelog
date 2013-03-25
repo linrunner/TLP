@@ -15,7 +15,7 @@ tlp (0.3.7.905-1) lucid; urgency=low
       radio switch is turned on (ThinkPad only)
     - [experimental] option RUNTIME_PM_ALL to activate runtime pm for
       all PCI(e) devices
-    - tpacpi-bat: new upstream version (24.03.2013, commit 2d13163)
+    - tpacpi-bat: new upstream version (25.03.2013, commit dd5a682)
         - support for X121e, L430, E420s, S420
     - tlp chargeonce: charge battery to upper threshold once
     - tlp discharge: show current power consumption
