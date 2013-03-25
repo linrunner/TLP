@@ -111,17 +111,17 @@ print_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
     start_thresh=$($TPACPIBAT -g ST $2 2> /dev/null | cut -f1 -d' ')
     if [ -n "$start_thresh" ]; then
         [ $start_thresh -eq 0 ] && start_thresh=96
-        printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.startChargeThreshold" $start_thresh
+        printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.startThreshold" $start_thresh
     else
-        printf "%-59s = (not available)\n" "tpacpi-bat.${1}.startChargeThreshold"
+        printf "%-59s = (not available)\n" "tpacpi-bat.${1}.startThreshold"
     fi
 
     stop_thresh=$($TPACPIBAT -g SP $2 2> /dev/null | cut -f1 -d' ')
     if [ -n "$stop_thresh" ]; then
         [ $stop_thresh -eq  0 ] && stop_thresh=100
-        printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.stopChargeThreshold" $stop_thresh
+        printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.stopThreshold" $stop_thresh
     else
-        printf "%-59s = (not available)\n" "tpacpi-bat.${1}.stopChargeThreshold"
+        printf "%-59s = (not available)\n" "tpacpi-bat.${1}.stopThreshold"
     fi
 
     get_force_discharge $2; force=$?
