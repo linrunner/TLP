@@ -11,8 +11,8 @@ tlp (0.3.7.905-1) lucid; urgency=low
     - Move smartmontools to recommends:
   * Features
     - Set cpu turbo boost feature (kernel 3.7 or later)
-    - option DEVICES_TO_DISABLE_ON_RADIOSW to disable radios when hardware
-      radio switch is turned on (ThinkPad only)
+    - option DEVICES_TO_ENABLE_ON_RADIOSW to enable only selected radios
+      when wireless radio switch is turned on (Ubuntu + ThinkPad only)
     - [experimental] option RUNTIME_PM_ALL to activate runtime pm for
       all PCI(e) devices
     - tpacpi-bat: new upstream version (25.03.2013, commit dd5a682)
@@ -38,7 +38,7 @@ tlp (0.3.7.905-1) lucid; urgency=low
         - exclude usb media from "Storage Devices" section
         - fix display of data in /sys/class/power_supply/BAT?/
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 25 Mar 2013 13:52:26 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 26 Mar 2013 11:11:12 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 

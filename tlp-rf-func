@@ -375,8 +375,8 @@ init_radio_devices () { # initialize all radio type states
                 ;;
 
             radiosw)
-                devs2disable="$DEVICES_TO_DISABLE_ON_RADIOSW"
-                devs2enable=""
+                devs2disable=""
+                devs2enable="$DEVICES_TO_ENABLE_ON_RADIOSW"
                 ;;
         esac
 
@@ -392,12 +392,22 @@ init_radio_devices () { # initialize all radio type states
 
         # Enable configured radios
         if [ -n "$devs2enable" ]; then
-            echo -n "Enabling radios:"
-            for dev in $devs2enable; do
-                echo -n " $dev"
-                device_on $dev
-            done
-            echo "."
+            if [ "$1" = "radiosw" ]; then
+                # radiosw mode: disable radios not listed
+                for dev in bluetooth wifi wwan; do
+                    if ! patinstr "$dev" "$devs2enable"; then
+                        device_off $dev
+                    fi
+                done
+            else
+                # start mode: enable listed radios
+                echo -n "Enabling radios:"
+                for dev in $devs2enable; do
+                    echo -n " $dev"
+                    device_on $dev
+                done
+                echo "."
+            fi
         fi
 
         # clean up: discard state file 
