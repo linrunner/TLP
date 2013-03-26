@@ -3,40 +3,41 @@ tlp (0.3.7.905-1) lucid; urgency=low
   *** Development version ***
 
   * Packaging
-    - Remove desktop autostart hook
+    - Remove obsolete desktop autostart hook
     - New format for debian/copyright
     - Add dummy case construct to tlp.init to make lintian happy
     - Rename tlp-init.service to tlp.service
     - postinst/postrm: restart acpid for thinkpad-radiosw event
-    - Move smartmontools to recommends:
+    - Move smartmontools to "recommends:"
+    
   * Features
-    - Set cpu turbo boost feature (kernel 3.7 or later)
-    - option DEVICES_TO_ENABLE_ON_RADIOSW to enable only selected radios
+    - New options CPU_BOOST_ON_* for cpu turbo boost (Linux 3.7 or later)
+    - New option DEVICES_TO_ENABLE_ON_RADIOSW to enable only selected radios
       when wireless radio switch is turned on (Ubuntu + ThinkPad only)
-    - [experimental] option RUNTIME_PM_ALL to activate runtime pm for
+    - [EXPERIMENTAL] New option RUNTIME_PM_ALL to activate runtime pm for
       all PCI(e) devices
     - tpacpi-bat: new upstream version (25.03.2013, commit dd5a682)
-        - support for X121e, L430, E420s, S420
+        - add support for X121e, L430, E420s, S420
     - tlp chargeonce: charge battery to upper threshold once
     - tlp discharge: show current power consumption
     - tlp-stat:
-        - nicer output, code refactored
-        - remove dmidecode; get dmi data from /sys/class/dmi/id/
-        - when aspm policy is not writable show "using bios prefs"
-        - show interpretation for i915 params
-        - show disk status
-        - show tp-smapi, tpacpi-bat availability and status
-        - show cpu model
-        - resolve all pci device classes (new subcommand tlp-pcilist)
-        - show suggestions to install missing kernel modules/tools
-    - Use iw for wifi power save if available; iwconfig is considered deprecated
-    - Remove tlp wifi subcommand
+        - Nicer output, code refactored
+        - Remove dmidecode – get DMI data from /sys/class/dmi/id/
+        - When ASPM policy is not writable, show "using bios prefs"
+        - Show interpretation for i915 params
+        - Show disk status
+        - Show tp-smapi, tpacpi-bat availability and status
+        - Show cpu model
+        - Resolve all pci device classes (new subcommand tlp-pcilist)
+        - Show suggestions to install missing kernel modules/tools
+    - Use iw for wifi power save if available, iwconfig is considered deprecated
+    - Remove obsolete tlp wifi subcommand
     - Remove 2s delay in applying settings upon change of the power source
 
   * Bugfixes
     - tlp-stat:
-        - exclude usb media from "Storage Devices" section
-        - fix display of data in /sys/class/power_supply/BAT?/
+        - Exclude usb media from "Storage Devices" section
+        - Fix display of data in /sys/class/power_supply/BAT?/
 
  -- Thomas Koch <linrunner@gmx.net>  Tue, 26 Mar 2013 11:11:12 +0100
 

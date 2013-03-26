@@ -58,7 +58,7 @@ NMI_WATCHDOG=0
 DISK_DEVICES="sda sdb"
 
 # Hard disk advanced power management level: 1(max saving)..254(off)
-# Levels 1..127 spin down the disk.
+# Levels 1..127 may spin down the disk.
 # Separate values for multiple devices with spaces.
 DISK_APM_LEVEL_ON_AC="254 254"
 DISK_APM_LEVEL_ON_BAT="128 128"
@@ -71,10 +71,9 @@ DISK_APM_LEVEL_ON_BAT="128 128"
 #DISK_SPINDOWN_TIMEOUT_ON_AC="0 0"
 #DISK_SPINDOWN_TIMEOUT_ON_BAT="0 0"
 
-# Select i/o scheduler for the disk devices - possible values are 
-#   noop anticipatory deadline cfq (Default: cfq) 
+# Select io scheduler for the disk devices: noop/deadline/cfq (Default: cfq) 
 # Separate values for multiple devices with spaces.
-#DISK_IOSCHED="deadline cfq"
+#DISK_IOSCHED="cfq cfq"
  
 # SATA aggressive link power management (ALPM):
 # min_power/medium_power/max_performance
@@ -94,7 +93,7 @@ RADEON_POWER_PROFILE_ON_AC=high
 RADEON_POWER_PROFILE_ON_BAT=low
  
 # WiFi power saving mode: 1=disable/5=enable
-# (Kernel >= 2.6.32, some adapters only!)
+# (Linux 2.6.32 and later, some adapters only!)
 WIFI_PWR_ON_AC=1
 WIFI_PWR_ON_BAT=5
  
@@ -171,7 +170,7 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 #START_CHARGE_THRESH_BAT1=75
 #STOP_CHARGE_THRESH_BAT1=80
 
-# Set to 1 to disable use of tpacpi-bat on Sandy Bridge (or newer) Thinkpad models
+# Set to 1 to disable use of tpacpi-bat on Sandy Bridge or newer Thinkpads
 # and force usage of tp-smapi instead
 #DISABLE_TPACPIBAT=1
 
