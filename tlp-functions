@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER=0.3.7.905
+readonly TLPVER=0.3.7.906
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -460,9 +460,9 @@ set_phc_controls () { # set core voltages
 # --- Storage Devices
 
 check_disk_hdparm_cap () { # check if relevant disk device
-    # $1: dev; rc: 0=none/1=available
-    
-    if [ -z "$($HDPARM -I /dev/$1 2>&1 | egrep 'Invalid exchange|missing sense data')" ]; then # 
+    # $1: dev; rc: 0=yes/1=no
+
+    if [ -z "$($HDPARM -I /dev/$1 2>&1 | egrep 'Invalid argument|Invalid exchange|missing sense data')" ]; then  
         return 0
     else
         return 1
