@@ -1,4 +1,4 @@
-tlp (0.3.8-2) lucid; urgency=low
+tlp (0.3.8.1-1) lucid; urgency=low
 
   * Packaging
     - Remove obsolete desktop autostart hook
@@ -37,7 +37,7 @@ tlp (0.3.8-2) lucid; urgency=low
         - Exclude usb media from "Storage Devices" section
         - Fix display of data in /sys/class/power_supply/BAT?/
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 29 Mar 2013 14:42:41 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 29 Mar 2013 23:56:42 +0100
 
 tlp (0.3.7.1-1) lucid; urgency=low
 
