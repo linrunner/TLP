@@ -19,6 +19,8 @@ read_defaults || exit 0
 
 [ "$TLP_ENABLE" = "1" ] || exit 0
 
+sleep 2 # Allow some time for rfkill state to settle
+
 for dev in bluetooth wifi wwan; do
     get_devc $dev
     get_devs $dev
