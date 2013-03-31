@@ -126,9 +126,9 @@ print_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
 
     get_force_discharge $2; force=$?
     if [ $force -ne 2 ]; then
-        printf "%-59s = %6d" "tpacpi-bat.${1}.forceDischarge" "$force"
+        printf "%-59s = %6d\n" "tpacpi-bat.${1}.forceDischarge" "$force"
     else
-        printf "%-59s = %s" "tpacpi-bat.${1}.forceDischarge" "(not available)"
+        printf "%-59s = %s\n" "tpacpi-bat.${1}.forceDischarge" "(not available)"
     fi
 
     return 0
@@ -627,7 +627,6 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     if [ $tpacpi -eq 0 ]; then
                         # --- show ThinkPad charge thresholds via tpacpi-bat
                         print_tpacpi_thresholds $batt $bati
-                        echo
                     else
                         # show thresholds via tp-smapi
                         printparm "%-59s = ##%6d## [%%]" $batd/start_charge_thresh
