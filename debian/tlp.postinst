@@ -18,4 +18,6 @@ for i in /etc/init/rfkill-*.conf; do
 done
 
 # Restart acpid to insert thinkpad-radiosw event
-invoke-rc.d acpid restart > /dev/null
+if invoke-rc.d acpid restart > /dev/null 2>&1 ; then
+    echo "acpid restarted."
+fi

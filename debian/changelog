@@ -1,10 +1,15 @@
 tlp (0.3.8.2-1) lucid; urgency=low
  
+  * Packaging
+    - Fix #41: postinst/postrm fails without acpid (Petit Carlin)
+        - recommends: acpid
+        - postinst/rm: ignore missing acpid
+
   * Bugfixes
     - tlp-stat:
       - Fix threshold output trailing empty line
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 31 Mar 2013 19:48:29 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 07 Apr 2013 11:42:21 +0100
 
 tlp (0.3.8.1-1) lucid; urgency=low
 

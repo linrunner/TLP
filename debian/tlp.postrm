@@ -15,5 +15,7 @@ for i in /etc/init/rfkill-*.override; do
     [ ! -f "$i" ] || rm -f $i
 done
 
-# Restart acpid to remove thinkpad-radiosw event
-invoke-rc.d acpid restart > /dev/null
+# Restart acpid to insert thinkpad-radiosw event
+if invoke-rc.d acpid restart > /dev/null 2>&1 ; then
+    echo "acpid restarted."
+fi
