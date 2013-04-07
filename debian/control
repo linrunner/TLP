@@ -9,7 +9,7 @@ Homepage: http://linrunner.de/tlp
 Package: tlp
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, pm-utils
-Recommends: tlp-rdw, ethtool, smartmontools, wireless-tools
+Recommends: tlp-rdw, acpid, ethtool, smartmontools, wireless-tools
 Suggests: acpi-call, tp-smapi-dkms
 Conflicts: pm-utils-powersave-policy
 Description: Save battery power on laptops
