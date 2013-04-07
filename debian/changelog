@@ -9,7 +9,7 @@ tlp (0.3.8.2-1) lucid; urgency=low
     - tlp-stat:
       - Fix threshold output trailing empty line
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 07 Apr 2013 11:42:21 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 07 Apr 2013 15:51:15 +0100
 
 tlp (0.3.8.1-1) lucid; urgency=low
 

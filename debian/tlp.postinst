@@ -1,23 +1,27 @@
 #!/bin/sh -e
 #DEBHELPER#
 
-# Disable conflicting pm-utils hooks
-for i in 95hdparm-apm disable_wol hal-cd-polling intel-audio-powersave harddrive \
-         laptop-mode journal-commit pci_devices pcie_aspm readahead sata_alpm \
-         sched-powersave usb_bluetooth wireless xfs_buffer; do
-    if [ -x /usr/lib/pm-utils/power.d/$i ]; then
-        ln -sf /usr/lib/tlp-pm/tlp-nop /etc/pm/power.d/$i
-    fi
-done
+case "$1" in
+    configure)
+        # Disable conflicting pm-utils hooks
+        for i in 95hdparm-apm disable_wol hal-cd-polling intel-audio-powersave harddrive \
+                 laptop-mode journal-commit pci_devices pcie_aspm readahead sata_alpm \
+                 sched-powersave usb_bluetooth wireless xfs_buffer; do
+            if [ -x /usr/lib/pm-utils/power.d/$i ]; then
+                ln -sf /usr/lib/tlp-pm/tlp-nop /etc/pm/power.d/$i
+            fi
+        done
 
-# Disable conflicting upstart jobs (Package rfkill, Ubuntu 12.04)
-for i in /etc/init/rfkill-*.conf; do
-    if [ -f "$i" ] && [ ! -f "${i%.conf}.override" ]; then
-        echo "manual" > ${i%.conf}.override
-    fi
-done
+        # Disable conflicting upstart jobs (Package rfkill, Ubuntu 12.04)
+        for i in /etc/init/rfkill-*.conf; do
+            if [ -f "$i" ] && [ ! -f "${i%.conf}.override" ]; then
+                echo "manual" > ${i%.conf}.override
+            fi
+        done
 
-# Restart acpid to insert thinkpad-radiosw event
-if invoke-rc.d acpid restart > /dev/null 2>&1 ; then
-    echo "acpid restarted."
-fi
+        # Restart acpid to insert thinkpad-radiosw event
+        if invoke-rc.d acpid restart > /dev/null 2>&1 ; then
+            echo "acpid restarted."
+        fi
+        ;;
+esac
