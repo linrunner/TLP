@@ -4,7 +4,8 @@ tlp (0.3.8.2-1) lucid; urgency=low
     - Fix #41: postinst/postrm fails without acpid (Petit Carlin)
         - recommends: acpid
         - postinst/rm: ignore missing acpid
-
+  * Features
+    - tpacpi-bat: merge upstream w/ support for ThinkPad (Edge) S430
   * Bugfixes
     - tlp-stat:
       - Fix threshold output trailing empty line

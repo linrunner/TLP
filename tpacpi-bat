@@ -40,12 +40,14 @@ use File::Basename;
 
 my $acpiCallDev = '/proc/acpi/call';
 my $aslBases = {
-  'default'        => '\_SB.PCI0.LPC.EC.HKEY',
-  'ThinkPad W520'  => '\_SB.PCI0.LPC.EC.HKEY',
-  'ThinkPad X121e' => '\_SB.PCI0.LPCB.EC.HKEY',
-  'ThinkPad L430'  => '\_SB.PCI0.LPCB.H_EC.HKEY',
-  'ThinkPad E420s' => '\_SB.PCI0.LPCB.EC0.HKEY',
-  'ThinkPad S420'  => '\_SB.PCI0.LPCB.EC0.HKEY',
+  'default'            => '\_SB.PCI0.LPC.EC.HKEY',
+  'ThinkPad W520'      => '\_SB.PCI0.LPC.EC.HKEY',
+  'ThinkPad X121e'     => '\_SB.PCI0.LPCB.EC.HKEY',
+  'ThinkPad L430'      => '\_SB.PCI0.LPCB.H_EC.HKEY',
+  'ThinkPad E420s'     => '\_SB.PCI0.LPCB.EC0.HKEY',
+  'ThinkPad S420'      => '\_SB.PCI0.LPCB.EC0.HKEY',
+  'ThinkPad S430'      => '\_SB.PCI0.LPCB.EC0.HKEY',
+  'ThinkPad Edge S430' => '\_SB.PCI0.LPCB.EC0.HKEY',
 };
 
 sub getMethod($$$);
@@ -165,6 +167,8 @@ sub main(@){
     print getMethod($aslBase, $method, $bat) . "\n";
   }elsif($cmd eq '-s'){
     print setMethod($aslBase, $method, $bat, @_);
+  }else{
+    die $usage;
   }
 }
 
