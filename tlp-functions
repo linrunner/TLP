@@ -1359,14 +1359,14 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
             sleep 2
             echo "done."
         else
-            trap INT # remove ^C hook
+            trap - INT # remove ^C hook
             
             echo_debug "bat" "setcharge_battery.force_discharge_not_available($bat): rc=$rc"
             echo "Cannot activate immediately on this ThinkPad model. Please power off."
             return 1
         fi
 
-        trap INT  # remove ^C hook
+        trap - INT  # remove ^C hook
     fi
     
     return 0
@@ -1587,7 +1587,7 @@ discharge_battery () { # discharge battery
         sleep 2
     done
 
-    trap INT # remove ^C hook
+    trap - INT # remove ^C hook
 
     echo
     echo "Done: battery $bat was completely discharged."
