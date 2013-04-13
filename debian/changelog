@@ -1,4 +1,4 @@
-tlp (0.3.8.2-1) lucid; urgency=low
+tlp (0.3.8.899-1) lucid; urgency=low
  
   * Packaging
     - #41: postinst/postrm fails without acpid (Petit Carlin)
@@ -8,10 +8,11 @@ tlp (0.3.8.2-1) lucid; urgency=low
     - tpacpi-bat: merge upstream w/ support for ThinkPad (Edge) S430
   * Bugfixes
     - Issue #14: tlp recalibrate fails when /bin/sh -> bash (slyon)
+    - Set more reasonable values for dirty_ratio/dirty_background_ratio
     - tlp-stat:
       - Fix threshold output trailing empty line
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 12 Apr 2013 13:17:15 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 13 Apr 2013 12:03:41 +0100
 
 tlp (0.3.8.1-1) lucid; urgency=low
 

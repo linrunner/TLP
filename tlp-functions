@@ -304,8 +304,13 @@ set_dirty_parms () { # set filesystem buffer params
         echo 3000 > /proc/sys/fs/xfs/xfsbufd_centisecs
     fi
 
-    echo 60 > /proc/sys/vm/dirty_ratio
-    echo 1 > /proc/sys/vm/dirty_background_ratio
+    if [ "$1" = "1" ]; then
+        echo 60 > /proc/sys/vm/dirty_ratio
+        echo 40 > /proc/sys/vm/dirty_background_ratio
+    else
+        echo 10 > /proc/sys/vm/dirty_ratio
+        echo 5 > /proc/sys/vm/dirty_background_ratio
+    fi
     
     return 0
 }
