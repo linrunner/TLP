@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER=0.3.8.2
+readonly TLPVER=0.3.8.899
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -1022,6 +1022,21 @@ check_tpacpi () { # check if tpacpi-bat is supported
     return $tpacpi
 }
 
+read_tpacpi_threshold () { # $1: ST/SP (start/stop); $2: 0/1 (battery)
+                           # rc: threshold (1..99, 0=default, 255=error)
+    local thresh rc
+    
+    thresh=$($TPACPIBAT -g $1 $2 2> /dev/null | cut -f1 -d' ')
+    rc=$?
+
+    if [ $rc -eq 0 ] && [ -n "$thresh" ]; then
+        [ $thresh -ge 128 ] && thresh=$(($thresh - 128)) # Remove offset of 128 for Edge S430
+        return $thresh
+    else
+        return 255
+    fi
+}
+
 do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
     # global param: $tpacpi, $tpsmapi 
     # rc: 0=ok/1=read error/2=thresh not present/255=no thresh api
@@ -1053,7 +1068,8 @@ do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
                     ;;
             esac
 
-            old_thresh=$($TPACPIBAT -g $ts $bati 2> /dev/null | cut -f1 -d' ')
+            read_tpacpi_threshold $ts $bati
+            old_thresh=$?
 
             if [ $new_thresh -ne $old_thresh ]; then
                 $TPACPIBAT -s $ts $bati $new_thresh > /dev/null 2>&1
