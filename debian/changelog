@@ -1,20 +1,22 @@
 tlp (0.3.8.899-1) lucid; urgency=low
 
   *** Development version ***
-  
+
   * Features
     - tpacpi-bat: merge upstream w/ support for ThinkPad (Edge) S430
-    - Subtract offset 128 when reading thresholds of ThinkPad Edge S430
+    - tlp-stat:
+      - Subtract offset 128 from threshold values on ThinkPad Edge S430
+      - Show /sys/class/power_supply/BATx/cycle_count = 0 as "(unsupported)"
   * Bugfixes
     - Issue #14: tlp recalibrate fails when /bin/sh -> bash (slyon)
     - Set more reasonable values for dirty_ratio/dirty_background_ratio
     - tlp-stat:
       - Fix threshold output trailing empty line
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 26 Apr 2013 16:39:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 26 Apr 2013 19:17:42 +0100
 
 tlp (0.3.8.1-3) lucid; urgency=low
- 
+
   * Packaging
     - Fix #41: postinst/postrm fails without acpid (Petit Carlin)
         - recommends: acpid
