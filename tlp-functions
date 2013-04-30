@@ -1148,11 +1148,11 @@ bat_exists () { # check battery presence
     
     local rc
 
-    if [ $tpacpi -eq 0 ]; then # use tpacpi-bat
-        [ -d $ACPIBATDIR/$1 ] && [ "$(cat $ACPIBATDIR/$1/present)" = "1" ]
-        rc=$?        
-    elif [ $tpsmapi -eq 0 ]; then # use tp_smapi
+    if [ $tpsmapi -eq 0 ]; then # use tp_smapi
         [ -d $SMAPIDIR/$1 ] && [ "$(cat $SMAPIDIR/$1/installed)" = "1" ]
+        rc=$?
+    elif [ $tpacpi -eq 0 ]; then # use tpacpi-bat
+        [ -d $ACPIBATDIR/$1 ] && [ "$(cat $ACPIBATDIR/$1/present)" = "1" ]
         rc=$?
     else # no threshold API available
         rc=255
