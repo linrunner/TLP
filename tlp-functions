@@ -1173,37 +1173,37 @@ set_charge_thresholds () { # write all charge thresholds from configuration
     
     if bat_exists BAT0; then
         normalize_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0"
-        
-        if [ $start_thresh -ne -1 ]; then
-            do_threshold start BAT0 $start_thresh; rc=$?
-            echo_debug "bat" "set_charge_thresholds.start(BAT0): $start_thresh; rc=$rc"
-        else
-            echo_debug "bat" "set_charge_thresholds.start(BAT0).not_set"
-        fi
-        
+
         if [ $stop_thresh -ne -1 ]; then
             do_threshold stop BAT0 $stop_thresh; rc=$?
             echo_debug "bat" "set_charge_thresholds.stop(BAT0): $stop_thresh; rc=$rc"
         else
             echo_debug "bat" "set_charge_thresholds.stop(BAT0).not_set"
         fi
+
+        if [ $start_thresh -ne -1 ]; then
+            do_threshold start BAT0 $start_thresh; rc=$?
+            echo_debug "bat" "set_charge_thresholds.start(BAT0): $start_thresh; rc=$rc"
+        else
+            echo_debug "bat" "set_charge_thresholds.start(BAT0).not_set"
+        fi
     fi
-    
+
     if bat_exists BAT1; then
         normalize_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1"
-        
-        if [ $start_thresh -ne -1 ]; then
-            do_threshold start BAT1 $start_thresh; rc=$?
-            echo_debug "bat" "set_charge_thresholds.start(BAT1): $start_thresh; rc=$rc"
-        else
-            echo_debug "bat" "set_charge_thresholds.start(BAT1).not_set"
-        fi
         
         if [ $stop_thresh -ne -1 ]; then
             do_threshold stop BAT1 $stop_thresh; rc=$?
             echo_debug "bat" "set_charge_thresholds.stop(BAT1): $stop_thresh; rc=$rc"
         else
             echo_debug "bat" "set_charge_thresholds.stop(BAT1).not_set"
+        fi
+
+        if [ $start_thresh -ne -1 ]; then
+            do_threshold start BAT1 $start_thresh; rc=$?
+            echo_debug "bat" "set_charge_thresholds.start(BAT1): $start_thresh; rc=$rc"
+        else
+            echo_debug "bat" "set_charge_thresholds.start(BAT1).not_set"
         fi
     fi
     

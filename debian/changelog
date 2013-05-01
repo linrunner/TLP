@@ -13,10 +13,13 @@ tlp (0.3.8.900-1) lucid; urgency=low
     - Issue #14: tlp recalibrate fails when /bin/sh -> bash (slyon)
     - Bug #42: X121e battery functions not working (Jlp)
     - Set more reasonable values for dirty_ratio/dirty_background_ratio
+    - Reverse order of writing the thresholds upon system start
+      to stop - start, to achieve a consistent tlp-stat output between
+      tlp init/start and tlp setcharge on quirky Edge and L series.
     - tlp-stat:
       - Fix threshold output trailing empty line
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 01 May 2013 13:42:31 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 01 May 2013 13:49:42 +0100
 
 tlp (0.3.8.1-3) lucid; urgency=low
 
