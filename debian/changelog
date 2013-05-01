@@ -1,9 +1,11 @@
-tlp (0.3.8.899-1) lucid; urgency=low
+tlp (0.3.8.900-1) lucid; urgency=low
 
   *** Development version ***
 
   * Features
-    - tpacpi-bat: merge upstream w/ support for ThinkPad (Edge) S430
+    - tpacpi-bat:
+      - merge upstream w/ support for ThinkPad (Edge) S430
+      - add support for ThinkPad L520, L530, L420
     - tlp-stat:
       - Subtract offset 128 from threshold values on ThinkPad Edge S430
       - Show /sys/class/power_supply/BATx/cycle_count = 0 as "(unsupported)"
@@ -14,7 +16,7 @@ tlp (0.3.8.899-1) lucid; urgency=low
     - tlp-stat:
       - Fix threshold output trailing empty line
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 30 Apr 2013 19:42:21 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 01 May 2013 13:42:31 +0100
 
 tlp (0.3.8.1-3) lucid; urgency=low
 
