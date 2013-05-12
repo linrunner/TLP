@@ -42,6 +42,7 @@ my $acpiCallDev = '/proc/acpi/call';
 my $aslBases = {
   'default'            => '\_SB.PCI0.LPC.EC.HKEY',
   'ThinkPad E420s'     => '\_SB.PCI0.LPCB.EC0.HKEY',
+  'ThinkPad Edge E335' => '\_SB.PCI0.LPC0.EC0.HKEY', 
   'ThinkPad L430'      => '\_SB.PCI0.LPCB.H_EC.HKEY',
   'ThinkPad L530'      => '\_SB.PCI0.LPCB.H_EC.HKEY',
   'ThinkPad S420'      => '\_SB.PCI0.LPCB.EC0.HKEY',

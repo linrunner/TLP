@@ -1,3 +1,15 @@
+tlp (0.3.9.900-1) lucid; urgency=low
+
+  *** Development Version ***
+
+  * Features
+    -tpacpi-bat:
+      - merge upstream support for ThinkPad Edge E335
+
+  * Bugfixes
+
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 12 May 2013 12:37:48 +0200
+
 tlp (0.3.9-1) lucid; urgency=low
 
   * Features
