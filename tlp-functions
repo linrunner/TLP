@@ -820,18 +820,17 @@ set_runtime_pm () { # set runtime power management
 # --- Wifi Power Management 
 
 get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
-    local wi
+    local wi wip
     wifaces=""
     
-    for wi in /sys/class/net/*/phy80211; do
-        if [ -d $wi ]; then
-            wi=${wi%/phy80211}; wi=${wi##*/}
-            
-            [ -n "$wifaces" ] && wifaces="$wifaces "
-            wifaces="$wifaces$wi"
+    for wip in /sys/class/net/*/phy80211; do
+        if [ -d $wip ]; then
+            wi=${wip%/phy80211}; wi=${wi##*/}
+            wifaces="$wifaces $wi"
         fi
     done
-    
+
+    wifaces="${wifaces# }"
     return 0
 }
 
@@ -893,11 +892,10 @@ get_eth_ifaces () { # get all eth devices -- retval: $ethifaces
     ethifaces=''
 
     for eic in /sys/class/net/*/device/class; do
-      if [ -f $eic ] && [ "$(cat $eic)" = "0x020000" ]; then
-        ei="${eic%%/device/class}"
-        ei="${ei##*/}"
-        ethifaces="$ethfaces $ei"
-      fi
+        if [ -f $eic ] && [ "$(cat $eic)" = "0x020000" ]; then
+            ei=${eic%/device/class}; ei=${ei##*/}
+            ethifaces="$ethifaces $ei"
+        fi
     done
 
     ethifaces="${ethifaces# }"
