@@ -10,6 +10,9 @@ tlp (0.3.9.900-1) unstable; urgency=low
     - Issue #28: do not touch dirty_(background_)ratio anymore,
           i.e. revert setting to kernel defaults
 
+  * Packaging
+    - debian/control: remove ${shlibs:Depends}
+
  -- Thomas Koch <linrunner@gmx.net>  Thu, 04 Jul 2013 18:58:38 +0200
 
 tlp (0.3.9-1) lucid; urgency=low

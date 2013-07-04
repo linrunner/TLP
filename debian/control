@@ -8,7 +8,7 @@ Homepage: http://linrunner.de/tlp
 
 Package: tlp
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, pm-utils
+Depends: ${misc:Depends}, pm-utils
 Recommends: tlp-rdw, acpid, ethtool, smartmontools, wireless-tools
 Suggests: acpi-call, tp-smapi-dkms
 Conflicts: pm-utils-powersave-policy
@@ -19,6 +19,6 @@ Description: Save battery power on laptops
  
 Package: tlp-rdw
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, network-manager, tlp
+Depends: ${misc:Depends}, network-manager, tlp
 Description: Radio device wizard
  Switch radios upon network connect/disconnect and dock/undock.
