@@ -820,6 +820,7 @@ set_runtime_pm () { # set runtime power management
 # --- Wifi Power Management 
 
 get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
+    local wi
     wifaces=""
     
     for wi in /sys/class/net/*/phy80211; do
@@ -887,14 +888,36 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
 
 # --- LAN
 
+get_eth_ifaces () { # get all eth devices -- retval: $ethifaces
+    local ei eic
+    ethifaces=''
+
+    for eic in /sys/class/net/*/device/class; do
+      if [ -f $eic ] && [ "$(cat $eic)" = "0x020000" ]; then
+        ei="${eic%%/device/class}"
+        ei="${ei##*/}"
+        ethifaces="$ethfaces $ei"
+      fi
+    done
+
+    ethifaces="${ethifaces# }"
+    return 0
+}
+
 disable_wake_on_lan () {  # disable WOL
+    local ei
+
     WOL_DISABLE=${WOL_DISABLE:-N}
-    
+
     if [ "$WOL_DISABLE" = "Y" ]; then
-        echo_debug "pm" "disable_wake_on_lan: y"
-        $ETHTOOL -s eth0 wol d > /dev/null 2>&1
+        get_eth_ifaces
+
+        for ei in $ethifaces; do
+            echo_debug "pm" "disable_wake_on_lan: $ei"
+            $ETHTOOL -s $ei wol d > /dev/null 2>&1
+        done
     fi
-    
+
     return 0
 }
 
