@@ -3,12 +3,14 @@ tlp (0.3.9.900-1) lucid; urgency=low
   *** Development Version ***
 
   * Features
-    -tpacpi-bat:
+    - tpacpi-bat:
       - merge upstream support for ThinkPad Edge E335
 
   * Bugfixes
+    - Issue #28: do not touch dirty_(background_)ratio anymore,
+	i.e. evert setting to kernel defaults
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 12 May 2013 12:37:48 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 28 Jun 2013 18:58:38 +0200
 
 tlp (0.3.9-1) lucid; urgency=low
 
