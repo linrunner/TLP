@@ -15,10 +15,10 @@ NMDSP = $(DESTDIR)/etc/NetworkManager/dispatcher.d
 CONFFILE = $(DESTDIR)/etc/default/tlp
 
 all: 
-	@/bin/true 
+	@true 
 
 clean:
-	@/bin/true 
+	@true 
 	
 install-tlp: 
 	# Package tlp
