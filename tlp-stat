@@ -263,20 +263,34 @@ if [ "$show_all" = "1" ]; then
     echo
 
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
-        if [ -f $cpuf/scaling_governor ]; then
+        if [ -f $cpuf/scaling_driver ]; then
+            printparm "%-54s = ##%s##" $cpuf/scaling_driver
             printparm "%-54s = ##%s##" $cpuf/scaling_governor
-            printf "%-54s = %8d [kHz]\n" $cpuf/scaling_min_freq $(cat $cpuf/scaling_min_freq)
-            printf "%-54s = %8d [kHz]\n" $cpuf/scaling_max_freq $(cat $cpuf/scaling_max_freq)
-            printf "%s = " $cpuf/scaling_available_frequencies
-            for freq in $(cat $cpuf/scaling_available_frequencies); do
-                printf "%s " $freq 
-            done
-            printf "[kHz]\n\n"
+
+            if [ -f $cpuf/scaling_min_freq ]; then
+                printf "%-54s = %8d [kHz]\n" $cpuf/scaling_min_freq $(cat $cpuf/scaling_min_freq)
+            fi
+
+            if [ -f $cpuf/scaling_max_freq ]; then
+                printf "%-54s = %8d [kHz]\n" $cpuf/scaling_max_freq $(cat $cpuf/scaling_max_freq)
+            fi
+
+            if [ -f $cpuf/scaling_available_frequencies ]; then
+                printf "%s = " $cpuf/scaling_available_frequencies
+                for freq in $(cat $cpuf/scaling_available_frequencies); do
+                    printf "%s " $freq 
+                done
+                printf "[kHz]\n"
+            fi
+            printf "\n"
         fi
     done
 
-    
-    if [ -f $CPU_BOOST_ALL_CTRL ]; then
+    check_intel_pstate
+
+    if [ $intel_pstate -eq 1 ]; then
+        printparm "%-54s = ##%d##" $CPU_TURBO_PSTATE
+    elif [ -f $CPU_BOOST_ALL_CTRL ]; then
         get_sysval $CPU_BOOST_ALL_CTRL; boost=$?
 
         # simple test for attribute "w" doesn't work, so actually write

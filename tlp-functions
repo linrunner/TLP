@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.3.9"
+readonly TLPVER="0.3.9.900"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -38,6 +38,8 @@ readonly PCID=/sys/bus/pci/devices
 readonly I915D=/sys/module/i915/parameters
 readonly DMID=/sys/class/dmi/id/
 readonly CPU_BOOST_ALL_CTRL=/sys/devices/system/cpu/cpufreq/boost
+readonly INTEL_PSTATED=/sys/devices/system/cpu/intel_pstate
+readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
 
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT=2
@@ -309,6 +311,14 @@ set_dirty_parms () { # set filesystem buffer params
 
 # --- CPU
 
+check_intel_pstate () { # detect intel_pstate driver -- retval: $intel_pstate
+    #  Note: intel_pstate requires Linux 3.9 or higher
+    intel_pstate=0
+    
+    [ -d $INTEL_PSTATED ] && intel_pstate=1
+    return 0
+}
+
 set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mode
     local gov cpu
 
@@ -364,9 +374,9 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
     # Note:
     #  * needs commit #615b7300717b9ad5c23d1f391843484fe30f6c12
     #     (linux-2.6 tree), "Add support for disabling dynamic overclocking",
-    #    => requires linux 3.7 or later
+    #    => requires Linux 3.7 or later
    
-    local val
+    local val ival
 
     if [ "$1" = "1" ]; then
         val="${CPU_BOOST_ON_BAT:-}"
@@ -375,12 +385,24 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
     fi
 
     if [ -n "$val" ]; then
-        if [ -f $CPU_BOOST_ALL_CTRL ]; then
+        check_intel_pstate
+
+        if [ $intel_pstate -eq 1 ]; then
+            # use intel_pstate sysfiles
+            if [ -f $CPU_TURBO_PSTATE ]; then
+                ival=$(($val ^ 1))
+                echo "$ival" > $CPU_TURBO_PSTATE 2> /dev/null
+                echo_debug "pm" "set_cpu_boost_all($1).intel_pstate: $val"
+            else
+                echo_debug "pm" "set_cpu_boost_all($1).intel_pstate.cpu_not_supported"
+            fi
+        elif [ -f $CPU_BOOST_ALL_CTRL ]; then
+            # use acpi_cpufreq sysfiles
             # simple test for attribute "w" doesn't work, so actually write
             if ( echo "$val" > $CPU_BOOST_ALL_CTRL ) 2> /dev/null; then 
-                echo_debug "pm" "set_cpu_boost_all($1): $val"
+                echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq: $val"
             else
-                echo_debug "pm" "set_cpu_boost_all($1).cpu_not_supported"
+                echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq.cpu_not_supported"
             fi
         else
             echo_debug "pm" "set_cpu_boost_all($1).not_available"
