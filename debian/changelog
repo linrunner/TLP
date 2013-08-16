@@ -2,12 +2,18 @@ tlp (0.3.9.900-1) unstable; urgency=low
 
   *** Development Version ***
 
+  * Architecture
+    - Issue #36: detect change of power source via udev instead of being called by pm-powersave
+    - Handle suspend/resume w/o pm-utils in systemd environments: 
+      - Encapsulate suspend/resume tasks as a tlp subcommand
+      - Add tlp-sleep.service to call tlp suspend/resume
+      - Remove 48tlp-rdw.lock because it doesn't work as expected
+
   * Features
     - Issue #31: detect and use intel_pstate driver to control turbo mode (ValdikSS)
     - Disable wol for all ethernet devices i.e. non-eth0 (blafoo)
     - tpacpi-bat:
-      - merge upstream support for ThinkPad Edge E335
-
+      - merge upstream support for ThinkPad T430u, Edge E335/E530
 
   * Bugfixes
     - Issue #28: do not touch dirty_(background_)ratio anymore,
@@ -16,7 +22,7 @@ tlp (0.3.9.900-1) unstable; urgency=low
   * Packaging
     - debian/control: remove ${shlibs:Depends}
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 14 Jul 2013 22:17:39 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 15 Aug 2013 23:13:33 +0200
 
 tlp (0.3.9-1) lucid; urgency=low
 

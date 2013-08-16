@@ -11,8 +11,7 @@ readonly RFKILL="rfkill"
 readonly RFKD="/dev/rfkill"
 
 readonly ALLDEV="bluetooth wifi wwan"
-readonly STATEDIR="/var/lib/tlp"
-readonly STATEFILE=$STATEDIR/rfkill-saved
+
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -289,37 +288,38 @@ echo_device_state () { # print radio type state -- $1: rftype, $2: state
     return 0
 }
 
-save_device_states () { # save all radio type states
+save_device_states () { # save radio states  -- $1: list of rftypes
     local dev
+    local devlist=${1:-$ALLDEV} # when arg empty -> use all
 
-    echo_debug "rf" "save_device_states"
+    echo_debug "rf" "save_device_states($devlist)"
 
     # create empty state file
     mkdir -p $STATEDIR
-    > $STATEFILE
+    : > $RFSTATEFILE
 
     # iterate over all possible devices -> save state in file
-    for dev in $ALLDEV; do
+    for dev in $devlist; do
         device_state $dev
-        echo "$dev $devs" >> $STATEFILE
+        echo "$dev $devs" >> $RFSTATEFILE
     done
     
     return 0
 }
 
-restore_device_states () { # restore all radio type states
+restore_device_states () { # restore radio type states
     local sline
 
     echo_debug "rf" "restore_device_states"
     
-    if [ -f $STATEFILE ]; then
+    if [ -f $RFSTATEFILE ]; then
         set_run_flag $LOCK_RDW
         
         # read state file
         while read sline; do
             set -- $sline # read dev, state into $1, $2
             device_set_state $1 $2 
-        done < $STATEFILE
+        done < $RFSTATEFILE
 
         reset_run_flag $LOCK_RDW
 
@@ -411,7 +411,7 @@ init_radio_devices () { # initialize all radio type states
         fi
 
         # clean up: discard state file 
-        rm -f $STATEFILE 2> /dev/null
+        rm -f $RFSTATEFILE 2> /dev/null
     fi
     
     return 0

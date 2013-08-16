@@ -39,9 +39,7 @@ install-tlp:
 	install -D -m 644 tlp.rules $(ULIB)/rules.d/40-tlp.rules
 	[ -f $(CONFFILE) ] || install -D -m 644 default $(CONFFILE)
 	install -D -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
-	install -D -m 755 zztlp $(PLIB)/power.d/zztlp
-	install -D -m 755 49wwan $(PLIB)/sleep.d/49wwan
-	install -m 755 49bay $(PLIB)/sleep.d/49bay
+	install -D -m 755 49tlp $(PLIB)/sleep.d/49tlp
 	install -D -m 644 thinkpad-radiosw $(ACPI)/events/thinkpad-radiosw
 	install -m 755 thinkpad-radiosw.sh $(ACPI)/
 	install -D -m 644 tlp.bash_completion $(DESTDIR)/etc/bash_completion.d/tlp
@@ -51,7 +49,6 @@ install-rdw:
 	install -D -m 644 tlp-rdw.rules $(ULIB)/rules.d/40-tlp-rdw.rules
 	install -D -m 755 tlp-rdw-udev $(ULIB)/tlp-rdw-udev
 	install -D -m 755 tlp-rdw-nm $(NMDSP)/99tlp-rdw-nm
-	install -D -m 755 48tlp-rdw-lock $(PLIB)/sleep.d/48tlp-rdw-lock
 
 install: install-tlp install-rdw
 
@@ -74,9 +71,7 @@ uninstall-tlp:
 	rm $(ULIB)/rules.d/40-tlp.rules
 	rm $(DESTDIR)/etc/init.d/tlp
 	rm $(DESTDIR)/etc/network/if-up.d/tlp-ifup
-	rm $(PLIB)/power.d/zztlp
-	rm $(PLIB)/sleep.d/49wwan
-	rm $(PLIB)/sleep.d/49bay
+	rm $(PLIB)/sleep.d/49tlp
 	rm $(ACPI)/events/thinkpad-radiosw
 	rm $(ACPI)/thinkpad-radiosw.sh
 	rm $(DESTDIR)/etc/bash_completion.d/tlp
@@ -86,7 +81,6 @@ uninstall-rdw:
 	rm $(ULIB)/rules.d/40-tlp-rdw.rules
 	rm $(ULIB)/tlp-rdw-udev
 	rm $(NMDSP)/99tlp-rdw-nm
-	rm $(PLIB)/sleep.d/48tlp-rdw-lock
 	
 uninstall: uninstall-tlp uninstall-rdw
 	

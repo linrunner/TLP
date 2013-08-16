@@ -1,0 +1,14 @@
+[Unit]
+Description=tlp suspend/resume
+Before=sleep.target
+StopWhenUnneeded=yes
+
+[Service]
+User=%I
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/tlp suspend
+ExecStop=/usr/sbin/tlp resume
+
+[Install]
+WantedBy=sleep.target
