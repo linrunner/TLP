@@ -60,7 +60,7 @@ mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
 mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
 mode3=$(echo $3 | tr "[:upper:]" "[:lower:]")
 
-echo_debug "run" "+++ mode=$mode $mode2 $mode3"
+echo_debug "run" "+++ mode=$mode $mode2 $mode3 ++++++++++++++++++++++++++++++++++++++++"
 echo_debug "path" "PATH=$PATH"
 
 case "$mode" in
@@ -165,8 +165,9 @@ case "$mode" in
         restore_device_states
         resume_drivebay
         
-        # note: the udev change power_supply rule is triggered upon
-        #       resume and already applies settings via tlp auto
+        get_power_state
+        pwr=$?
+        apply_common_settings $pwr
         ;;
 
     usb) # Enable usb autosuspend
