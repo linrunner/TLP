@@ -24,7 +24,7 @@ tlp (0.3.9.900-1) unstable; urgency=low
   * Packaging
     - debian/control: remove ${shlibs:Depends}
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 17 Aug 2013 14:12:10 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 17 Aug 2013 10:13:33 +0200
 
 tlp (0.3.9-1) lucid; urgency=low
 
