@@ -60,8 +60,18 @@ mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
 mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
 mode3=$(echo $3 | tr "[:upper:]" "[:lower:]")
 
+# get current power state
+get_power_state
+pwr=$?
+
 echo_debug "run" "+++ mode=$mode $mode2 $mode3 ++++++++++++++++++++++++++++++++++++++++"
 echo_debug "path" "PATH=$PATH"
+if [ $pwr -eq 1 ]; then
+    echo_debug "run" "power_source=bat"
+else
+    echo_debug "run" "power_source=ac"
+fi
+
 
 case "$mode" in
     init) # system initialization/shutdown: sysv, upstart, systemd, ...
@@ -109,8 +119,6 @@ case "$mode" in
         [ "$mode2" != "start" ] && exit 0
 
         # ... else continue with power settings
-        get_power_state
-        pwr=$?
         apply_common_settings $pwr
 
         [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
@@ -120,8 +128,6 @@ case "$mode" in
 
     auto|start) # set start power mode depending on state
         check_root
-        get_power_state
-        pwr=$?
         apply_common_settings $pwr
 
         if [ "$mode" = "start" ]; then

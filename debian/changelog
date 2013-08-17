@@ -1,6 +1,6 @@
-tlp (0.3.9.900-1) unstable; urgency=low
+tlp (0.3.10-1) unstable; urgency=low
 
-  *** Development Version ***
+  *** Testing version (for Arch Linux) ***
 
   * Architecture
     - Issue #36: detect change of power source via udev instead of being
