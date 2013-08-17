@@ -1,6 +1,6 @@
-tlp (0.3.9.900-1) unstable; urgency=low
+tlp (0.3.10.1-1) unstable; urgency=low
 
-  *** Development Version ***
+  *** Testing version (for Arch Linux) ***
 
   * Architecture
     - Issue #36: detect change of power source via udev instead of being
@@ -24,7 +24,7 @@ tlp (0.3.9.900-1) unstable; urgency=low
   * Packaging
     - debian/control: remove ${shlibs:Depends}
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 17 Aug 2013 10:13:33 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 17 Aug 2013 11:51:17 +0200
 
 tlp (0.3.9-1) lucid; urgency=low
 
