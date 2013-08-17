@@ -1711,7 +1711,7 @@ resume_drivebay () { # Restore power state of drive bay after restore
     fi
 
     rm -f $BAYSTATEFILE 2> /dev/null
-    
+
     return 0
 }
 

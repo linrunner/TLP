@@ -164,7 +164,7 @@ case "$mode" in
         check_root
         restore_device_states
         resume_drivebay
-        
+
         get_power_state
         pwr=$?
         apply_common_settings $pwr

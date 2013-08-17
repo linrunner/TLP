@@ -7,8 +7,8 @@ StopWhenUnneeded=yes
 User=%I
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/sbin/tlp suspend
-ExecStop=/usr/sbin/tlp resume
+ExecStart=tlp suspend
+ExecStop=tlp resume
 
 [Install]
 WantedBy=sleep.target

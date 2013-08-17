@@ -15,8 +15,8 @@ Before=shutdown.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/sbin/tlp init start
-ExecStop=/usr/sbin/tlp init stop
+ExecStart=tlp init start
+ExecStop=tlp init stop
 
 [Install]
 WantedBy=graphical.target
