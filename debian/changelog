@@ -3,14 +3,16 @@ tlp (0.3.9.900-1) unstable; urgency=low
   *** Development Version ***
 
   * Architecture
-    - Issue #36: detect change of power source via udev instead of being called by pm-powersave
+    - Issue #36: detect change of power source via udev instead of being
+      called by pm-powersave
     - Handle suspend/resume w/o pm-utils in systemd environments:
       - Encapsulate suspend/resume tasks as a tlp subcommand
       - Add tlp-sleep.service to call tlp suspend/resume
       - Remove 48tlp-rdw.lock because it doesn't work as expected
 
   * Features
-    - Issue #31: detect and use intel_pstate driver to control turbo mode (ValdikSS)
+    - Issue #31: detect and use intel_pstate driver to control
+      turbo mode (ValdikSS)
     - Disable wol for all ethernet devices i.e. non-eth0 (blafoo)
     - tpacpi-bat:
       - merge upstream support for ThinkPad T430u, Edge E335/E530
