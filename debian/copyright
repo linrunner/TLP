@@ -8,8 +8,8 @@ Copyright: 2013 Thomas Koch, André Erdmann
 License: GPL-2+
 Comment:
   Some code and descriptions were adapted from:
- - laptop-mode-tools 
-     Copyright (c) 2004 by Bart Samwel, Kiko Piris, Micha Feigin, 
+ - laptop-mode-tools
+     Copyright (c) 2004 by Bart Samwel, Kiko Piris, Micha Feigin,
      Andrew Morton, Herve Eychenne, Dax Kelson, Jan Topinski
  - http://thinkwiki.org
 
@@ -22,7 +22,7 @@ Copyright: 2013 Thomas Koch
 License: GPL-2+
 
 License: GPL-2+
- On Debian/Ubuntu systems, the full text of the GPL v2 can be found in 
+ On Debian/Ubuntu systems, the full text of the GPL v2 can be found in
  `/usr/share/common-licenses/GPL-2'.
 
 License: GPL-3+

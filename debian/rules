@@ -13,18 +13,18 @@
 
 build:
 	# do nothing
-	
-clean: 
+
+clean:
 	dh_testdir
 	dh_testroot
 	# add here commands to clean up after the build process.
 	# $(MAKE) clean
-	dh_clean 
+	dh_clean
 
-tlp: 
+tlp:
 	dh_testdir
 	dh_testroot
-	dh_prep  
+	dh_prep
 
 	# install into debian/tlp.
 	$(MAKE) DESTDIR=$(CURDIR)/debian/$@ install-tlp
@@ -43,10 +43,10 @@ tlp:
 	dh_md5sums -p$@
 	dh_builddeb -p$@
 
-tlp-rdw: 
+tlp-rdw:
 	dh_testdir
 	dh_testroot
-	dh_prep  
+	dh_prep
 
 	# install into debian/tlp-rdw.
 	$(MAKE) DESTDIR=$(CURDIR)/debian/$@ install-rdw
@@ -65,12 +65,12 @@ tlp-rdw:
 
 # Build architecture-independent files here.
 binary-indep: tlp tlp-rdw
-	
+
 # Build architecture-dependent files here.
-binary-arch: 
+binary-arch:
 	# do nothing
 
 binary: binary-indep binary-arch
 
 # Run targets that don't result in corresponding files
-.PHONY: clean tlp tlp-rdw binary-indep binary-arch binary 
+.PHONY: clean tlp tlp-rdw binary-indep binary-arch binary

@@ -16,7 +16,7 @@ Description: Save battery power on laptops
  TLP implements advanced power management for Linux. TLP is a pure
  command line tool with automated background tasks. It does not
  contain a GUI.
- 
+
 Package: tlp-rdw
 Architecture: all
 Depends: ${misc:Depends}, network-manager, tlp

@@ -4,7 +4,7 @@ tlp (0.3.9.900-1) unstable; urgency=low
 
   * Architecture
     - Issue #36: detect change of power source via udev instead of being called by pm-powersave
-    - Handle suspend/resume w/o pm-utils in systemd environments: 
+    - Handle suspend/resume w/o pm-utils in systemd environments:
       - Encapsulate suspend/resume tasks as a tlp subcommand
       - Add tlp-sleep.service to call tlp suspend/resume
       - Remove 48tlp-rdw.lock because it doesn't work as expected
@@ -63,7 +63,7 @@ tlp (0.3.8.1-1) lucid; urgency=low
     - Rename tlp-init.service to tlp.service
     - postinst/postrm: restart acpid for thinkpad-radiosw event
     - Move smartmontools to "recommends:"
-    
+
   * Features
     - New options CPU_BOOST_ON_* for cpu turbo boost (Linux 3.7 or later)
     - New option DEVICES_TO_ENABLE_ON_RADIOSW to enable only selected radios
@@ -98,7 +98,7 @@ tlp (0.3.8.1-1) lucid; urgency=low
 tlp (0.3.7.1-1) lucid; urgency=low
 
   * Bug fixes
-    - #39: tlp-stat: /sys/devices/platform/coretemp.0/temp1_input 
+    - #39: tlp-stat: /sys/devices/platform/coretemp.0/temp1_input
            does not exist (Laurent Bonnaud)
 
  -- Thomas Koch <linrunner@gmx.net>  Fri, 17 Aug 2012 17:51:00 +0200
@@ -116,7 +116,7 @@ tlp (0.3.7-1) lucid; urgency=low
       Ivy Bridge models (X230/T430/...)
     - DEVICES_TO_ENABLE_ON_SHUTDOWN to prevent other operating systems
       from missing radios
-    - DEVICES_TO_ENABLE_ON_STARTUP 
+    - DEVICES_TO_ENABLE_ON_STARTUP
     - tlp-stat:
       - show TRIM capabilty for SSDs
       - add SMART attributes (179, 241)
@@ -152,9 +152,9 @@ tlp (0.3.6-1) lucid; urgency=low
     - Set cpu scaling governor and mix/max frequencies (Alex Lochmann)
     - tlp-stat: add smart attributes for samsung ssd
     - tlp-stat: show settings
-  * Packaging  
+  * Packaging
     - postinst/postrm:
-      - disable power.d/harddrive, pci_devices, readahead, 
+      - disable power.d/harddrive, pci_devices, readahead,
           usb_bluetooth (Package pm-utils, Ubuntu 12.04)
       - disable conflicting upstart jobs (Package rfkill, Ubuntu 12.04)
     - split package
@@ -178,9 +178,9 @@ tlp (0.3.5-2) lucid; urgency=low
   * Bug Fixes
     - #27: tlp-stat complains about missing /proc/acpi/ibm/thermal and
            start_charge_thresh on X220/T420(s) et al. (Esc)
-    - Check if start_charge_thresh, stop_charge_thresh, force_discharge 
+    - Check if start_charge_thresh, stop_charge_thresh, force_discharge
       are writable
-    - #28: further mitigate race with gdm when disabling radios 
+    - #28: further mitigate race with gdm when disabling radios
            in init script (blackbox)
     - #29: tlp-stat: remove smartctl garbage output (SirVival)
     - #30: supress dmidecode error output (kristatos)
@@ -189,7 +189,7 @@ tlp (0.3.5-2) lucid; urgency=low
     - Start upowerd in init script
     - #32: show error message suggesting to uninstall latop-mode-tools
            if present (Kuzoku)
-   
+
  -- Thomas Koch <linrunner@gmx.net>  Mon, 19 Dec 2011 21:40:00 +0100
 
 tlp (0.3.4-1) lucid; urgency=low
@@ -218,7 +218,7 @@ tlp (0.3.3-1) lucid; urgency=low
 
 tlp (0.3.2-2) lucid; urgency=low
 
-  * Bug Fix 
+  * Bug Fix
     - #23: init.d script not linked/unlinked by install/purge (LePatron)
 
  -- Thomas Koch <linrunner@gmx.net>  Mon, 11 Jul 2011 22:05:00 +0200
@@ -226,7 +226,7 @@ tlp (0.3.2-2) lucid; urgency=low
 tlp (0.3.2-1) lucid; urgency=low
 
   * Bug Fix
-    - #22: runtime pm causes shutdown to fail, reboots instead (fabio)  
+    - #22: runtime pm causes shutdown to fail, reboots instead (fabio)
            disabled by default
 
  -- Thomas Koch <linrunner@gmx.net>  Mon, 04 Jul 2011 20:25:00 +0200
@@ -241,7 +241,7 @@ tlp (0.3.1-1) lucid; urgency=low
     - runtime pm (ccyx)
     - set/disable hard disk spindown timeout (enrico65, hausmarke86)
     - use power/autosuspend_delay_ms (kernel >= 2.6.38)
-    - tlp-stat: now runs with root privilege only, 
+    - tlp-stat: now runs with root privilege only,
         show intel ssd specific smart values,
         check for pcie aspm disabled by kernel
     - bluetooth/wifi/wwan: when using rfkill, check for root privilege
@@ -250,7 +250,7 @@ tlp (0.3.1-1) lucid; urgency=low
   * Bug Fixes
     - #18: tlp start (ac): incorrect ouptut "started in bat mode"
            fixed (yatpu)
-    - #19: tlp-stat: incorrect wifi power mgmt detection for 
+    - #19: tlp-stat: incorrect wifi power mgmt detection for
            wl driver (DrPaulaner)
     - #20: handle disabled pcie aspm in kernel 2.6.39 gracefully
            (Schmitti, g3eB4Y)
@@ -270,11 +270,11 @@ tlp (0.3.0-2) lucid; urgency=low
 tlp (0.3.0-1) lucid; urgency=low
 
   * Bug Fixes
-    - Switch wwan off before suspend 
+    - Switch wwan off before suspend
       (workaround for kernel/network-manager quirk)
   * Features
     - Specify DISK_DEVICES with id's from /dev/disk/by-id (egalus)
-    - tlp diskid: show disk id's 
+    - tlp diskid: show disk id's
     - DISK_IOSCHED: set i/o scheduler (egalus)
     - PCIe ASPM
     - Do not set START_CHARGE_THRESH on tp_smapi-capable ThinkPad Edge
@@ -303,7 +303,7 @@ tlp (0.2.7-0ubuntu2) lucid; urgency=low
     - usb autosuspend/tlp-stat not showing all usb devices
     - #15: tlp-stat abort w/ ipw2200 (agape)
     - #16: PHC_CONTROL written to all cpus/cores (pumpe et al.)
-    
+
   * Features
     - charge thresholds: new command tlp setcharge (crishu)
     - DEVICES_TO_DISABLE_ON_STARTUP: handle bluetooth in upstart job
@@ -316,9 +316,9 @@ tlp (0.2.6-0ubuntu1) lucid; urgency=low
 
   * Bugfixes
     - tlp-stat: error checking get_ctrl_device, tlp-stat batinfo (mikar)
-    - #14: delayed login window (greeter) w/ USB_AUTOSUSPEND=1 
-           (steveurkel, fishmac, saubaer) 
-            
+    - #14: delayed login window (greeter) w/ USB_AUTOSUSPEND=1
+           (steveurkel, fishmac, saubaer)
+
   * Features
     - tlp fullcharge
     - set_charge_thresholds on startup only, not on shutdown
@@ -332,7 +332,7 @@ tlp (0.2.5-0ubuntu2) lucid; urgency=low
 
   * Bugfix/Package change
     - Conflicts: pm-utils-powersave-policy
-    - powersave-policy-sata-link-power breaks pm-powersave w/ sata 
+    - powersave-policy-sata-link-power breaks pm-powersave w/ sata
       controllers in compatible mode an pata controllers (LP# 514881).
     - TLP implements same functionality as conflicting package anyway ...
 
@@ -342,7 +342,7 @@ tlp (0.2.5-0ubuntu1) lucid; urgency=low
 
   * Bugfixes
     - #11: excessive boottime (+40s) w/ USB_SUSPEND=1 & USB_BLACKLIST=""
-    - tlp-stat: display hard disk w/o apm as "none/disabled" 
+    - tlp-stat: display hard disk w/o apm as "none/disabled"
 
   * Features
     - bluetooth/wifi/wwan: toggle (#12, thatgui)
