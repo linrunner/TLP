@@ -1,3 +1,16 @@
+tlp (0.3.10.900-1) unstable; urgency=low
+
+  *** Development version -> 0.4 ***
+
+  * Architecture
+  * Features
+    - tlp-stat: check wifi power save capability with iwconfig before iw
+
+  * Bugfixes
+  * Packaging
+
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 18 Aug 2013 16:23:47 +0200
+
 tlp (0.3.10.1-1) unstable; urgency=low
 
   *** Testing version (for Arch Linux) ***
