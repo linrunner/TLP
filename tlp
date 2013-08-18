@@ -64,7 +64,7 @@ mode3=$(echo $3 | tr "[:upper:]" "[:lower:]")
 get_power_state
 pwr=$?
 
-echo_debug "run" "+++ mode=$mode $mode2 $mode3 ++++++++++++++++++++++++++++++++++++++++"
+echo_debug "run" "+++ mode=$mode $mode2 $mode3 ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
 echo_debug "path" "PATH=$PATH"
 if [ $pwr -eq 1 ]; then
     echo_debug "run" "power_source=bat"
