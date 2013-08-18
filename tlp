@@ -94,6 +94,14 @@ case "$mode" in
                     echo "done."
                     echo_debug "run" "upower_start"
                 fi
+
+                # if mode2 = start then apply settings
+                if [ "$mode2" = "start" ]; then
+                    echo -n "Applying power save settings..."
+                    apply_common_settings $pwr
+                    [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
+                    echo "done."
+                fi
                 ;;
         
             stop)
@@ -107,6 +115,11 @@ case "$mode" in
                 
                 # remove usb startup flag
                 [ -f $USB_DONE ] && rm $USB_DONE
+
+                # apply ac settings for faster shutdown
+                echo -n "Applying power save settings..."
+                apply_common_settings 0
+                echo "done."
                 ;;
 
             *)
@@ -114,16 +127,6 @@ case "$mode" in
                 exit 3
                 ;;
         esac
-
-        # if mode2 != start then exit here ...
-        [ "$mode2" != "start" ] && exit 0
-
-        # ... else continue with power settings
-        apply_common_settings $pwr
-
-        [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
-
-        echo_started_mode $pwr
         ;;
 
     auto|start) # set start power mode depending on state

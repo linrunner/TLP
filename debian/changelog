@@ -4,6 +4,7 @@ tlp (0.3.10.900-1) unstable; urgency=low
 
   * Architecture
   * Features
+    - Apply ac settings for faster shutdown
     - tlp-stat: check wifi power save capability with iwconfig before iw
 
   * Bugfixes
