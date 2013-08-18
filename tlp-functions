@@ -79,7 +79,7 @@ cmd_exists () { # test if command exists -- $1: command
 check_sysfs ()  { # check if sysfile exists -- $1: routine; $2: sysfs path 
     if patinstr "sysfs" "$TLP_DEBUG"; then
         if [ ! -e $2 ]; then
-            $LOGGER -p debug -t "tlp[$$]" "$1:$2 nonexistent"
+            $LOGGER -p debug -t "tlp[$$,$PPID]" "$1: $2 nonexistent"
         fi
     fi
 }
@@ -459,8 +459,6 @@ set_nmi_watchdog () { # enable/disable nmi watchdog
 set_phc_controls () { # set core voltages 
     local control 
     local ctrl_avail="0"
-    
-    check_sysfs "set_phc_controls" "/sys/devices/system/cpu/cpu0/cpufreq"
     
     PHC_CONTROLS=${PHC_CONTROLS:-}
     
