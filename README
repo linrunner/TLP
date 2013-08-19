@@ -1,4 +1,4 @@
-TLP README - 02.05.2013
+TLP README - 19.08.2013
 
 TLP implements advanced power management for Linux. TLP is a pure command line tool with
 automated background tasks. It does not contain a GUI.
@@ -12,6 +12,7 @@ Settings depending on the power source ac/bat:
 - PCIe active state power management (PCIe ASPM) - Kernel 2.6.35 and above
 - Runtime power management for PCI(e) bus devices - Kernel 2.6.35 and above
 - Radeon graphics KMS power management - Kernel 2.6.35 and above, not fglrx
+- Radeon graphics dynamic power management - Kernel 3.11 and above, not fglrx
 - Wifi power saving mode -  depending on kernel/driver
 - Power off optical drive in drive bay (on battery)
 

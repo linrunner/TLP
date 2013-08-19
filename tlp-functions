@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.3.10.900"
+readonly TLPVER="0.3.10.901"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -730,17 +730,36 @@ set_radeon_profile () { # set radeon power profile
     
     local pwr card
     
-    if [ "$1" = "1" ]; then
-        pwr=${RADEON_POWER_PROFILE_ON_BAT:-low}
-    else
-        pwr=${RADEON_POWER_PROFILE_ON_AC:-high}
-    fi
-    
     for card in /sys/class/drm/card[0-9]/device ; do
-        if [ -f $card/power_method ] && [ -f $card/power_profile ]; then
-            echo_debug "pm" "set_radeon_profile($1): $pwr $card"
-            echo "profile" > $card/power_method
-            echo "$pwr" > $card/power_profile
+        if [ -f $card/power_dpm_state ] && [ -f $card/power_dpm_force_performance_level ]; then
+            # Use new radeon dynamic power management method (dpm)
+            if [ "$1" = "1" ]; then
+                pwr=$RADEON_DPM_STATE_ON_BAT
+            else
+                pwr=$RADEON_DPM_STATE_ON_AC
+            fi
+
+            if [ -n "$pwr" ]; then
+                echo_debug "pm" "set_radeon_profile($1): state=$pwr $card"
+                echo "$pwr" > $card/power_dpm_state
+            fi
+
+            return 0
+
+        elif [ -f $card/power_method ] && [ -f $card/power_profile ]; then
+            # Use old radeon power profile method
+            if [ "$1" = "1" ]; then
+                pwr=$RADEON_POWER_PROFILE_ON_BAT
+            else
+                pwr=$RADEON_POWER_PROFILE_ON_AC
+            fi
+
+            if [ -n "$pwr" ]; then
+                echo_debug "pm" "set_radeon_profile($1): profile=$pwr $card"
+                echo "profile" > $card/power_method
+                echo "$pwr" > $card/power_profile
+            fi
+
             return 0
         fi
     done

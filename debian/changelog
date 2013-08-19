@@ -1,9 +1,10 @@
-tlp (0.3.10.900-1) unstable; urgency=low
+tlp (0.3.10.901-1) unstable; urgency=low
 
   *** Development version -> 0.4 ***
 
   * Architecture
   * Features
+    - New radeon dynamic power management (dpm); needs Kernel >= 3.11
     - USB_BLACKLIST_WWAN: exclude wwan devices from usb autosuspend;
         works for ids 05c6:* 0bdb:* 1199:* only
     - Apply ac settings for faster shutdown
@@ -12,7 +13,7 @@ tlp (0.3.10.900-1) unstable; urgency=low
   * Bugfixes
   * Packaging
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 19 Aug 2013 19:51:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 19 Aug 2013 22:28:25 +0200
 
 tlp (0.3.10.1-1) unstable; urgency=low
 
