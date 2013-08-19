@@ -44,6 +44,7 @@ readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT=2
 readonly USB_TIMEOUT_MS=2000
+readonly USB_WWAN_DRVRS="cdc_acm cdc_wdm cdc_ncm qmi_wwan qcserial"
 readonly USB_DONE=usb_done
 
 readonly LOCK_RDW=lock.rdw
@@ -947,7 +948,7 @@ disable_wake_on_lan () {  # disable WOL
 set_usb_suspend () { # activate usb autosuspend for all devices except input and blacklisted
     # $1: 0=silent/1=report result; $2: on/auto
     
-    local devices usbdev subdev control hid usbid busdev
+    local devices usbdev subdev control exc usbid busdev
     local ctrlf="control"
     local autof="autosuspend_delay_ms"
         
@@ -961,7 +962,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                 busdev="Bus $(cat $USBD/$usbdev/busnum) Dev $(cat $USBD/$usbdev/devnum)"
             
                 control="$2"
-                hid=""
+                exc=""
 
                 if [ "$control" != "on" ]; then
                     if patinstr "$usbid" "$USB_BLACKLIST"; then
@@ -972,10 +973,27 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                         for subdev in $USBD/$usbdev/*:*; do
                             if [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
                                 control="on"
-                                hid="_hid"
+                                exc="_hid"
                                 break
                             fi
                         done
+
+                        # check subdevices for wwan drivers
+                        USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default: exclude wwan
+
+                        if [ $USB_BLACKLIST_WWAN = "1" ] && [ -z "$exc" ]; then
+                            for subdev in $USBD/$usbdev/*:*; do
+                                if [ -L $subdev/driver ]; then
+                                    driver=$(readlink "$subdev/driver")
+                                    driver=${driver##*/}
+                                    if patinstr "$driver" "$USB_WWAN_DRVRS"; then
+                                        control="on"
+                                        exc="_wwan"
+                                        break
+                                    fi
+                                fi
+                            done
+                        fi
                     fi
                 fi
                     
@@ -1000,7 +1018,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                     echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
                     autof="autosuspend"
                 fi
-                echo_debug "usb" "set_usb_suspend.$control$hid: $busdev ID $usbid $USBD/$usbdev [$ctrlf $autof]"
+                echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $USBD/$usbdev [$ctrlf $autof]"
             fi
         done
         [ "$1" = "1" ] && echo "usb autosuspend settings applied."

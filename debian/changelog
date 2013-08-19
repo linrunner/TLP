@@ -4,13 +4,14 @@ tlp (0.3.10.900-1) unstable; urgency=low
 
   * Architecture
   * Features
+    - USB_BLACKLIST_WWAN: exclude wwan devices from usb autosuspend
     - Apply ac settings for faster shutdown
     - tlp-stat: check wifi power save capability with iwconfig before iw
 
   * Bugfixes
   * Packaging
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 18 Aug 2013 16:23:47 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 19 Aug 2013 14:42:21 +0200
 
 tlp (0.3.10.1-1) unstable; urgency=low
 

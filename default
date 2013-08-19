@@ -132,6 +132,10 @@ USB_AUTOSUSPEND=1
 # Note: input devices (usbhid) are excluded automatically
 #USB_BLACKLIST="1111:2222 3333:4444"
 
+# WWAN devices are excluded from usb autosuspend:
+# 0=do not exclude / 1=exclude
+USB_BLACKLIST_WWAN=1
+
 # Set to 1 to disable autosuspend before shutdown/0 to do nothing 
 # (workaround for usb devices that cause shutdown problems)
 #USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN=1
