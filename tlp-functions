@@ -44,7 +44,7 @@ readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT=2
 readonly USB_TIMEOUT_MS=2000
-readonly USB_WWAN_DRVRS="cdc_acm cdc_wdm cdc_ncm qmi_wwan qcserial"
+readonly USB_WWAN_VENDORS="0bdb 05c6 1199"
 readonly USB_DONE=usb_done
 
 readonly LOCK_RDW=lock.rdw
@@ -948,7 +948,7 @@ disable_wake_on_lan () {  # disable WOL
 set_usb_suspend () { # activate usb autosuspend for all devices except input and blacklisted
     # $1: 0=silent/1=report result; $2: on/auto
     
-    local devices usbdev subdev control exc usbid busdev
+    local devices usbdev subdev control exc usbid busdev vendor
     local ctrlf="control"
     local autof="autosuspend_delay_ms"
         
@@ -978,21 +978,14 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                             fi
                         done
 
-                        # check subdevices for wwan drivers
+                        # check for wwan vendor ids
                         USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default: exclude wwan
 
                         if [ $USB_BLACKLIST_WWAN = "1" ] && [ -z "$exc" ]; then
-                            for subdev in $USBD/$usbdev/*:*; do
-                                if [ -L $subdev/driver ]; then
-                                    driver=$(readlink "$subdev/driver")
-                                    driver=${driver##*/}
-                                    if patinstr "$driver" "$USB_WWAN_DRVRS"; then
-                                        control="on"
-                                        exc="_wwan"
-                                        break
-                                    fi
-                                fi
-                            done
+                            vendor="$(cat $USBD/$usbdev/idVendor)"
+                            if [ -n "$vendor" ] && patinstr "$vendor" "$USB_WWAN_VENDORS"; then
+                                exc="_wwan"
+                            fi
                         fi
                     fi
                 fi
