@@ -126,9 +126,14 @@ BAY_DEVICE="sr0"
 RUNTIME_PM_ON_AC=on
 RUNTIME_PM_ON_BAT=auto
 
-# Runtime PM for *all* pci(e) bus devices: 0=disable / 1=enable
+# Runtime PM for *all* pci(e) bus devices, expect backlisted ones:
+# 0=disable / 1=enable
 # Warning: experimental option, could cause system instabilities
 RUNTIME_PM_ALL=0
+
+# Exclude pci(e) device adresses the following list from Runtime PM
+# (separate with spaces). Use lspci to get the adresses (1st column).
+#RUNTIME_PM_BLACKLIST="bb:dd.f 11:22.3 44:55.6"
 
 # Set to 0 to disable/1 to enable usb autosuspend feature
 USB_AUTOSUSPEND=1
