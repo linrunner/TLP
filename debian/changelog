@@ -5,6 +5,7 @@ tlp (0.3.10.902-1) unstable; urgency=low
   * Architecture
   * Features
     - New radeon dynamic power management (dpm); needs Kernel >= 3.11
+      (Pali Rohár)
     - RUNTIME_PM_BLACKLIST: exclude listed pci(e) device adresses
       from Runtime PM (wofritz)
     - USB_BLACKLIST_WWAN: exclude wwan devices from usb autosuspend;
@@ -15,7 +16,7 @@ tlp (0.3.10.902-1) unstable; urgency=low
   * Bugfixes
   * Packaging
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 21 Aug 2013 10:42:21 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 25 Aug 2013 15:36:24 +0200
 
 tlp (0.3.10.1-1) unstable; urgency=low
 

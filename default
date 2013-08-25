@@ -92,11 +92,14 @@ PCIE_ASPM_ON_BAT=powersave
 RADEON_POWER_PROFILE_ON_AC=high
 RADEON_POWER_PROFILE_ON_BAT=low
 
-# New radeon dynamic power management method (dpm):
-# battery/performance/balanced
+# New radeon dynamic power management method (dpm): battery/performance
 # (Kernel >= 3.11 only, requires boot option radeon.dpm=1)
 RADEON_DPM_STATE_ON_AC=performance
 RADEON_DPM_STATE_ON_BAT=battery
+
+# New radeon dpm performance level: auto/low/high (auto is recommended)
+RADEON_DPM_PERF_LEVEL_ON_AC=auto
+RADEON_DPM_PERF_LEVEL_ON_BAT=auto
  
 # WiFi power saving mode: 1=disable/5=enable
 # (Linux 2.6.32 and later, some adapters only!)

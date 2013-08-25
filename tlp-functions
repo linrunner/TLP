@@ -728,23 +728,27 @@ set_pcie_aspm () { # set pcie active state power management
 set_radeon_profile () { # set radeon power profile
     # $1: 0=ac mode, 1=battery mode
     
-    local pwr card
+    local card level pwr rc1 rc2
+    local present=0
     
     for card in /sys/class/drm/card[0-9]/device ; do
         if [ -f $card/power_dpm_state ] && [ -f $card/power_dpm_force_performance_level ]; then
             # Use new radeon dynamic power management method (dpm)
             if [ "$1" = "1" ]; then
                 pwr=$RADEON_DPM_STATE_ON_BAT
+                level=${RADEON_DPM_PERF_LEVEL_ON_BAT:-auto}
             else
                 pwr=$RADEON_DPM_STATE_ON_AC
+                level=${RADEON_DPM_PERF_LEVEL_ON_AC:-auto}
             fi
 
             if [ -n "$pwr" ]; then
-                echo_debug "pm" "set_radeon_profile($1): state=$pwr $card"
-                echo "$pwr" > $card/power_dpm_state
+                echo "$pwr" > $card/power_dpm_state 2> /dev/null; rc1=$?
+                echo "$level" > $card/power_dpm_force_performance_level 2> /dev/null; rc2=$?
+                echo_debug "pm" "set_radeon_profile($1): $card state=$pwr [rc=$rc1] perf=$level [rc=$rc2]"
             fi
 
-            return 0
+            present=1
 
         elif [ -f $card/power_method ] && [ -f $card/power_profile ]; then
             # Use old radeon power profile method
@@ -755,16 +759,19 @@ set_radeon_profile () { # set radeon power profile
             fi
 
             if [ -n "$pwr" ]; then
-                echo_debug "pm" "set_radeon_profile($1): profile=$pwr $card"
-                echo "profile" > $card/power_method
-                echo "$pwr" > $card/power_profile
+                echo_debug "pm" "set_radeon_profile($1): $card profile=$pwr "
+                echo "profile" > $card/power_method 2> /dev/null
+                echo "$pwr" > $card/power_profile 2> /dev/null
             fi
 
-            return 0
+            present=1
         fi
     done
+
+    if [ $present -eq 0 ]; then
+        echo_debug "pm" "set_radeon_profile($1).not_available"
+    fi
     
-    echo_debug "pm" "set_radeon_profile($1).not_available"
     return 0    
 }
 
