@@ -19,4 +19,4 @@ ExecStart=/usr/sbin/tlp init start
 ExecStop=/usr/sbin/tlp init stop
 
 [Install]
-WantedBy=graphical.target
+WantedBy=local-fs.target
