@@ -9,7 +9,7 @@ env TLP=/usr/sbin/tlp
 
 pre-start script
     [ -x $TLP ] || exit 4
-    $TLP init start upwr
+    $TLP init start
 
 end script
 

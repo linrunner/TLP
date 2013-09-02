@@ -17,7 +17,7 @@ case "$1" in
     force-reload|\
     *)
         TLP=/usr/sbin/tlp
-        [ -x $TLP ] && $TLP init $1 upwr
+        [ -x $TLP ] && $TLP init $1
         ;;
 esac
 
