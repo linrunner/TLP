@@ -1,4 +1,4 @@
-tlp (0.3.10.903-1) unstable; urgency=low
+tlp (0.3.10.904-1) unstable; urgency=low
 
   *** Development version -> 0.4 ***
 
@@ -18,7 +18,7 @@ tlp (0.3.10.903-1) unstable; urgency=low
     -- systemd (tlp.service): start tlp after local-fs.target instead
         of graphical.target (cprussin)  
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 02 Aug 2013 18:49:27 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 07 Sep 2013 18:13:15 +0200
 
 tlp (0.3.10.1-1) unstable; urgency=low
 

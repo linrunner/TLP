@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.3.10.903"
+readonly TLPVER="0.3.10.904"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -60,15 +60,23 @@ readonly BAYSTATEFILE=$STATEDIR/bay-saved
 
 # --- Tests
 
-patinstr () { # test if pattern matches part of target -- $1: pattern, $2: target
-    [ -n "$1" -a -n "$2" -a -z "${2##*$1*}" ]
-    return $?
+wordinlist () { # test if word in list
+                # $1: word, $2: whitespace-separated list of words
+    local word
+
+    if [ -n "${1-}" ]; then
+        for word in ${2-}; do
+            [ "${word}" != "${1}" ] || return 0 # exact match
+        done
+    fi
+
+    return 1 # no match
 }
 
 echo_debug () { # write debug msg if tag matches -- $1: tag; $2: msg;  
     [ "$nodebug" = "1" ] && return 0
     
-    if patinstr "$1" "$TLP_DEBUG"; then
+    if wordinlist "$1" "$TLP_DEBUG"; then
         $LOGGER -p debug -t "tlp[$$,$PPID]" "$2"
     fi
 }
@@ -78,7 +86,7 @@ cmd_exists () { # test if command exists -- $1: command
 }
 
 check_sysfs ()  { # check if sysfile exists -- $1: routine; $2: sysfs path 
-    if patinstr "sysfs" "$TLP_DEBUG"; then
+    if wordinlist "sysfs" "$TLP_DEBUG"; then
         if [ ! -e $2 ]; then
             $LOGGER -p debug -t "tlp[$$,$PPID]" "$1: $2 nonexistent"
         fi
@@ -845,10 +853,10 @@ set_runtime_pm () { # set runtime power management
                         adress=${device##/*/}
                         adress=${adress#0000:}
                         
-                        if patinstr "$adress" "$RUNTIME_PM_BLACKLIST"; then
+                        if wordinlist "$adress" "$RUNTIME_PM_BLACKLIST"; then
                             # device is in blacklist
                             control="on"
-                            exc="_blackl"
+                            exc="_bl"
                         fi
                     fi
                 fi
@@ -984,13 +992,14 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                 usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
                 busdev="Bus $(cat $USBD/$usbdev/busnum) Dev $(cat $USBD/$usbdev/devnum)"
             
-                control="$2"
+                control="${2:-auto}"
                 exc=""
 
                 if [ "$control" != "on" ]; then
-                    if patinstr "$usbid" "$USB_BLACKLIST"; then
+                    if wordinlist "$usbid" "$USB_BLACKLIST"; then
                         # device is in blacklist
                         control="on"
+                        exc="_bl"
                     else
                         # check for hid subdevices
                         for subdev in $USBD/$usbdev/*:*; do
@@ -1006,7 +1015,8 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
 
                         if [ $USB_BLACKLIST_WWAN = "1" ] && [ -z "$exc" ]; then
                             vendor="$(cat $USBD/$usbdev/idVendor)"
-                            if [ -n "$vendor" ] && patinstr "$vendor" "$USB_WWAN_VENDORS"; then
+                            if wordinlist "$vendor" "$USB_WWAN_VENDORS"; then
+                                control="on"
                                 exc="_wwan"
                             fi
                         fi

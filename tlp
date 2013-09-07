@@ -62,11 +62,11 @@ mode3=$(echo $3 | tr "[:upper:]" "[:lower:]")
 
 # get current power state
 get_power_state
-pwr=$?
+pwrmode=$?
 
 echo_debug "run" "+++ mode=$mode $mode2 $mode3 ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
 echo_debug "path" "PATH=$PATH"
-if [ $pwr -eq 1 ]; then
+if [ $pwrmode -eq 1 ]; then
     echo_debug "run" "power_source=bat"
 else
     echo_debug "run" "power_source=ac"
@@ -98,7 +98,7 @@ case "$mode" in
                 # if mode2 = start then apply settings
                 if [ "$mode2" = "start" ]; then
                     echo -n "Applying power save settings..."
-                    apply_common_settings $pwr
+                    apply_common_settings $pwrmode
                     [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                     echo "done."
                 fi
@@ -131,15 +131,15 @@ case "$mode" in
 
     auto|start) # set start power mode depending on state
         check_root
-        apply_common_settings $pwr
+        apply_common_settings $pwrmode
 
         if [ "$mode" = "start" ]; then
                 set_usb_suspend 0 auto
                 set_charge_thresholds
-                [ "$pwr" = "1" ] && poweroff_drivebay 0
+                [ "$pwrmode" = "1" ] && poweroff_drivebay 0
         fi
 
-        echo_started_mode $pwr
+        echo_started_mode $pwrmode
         ;;
 
     true|bat*) # set battery power mode
@@ -156,7 +156,7 @@ case "$mode" in
         check_root
         apply_common_settings 0
 
-        [ "$X_TLP_USB_MODE" = "1" ] && enable_usb_suspend 0
+        [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
          
         echo_started_mode 0
         ;;
@@ -175,8 +175,8 @@ case "$mode" in
         resume_drivebay
         
         get_power_state
-        pwr=$?
-        apply_common_settings $pwr
+        pwrmode=$?
+        apply_common_settings $pwrmode
         ;;
 
     usb) # Enable usb autosuspend

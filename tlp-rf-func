@@ -395,7 +395,7 @@ init_radio_devices () { # initialize all radio type states
             if [ "$1" = "radiosw" ]; then
                 # radiosw mode: disable radios not listed
                 for dev in bluetooth wifi wwan; do
-                    if ! patinstr "$dev" "$devs2enable"; then
+                    if ! wordinlist "$dev" "$devs2enable"; then
                         device_off $dev
                     fi
                 done
