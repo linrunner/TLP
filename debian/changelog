@@ -3,6 +3,8 @@ tlp (0.3.10.904-1) unstable; urgency=low
   *** Development version -> 0.4 ***
 
   * Architecture
+    - Remove dependency to on_ac_power (part of pm-utils in Arch Linux)
+
   * Features
     - New radeon dynamic power management (dpm); needs Kernel >= 3.11
       (Pali Rohár)
@@ -14,11 +16,12 @@ tlp (0.3.10.904-1) unstable; urgency=low
     - tlp-stat: check wifi power save capability with iwconfig before iw
 
   * Bugfixes
-  * Packaging
-    -- systemd (tlp.service): start tlp after local-fs.target instead
-        of graphical.target (cprussin)  
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 07 Sep 2013 18:13:15 +0200
+  * Packaging
+    - systemd (tlp.service): start tlp after local-fs.target instead
+        of graphical.target (cprussin)
+
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 08 Sep 2013 16:46:26 +0200
 
 tlp (0.3.10.1-1) unstable; urgency=low
 

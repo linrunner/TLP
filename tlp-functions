@@ -16,7 +16,6 @@ readonly TLPVER="0.3.10.904"
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
 
-readonly ACPWR=on_ac_power
 readonly ETHTOOL=ethtool
 readonly HDPARM=hdparm
 readonly IWC=iwconfig
@@ -182,8 +181,24 @@ read_dmi () { # read dmi data -- $*: keywords; retval: $dmirslt
 # --- Power Source
 
 get_power_state () { # get current power source -- rc: 0=ac, 1=battery
-    $ACPWR
-    return $? 
+    # Adapted from pm-utils' on_ac_power
+    local psrc
+    local rc=1 # battery is default when no ac is available
+
+    for psrc in /sys/class/power_supply/*; do
+        if [ -d "$psrc" ] && [ -r "$psrc/type" ] ; then
+            if [ "$(cat $psrc/type 2> /dev/null)" = "Mains" ]; then
+                if [ -r "$psrc/online" ]; then
+                    if [ "$(cat $psrc/online 2> /dev/null)" = "1" ]; then
+                        rc=0
+                        break
+                    fi
+                fi
+            fi
+        fi
+    done
+
+    return $rc
 }
 
 echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
