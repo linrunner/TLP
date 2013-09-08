@@ -319,7 +319,7 @@ set_dirty_parms () { # set filesystem buffer params
     if [ "$1" = "1" ]; then
         age=$((${MAX_LOST_WORK_SECS_ON_BAT:-15} * 100))
     else
-        age=$((${MAX_LOST_WORK_SECS_ON_AC:-5} * 100))
+        age=$((${MAX_LOST_WORK_SECS_ON_AC:-15}  * 100))
     fi
             
     echo_debug "pm" "set_dirty_parms($1): $age"
