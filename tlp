@@ -75,6 +75,8 @@ fi
 
 case "$mode" in
     init) # system initialization/shutdown: sysv, upstart, systemd, ...
+        check_root
+
         case $mode2 in
             start|restart|force-reload)
                 echo -n "Loading tp-smapi kernel module..."
