@@ -1,4 +1,20 @@
-tlp (0.3.10-1) unstable; urgency=low
+tlp (0.3.11-1) unstable; urgency=low
+
+  *** Testing version (for Arch Linux) ***
+
+  * Bugfixes
+    - Issue #42:
+      - Remove dependency to on_ac_power (part of pm-utils
+        in Arch Linux)
+      - Fix udev rule for power source changes 
+
+  * Packaging
+    - systemd (tlp.service): start tlp after local-fs.target instead
+        of graphical.target (cprussin)
+
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 08 Sep 2013 16:46:26 +0200
+
+tlp (0.3.10.1-1) unstable; urgency=low
 
   *** Testing version (for Arch Linux) ***
 
