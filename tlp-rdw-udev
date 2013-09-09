@@ -20,6 +20,7 @@ done
 # --- MAIN
 read_defaults
 check_tlp_enabled || exit 0
+add_sbin2path
 
 # Get state
 ddir=/sys/devices/platform/$1
