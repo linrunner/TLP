@@ -533,52 +533,31 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
         echo_device_state $i $devs
     done
     echo
-fi # show_rfkill
 
-if [ "$show_all" = "1" ]; then        
     # --- show wifi power mode
     get_wifi_ifaces
     for iface in $wifaces; do
         if [ -n "$iface" ]; then
-            wifipm="unknown"
-            if cmd_exists $IWC; then
+            if cmd_exists $IW; then
+                wifipm=$($IW dev $iface get power_save 2> /dev/null |
+                    sed -r 's/.*(on|off).*/\1/')
+            elif cmd_exists $IWC; then
                 wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
                     sed -r 's/.*Power Management:(on|off).*/\1/')
-            elif cmd_exists $IW; then
-                wifipm=$($IW dev $iface get power_save 2> /dev/null)
-                if [ $? = 0 ]; then
-                    wifipm=$(echo $wifipm | sed -r 's/.*(on|off).*/\1/')
-                fi
             fi
             
             get_wifi_driver $iface
             echo -n "$iface($wifidrv): power management = "
             case $wifipm in
-                on)
-                    echo "on"
-                    ;;
-                    
-                off)
-                    if cmd_exists $IWC; then
-                        $IWC $iface power off > /dev/null 2>&1
-                        if [ $? = 0 ]; then
-                            echo "off"
-                        else
-                            echo "off (not supported)"
-                        fi
-                    else
-                        echo "off"
-                    fi
-                    ;;
-                    
-                *) 
-                    echo "unknown"
-                    ;;
+                on|off) echo "$wifipm" ;;
+                *)      echo "unknown" ;;
             esac
         fi
     done
     [ -n "$wifaces" ] && echo
+fi # show_rfkill
 
+if [ "$show_all" = "1" ]; then
     # --- show sound power mode
     echo "+++ Audio"
     if [ -d /sys/module/snd_hda_intel ]; then
