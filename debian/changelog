@@ -10,13 +10,12 @@ tlp (0.3.906-1) unstable; urgency=low
     - USB_BLACKLIST_WWAN: exclude wwan devices from usb autosuspend;
       works for ids 05c6:* 0bdb:* 1199:* only
     - Apply ac settings for faster shutdown
-    - tlp-stat: check wifi power save capability with iwconfig before iw
 
   * Bugfixes
  
   * Packaging
  
- -- Thomas Koch <linrunner@gmx.net>  Tue, 10 Sep 2013 22:08:16 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 11 Sep 2013 22:42:16 +0200
  
 tlp (0.3.11-1) unstable; urgency=low
 
@@ -29,7 +28,7 @@ tlp (0.3.11-1) unstable; urgency=low
       - Fix udev rule to detect power source change ac - bat
 
   * Packaging
-    - Pull request #40: systemd (tlp.service): start tlp after
+    - Pull request #40: systemd: start tlp.service after
       local-fs.target instead of graphical.target (cprussin)
 
  -- Thomas Koch <linrunner@gmx.net> Tue, 10 Sep 2013 21:32:44 +0200

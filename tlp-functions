@@ -141,14 +141,22 @@ add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
     addpath=""
 
     for sp in /usr/sbin /sbin; do
-        if [ -d $sp ] && [ ! -L $sp ]; then
+        if [ -d $sp ] && [ ! -h $sp ]; then
             # dir exists and is not a symlink
-            if ! echo $PATH | egrep -q "(^|:)$sp($|:)"; then
-                export PATH=$PATH:$sp
-                addpath="$addpath:$sp"
-            fi
+            case ":$PATH:" in
+                *":$sp:"*) # $sp already in $PATH
+                    ;;
+
+                *) # $sp not in $PATH, add it
+                    addpath="$addpath:$sp"
+                    ;;
+            esac
         fi
     done
+
+    if [ -n "$addpath" ]; then
+      export PATH="${PATH}${addpath}"
+    fi
 
     return 0
 }
@@ -601,7 +609,7 @@ get_disk_trim_capability () { # check for trim capability
 get_disk_dev () { # translate disk id to device (sdX)
     # $1: id or dev; retval: $disk_dev, $disk_id
     
-    if [ -L /dev/disk/by-id/$1 ]; then
+    if [ -h /dev/disk/by-id/$1 ]; then
         # $1 is disk id
         disk_id=$1
         disk_dev=$(echo $disk_id | sed -r 's/-part[1-9]+$//')
