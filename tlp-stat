@@ -524,7 +524,7 @@ if [ "$show_all" = "1" ]; then
     done
 fi # show_all
 
-if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then    
+if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Wireless"
     # --- show rfkill state
     for i in bluetooth wifi wwan; do
@@ -538,12 +538,24 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
     get_wifi_ifaces
     for iface in $wifaces; do
         if [ -n "$iface" ]; then
+            wifipm="unknown"
+            rc=0; cmdx=0
+            
             if cmd_exists $IW; then
+                # try with iw first
                 wifipm=$($IW dev $iface get power_save 2> /dev/null |
                     sed -r 's/.*(on|off).*/\1/')
-            elif cmd_exists $IWC; then
-                wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
-                    sed -r 's/.*Power Management:(on|off).*/\1/')
+                rc=$?
+                cmdx=1
+            fi
+            if cmd_exists $IWC; then
+                if [ $rc -ne 0 ] || [ $cmdx -eq 0 ]; then
+                    # iw did not succeed or iw not installed -> try with iwconfig
+                    wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
+                        sed -r 's/.*Power Management:(on|off).*/\1/')
+                    rc=$
+                    cmdx=1
+                fi
             fi
             
             get_wifi_driver $iface

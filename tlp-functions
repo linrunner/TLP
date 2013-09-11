@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.3.11.905"
+readonly TLPVER="0.3.906"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -939,7 +939,8 @@ get_wifi_driver () { # get driver associated with interface -- $1: iface; retval
 
 set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery mode
     local pwr iface
-    local rc
+    local rc=0
+    local cmdx=0
     
     if [ "$1" = "1" ]; then
         pwr=${WIFI_PWR_ON_BAT:-5}
@@ -956,13 +957,24 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
     for iface in $wifaces; do
         if [ -n "$iface" ]; then
             if cmd_exists $IW; then
+                # try with iw first
                 $IW dev $iface set power_save $pwr > /dev/null 2>&1
                 rc=$?
                 echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr; rc=$rc"
-            else
-                $IWC $iface power $pwr > /dev/null 2>&1
-                rc=$?
-                echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig: $pwr; rc=$rc"
+                cmdx=1
+            fi
+            if cmd_exists $IWC; then
+                if [ $rc -ne 0 ] || [ $cmdx -eq 0 ]; then
+                    # iw did not succeed or iw not installed -> try with iwconfig
+                    $IWC $iface power $pwr > /dev/null 2>&1
+                    rc=$?
+                    echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig: $pwr; rc=$rc"
+                    cmdx=1
+                fi
+            fi
+            if [ $cmdx -eq 0 ]; then
+                # neither iw nor iwconfig installed -> no way 
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).no_tool"
             fi
         fi
     done

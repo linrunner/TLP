@@ -109,13 +109,11 @@ case "$mode" in
                     echo_debug "run" "upower_start"
                 fi
 
-                # if mode2 = start then apply settings
-                if [ "$mode2" = "start" ]; then
-                    echo -n "Applying power save settings..."
-                    apply_common_settings $pwrmode
-                    [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
-                    echo "done."
-                fi
+                # apply settings
+                echo -n "Applying power save settings..."
+                apply_common_settings $pwrmode
+                [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
+                echo "done."
                 ;;
         
             stop)
