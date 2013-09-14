@@ -71,9 +71,9 @@ wordinlist () { # test if word in list
     return 1 # no match
 }
 
-echo_debug () { # write debug msg if tag matches -- $1: tag; $2: msg;  
+echo_debug () { # write debug msg if tag matches -- $1: tag; $2: msg;
     [ "$nodebug" = "1" ] && return 0
-    
+
     if wordinlist "$1" "$TLP_DEBUG"; then
         $LOGGER -p debug -t "tlp[$$,$PPID]" "$2"
     fi
@@ -83,7 +83,7 @@ cmd_exists () { # test if command exists -- $1: command
     command -v $1 > /dev/null 2>&1
 }
 
-check_sysfs ()  { # check if sysfile exists -- $1: routine; $2: sysfs path 
+check_sysfs ()  { # check if sysfile exists -- $1: routine; $2: sysfs path
     if wordinlist "sysfs" "$TLP_DEBUG"; then
         if [ ! -e $2 ]; then
             $LOGGER -p debug -t "tlp[$$,$PPID]" "$1: $2 nonexistent"
@@ -104,7 +104,7 @@ check_root () { # show error message and exit when root privilege missing
 
 check_tlp_enabled () { # check if TLP is enabled in config file
     # rc: 0=disabled/1=enabled
-    
+
     if [ ! "$TLP_ENABLE" = "1" ]; then
         echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in $CONFFILE." 1>&2
         return 1
@@ -118,7 +118,7 @@ check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=
         echo "Error: TLP power save is disabled because laptop-mode-tools is installed." 1>&2
         echo "       Please uninstall laptop-mode-tools." 1>&2
         echo 1>&2
-        echo_debug "pm" "check_laptop_mode_tools: yes" 
+        echo_debug "pm" "check_laptop_mode_tools: yes"
         return 1
     else
         return 0
@@ -182,7 +182,7 @@ load_tp_modules () { # load ThinkPad specific kernel modules
 
     # load modules, ignore any errors
     for mod in $TPMODULES; do
-        $MODPRO $mod > /dev/null 2>&1 
+        $MODPRO $mod > /dev/null 2>&1
     done
     return 0
 }
@@ -202,7 +202,7 @@ read_dmi () { # read dmi data -- $*: keywords; retval: $dmirslt
             dmirslt="$ds"
         fi
     done
-    
+
     return 0
 }
 
@@ -235,7 +235,7 @@ echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
     else
         echo "TLP started in battery mode."
     fi
-    
+
     return 0
 }
 
@@ -243,14 +243,14 @@ echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
 
 set_run_flag () { # set flag -- $1: flag name
     local rc
-    
+
     [ -d $RUNDIR ] || mkdir $RUNDIR
 
     if [ -d $RUNDIR ]; then
         touch $RUNDIR/$1
         rc=$?
         echo_debug "lock" "set_run_flag.touch: $1; rc=$rc"
-        
+
         return $rc
     else
         # mkdir failed
@@ -266,33 +266,33 @@ reset_run_flag () { # reset flag -- $1: flag name
     else
         echo_debug "lock" "reset_run_flag.not_found: $1"
     fi
-    
+
     return 0
 }
 
 check_run_flag () { # check flag -- $1: flag name
     local rc
-    
+
     [ -f $RUNDIR/$1 ]
     rc=$?
     echo_debug "lock" "check_run_flag: $1; rc=$rc"
-    
+
     return $rc
 }
 
 set_timed_lock () { # create timestamp n seconds in the future
     # $1: lock id, $2: lock duration [s]
-    
+
     set_run_flag ${1}_timed_lock_$(date +%s -d "+${2} seconds")
 }
 
 check_timed_lock () { # check if active timestamp exists
     # $1: lock id
-    
+
     local lockid=$1
     local locktime
     local time=$(date +%s)
-    
+
     for lockfile in $RUNDIR/${lockid}_timed_lock_*; do
         if [ -f $lockfile ]; then
             locktime=${lockfile#${RUNDIR}/${lockid}_timed_lock_}
@@ -312,7 +312,7 @@ check_timed_lock () { # check if active timestamp exists
             fi
         fi
     done
-    
+
     echo_debug "lock" "check_timed_lock.not_locked: $time"
     return 1
 }
@@ -321,10 +321,10 @@ check_timed_lock () { # check if active timestamp exists
 
 set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
     check_sysfs "set_laptopmode" "/proc/sys/vm/laptop_mode"
-    
+
     DISK_IDLE_SECS_ON_AC=${DISK_IDLE_SECS_ON_AC:-0}
     DISK_IDLE_SECS_ON_BAT=${DISK_IDLE_SECS_ON_BAT:-2}
-    
+
     if [ "$1" = "1" ]; then
         echo_debug "pm" "set_laptopmode($1): $DISK_IDLE_SECS_ON_BAT"
         echo $DISK_IDLE_SECS_ON_BAT > /proc/sys/vm/laptop_mode
@@ -332,35 +332,35 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
         echo_debug "pm" "set_laptopmode($1): $DISK_IDLE_SECS_ON_AC"
         echo $DISK_IDLE_SECS_ON_AC > /proc/sys/vm/laptop_mode
     fi
-    
+
     return 0
 }
 
 set_dirty_parms () { # set filesystem buffer params
     # $1: 0=ac mode, 1=battery mode
     # concept from laptop-mode-tools
-    
+
     local age
-    
+
     check_sysfs "set_dirty_parms" "/proc/sys/vm"
-    
+
     if [ "$1" = "1" ]; then
         age=$((${MAX_LOST_WORK_SECS_ON_BAT:-15} * 100))
     else
         age=$((${MAX_LOST_WORK_SECS_ON_AC:-15}  * 100))
     fi
-            
+
     echo_debug "pm" "set_dirty_parms($1): $age"
-        
+
     echo $age > /proc/sys/vm/dirty_writeback_centisecs
     echo $age > /proc/sys/vm/dirty_expire_centisecs
-        
+
     if [ -d /proc/sys/fs/xfs ]; then
         echo $age > /proc/sys/fs/xfs/age_buffer_centisecs
         echo $age > /proc/sys/fs/xfs/xfssyncd_centisecs
         echo 3000 > /proc/sys/fs/xfs/xfsbufd_centisecs
     fi
-    
+
     return 0
 }
 
@@ -369,7 +369,7 @@ set_dirty_parms () { # set filesystem buffer params
 check_intel_pstate () { # detect intel_pstate driver -- retval: $intel_pstate
     #  Note: intel_pstate requires Linux 3.9 or higher
     intel_pstate=0
-    
+
     [ -d $INTEL_PSTATED ] && intel_pstate=1
     return 0
 }
@@ -389,7 +389,7 @@ set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mod
             [ -f $cpu ] && echo $gov > $cpu 2> /dev/null
         done
     fi
-    
+
     return 0
 }
 
@@ -410,14 +410,14 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
             [ -f $cpu ] && echo $minfreq > $cpu 2> /dev/null
         done
     fi
-    
+
     if [ -n "$maxfreq" ]; then
         echo_debug "pm" "set_scaling_min_max_freq($1).max: $maxfreq"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
             [ -f $cpu ] && echo $maxfreq > $cpu 2> /dev/null
         done
     fi
-    
+
     return 0
 }
 
@@ -430,7 +430,7 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
     #  * needs commit #615b7300717b9ad5c23d1f391843484fe30f6c12
     #     (linux-2.6 tree), "Add support for disabling dynamic overclocking",
     #    => requires Linux 3.7 or later
-   
+
     local val ival
 
     if [ "$1" = "1" ]; then
@@ -454,7 +454,7 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
         elif [ -f $CPU_BOOST_ALL_CTRL ]; then
             # use acpi_cpufreq sysfiles
             # simple test for attribute "w" doesn't work, so actually write
-            if ( echo "$val" > $CPU_BOOST_ALL_CTRL ) 2> /dev/null; then 
+            if ( echo "$val" > $CPU_BOOST_ALL_CTRL ) 2> /dev/null; then
                 echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq: $val"
             else
                 echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq.cpu_not_supported"
@@ -467,8 +467,8 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
 
 set_sched_powersave () { # set multi-core/-thread powersave policy
     # $1: 0=ac mode, 1=battery mode
-    
-    local pwr pool sdev 
+
+    local pwr pool sdev
     local avail=0
 
     if [ "$1" = "1" ]; then
@@ -476,7 +476,7 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
     else
         pwr=${SCHED_POWERSAVE_ON_AC:-0}
     fi
-    
+
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
         if [ -f $sdev ]; then
@@ -485,15 +485,15 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
             avail=1
         fi
     done
-    
+
     [ "$avail" = "1" ] || echo_debug "pm" "set_sched_powersave($1).not_available"
-    
+
     return 0
 }
 
 set_nmi_watchdog () { # enable/disable nmi watchdog
     local nmiwd=${NMI_WATCHDOG:-0}
-    
+
     if [ -f /proc/sys/kernel/nmi_watchdog ]; then
         echo "$nmiwd" > /proc/sys/kernel/nmi_watchdog 2> /dev/null
         if [ $? = 0 ]; then
@@ -504,28 +504,28 @@ set_nmi_watchdog () { # enable/disable nmi watchdog
     else
         echo_debug "pm" "set_nmi_watchdog.not_available"
     fi
-    
+
     return 0
 }
 
-set_phc_controls () { # set core voltages 
-    local control 
+set_phc_controls () { # set core voltages
+    local control
     local ctrl_avail="0"
-    
+
     PHC_CONTROLS=${PHC_CONTROLS:-}
-    
-    if [ -n "$PHC_CONTROLS" ]; then 
-        for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do 
+
+    if [ -n "$PHC_CONTROLS" ]; then
+        for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do
             if [ -f $control ]; then
                 echo_debug "pm" "set_phc_controls: $control $PHC_CONTROLS"
                 echo $PHC_CONTROLS > $control
                 ctrl_avail="1"
             fi
         done
-        
+
         [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_phc_controls.not_available"
     fi
-    
+
     return 0
 }
 
@@ -534,7 +534,7 @@ set_phc_controls () { # set core voltages
 check_disk_hdparm_cap () { # check if relevant disk device
     # $1: dev; rc: 0=yes/1=no
 
-    if [ -z "$($HDPARM -I /dev/$1 2>&1 | egrep 'Invalid argument|Invalid exchange|missing sense data')" ]; then  
+    if [ -z "$($HDPARM -I /dev/$1 2>&1 | egrep 'Invalid argument|Invalid exchange|missing sense data')" ]; then
         return 0
     else
         return 1
@@ -543,53 +543,53 @@ check_disk_hdparm_cap () { # check if relevant disk device
 
 echo_disk_model () { # print disk model -- $1: dev
     local model
-    
+
     model=$($HDPARM -I /dev/$1 2>&1 | grep 'Model Number' | \
       cut -f2 -d: | sed -r 's/^ *//' )
     echo "$model"
-    
+
     return 0
 }
 
 echo_disk_firmware () { # print firmware version --- $1: dev
     local firmware
-    
+
     firmware=$($HDPARM -I /dev/$1 2>&1 | grep 'Firmware Revision' | \
       cut -f2 -d: | sed -r 's/^ *//' )
     echo "$firmware"
-    
+
     return 0
 }
 
 get_disk_state () { # get disk power state -- $1: dev; retval: $disk_state
     disk_state=$($HDPARM -C /dev/$1 2>&1 | awk -F ':' '/drive state is/ { gsub(/ /,"",$2); print $2; }')
     [ -z "$disk_state" ] && disk_state="(not available)"
-    
+
     return 0
 }
 
 spindown_disk () { # stop spindle motor -- $1: dev
     $HDPARM -y /dev/$1 2>&1 > /dev/null
-    
+
     return 0
 }
 
 get_disk_apm_level () { # get disk apm level -- $1: dev; rc: apm
     local apm
-    
+
     apm=$($HDPARM -I /dev/$1 2>&1 | grep 'Advanced power management level' | \
           cut -f2 -d: | egrep "^ *[0-9]+ *$")
     if [ -n "$apm" ]; then
         return $apm
-    else 
+    else
         return 0
     fi
-    
+
 }
 
 get_disk_trim_capability () { # check for trim capability
     # $1: dev; rc: 0=no, 1=yes, 254=no ssd device
-    
+
     local trim
 
     if [ -n "$($HDPARM -I /dev/$1 2>&1 | grep 'Solid State Device')" ]; then
@@ -601,13 +601,13 @@ get_disk_trim_capability () { # check for trim capability
     else
         trim=255
     fi
-    
+
     return $trim
 }
 
 get_disk_dev () { # translate disk id to device (sdX)
     # $1: id or dev; retval: $disk_dev, $disk_id
-    
+
     if [ -h /dev/disk/by-id/$1 ]; then
         # $1 is disk id
         disk_id=$1
@@ -625,143 +625,143 @@ get_disk_dev () { # translate disk id to device (sdX)
 
 set_disk_apm_level () { # set disk apm level
     # $1: 0=ac mode, 1=battery mode
-    
+
     local dev apm apmlist
-    
+
     DISK_DEVICES=${DISK_DEVICES:=sda}
     if [ $1 = "1" ]; then
         apmlist=$DISK_APM_LEVEL_ON_BAT
     else
         apmlist=$DISK_APM_LEVEL_ON_AC
     fi
-    
+
     # strip excess blanks from list
-    apmlist=$(echo -n $apmlist | sed -r 's/ +/ /g; s/^ | $//g') 
-    
-    [ -z "$apmlist" ] && return 0 
-    
+    apmlist=$(echo -n $apmlist | sed -r 's/ +/ /g; s/^ | $//g')
+
+    [ -z "$apmlist" ] && return 0
+
     for dev in $DISK_DEVICES; do
         get_disk_dev $dev
-        
+
         if [ -b /dev/$disk_dev ]; then
             check_disk_hdparm_cap $disk_dev
             if [ $? = 0 ]; then
                 # parse list
                 apm=$(echo -n $apmlist | sed -r 's/^(\w+) .*/\1/')
                 apmlist=$(echo -n $apmlist | sed -r 's/^\w+ (.*)/\1/')
-                
+
                 echo_debug "pm" "set_disk_apm_level($1): $disk_dev [$disk_id] $apm"
                 $HDPARM -B $apm /dev/$disk_dev > /dev/null 2>&1
             fi
         fi
     done
-    
+
     return 0
-} 
+}
 
 set_disk_spindown_timeout () { # set disk spindown timeout
     # $1: 0=ac mode, 1=battery mode
-    
+
     local dev timeout timeoutlist
-    
+
     DISK_DEVICES=${DISK_DEVICES:=sda}
     if [ $1 = "1" ]; then
         timeoutlist=$DISK_SPINDOWN_TIMEOUT_ON_BAT
     else
         timeoutlist=$DISK_SPINDOWN_TIMEOUT_ON_AC
     fi
-    
+
     # strip excess blanks from list
-    timeoutlist=$(echo -n $timeoutlist | sed -r 's/ +/ /g; s/^ | $//g') 
-    
-    [ -z "$timeoutlist" ] && return 0 
-    
+    timeoutlist=$(echo -n $timeoutlist | sed -r 's/ +/ /g; s/^ | $//g')
+
+    [ -z "$timeoutlist" ] && return 0
+
     for dev in $DISK_DEVICES; do
         get_disk_dev $dev
-        
+
         if [ -b /dev/$disk_dev ]; then
             check_disk_hdparm_cap $disk_dev
             if [ $? = 0 ]; then
                 # parse list
                 timeout=$(echo -n $timeoutlist | sed -r 's/^(\w+) .*/\1/')
                 timeoutlist=$(echo -n $timeoutlist | sed -r 's/^\w+ (.*)/\1/')
-                
+
                 echo_debug "pm" "set_disk_spindown_timeout($1): $disk_dev [$disk_id] $timeout"
                 $HDPARM -S $timeout /dev/$disk_dev > /dev/null 2>&1
             fi
         fi
     done
-    
-    return 0
-} 
 
-set_disk_io_sched () { # set disk io scheduler 
+    return 0
+}
+
+set_disk_io_sched () { # set disk io scheduler
     local dev sched schedlist schedctrl
-    
+
     [ -n "$DISK_IOSCHED" ] || return 0
-    
+
     DISK_DEVICES=${DISK_DEVICES:=sda}
     # strip excess blanks from list
     schedlist=$(echo -n $DISK_IOSCHED | sed -r 's/ +/ /g; s/^ | $//g')
-    
+
     for dev in $DISK_DEVICES; do
         get_disk_dev $dev
-        
+
         if [ -b /dev/$disk_dev ]; then
             # parse list, add cfq as default when list is too short
             sched=$(echo -n $schedlist | sed -r 's/^(\w+) .*/\1/')
             schedlist=$(echo -n "$schedlist cfq"| sed -r 's/^\w+ (.*)/\1/')
             schedctrl="/sys/block/$disk_dev/queue/scheduler"
-            
+
             if [ -f $schedctrl ]; then
                 echo_debug "pm" "set_disk_io_sched: $disk_dev [$disk_id] $sched"
                 echo -n $sched > $schedctrl
             fi
         fi
     done
-    
+
     return 0
 
 }
 
-# --- Device Power Management 
+# --- Device Power Management
 
 set_sata_link_power () { # set sata link power management
     # $1: 0=ac mode, 1=battery mode
-    
+
     local i pwr
     local ctrl_avail="0"
-    
+
     if [ "$1" = "1" ]; then
         pwr=${SATA_LINKPWR_ON_BAT:-min_power}
     else
         pwr=${SATA_LINKPWR_ON_AC:-max_perfomance}
     fi
     echo_debug "pm" "set_sata_link_power($1): $pwr"
-    
+
     for i in /sys/class/scsi_host/host*/link_power_management_policy ; do
         if [ -f $i ]; then
             echo "$pwr" > $i
             ctrl_avail="1"
         fi
     done
-    
+
     [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_sata_link_power($1).not_available"
-    
+
     return 0
-} 
+}
 
 set_pcie_aspm () { # set pcie active state power management
     # $1: 0=ac mode, 1=battery mode
-    
+
     local pwr
-    
+
     if [ "$1" = "1" ]; then
         pwr=${PCIE_ASPM_ON_BAT:-powersave}
     else
         pwr=${PCIE_ASPM_ON_AC:-performance}
     fi
-    
+
     if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
         echo "$pwr" > /sys/module/pcie_aspm/parameters/policy 2> /dev/null
         if [ $? = 0 ]; then
@@ -778,10 +778,10 @@ set_pcie_aspm () { # set pcie active state power management
 
 set_radeon_profile () { # set radeon power profile
     # $1: 0=ac mode, 1=battery mode
-    
+
     local card level pwr rc1 rc2
     local present=0
-    
+
     for card in /sys/class/drm/card[0-9]/device ; do
         if [ -f $card/power_dpm_state ] && [ -f $card/power_dpm_force_performance_level ]; then
             # Use new radeon dynamic power management method (dpm)
@@ -822,28 +822,28 @@ set_radeon_profile () { # set radeon power profile
     if [ $present -eq 0 ]; then
         echo_debug "pm" "set_radeon_profile($1).not_available"
     fi
-    
-    return 0    
+
+    return 0
 }
 
 
 set_sound_power_mode () { # set sound chip power mode
     SOUND_POWER_SAVE=${SOUND_POWER_SAVE:-1}
     SOUND_POWER_SAVE_CONTROLLER=${SOUND_POWER_SAVE_CONTROLLER:-Y}
-    
+
     check_sysfs "set_sound_power_mode" "/sys/module"
 
     if [ -d /sys/module/snd_hda_intel ]; then
         echo_debug "pm" "set_sound_power_mode.hda: $SOUND_POWER_SAVE $SOUND_POWER_SAVE_CONTROLLER"
         echo "$SOUND_POWER_SAVE" > /sys/module/snd_hda_intel/parameters/power_save
-        echo "$SOUND_POWER_SAVE_CONTROLLER" > /sys/module/snd_hda_intel/parameters/power_save_controller 
+        echo "$SOUND_POWER_SAVE_CONTROLLER" > /sys/module/snd_hda_intel/parameters/power_save_controller
     fi
-        
+
     if [ -d /sys/module/snd_ac97_codec ]; then
         echo_debug "pm" "set_sound_power_mode.ac97: $SOUND_POWER_SAVE"
         echo "$SOUND_POWER_SAVE" > /sys/module/snd_ac97_codec/parameters/power_save
     fi
-    
+
     return 0
 }
 
@@ -860,15 +860,15 @@ get_pci_class_descr () { # get long descr of pci device class
         0x0c0000|0x0c0010) lclass="Firewire" ;;
         *) lclass="" ;;
     esac
-    
+
     return 0
 }
 
-set_runtime_pm () { # set runtime power management 
+set_runtime_pm () { # set runtime power management
     # $1: 0=ac mode, 1=battery mode
-    
+
     local adress class ccontrol control device doall exc type
-    
+
     if [ "$1" = "1" ]; then
         ccontrol=${RUNTIME_PM_ON_BAT:-on}
     else
@@ -876,7 +876,7 @@ set_runtime_pm () { # set runtime power management
     fi
 
     doall=${RUNTIME_PM_ALL:-0}
-    
+
     for type in $PCID; do
         for device in $type/*; do
             if [ -f $device/class ] && [ -f $device/power/control ]; then
@@ -895,7 +895,7 @@ set_runtime_pm () { # set runtime power management
                         # device has log descr, now check if in blacklist
                         adress=${device##/*/}
                         adress=${adress#0000:}
-                        
+
                         if wordinlist "$adress" "$RUNTIME_PM_BLACKLIST"; then
                             # device is in blacklist
                             control="on"
@@ -911,16 +911,16 @@ set_runtime_pm () { # set runtime power management
             fi
         done
     done
-    
+
     return 0
 }
 
-# --- Wifi Power Management 
+# --- Wifi Power Management
 
 get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
     local wi wip
     wifaces=""
-    
+
     for wip in /sys/class/net/*/phy80211; do
         if [ -d $wip ]; then
             wi=${wip%/phy80211}; wi=${wi##*/}
@@ -934,13 +934,13 @@ get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
 
 get_wifi_driver () { # get driver associated with interface -- $1: iface; retval: $wifidrv
     local drvl
-    
+
     wifidrv=""
     if [ -d $NETD/$1 ]; then
         drvl=$(readlink $NETD/$1/device/driver)
         [ -n "$drvl" ] && wifidrv=${drvl##*/}
     fi
-    
+
     return 0
 }
 
@@ -948,7 +948,7 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
     local pwr iface
     local rc=0
     local cmdx=0
-    
+
     if [ "$1" = "1" ]; then
         pwr=${WIFI_PWR_ON_BAT:-5}
     else
@@ -958,9 +958,9 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
         0|1|N)          pwr="off" ;;
         2|3|4|5|6|Y)    pwr="on"  ;;
     esac
-    
+
     get_wifi_ifaces
-    
+
     for iface in $wifaces; do
         if [ -n "$iface" ]; then
             if cmd_exists $IW; then
@@ -980,12 +980,12 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
                 fi
             fi
             if [ $cmdx -eq 0 ]; then
-                # neither iw nor iwconfig installed -> no way 
+                # neither iw nor iwconfig installed -> no way
                 echo_debug "pm" "set_wifi_power_mode($1, $iface).no_tool"
             fi
         fi
     done
-    
+
     return 0
 }
 
@@ -1027,20 +1027,20 @@ disable_wake_on_lan () {  # disable WOL
 
 set_usb_suspend () { # activate usb autosuspend for all devices except input and blacklisted
     # $1: 0=silent/1=report result; $2: on/auto
-    
+
     local devices usbdev subdev control exc usbid busdev vendor
     local ctrlf="control"
     local autof="autosuspend_delay_ms"
-        
+
     check_sysfs "set_usb_suspend" "$USBD"
-    
+
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
         devices=$(ls $USBD | grep -v ':')
         for usbdev in $devices; do
             if [ -f $USBD/$usbdev/power/autosuspend ] || [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
                 usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
                 busdev="Bus $(cat $USBD/$usbdev/busnum) Dev $(cat $USBD/$usbdev/devnum)"
-            
+
                 control="${2:-auto}"
                 exc=""
 
@@ -1071,7 +1071,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                         fi
                     fi
                 fi
-                    
+
                 if [ -f $USBD/$usbdev/power/control ]; then
                     echo "$control" > $USBD/$usbdev/power/control
                 else
@@ -1079,7 +1079,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                     echo "$control" > $USBD/$usbdev/power/level
                     ctrlf="level"
                 fi
-                
+
                 if [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
                     echo $USB_TIMEOUT_MS > $USBD/$usbdev/power/autosuspend_delay_ms 2> /dev/null
                     if [ $? != 0 ]; then
@@ -1100,10 +1100,10 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
     else
         [ "$1" = "1" ] && echo "Error: usb autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $DEFAULT_FILE."
     fi
-    
+
     # set "startup completion" flag for tlp-usb-udev
     set_run_flag $USB_DONE
-    
+
     return 0
 }
 
@@ -1154,7 +1154,7 @@ check_tpacpi () { # check if tpacpi-bat is supported
 read_tpacpi_threshold () { # $1: ST/SP (start/stop); $2: 0/1 (battery)
                            # rc: threshold (1..99, 0=default, 255=error)
     local thresh rc
-    
+
     thresh=$($TPACPIBAT -g $1 $2 2> /dev/null | cut -f1 -d' ')
     rc=$?
 
@@ -1167,9 +1167,9 @@ read_tpacpi_threshold () { # $1: ST/SP (start/stop); $2: 0/1 (battery)
 }
 
 do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
-    # global param: $tpacpi, $tpsmapi 
+    # global param: $tpacpi, $tpsmapi
     # rc: 0=ok/1=read error/2=thresh not present/255=no thresh api
-    
+
     local bati bsys ts
     local old_thresh=-1
     local new_thresh=$3
@@ -1207,7 +1207,7 @@ do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
         fi
     elif [ $tpsmapi -eq 0 ]; then # use tp_smapi
         bsys=$SMAPIDIR/$2/${1}_charge_thresh
-        
+
         if [ -f $bsys ]; then
             old_thresh=$(cat $bsys 2> /dev/null)
             if [ -z "$old_thresh" ]; then
@@ -1218,13 +1218,13 @@ do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
             fi
         else
             rc=2 # invalid bat argument
-        fi        
+        fi
     else
         # no threshold API available
         rc=255
     fi
-    
-    echo_debug "bat" "do_threshold($1, $2): tpacpi-bat=$tpacpi; tp_smapi=$tpsmapi; old=$old_thresh; new=$new_thresh; rc=$rc"    
+
+    echo_debug "bat" "do_threshold($1, $2): tpacpi-bat=$tpacpi; tp_smapi=$tpsmapi; old=$old_thresh; new=$new_thresh; rc=$rc"
     return $rc
 }
 
@@ -1233,7 +1233,7 @@ normalize_thresholds () { # check values and enforce start < stop - 3
     # global param: $tpacpi, $tpsmapi
     # rc: 0
     # retval: $start_thresh, $stop_thresh
-                          
+
     local type thresh
 
     for type in start stop; do
@@ -1241,17 +1241,17 @@ normalize_thresholds () { # check values and enforce start < stop - 3
             start) thresh=$1 ;;
             stop)  thresh=$2 ;;
         esac
-        
+
         thresh=$(echo "$thresh" | egrep '^[0-9]{1,3}$') # check for 1..3 digits
         [ -z "$thresh" ] && thresh=-1 # replace empty value with -1
 
         # ensure min/max values; replace 0 with defaults 96/100
-        case $type in 
+        case $type in
             start)
                 [ $thresh -eq 0 ] || [ $thresh -gt 96 ] && thresh=96
                 start_thresh=$thresh
                 ;;
-                
+
             stop)
                 [ $thresh -eq 0 ] || [ $thresh -gt 100 ] && thresh=100
                 [ $thresh -ne -1 ] && [ $thresh -lt 5 ] && thresh=5
@@ -1274,7 +1274,7 @@ bat_exists () { # check battery presence
     # $1: BAT0/BAT1; retval: 0=bat exists/1=bat nonexistent/255=no thresh api available
     # global param: $tpacpi, $tpsmapi
     # rc: 0=present/1=absent/255=no thresh api
-    
+
     local rc
 
     if [ $tpsmapi -eq 0 ]; then # use tp_smapi
@@ -1286,7 +1286,7 @@ bat_exists () { # check battery presence
     else # no threshold API available
         rc=255
     fi
-    
+
     echo_debug "bat" "bat_exists($1): rc=$rc"
     return $rc
 }
@@ -1294,12 +1294,12 @@ bat_exists () { # check battery presence
 set_charge_thresholds () { # write all charge thresholds from configuration
     # global param: $tpacpi, $tpsmapi
     # rc: 0
-    
+
     local rc
-    
+
     check_tpacpi; check_tpsmapi
     echo_debug "bat" "set_charge_thresholds: tpacpi-bat=$tpacpi; tp_smapi=$tpsmapi"
-    
+
     if bat_exists BAT0; then
         normalize_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0"
 
@@ -1320,7 +1320,7 @@ set_charge_thresholds () { # write all charge thresholds from configuration
 
     if bat_exists BAT1; then
         normalize_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1"
-        
+
         if [ $stop_thresh -ne -1 ]; then
             do_threshold stop BAT1 $stop_thresh; rc=$?
             echo_debug "bat" "set_charge_thresholds.stop(BAT1): $stop_thresh; rc=$rc"
@@ -1335,7 +1335,7 @@ set_charge_thresholds () { # write all charge thresholds from configuration
             echo_debug "bat" "set_charge_thresholds.start(BAT1).not_set"
         fi
     fi
-    
+
     return 0
 }
 
@@ -1343,7 +1343,7 @@ do_force_discharge () { # write force discharge state
     # $1: BAT0/BAT1, $2: 0=off/1=on
     # global param: $tpacpi, $tpsmapi
     # rc: 0=done/1=write error/2=discharge not present/255=no thresh api
-    
+
     local bati bsys rc=0
 
     if [ $tpacpi -eq 0 ]; then # use tpacpi-bat
@@ -1356,10 +1356,10 @@ do_force_discharge () { # write force discharge state
         echo_debug "bat" "do_force_discharge.tpacpi-bat($1, $2): rc=$rc"
     elif [ $tpsmapi -eq 0 ]; then # use tp_smapi
         bsys=$SMAPIDIR/$1/force_discharge
- 
+
         if [ -f $bsys ]; then
             echo $2 > $bsys 2> /dev/null; rc=$?
-        else 
+        else
             rc=2
         fi
         echo_debug "bat" "do_force_discharge.tp_smapi($1, $2): rc=$rc"
@@ -1367,14 +1367,14 @@ do_force_discharge () { # write force discharge state
         rc=255
         echo_debug "bat" "do_force_discharge.noapi($1, $2)"
     fi
-    
+
     return $rc
 }
 
-get_force_discharge () { # $1: BAT0/BAT1, 
+get_force_discharge () { # $1: BAT0/BAT1,
     # global param: $tpacpi, $tpsmapi
     # rc: 0=done/1=read error/2=discharge not present/255=no thresh api
-                         
+
     local bati bsys rc=0
 
     if [ $tpacpi -eq 0 ]; then # use tpacpi-bat
@@ -1390,16 +1390,16 @@ get_force_discharge () { # $1: BAT0/BAT1,
         esac
     elif [ $tpsmapi -eq 0 ]; then # use tp_smapi
         bsys=$SMAPIDIR/$1/force_discharge
- 
+
         if [ -f $bsys ]; then
             rc=$(cat $bsys 2> /dev/null)
-        else 
+        else
             rc=2
         fi
     else # no threshold API available
         rc=255
     fi
- 
+
     echo_debug "bat" "get_force_discharge($1): rc=$rc"
     return $rc
 }
@@ -1408,7 +1408,7 @@ cancel_setcharge () { # called from trap -- global param: $bat
     do_force_discharge $bat 0
     echo_debug "bat" "setcharge_battery.cancelled($bat)"
     echo "Cancelled."
-    
+
     exit 0
 }
 
@@ -1416,7 +1416,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     # $1: start charge threshold, $2: stop charge threshold, $3: battery
     # global param: $tpacpi, $tpsmapi
     # rc: 0=ok/1=error
-    
+
     local rc
     # $bat is global for cancel_setcharge () trap
     local act=0
@@ -1426,9 +1426,9 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
         echo_debug "bat" "setcharge_battery.no_ac_power"
         echo "Error: setting charge thresholds is possible on ac power only."
         return 1
-    fi  
+    fi
 
-    # check prerequisites: tpacpi-bat or tp-smapi 
+    # check prerequisites: tpacpi-bat or tp-smapi
     check_tpacpi; check_tpsmapi
     echo_debug "bat" "setcharge_battery($1, $2, $3): tpacpi-bat=$tpacpi; tp_smapi=$tpsmapi"
 
@@ -1439,16 +1439,16 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     fi
 
     # check params
-    if [ $# -gt 0 ]; then 
+    if [ $# -gt 0 ]; then
         # some parameters given, check them
-        
+
         # get battery arg
         bat=${3:-BAT0} # default is BAT0
         bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
-        
+
         # get and check thresholds args
         normalize_thresholds "$1" "$2"
-    else 
+    else
         # no parameters given, assume BAT0 and take thresholds from config file
         bat=BAT0
         normalize_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0"
@@ -1460,13 +1460,13 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
         echo_debug "bat" "setcharge_battery.not_present($bat)"
         return 1
     fi
-        
+
     # write threshold values
     echo "Setting temporary charge thresholds for $bat:"
-  
+
     if [ $stop_thresh -ne -1 ]; then
-        do_threshold stop $bat $stop_thresh; rc=$?  
-        
+        do_threshold stop $bat $stop_thresh; rc=$?
+
         echo_debug "bat" "setcharge_battery.stop($bat): $stop_thresh; rc=$rc"
         if [ $rc -eq 0 ]; then
             echo "  stop  = $stop_thresh"
@@ -1479,9 +1479,9 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
         echo_debug "bat" "setcharge_battery.stop($bat).not_configured"
         echo "  stop = not configured"
     fi
- 
+
     if [ $start_thresh -ne -1 ]; then
-        do_threshold start $bat $start_thresh; rc=$?  
+        do_threshold start $bat $start_thresh; rc=$?
 
         echo_debug "bat" "setcharge_battery.start($bat): $start_thresh; rc=$rc"
         if [ $rc -eq 0 ]; then
@@ -1495,11 +1495,11 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
         echo_debug "bat" "setcharge_battery.start($bat).not_configured"
         echo "  start = not configured"
     fi
-    
+
     # trigger charging via discharge
     if [ $act -eq 1 ]; then
         trap cancel_setcharge INT # enable ^C hook
-    
+
         do_force_discharge $bat 1; rc=$?
         if [ $rc -eq 0 ]; then
             echo -n "Activating..."
@@ -1510,7 +1510,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
             echo "done."
         else
             trap - INT # remove ^C hook
-            
+
             echo_debug "bat" "setcharge_battery.force_discharge_not_available($bat): rc=$rc"
             echo "Cannot activate immediately on this ThinkPad model. Please power off."
             return 1
@@ -1518,7 +1518,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
 
         trap - INT  # remove ^C hook
     fi
-    
+
     return 0
 }
 
@@ -1527,9 +1527,9 @@ get_sysval () { # $1: file; rc: sysfile value
     local val=""
 
     [ -f $sysf ] && val=$(cat $sysf 2> /dev/null)
-    val=$(echo "$val" | egrep '^[0-9]+$') # check for non-numeric chars 
+    val=$(echo "$val" | egrep '^[0-9]+$') # check for non-numeric chars
     [ -z "$val" ] && val=0 # empty string
-    
+
     return $val
 }
 
@@ -1546,18 +1546,18 @@ chargeonce_battery () { # charge battery to upper threshold once
     local ccharge=0
 
     # check params
-    if [ $# -gt 0 ]; then 
+    if [ $# -gt 0 ]; then
         # some parameters given, check them
-        
+
         # get battery arg
         bat=${1:-BAT0} # default is BAT0
         bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
-    else 
+    else
         # no parameters given, assume BAT0
         bat=BAT0
     fi
 
-    # check prerequisites: tpacpi-bat or tp-smapi 
+    # check prerequisites: tpacpi-bat or tp-smapi
     check_tpacpi; check_tpsmapi
     echo_debug "bat" "chargeonce_battery($bat): tpacpi-bat=$tpacpi; tp_smapi=$tpsmapi"
     if [ $tpacpi -ne 0 ] && [ $tpsmapi -ne 0 ]; then
@@ -1567,7 +1567,7 @@ chargeonce_battery () { # charge battery to upper threshold once
     fi
 
     # check if selected battery is present
-    if ! bat_exists $bat ; then 
+    if ! bat_exists $bat ; then
         echo_debug "bat" "chargeonce_battery($bat).not_present"
         echo "Error: battery $bat not present."
         return 1
@@ -1579,7 +1579,7 @@ chargeonce_battery () { # charge battery to upper threshold once
             stop_thresh=$STOP_CHARGE_THRESH_BAT0
             start_thresh=$START_CHARGE_THRESH_BAT0
             ;;
-            
+
         BAT1)
             stop_thresh=$STOP_CHARGE_THRESH_BAT1
             start_thresh=$START_CHARGE_THRESH_BAT1
@@ -1600,18 +1600,18 @@ chargeonce_battery () { # charge battery to upper threshold once
     else
         # use ACPI data
         bdir="$ACPIBATDIR/$bat"
-        if [ -f $bdir/energy_full ]; then 
+        if [ -f $bdir/energy_full ]; then
             get_sysval $bdir/energy_full; efull=$?
             get_sysval $dir/energy_now; enow=$?
         fi
-        
+
         if [ $efull -ne 0 ]; then
             ccharge=$(( 100 * $enow / $efull ))
         else
             ccharge=-1
         fi
     fi
-    
+
     if [ $ccharge -eq -1 ] ; then
         echo_debug "bat" "chargeonce_battery($bat).charge_level_unknown: enow=$enow; efull=$efull; ccharge=$ccharge"
         echo "Error: cannot determine charge level for $bat."
@@ -1628,7 +1628,7 @@ chargeonce_battery () { # charge battery to upper threshold once
     else
         echo_debug "bat" "chargeonce_battery($bat).setcharge: $temp_start_thresh $stop_thresh"
     fi
-    
+
     setcharge_battery $temp_start_thresh $stop_thresh $bat
     return $?
 }
@@ -1638,18 +1638,18 @@ cancel_discharge () { # called from trap -- global param: $bat
     echo_debug "bat" "discharge_battery.cancelled($bat)"
     echo
     echo "Discharging of battery $bat cancelled."
-    
+
     exit 0
 }
 
-discharge_battery () { # discharge battery 
+discharge_battery () { # discharge battery
     # $1: battery
     # global param: $tpacpi, $tpsmapi
     # rc: 0=ok/1=error
-    
-    local bdir ef pn rc 
+
+    local bdir ef pn rc
     # $bat is global for cancel_setcharge () trap
-    
+
     # check prerequisites: must be on ac power
     if ! get_power_state ; then
         echo_debug "bat" "discharge_battery.no_ac_power"
@@ -1657,7 +1657,7 @@ discharge_battery () { # discharge battery
         return 1
     fi
 
-    # check prerequisites: tpacpi-bat or tp-smapi 
+    # check prerequisites: tpacpi-bat or tp-smapi
     check_tpacpi; check_tpsmapi
     echo_debug "bat" "discharge_battery($1, $2, $3): tpacpi-bat=$tpacpi; tp_smapi=$tpsmapi"
 
@@ -1671,7 +1671,7 @@ discharge_battery () { # discharge battery
     bat=$1
     bat=${bat:=BAT0} # default is BAT0
     bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
- 
+
     # check if selected battery is present
     if ! bat_exists $bat ; then
         echo_debug "bat" "discharge_battery.not_present($bat)"
@@ -1686,7 +1686,7 @@ discharge_battery () { # discharge battery
         echo "Error: discharge function not available for this ThinkPad model."
         return 1
     fi
-   
+
     trap cancel_discharge INT # enable ^C hook
 
     # wait for start
@@ -1701,7 +1701,7 @@ discharge_battery () { # discharge battery
         # show current battery state
         if [ $tpsmapi -eq 0 ]; then # use tp_smapi
             bdir=$SMAPIDIR/$bat
-            
+
             printf "voltage            = %6s [mv]\n"  $(cat $bdir/voltage)
             printf "remaining capacity = %6s [mWh]\n" $(cat $bdir/remaining_capacity)
             printf "remaining percent  = %6s [%%]\n"  $(cat $bdir/remaining_percent)
@@ -1713,7 +1713,7 @@ discharge_battery () { # discharge battery
             if [ -d $bdir ]; then
                 printf "voltage            = %6s [mV]\n"  $(cat $bdir/voltage_now | sed 's/\(.*\).../\1/')
                 printf "remaining capacity = %6s [mWh]\n" $(cat $bdir/energy_now | sed 's/\(.*\).../\1/')
-                
+
                 ef=$(cat $bdir/energy_full)
                 if [ "$ef" != "0" ]; then
                     printf "remaining percent  = %6s [%%]\n" \
@@ -1721,7 +1721,7 @@ discharge_battery () { # discharge battery
                 else
                     printf "remaining percent  = not available [%]\n"
                 fi
-    
+
                 pn=$(cat $bdir/power_now)
                 if [ "$pn" != "0" ]; then
                     printf "remaining time     = %6s [min]\n" \
@@ -1730,8 +1730,8 @@ discharge_battery () { # discharge battery
                 else
                     printf "remaining time     = not discharging [min]\n"
                 fi
-                    
-            fi 
+
+            fi
         fi
         echo "Press Ctrl+C to cancel."
         sleep 2
@@ -1802,17 +1802,17 @@ resume_drivebay () { # Restore power state of drive bay after restore
     fi
 
     rm -f $BAYSTATEFILE 2> /dev/null
-    
+
     return 0
 }
 
 poweroff_drivebay () { # power off optical drive in drive bay
     # $1: 0=conditional+quiet mode, 1=force+verbose mode
     # Some code adapted from http://www.thinkwiki.org/wiki/How_to_hotswap_UltraBay_devices
-    
+
     local optdrv syspath
-    
-    # Run only if either explicitly enabled or forced 
+
+    # Run only if either explicitly enabled or forced
     [ "$BAY_POWEROFF_ON_BAT" = "1" ] || [ "$1" = "1" ] || return 0
 
     get_drivebay_device
@@ -1827,7 +1827,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
     if [ $(cat $dock/docked) = "0" ]; then
         echo_debug "pm" "poweroff_drivebay.drive_already_off"
         [ "$1" = "1" ] && echo "No drive in bay (or power already off)."
-    else 
+    else
         # Check for optical drive
         optdrv=/dev/${BAY_DEVICE:=sr0}
         if [ ! -b "$optdrv" ]; then
@@ -1836,14 +1836,14 @@ poweroff_drivebay () { # power off optical drive in drive bay
             return 0
         else
             echo_debug "pm" "poweroff_drivebay: optdrv=$optdrv"
-            
-            # Unmount media 
+
+            # Unmount media
             umount -l $optdrv > /dev/null 2>&1
-            
+
             # Power off drive
             $HDPARM -Y $optdrv > /dev/null 2>&1
             sleep 1
-    
+
             # Unregister scsi device
             syspath="/sys$($UDEVADM info --query=path --name=$optdrv | perl -pe 's!/block/...$!!')"
             echo_debug "pm" "poweroff_drivebay: syspath=$syspath"
@@ -1855,6 +1855,6 @@ poweroff_drivebay () { # power off optical drive in drive bay
             echo_debug "pm" "poweroff_drivebay.bay_powered_off"
         fi
     fi
-    
+
     return 0
 }

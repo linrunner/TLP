@@ -12,7 +12,7 @@ readonly LIBS="tlp-functions tlp-rf-func"
 for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
 [ -d $libdir ] || exit 0
 
-for lib in $LIBS; do 
+for lib in $LIBS; do
     [ -f $libdir/$lib ] || exit 0
     . $libdir/$lib
 done
@@ -33,12 +33,12 @@ case $self in
                 device_off $self
                 echo_device_state $self $devs
                 ;;
-                
+
             toggle)
                 device_toggle $self
                 echo_device_state $self $devs
                 ;;
-                
+
             *)
                 device_state $self
                 echo_device_state $self $devs

@@ -12,7 +12,7 @@ readonly LIBS="tlp-functions tlp-rf-func"
 for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
 [ -d $libdir ] || exit 0
 
-for lib in $LIBS; do 
+for lib in $LIBS; do
     [ -f $libdir/$lib ] || exit 0
     . $libdir/$lib
 done
@@ -32,27 +32,27 @@ echo_debug "udev" "rdw_udev($*).$EVENT dev=$ddir type=$type docked=$docked onbat
 
 case $EVENT in
     dock) # laptop was docked
-    
+
         # enable configured radios
-        for dev in $DEVICES_TO_ENABLE_ON_DOCK; do 
+        for dev in $DEVICES_TO_ENABLE_ON_DOCK; do
             [ -n "$dev" ] && device_on $dev
         done
-        
+
         # disable configured radios
-        for dev in $DEVICES_TO_DISABLE_ON_DOCK; do 
+        for dev in $DEVICES_TO_DISABLE_ON_DOCK; do
             [ -n "$dev" ] && device_off $dev
         done
         ;;
-        
+
     undock) # laptop was undocked
 
         # enable configured radios
-        for dev in $DEVICES_TO_ENABLE_ON_UNDOCK; do 
+        for dev in $DEVICES_TO_ENABLE_ON_UNDOCK; do
             [ -n "$dev" ] && device_on $dev
         done
-        
+
         # disable configured radios
-        for dev in $DEVICES_TO_DISABLE_ON_UNDOCK; do 
+        for dev in $DEVICES_TO_DISABLE_ON_UNDOCK; do
             [ -n "$dev" ] && device_off $dev
         done
         ;;

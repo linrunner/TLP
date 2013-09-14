@@ -14,13 +14,13 @@ NMDSP = $(DESTDIR)/etc/NetworkManager/dispatcher.d
 # you have to change constant definitions in scripts too!
 CONFFILE = $(DESTDIR)/etc/default/tlp
 
-all: 
-	@true 
+all:
+	@true
 
 clean:
-	@true 
-	
-install-tlp: 
+	@true
+
+install-tlp:
 	# Package tlp
 	install -D -m 755 tlp $(SBIN)/tlp
 	install -D -m 755 tlp-rf $(BIN)/bluetooth
@@ -44,7 +44,7 @@ install-tlp:
 	install -m 755 thinkpad-radiosw.sh $(ACPI)/
 	install -D -m 644 tlp.bash_completion $(DESTDIR)/etc/bash_completion.d/tlp
 
-install-rdw:	
+install-rdw:
 	# Package tlp-rdw
 	install -D -m 644 tlp-rdw.rules $(ULIB)/rules.d/40-tlp-rdw.rules
 	install -D -m 755 tlp-rdw-udev $(ULIB)/tlp-rdw-udev
@@ -52,7 +52,7 @@ install-rdw:
 
 install: install-tlp install-rdw
 
-uninstall-tlp: 
+uninstall-tlp:
 	# Package tlp
 	rm $(SBIN)/tlp
 	rm $(BIN)/bluetooth
@@ -76,11 +76,11 @@ uninstall-tlp:
 	rm $(ACPI)/thinkpad-radiosw.sh
 	rm $(DESTDIR)/etc/bash_completion.d/tlp
 
-uninstall-rdw: 	
+uninstall-rdw:
 	# Package tlp-rdw
 	rm $(ULIB)/rules.d/40-tlp-rdw.rules
 	rm $(ULIB)/tlp-rdw-udev
 	rm $(NMDSP)/99tlp-rdw-nm
-	
+
 uninstall: uninstall-tlp uninstall-rdw
-	
+

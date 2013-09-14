@@ -14,12 +14,12 @@ case "$1" in
         [ -x $TLP ] || exit 0
         $TLP $1
         ;;
-        
+
     help)
         print_help
         ;;
-        
+
     *)
-        exit $NA   
+        exit $NA
         ;;
 esac

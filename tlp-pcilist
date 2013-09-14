@@ -9,7 +9,7 @@ package tlp_pcilist;
 use strict;
 use warnings;
 
-# Get sysfs value, return empty string if nonexistent or not readable 
+# Get sysfs value, return empty string if nonexistent or not readable
 sub catsysf {
     my $sysval = "";
     if (open SYSF, "$_[0]") {

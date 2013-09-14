@@ -1,29 +1,29 @@
 # ------------------------------------------------------------------------------
 # tlp - Parameters for power save
- 
+
 # Hint: some features are disabled by default, remove the leading # to enable them
- 
+
 # Set to 0 to disable/1 to enable TLP
 TLP_ENABLE=1
- 
+
 # Seconds laptop mode has to to wait after the disk goes idle before doing a sync.
 # Non-zero value enables, zero disables laptop mode.
 DISK_IDLE_SECS_ON_AC=0
 DISK_IDLE_SECS_ON_BAT=2
- 
+
 # Dirty page values (timeouts in secs).
 MAX_LOST_WORK_SECS_ON_AC=15
 MAX_LOST_WORK_SECS_ON_BAT=60
 
 # Select a cpu frequency scaling governor: ondemand/powersave/performance/conservative
-# Important:  
+# Important:
 # - You *must* disable your distribution's governor settings or conflicts will occur
 # - ondemand is sufficient for *almost all* workloads, you should know what you're doing!
 #CPU_SCALING_GOVERNOR_ON_AC=ondemand
 #CPU_SCALING_GOVERNOR_ON_BAT=ondemand
 
 # Set the min/max frequency available for the scaling governor.
-# Possible values strongly depend on your cpu. For available frequencies see 
+# Possible values strongly depend on your cpu. For available frequencies see
 # tlp-stat output, Section "+++ Processor".
 # Hint: Parameters are disabled by default, remove the leading # to enable them,
 #       otherwise kernel default values are used.
@@ -32,7 +32,7 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #CPU_SCALING_MIN_FREQ_ON_BAT=0
 #CPU_SCALING_MAX_FREQ_ON_BAT=0
 
-# Set the cpu "turbo boost" feature: 0=disable / 1=allow 
+# Set the cpu "turbo boost" feature: 0=disable / 1=allow
 # Requires an Intel Core i processor and kernel 3.7 or later.
 # Important:
 # - This may conflict with your distribution's governor settings
@@ -47,12 +47,12 @@ SCHED_POWERSAVE_ON_BAT=1
 # Kernel NMI Watchdog
 # 0=disable (default, saves power) / 1=enable (for kernel debugging only)
 NMI_WATCHDOG=0
-        
+
 # Change CPU voltages aka "undervolting" - Kernel with PHC patch required
 # Freq:voltage pairs are written to /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
 # CAUTION: only use this, if you thoroughly understand what you are doing!
 #PHC_CONTROLS="F:V F:V F:V F:V"
- 
+
 # Hard disk devices, separate multiple devices with spaces (default: sda).
 # Devices can be specified by disk id too (lookup with: tlp diskid).
 DISK_DEVICES="sda sdb"
@@ -71,10 +71,10 @@ DISK_APM_LEVEL_ON_BAT="128 128"
 #DISK_SPINDOWN_TIMEOUT_ON_AC="0 0"
 #DISK_SPINDOWN_TIMEOUT_ON_BAT="0 0"
 
-# Select io scheduler for the disk devices: noop/deadline/cfq (Default: cfq) 
+# Select io scheduler for the disk devices: noop/deadline/cfq (Default: cfq)
 # Separate values for multiple devices with spaces.
 #DISK_IOSCHED="cfq cfq"
- 
+
 # SATA aggressive link power management (ALPM):
 # min_power/medium_power/max_performance
 SATA_LINKPWR_ON_AC=max_performance
@@ -82,7 +82,7 @@ SATA_LINKPWR_ON_BAT=min_power
 
 # PCI Express Active State Power Management (PCIe ASPM):
 # default/performance/powersave
-# Hint: needs kernel boot option pcie_aspm=force on some machines 
+# Hint: needs kernel boot option pcie_aspm=force on some machines
 PCIE_ASPM_ON_AC=performance
 PCIE_ASPM_ON_BAT=powersave
 
@@ -100,22 +100,22 @@ RADEON_DPM_STATE_ON_BAT=battery
 # New radeon dpm performance level: auto/low/high (auto is recommended)
 RADEON_DPM_PERF_LEVEL_ON_AC=auto
 RADEON_DPM_PERF_LEVEL_ON_BAT=auto
- 
+
 # WiFi power saving mode: 1=disable/5=enable
 # (Linux 2.6.32 and later, some adapters only!)
 WIFI_PWR_ON_AC=1
 WIFI_PWR_ON_BAT=5
- 
+
 # Disable wake on lan: Y/N
 WOL_DISABLE=Y
- 
+
 # Enable audio power saving for Intel HDA, AC97 devices (timeout in secs).
 # A value of 0 disables / >=1 enables power save.
 SOUND_POWER_SAVE=1
 # Disable controller too (HDA only): Y/N
 SOUND_POWER_SAVE_CONTROLLER=Y
 
-# Set to 1 to power off optical drive in UltraBay (ThinkPads only) 
+# Set to 1 to power off optical drive in UltraBay (ThinkPads only)
 # when running on battery. A value of 0 disables this Feature (Default).
 # Drive can be powered on again by releasing (and reinserting) the
 # eject lever or by pressing the disc eject button on newer models.
@@ -123,8 +123,8 @@ SOUND_POWER_SAVE_CONTROLLER=Y
 BAY_POWEROFF_ON_BAT=0
 # Optical drive device to power off (default sr0)
 BAY_DEVICE="sr0"
- 
-# Runtime Power Management for pci(e) bus devices 
+
+# Runtime Power Management for pci(e) bus devices
 # (Kernel >= 2.6.35 only): on=disable/auto=enable
 RUNTIME_PM_ON_AC=on
 RUNTIME_PM_ON_BAT=auto
@@ -140,7 +140,7 @@ RUNTIME_PM_ALL=0
 
 # Set to 0 to disable/1 to enable usb autosuspend feature
 USB_AUTOSUSPEND=1
- 
+
 # Devices from the following list are excluded from usb autosuspend
 # (separate with spaces). Use lsusb to get the ids.
 # Note: input devices (usbhid) are excluded automatically
@@ -151,7 +151,7 @@ USB_AUTOSUSPEND=1
 # Note: works for ids 05c6:* 0bdb:* 1199:* only
 USB_BLACKLIST_WWAN=1
 
-# Set to 1 to disable autosuspend before shutdown/0 to do nothing 
+# Set to 1 to disable autosuspend before shutdown/0 to do nothing
 # (workaround for usb devices that cause shutdown problems)
 #USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN=1
 
@@ -160,13 +160,13 @@ USB_BLACKLIST_WWAN=1
 # Hint: the parameters DEVICES_TO_DISABLE/ENABLE_ON_STARTUP/SHUTDOWN below
 #       are ignored when this is enabled!
 RESTORE_DEVICE_STATE_ON_STARTUP=0
- 
+
 # Radio devices to disable on startup: bluetooth wifi wwan
 #DEVICES_TO_DISABLE_ON_STARTUP="bluetooth wifi wwan"
 
 # Radio devices to enable on startup: bluetooth wifi wwan
 #DEVICES_TO_ENABLE_ON_STARTUP="wifi"
- 
+
 # Radio devices to disable on shutdown: bluetooth wifi wwan
 # (workaround for devices that are blocking shutdown)
 #DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi wwan"
@@ -178,7 +178,7 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 # Radio devices to enable when wireless radio switch is turned on:
 # bluetooth wifi wwan (Ubuntu + ThinkPad only)
 #DEVICES_TO_ENABLE_ON_RADIOSW="wifi wwan"
- 
+
 # Battery charge thresholds (ThinkPad only, tp-smapi or acpi-call kernel module required)
 # Charging starts when the remaining capacity falls below the START_CHARGE_TRESH
 # value and stops when exceeding the STOP_CHARGE_TRESH value.
@@ -199,12 +199,12 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 
 # Hint: parameters are disabled by default, remove the leading # to enable them
 
-# Radio devices to disable on connect 
+# Radio devices to disable on connect
 #DEVICES_TO_DISABLE_ON_LAN_CONNECT="wifi wwan"
 #DEVICES_TO_DISABLE_ON_WIFI_CONNECT="wwan"
 #DEVICES_TO_DISABLE_ON_WWAN_CONNECT="wifi"
 
-# Radio devices to enable on disconnect 
+# Radio devices to enable on disconnect
 #DEVICES_TO_ENABLE_ON_LAN_DISCONNECT="wifi wwan"
 #DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT=""
 #DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT=""

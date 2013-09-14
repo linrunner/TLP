@@ -13,7 +13,7 @@ readonly LIBS="tlp-functions tlp-rf-func"
 for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
 [ -d $libdir ] || exit 0
 
-for lib in $LIBS; do 
+for lib in $LIBS; do
     [ -f $libdir/$lib ] || exit 0
     . $libdir/$lib
 done
@@ -46,7 +46,7 @@ if cmd_exists $NMCLI ; then
 
             # get connection state for devices != hso|usb|wwan
             nmstate=$($NMCLI dev | grep 'gsm' | egrep -v 'hso|usb|wwan' | awk '{ print $3; }')
-            
+
             # when action matches state, then it is probably type 3g/gsm
             case $action in
                 up) [ "$nmstate" = "connected" ] && itype="gsm" ;;
@@ -54,7 +54,7 @@ if cmd_exists $NMCLI ; then
             esac
             ;;
 
-        *) # iface = dev -> all other devices, including 3g with specific driver 
+        *) # iface = dev -> all other devices, including 3g with specific driver
             itype="$($NMCLI dev | awk '$1 ~ /'$iface'/ { print $2; }')"
             ;;
     esac
@@ -69,7 +69,7 @@ else
             nmstate=$($NMTOOL | egrep -v 'Device:.*(hso|usb|wwan)' | grep -A3 'Device:' \
                               | grep -A2 'Mobile Broadband (GSM)'  | grep 'State:' \
                               | awk '{ print $2; }')
-                              
+
             # when action matches state, then it is probably type 3g/gsm
             case $action in
                 up) [ "$nmstate" = "connected" ] && itype="gsm" ;;
@@ -77,18 +77,18 @@ else
             esac
             ;;
 
-        *) # iface = dev -> all other devices, including 3g with specific driver 
+        *) # iface = dev -> all other devices, including 3g with specific driver
             nmtype=$($NMTOOL | grep -A1 $iface | grep 'Type:' | cut -c22-)
             case $nmtype in
                 "Wired") itype="802-3-ethernet" ;;
                 "802.11 WiFi") itype="802-11-wireless" ;;
                 "Mobile Broadband (GSM)") itype="gsm" ;;
-            esac 
+            esac
             ;;
     esac
-    
+
     echo_debug "nm" "rdw_nm($iface).$action: type=$itype [nm-tool]"
-fi    
+fi
 
 case $action in
     up) # interface up, disable configured interfaces
@@ -99,15 +99,15 @@ case $action in
             802-3-ethernet)
                 for dev in $DEVICES_TO_DISABLE_ON_LAN_CONNECT; do
                     [ -n "$dev" ] && device_off $dev
-                done                
+                done
                 ;;
-            
+
             802-11-wireless)
-                for dev in $DEVICES_TO_DISABLE_ON_WIFI_CONNECT; do 
+                for dev in $DEVICES_TO_DISABLE_ON_WIFI_CONNECT; do
                     [ -n "$dev" ] && [ "$dev" != wifi ] && device_off $dev
                 done
                 ;;
-            
+
             gsm)
                 for dev in $DEVICES_TO_DISABLE_ON_WWAN_CONNECT; do
                     [ -n "$dev" ] && [ "$dev" != wwan ] && device_off $dev
@@ -119,25 +119,25 @@ case $action in
     down) # interface down, enable configured interfaces
         case $itype in
             802-3-ethernet)
-                for dev in $DEVICES_TO_ENABLE_ON_LAN_DISCONNECT; do 
+                for dev in $DEVICES_TO_ENABLE_ON_LAN_DISCONNECT; do
                     [ -n "$dev" ] && device_on $dev
                 done
                 ;;
-            
+
             802-11-wireless)
-                for dev in $DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT; do 
+                for dev in $DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT; do
                     [ -n "$dev" ] && [ "$dev" != wifi ] && device_on $dev
                 done
                 ;;
-            
+
             gsm)
-                for dev in $DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT; do 
+                for dev in $DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT; do
                     [ -n "$dev" ] && [ "$dev" != wwan ] && device_on $dev
                 done
                 ;;
         esac
         ;; # down
-        
-esac 
-    
+
+esac
+
 exit 0

@@ -16,13 +16,13 @@ shift
 
 case $self in
     run-on-ac)
-        if on_ac_power; then        
+        if on_ac_power; then
             $cmd $@
         fi
         ;;
-        
+
     run-on-bat)
-        if ! on_ac_power; then      
+        if ! on_ac_power; then
             $cmd $@
         fi
         ;;

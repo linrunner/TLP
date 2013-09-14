@@ -1,5 +1,5 @@
 #!/bin/sh
-# tlp - adjust power settings 
+# tlp - adjust power settings
 #
 # Copyright (c) 2013 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
@@ -15,7 +15,7 @@ if [ ! -d $libdir ]; then
     exit 1
 fi
 
-for lib in $LIBS; do 
+for lib in $LIBS; do
     if [ ! -f $libdir/$lib ]; then
         echo "Error: missing function library \'$libdir/$lib\'."
         exit 1
@@ -94,9 +94,9 @@ case "$mode" in
                 echo -n "Loading tp-smapi kernel module..."
                 load_tp_modules
                 echo "done. "
-        
+
                 init_radio_devices start
-    
+
                 echo -n "Setting battery charge thresholds..."
                 set_charge_thresholds
                 echo "done."
@@ -107,7 +107,7 @@ case "$mode" in
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
                 ;;
-        
+
             stop)
                 init_radio_devices stop
 
@@ -116,7 +116,7 @@ case "$mode" in
                     set_usb_suspend 0 on
                     echo "done."
                 fi
-                
+
                 # remove usb startup flag
                 [ -f $USB_DONE ] && rm $USB_DONE
 
@@ -152,16 +152,16 @@ case "$mode" in
 
         [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
         poweroff_drivebay 0
-        
+
         echo_started_mode 1
         ;;
-        
+
     false|ac) # set ac power mode
         check_root
         apply_common_settings 0
 
         [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
-         
+
         echo_started_mode 0
         ;;
 
@@ -177,7 +177,7 @@ case "$mode" in
         check_root
         restore_device_states
         resume_drivebay
-        
+
         get_power_state
         pwrmode=$?
         apply_common_settings $pwrmode
@@ -187,12 +187,12 @@ case "$mode" in
         check_root
         set_usb_suspend 1 auto
         ;;
-        
+
     bayoff) # power off drive bay
         check_root
         poweroff_drivebay 1
         ;;
-        
+
     setcharge) # set charge thresholds (temporarily)
         check_root
         load_tp_modules
@@ -216,14 +216,14 @@ case "$mode" in
         load_tp_modules
         discharge_battery $2
         ;;
-        
+
     recalibrate) # recalibrate battery, i.e. discharge and charge to 100%
         check_root
         load_tp_modules
         setcharge_battery 96 100 $2
         discharge_battery $2
-        ;;        
-        
+        ;;
+
     stat) # show status
         shift
         tlp-stat $*
@@ -237,8 +237,8 @@ case "$mode" in
             fi
         done } | sort
         ;;
-        
-    *) 
+
+    *)
         echo "Error: unknown command \"$mode\"."  1>&2
         echo "Usage: tlp start|true|bat|false|ac|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid" 1>&2
         ;;

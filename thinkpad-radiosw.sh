@@ -10,7 +10,7 @@ readonly LIBS="tlp-functions tlp-rf-func"
 for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
 [ -d $libdir ] || exit 0
 
-for lib in $LIBS; do 
+for lib in $LIBS; do
     [ -f $libdir/$lib ] || exit 0
     . $libdir/$lib
 done

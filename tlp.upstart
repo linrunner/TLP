@@ -15,8 +15,8 @@ end script
 
 post-stop script
     [ -x $TLP ] || exit 4
-    $TLP init stop 
-    
+    $TLP init stop
+
 end script
 
 

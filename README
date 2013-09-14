@@ -30,7 +30,7 @@ Additional functions:
 - Recalibrate battery - ThinkPads only
 
 All TLP settings are stored in /etc/default/tlp. The default configuration
-provides optimized power saving out of the box. 
+provides optimized power saving out of the box.
 
 Read the the full documentation at:
 - http://linrunner.de/tlp

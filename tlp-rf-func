@@ -17,8 +17,8 @@ readonly ALLDEV="bluetooth wifi wwan"
 # Functions
 
 get_devc () { # get control device for radio type -- $1: rftype; retval $devc
-    local i 
-    
+    local i
+
     check_sysfs "get_devc" "/sys/class/rfkill"
 
     devc=""
@@ -26,11 +26,11 @@ get_devc () { # get control device for radio type -- $1: rftype; retval $devc
     rfkdev="1"
     devon="1"
     devoff="0"
-    
+
     case $1 in
         wwan|bluetooth)
             for i in /sys/class/rfkill/rfkill* ; do
-                if [ -f $i/type ] && [ "$(cat $i/type)" = "$1" ]; then 
+                if [ -f $i/type ] && [ "$(cat $i/type)" = "$1" ]; then
                     devc="$i/state"
                     echo_debug "rf" "get_devc($1) = $devc"
                     return 0
@@ -49,43 +49,43 @@ get_devc () { # get control device for radio type -- $1: rftype; retval $devc
                     return 0
                 fi
             done
-            
+
             for i in /sys/class/rfkill/rfkill* ; do
-                if [ -f $i/type ] && [ "$(cat $i/type)" = "wlan" ]; then 
+                if [ -f $i/type ] && [ "$(cat $i/type)" = "wlan" ]; then
                     devc="$i/state"
                     echo_debug "rf" "get_devc($1) = $devc"
                     return 0
                 fi
             done
             ;;
-        
+
         *)
             echo "Error: unknown device type \"$1\"" 1>&2
             echo_debug "rf" "get_devc($1).unknown_type"
             return 0
             ;;
     esac
-    
+
     echo_debug "rf" "get_devc($1).not_present"
-    
+
     return 0
 }
 
 err_no_root_priv () { # check root privilege
     echo "Error: missing root privilege." 1>&2
     echo_debug "rf" "$1.missing_root_privilege"
-    
+
     return 0
 }
 
 get_devs () { # get radio device state -- $1: rftype; retval $devs: 0=off/1=on
     if [ -n "$devc" ]; then
-        devs=$(cat $devc) 
+        devs=$(cat $devc)
         [ "$rfkdev" = "0" ] && devs=$(($devs ^ $devoff))
     fi
 
     echo_debug "rf" "get_devs($1) = $devs"
-    
+
     return 0
 }
 
@@ -93,11 +93,11 @@ test_rfkill_perms () { # test if either root priv or rfkill device writable
     test_root || [ -w $RFKD ]
 }
 
-device_state () { # get radio type state -- $1: rftype; retval $devc, $devs: 0=off/1=on 
+device_state () { # get radio type state -- $1: rftype; retval $devc, $devs: 0=off/1=on
     echo_debug "rf" "device_state($1)"
-    
+
     get_devc $1
-    get_devs $1 
+    get_devs $1
 }
 
 device_on () { # enable radio type -- $1: rftype
@@ -183,7 +183,7 @@ device_toggle () { # toggle radio type state -- $1: rftype
             echo_debug "rf" "device_toggle($1).rfkill"
             case $devs in
                 0) $RFKILL unblock $1 ;;
-                1) $RFKILL block $1   ;;                
+                1) $RFKILL block $1   ;;
                 *) ;;
             esac
         else
@@ -250,34 +250,34 @@ echo_device_state () { # print radio type state -- $1: rftype, $2: state
         bluetooth)
             devstr="bluetooth"
             ;;
-            
+
         wifi)
             devstr="wifi     "
             ;;
-        
+
         wwan)
             devstr="wwan     "
             ;;
-            
+
         *)
             devstr=$1
             ;;
     esac
 
     case $2 in
-        0) 
+        0)
             echo "$devstr = off (software)"
             ;;
 
-        1) 
+        1)
             echo "$devstr = on"
             ;;
-            
-        2) 
+
+        2)
             echo "$devstr = off (hardware)"
             ;;
-            
-        254) 
+
+        254)
             echo "$devstr = none (no device)"
             ;;
 
@@ -303,7 +303,7 @@ save_device_states () { # save radio states  -- $1: list of rftypes
         device_state $dev
         echo "$dev $devs" >> $RFSTATEFILE
     done
-    
+
     return 0
 }
 
@@ -311,14 +311,14 @@ restore_device_states () { # restore radio type states
     local sline
 
     echo_debug "rf" "restore_device_states"
-    
+
     if [ -f $RFSTATEFILE ]; then
         set_run_flag $LOCK_RDW
-        
+
         # read state file
         while read sline; do
             set -- $sline # read dev, state into $1, $2
-            device_set_state $1 $2 
+            device_set_state $1 $2
         done < $RFSTATEFILE
 
         reset_run_flag $LOCK_RDW
@@ -332,7 +332,7 @@ restore_device_states () { # restore radio type states
 init_radio_devices () { # initialize all radio type states
     # $1: start/stop/radiosw
     # called from init scripts
-    
+
     local dev devs2disable devs2enable restore
 
     # save/restore mode is disabled by default
@@ -355,11 +355,11 @@ init_radio_devices () { # initialize all radio type states
                     echo "No saved radio device states found."
                 fi
                 ;;
-                
+
             stop)
                 save_device_states
                 echo "Radio device states saved."
-                ;; 
+                ;;
         esac
     else
         # "disable/enable on startup/shutdown" or "radiosw" mode
@@ -368,7 +368,7 @@ init_radio_devices () { # initialize all radio type states
                 devs2disable="$DEVICES_TO_DISABLE_ON_STARTUP"
                 devs2enable="$DEVICES_TO_ENABLE_ON_STARTUP"
                 ;;
-                
+
             stop)
                 devs2disable="$DEVICES_TO_DISABLE_ON_SHUTDOWN"
                 devs2enable="$DEVICES_TO_ENABLE_ON_SHUTDOWN"
@@ -410,10 +410,10 @@ init_radio_devices () { # initialize all radio type states
             fi
         fi
 
-        # clean up: discard state file 
+        # clean up: discard state file
         rm -f $RFSTATEFILE 2> /dev/null
     fi
-    
+
     return 0
 }
 
