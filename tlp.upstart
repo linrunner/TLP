@@ -1,4 +1,7 @@
-# TLP settings on system startup/shutdown
+# tlp - system startup/shutdown
+#
+# Copyright (c) 2013 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2 or later.
 
 description "tlp"
 
