@@ -101,14 +101,6 @@ case "$mode" in
                 set_charge_thresholds
                 echo "done."
 
-                # wake upowerd only if present & arg "upwr" is given
-                if cmd_exists $UPWR && [ "$mode3" = "upwr" ]; then
-                    echo -n "Starting upowerd..."
-                    $UPWR -e > /dev/null 2>&1
-                    echo "done."
-                    echo_debug "run" "upower_start"
-                fi
-
                 # apply settings
                 echo -n "Applying power save settings..."
                 apply_common_settings $pwrmode

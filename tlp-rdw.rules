@@ -1,4 +1,7 @@
 # tlp-rdw - udev rules
+#
+# Copyright (c) 2013 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2 or later.
 
 # handle dock/undock events
 ACTION=="change", SUBSYSTEM=="platform", KERNEL=="dock.*", ATTR{type}=="dock_station", RUN+="/lib/udev/tlp-rdw-udev %k"

@@ -1,16 +1,11 @@
-#  This file is part of systemd.
+# tlp - systemd startup/shutdown service
 #
-#  systemd is free software; you can redistribute it and/or modify it
-#  under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+# Copyright (c) 2013 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2 or later.
 
 [Unit]
-Description=Initialisation for TLP 
-DefaultDependencies=no
-Requires=upower.service
-After=upower.service
-Before=shutdown.target
+Description=TLP system startup/shutdown
+After=multi-user.target
 
 [Service]
 Type=oneshot
@@ -19,4 +14,4 @@ ExecStart=/usr/sbin/tlp init start
 ExecStop=/usr/sbin/tlp init stop
 
 [Install]
-WantedBy=local-fs.target
+WantedBy=multi-user.target

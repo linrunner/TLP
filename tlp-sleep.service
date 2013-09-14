@@ -1,10 +1,14 @@
+# tlp - systemd suspend/resume service
+#
+# Copyright (c) 2013 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2 or later.
+
 [Unit]
-Description=tlp suspend/resume
+Description=TLP suspend/resume
 Before=sleep.target
 StopWhenUnneeded=yes
 
 [Service]
-User=%I
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/sbin/tlp suspend
