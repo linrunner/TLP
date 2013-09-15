@@ -6,6 +6,7 @@
 [Unit]
 Description=TLP system startup/shutdown
 After=multi-user.target
+Before=shutdown.target
 
 [Service]
 Type=oneshot
