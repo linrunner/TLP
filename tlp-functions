@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.3.907"
+readonly TLPVER="0.3.908"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -996,7 +996,10 @@ get_eth_ifaces () { # get all eth devices -- retval: $ethifaces
     ethifaces=''
 
     for eic in /sys/class/net/*/device/class; do
-        if [ -f $eic ] && [ "$(cat $eic)" = "0x020000" ]; then
+        if [ -f $eic ] \
+            && [ "$(cat $eic)" = "0x020000" ] \
+            && [ ! -d "${eic%/class}/ieee80211" ]; then
+
             ei=${eic%/device/class}; ei=${ei##*/}
             ethifaces="$ethifaces $ei"
         fi

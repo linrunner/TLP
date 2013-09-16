@@ -1,4 +1,4 @@
-tlp (0.3.907-1) unstable; urgency=low
+tlp (0.3.908-1) unstable; urgency=low
 
   *** Development version -> 0.4 ***
 
@@ -15,7 +15,7 @@ tlp (0.3.907-1) unstable; urgency=low
  
   * Packaging
  
- -- Thomas Koch <linrunner@gmx.net>  Sun, 15 Sep 2013 11:50:13 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 16 Sep 2013 20:34:15 +0200
  
 tlp (0.3.11-1) unstable; urgency=low
 
