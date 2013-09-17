@@ -195,6 +195,8 @@ done
 
 # --- MAIN
 
+add_sbin2path
+
 read_args $*
 : ${needs_root_priv:=1}
 
@@ -538,23 +540,21 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
     get_wifi_ifaces
     for iface in $wifaces; do
         if [ -n "$iface" ]; then
-            wifipm="unknown"
-            rc=0; cmdx=0
+            wifipm=""
 
             if cmd_exists $IW; then
                 # try with iw first
-                wifipm=$($IW dev $iface get power_save 2> /dev/null |
-                    sed -r 's/.*(on|off).*/\1/')
-                rc=$?
-                cmdx=1
+                wifipm=$($IW dev $iface get power_save 2> /dev/null | \
+                    grep "Power save" | \
+                    sed -r 's/.*Power save: (on|off).*/\1/')
             fi
+
             if cmd_exists $IWC; then
-                if [ $rc -ne 0 ] || [ $cmdx -eq 0 ]; then
+                if [ -z "$wifipm" ]; then
                     # iw did not succeed or iw not installed -> try with iwconfig
-                    wifipm=$($IWC $iface 2> /dev/null | grep "Power Management" | \
+                    wifipm=$($IWC $iface 2> /dev/null | \
+                        grep "Power Management" | \
                         sed -r 's/.*Power Management:(on|off).*/\1/')
-                    rc=$
-                    cmdx=1
                 fi
             fi
 
