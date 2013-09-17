@@ -104,6 +104,7 @@ case "$mode" in
                 # apply settings
                 echo -n "Applying power save settings..."
                 apply_common_settings $pwrmode
+                [ "$pwrmode" = "1" ] && poweroff_drivebay 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
                 ;;
@@ -136,11 +137,11 @@ case "$mode" in
     auto|start) # set start power mode depending on state
         check_root
         apply_common_settings $pwrmode
+        [ "$pwrmode" = "1" ] && poweroff_drivebay 0
 
         if [ "$mode" = "start" ]; then
-                set_usb_suspend 0 auto
-                set_charge_thresholds
-                [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+            set_usb_suspend 0 auto
+            set_charge_thresholds
         fi
 
         echo_started_mode $pwrmode
