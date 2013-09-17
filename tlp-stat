@@ -542,7 +542,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
         if [ -n "$iface" ]; then
             wifipm=""
 
-            if cmd_exists $IW; then
+            if [ "$X_DONT_USE_IW" != "1" ] && cmd_exists $IW; then
                 # try with iw first
                 wifipm=$($IW dev $iface get power_save 2> /dev/null | \
                     grep "Power save" | \

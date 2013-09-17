@@ -963,7 +963,7 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
 
     for iface in $wifaces; do
         if [ -n "$iface" ]; then
-            if cmd_exists $IW; then
+            if  [ "$X_DONT_USE_IW" != "1" ] && cmd_exists $IW; then
                 # try with iw first
                 $IW dev $iface set power_save $pwr > /dev/null 2>&1
                 rc=$?
