@@ -1,21 +1,15 @@
-tlp (0.3.908-1) unstable; urgency=low
-
-  *** Development version -> 0.4 ***
+tlp (0.4-1) unstable; urgency=low
 
   * Features
     - New radeon dynamic power management (dpm); needs Kernel >= 3.11
       (Pali Rohár)
-    - RUNTIME_PM_BLACKLIST: exclude listed pci(e) device adresses
+    - RUNTIME_PM_BLACKLIST: exclude listed pci(e) device addresses
       from Runtime PM (wofritz)
     - USB_BLACKLIST_WWAN: exclude wwan devices from usb autosuspend;
       works for ids 05c6:* 0bdb:* 1199:* only
     - Apply ac settings for faster shutdown
 
-  * Bugfixes
- 
-  * Packaging
- 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 17 Sep 2013 18:23:47 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 17 Sep 2013 07:51:42 +0200
  
 tlp (0.3.11-1) unstable; urgency=low
 
@@ -31,7 +25,7 @@ tlp (0.3.11-1) unstable; urgency=low
     - Pull request #40: systemd: start tlp.service after
       local-fs.target instead of graphical.target (cprussin)
 
- -- Thomas Koch <linrunner@gmx.net> Tue, 10 Sep 2013 21:32:44 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 10 Sep 2013 21:32:44 +0200
 
 tlp (0.3.10.1-1) unstable; urgency=low
 
