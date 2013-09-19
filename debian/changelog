@@ -1,6 +1,4 @@
-tlp (0.3.908-1) unstable; urgency=low
-
-  *** Development version -> 0.4 ***
+tlp (0.4-1) unstable; urgency=low
 
   * Features
     - New radeon dynamic power management (dpm); needs Kernel >= 3.11
@@ -11,11 +9,7 @@ tlp (0.3.908-1) unstable; urgency=low
       works for ids 05c6:* 0bdb:* 1199:* only
     - Apply ac settings for faster shutdown
 
-  * Bugfixes
- 
-  * Packaging
- 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 17 Sep 2013 18:23:47 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 17 Sep 2013 07:51:42 +0200
  
 tlp (0.3.11-1) unstable; urgency=low
 
