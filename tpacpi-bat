@@ -44,6 +44,7 @@ my $aslBases = {
   'ThinkPad E420s'     => '\_SB.PCI0.LPCB.EC0.HKEY',
   'ThinkPad Edge E335' => '\_SB.PCI0.LPC0.EC0.HKEY',
   'ThinkPad Edge E430' => '\_SB.PCI0.LPCB.EC0.HKEY',
+  'ThinkPad Edge E431' => '\_SB.PCI0.LPCB.EC0.HKEY',
   'ThinkPad Edge E530' => '\_SB.PCI0.LPCB.EC0.HKEY', 
   'ThinkPad L430'      => '\_SB.PCI0.LPCB.H_EC.HKEY',
   'ThinkPad L530'      => '\_SB.PCI0.LPCB.H_EC.HKEY',
