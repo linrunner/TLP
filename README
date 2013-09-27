@@ -1,7 +1,11 @@
-TLP README - 19.08.2013
+TLP README - 27.09.2013
 
-TLP implements advanced power management for Linux. TLP is a pure command line tool with
-automated background tasks. It does not contain a GUI.
+TLP brings you the benefits of advanced power management for Linux without the need
+to understand every technical detail. TLP comes with a default configuration already
+optimized for battery life, so you may just install and forget it. Nevertheless TLP
+is highly customizable to fulfil your specific requirements.
+
+TLP is a pure command line tool with automated background tasks. It does not contain a GUI.
 
 Settings depending on the power source ac/bat:
 - Kernel laptop mode and dirty buffer params
