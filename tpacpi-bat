@@ -40,13 +40,13 @@ use File::Basename;
 
 my $acpiCallDev = '/proc/acpi/call';
 my $aslBases = {
-  'default'                               => '\_SB.PCI0.LPC.EC.HKEY',
-  'ThinkPad (Edge |)E[1345][234][01](s|)' => '\_SB.PCI0.LPCB.EC0.HKEY',
-  'ThinkPad (Edge |)E[1345][34]5'         => '\_SB.PCI0.LPC0.EC0.HKEY',
-  'ThinkPad L[45][34]0'                   => '\_SB.PCI0.LPCB.H_EC.HKEY',
-  'ThinkPad (Edge|).*S[45][34][01]'       => '\_SB.PCI0.LPCB.EC0.HKEY',
-  'ThinkPad T430u'                        => '\_SB.PCI0.LPCB.EC.HKEY',
-  'ThinkPad X1[23][01]e'                   => '\_SB.PCI0.LPCB.EC.HKEY',
+  'default'                                 => '\_SB.PCI0.LPC.EC.HKEY',
+  'ThinkPad (Edge )?E[1345][234][01]s?'     => '\_SB.PCI0.LPCB.EC0.HKEY',
+  'ThinkPad (Edge )?E[1345][34]5'           => '\_SB.PCI0.LPC0.EC0.HKEY',
+  'ThinkPad L[45][34]0'                     => '\_SB.PCI0.LPCB.H_EC.HKEY',
+  'ThinkPad (Edge )?(S\d+-)?S[45][34][01]'  => '\_SB.PCI0.LPCB.EC0.HKEY',
+  'ThinkPad T430u'                          => '\_SB.PCI0.LPCB.EC.HKEY',
+  'ThinkPad X1[23][01]e'                    => '\_SB.PCI0.LPCB.EC.HKEY',
 };
 
 sub getMethod($$$);
