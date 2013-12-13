@@ -4,9 +4,11 @@ tlp (0.4.900-1) unstable; urgency=low
 
   * Features
   * Bugfixes
+    - run-on-ac|bat: remove dependency on pm-utils/on_ac_power
+
   * Packaging
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 20 Sep 2013 08:13:45 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 13 Dec 2013 16:17:18 +0100
 
 tlp (0.4-1) unstable; urgency=low
 

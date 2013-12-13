@@ -4,6 +4,26 @@
 # Copyright (c) 2013 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
+# --- Constants
+readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
+readonly LIBS="tlp-functions"
+
+# --- Locate and source libraries
+for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
+if [ ! -d $libdir ]; then
+    echo "Error: missing library directory ($LIBDIRS)."
+    exit 1
+fi
+
+for lib in $LIBS; do
+    if [ ! -f $libdir/$lib ]; then
+        echo "Error: missing function library \'$libdir/$lib\'."
+        exit 1
+    fi
+    . $libdir/$lib
+done
+
+# --- MAIN
 self=${0##*/}
 
 cmd=$1
@@ -16,13 +36,13 @@ shift
 
 case $self in
     run-on-ac)
-        if on_ac_power; then
+        if get_power_state; then
             $cmd $@
         fi
         ;;
 
     run-on-bat)
-        if ! on_ac_power; then
+        if ! get_power_state; then
             $cmd $@
         fi
         ;;
