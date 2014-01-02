@@ -7,10 +7,11 @@ tlp (0.4.900-1) unstable; urgency=low
     
   * Bugfixes
     - run-on-ac|bat: remove dependency on pm-utils/on_ac_power
+    - Bug #43: tlp-rdw not working with NM 0.9.9/Fedora 20 (wofritz)
 
   * Packaging
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 13 Dec 2013 16:17:18 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 02 Jan 2014 01:34:22 +0100
 
 tlp (0.4-1) unstable; urgency=low
 
