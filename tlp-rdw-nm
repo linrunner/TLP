@@ -96,13 +96,13 @@ case $action in
         set_timed_lock tlp-rdw-nm 5 # lock rdw events for 5 seconds
 
         case $itype in
-            802-3-ethernet)
+            *ethernet)
                 for dev in $DEVICES_TO_DISABLE_ON_LAN_CONNECT; do
                     [ -n "$dev" ] && device_off $dev
                 done
                 ;;
 
-            802-11-wireless)
+            *wireless|wifi)
                 for dev in $DEVICES_TO_DISABLE_ON_WIFI_CONNECT; do
                     [ -n "$dev" ] && [ "$dev" != wifi ] && device_off $dev
                 done
