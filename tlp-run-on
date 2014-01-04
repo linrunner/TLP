@@ -11,13 +11,13 @@ readonly LIBS="tlp-functions"
 # --- Locate and source libraries
 for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
 if [ ! -d $libdir ]; then
-    echo "Error: missing library directory ($LIBDIRS)."
+    echo "Error: missing library directory ($LIBDIRS)." 1>&2
     exit 1
 fi
 
 for lib in $LIBS; do
     if [ ! -f $libdir/$lib ]; then
-        echo "Error: missing function library \'$libdir/$lib\'."
+        echo "Error: missing function library \'$libdir/$lib\'." 1>&2
         exit 1
     fi
     . $libdir/$lib
@@ -27,11 +27,14 @@ done
 self=${0##*/}
 
 cmd=$1
-if [ -z "$1" ]; then
-    echo "Usage: $self command [arg(s)]"
+if [ -z "$cmd" ]; then
+    echo "Usage: $self command [arg(s)]" 1>&2
     exit 1
 fi
-
+if ! cmd_exists $cmd; then
+    echo "Error: \"$cmd\" not found." 1>&2
+    exit 2
+fi
 shift
 
 case $self in
@@ -48,7 +51,7 @@ case $self in
         ;;
 
     *)
-        echo "Error: unknown mode $self."
+        echo "Error: unknown mode $self." 1>&2
         exit 1
         ;;
 esac
