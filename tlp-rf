@@ -47,7 +47,7 @@ case $self in
         ;;
 
     *)
-        echo "Error: unknown device type \"$self\"."
+        echo "Error: unknown device type \"$self\"." 1>&2
         exit 1
         ;;
 esac

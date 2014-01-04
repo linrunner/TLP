@@ -11,13 +11,13 @@ readonly LIBS="tlp-functions tlp-rf-func"
 # --- Locate and source libraries
 for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
 if [ ! -d $libdir ]; then
-    echo "Error: missing library directory ($LIBDIRS)."
+    echo "Error: missing library directory ($LIBDIRS)." 1>&2
     exit 1
 fi
 
 for lib in $LIBS; do
     if [ ! -f $libdir/$lib ]; then
-        echo "Error: missing function library \'$libdir/$lib\'."
+        echo "Error: missing function library \'$libdir/$lib\'." 1>&2
         exit 1
     fi
     . $libdir/$lib

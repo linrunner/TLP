@@ -181,13 +181,13 @@ read_args () {
 
 for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
 if [ ! -d $libdir ]; then
-    echo "Error: missing library directory ($LIBDIRS)."
+    echo "Error: missing library directory ($LIBDIRS)." 1>&2
     exit 1
 fi
 
 for lib in $LIBS; do
     if [ ! -f $libdir/$lib ]; then
-        echo "Error: missing function library \'$libdir/$lib\'."
+        echo "Error: missing function library \'$libdir/$lib\'." 1>&2
         exit 1
     fi
     . $libdir/$lib
@@ -222,7 +222,7 @@ if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
         egrep -v '^#|^\s*$' $CONFFILE
         echo
     else
-        echo "Warning: config file $CONFFILE not present."
+        echo "Warning: config file $CONFFILE not present." 1>&2
         echo
     fi
 fi
@@ -716,7 +716,7 @@ if [ "$show_all" = "1" ]; then
     if cmd_exists $TLPPCI; then
         $TLPPCI
     else
-        echo "Error: missing subcommand $TLPPCI."
+        echo "Error: missing subcommand $TLPPCI." 1>&2
     fi
     echo
 
@@ -733,7 +733,7 @@ if [ "$show_all" = "1" ]; then
     if cmd_exists $TLPUSB; then
         $TLPUSB
     else
-        echo "Error: missing subcommand $TLPUSB."
+        echo "Error: missing subcommand $TLPUSB." 1>&2
     fi
     echo
 
@@ -779,15 +779,15 @@ if [ "$show_trace" = "1" ]; then
     if [ -f $DEBUGLOG ]; then
         grep "tlp\[" $DEBUGLOG
     else
-        echo "Error: $DEBUGLOG does not exist."
-        echo
-        echo "Solution: create an rsyslog conffile /etc/rsyslog.d/90-debug.conf with the following contents"
-        echo " *.=debug;\\"
-        echo " mail,authpriv,cron.none;\\"
-        echo " local0,local1,local3,local4,\\"
-        echo " local5,local6,local7.none    -/var/log/debug"
-        echo "and restart the rsyslog daemon."
-        echo
+        echo "Error: $DEBUGLOG does not exist." 1>&2
+        echo 1>&2
+        echo "Solution: create an rsyslog conffile /etc/rsyslog.d/90-debug.conf with the following contents" 1>&2
+        echo " *.=debug;\\" 1>&2
+        echo " mail,authpriv,cron.none;\\" 1>&2
+        echo " local0,local1,local3,local4,\\" 1>&2
+        echo " local5,local6,local7.none    -/var/log/debug" 1>&2
+        echo "and restart the rsyslog daemon." 1>&2
+        echo 1>&2
     fi
 fi # show_trace
 

@@ -1101,7 +1101,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
         done
         [ "$1" = "1" ] && echo "usb autosuspend settings applied."
     else
-        [ "$1" = "1" ] && echo "Error: usb autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $DEFAULT_FILE."
+        [ "$1" = "1" ] && echo "Error: usb autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $DEFAULT_FILE." 1>&2
     fi
 
     # set "startup completion" flag for tlp-usb-udev
@@ -1427,7 +1427,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     # check prerequisites: must be on ac power
     if ! get_power_state ; then
         echo_debug "bat" "setcharge_battery.no_ac_power"
-        echo "Error: setting charge thresholds is possible on ac power only."
+        echo "Error: setting charge thresholds is possible on ac power only." 1>&2
         return 1
     fi
 
@@ -1437,7 +1437,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
 
     if [ $tpacpi -ne 0 ] && [ $tpsmapi -ne 0 ]; then
         echo_debug "bat" "setcharge_battery.noapi"
-        echo "Error: ThinkPad extended battery functions not available."
+        echo "Error: ThinkPad extended battery functions not available." 1>&2
         return 1
     fi
 
@@ -1459,7 +1459,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
 
     # check if selected battery is present
     if ! bat_exists $bat ; then
-        echo "Error: battery $bat not present."
+        echo "Error: battery $bat not present." 1>&2
         echo_debug "bat" "setcharge_battery.not_present($bat)"
         return 1
     fi
@@ -1475,7 +1475,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
             echo "  stop  = $stop_thresh"
             act=1
         else
-            echo "  stop  => Error: cannot set threshold. Aborting."
+            echo "  stop  => Error: cannot set threshold. Aborting." 1>&2
             return 1
         fi
     else
@@ -1491,7 +1491,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
             echo "  start = $start_thresh"
             act=1
         else
-            echo "  start => Warning: cannot set threshold."
+            echo "  start => Warning: cannot set threshold." 1>&2
             return 1
         fi
     else
@@ -1565,14 +1565,14 @@ chargeonce_battery () { # charge battery to upper threshold once
     echo_debug "bat" "chargeonce_battery($bat): tpacpi-bat=$tpacpi; tp_smapi=$tpsmapi"
     if [ $tpacpi -ne 0 ] && [ $tpsmapi -ne 0 ]; then
         echo_debug "bat" "chargeonce_battery.noapi"
-        echo "Error: ThinkPad extended battery functions not available."
+        echo "Error: ThinkPad extended battery functions not available." 1>&2
         return 1
     fi
 
     # check if selected battery is present
     if ! bat_exists $bat ; then
         echo_debug "bat" "chargeonce_battery($bat).not_present"
-        echo "Error: battery $bat not present."
+        echo "Error: battery $bat not present." 1>&2
         return 1
     fi
 
@@ -1591,7 +1591,7 @@ chargeonce_battery () { # charge battery to upper threshold once
     [ -z "$stop_thresh" ] && stop_thresh=100
     if [ -z "$start_thresh" ] ; then
         echo_debug "bat" "chargeonce_battery($bat).start_threshold_not_configured"
-        echo "Error: no start charge threshold configured for $bat."
+        echo "Error: no start charge threshold configured for $bat." 1>&2
         return 1
     fi
 
@@ -1617,7 +1617,7 @@ chargeonce_battery () { # charge battery to upper threshold once
 
     if [ $ccharge -eq -1 ] ; then
         echo_debug "bat" "chargeonce_battery($bat).charge_level_unknown: enow=$enow; efull=$efull; ccharge=$ccharge"
-        echo "Error: cannot determine charge level for $bat."
+        echo "Error: cannot determine charge level for $bat." 1>&2
         return 1
     else
         echo_debug "bat" "chargeonce_battery($bat).charge_level: enow=$enow; efull=$efull; ccharge=$ccharge"
@@ -1626,7 +1626,7 @@ chargeonce_battery () { # charge battery to upper threshold once
     temp_start_thresh=$(( $stop_thresh - 4 ))
     if [ $temp_start_thresh -le $ccharge ] ; then
         echo_debug "bat" "chargeonce_battery($bat).charge_level_too_high: $temp_start_thresh $stop_thresh"
-        echo "Error: current charge level ($ccharge) of $bat is higher than stop charge threshold - 4 ($temp_start_thresh)."
+        echo "Error: current charge level ($ccharge) of $bat is higher than stop charge threshold - 4 ($temp_start_thresh)." 1>&2
         return 1
     else
         echo_debug "bat" "chargeonce_battery($bat).setcharge: $temp_start_thresh $stop_thresh"
@@ -1656,7 +1656,7 @@ discharge_battery () { # discharge battery
     # check prerequisites: must be on ac power
     if ! get_power_state ; then
         echo_debug "bat" "discharge_battery.no_ac_power"
-        echo "Error: discharge is possible on ac power only."
+        echo "Error: discharge is possible on ac power only." 1>&2
         return 1
     fi
 
@@ -1666,7 +1666,7 @@ discharge_battery () { # discharge battery
 
     if [ $tpacpi -ne 0 ] && [ $tpsmapi -ne 0 ]; then
         echo_debug "bat" "setcharge_battery.noapi"
-        echo "Error: ThinkPad extended battery functions not available."
+        echo "Error: ThinkPad extended battery functions not available." 1>&2
         return 1
     fi
 
@@ -1678,7 +1678,7 @@ discharge_battery () { # discharge battery
     # check if selected battery is present
     if ! bat_exists $bat ; then
         echo_debug "bat" "discharge_battery.not_present($bat)"
-        echo "Error: battery $bat not present."
+        echo "Error: battery $bat not present." 1>&2
         return 1
     fi
 
@@ -1686,7 +1686,7 @@ discharge_battery () { # discharge battery
     do_force_discharge $bat 1; rc=$?
     if [ $rc -ne 0 ]; then
         echo_debug "bat" "discharge_battery.force_discharge_not_available($bat)"
-        echo "Error: discharge function not available for this ThinkPad model."
+        echo "Error: discharge function not available for this ThinkPad model." 1>&2
         return 1
     fi
 
@@ -1821,7 +1821,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
     get_drivebay_device
     if [ -z "$dock" ] || [ ! -d "$dock" ]; then
         echo_debug "pm" "poweroff_drivebay.no_bay_device"
-        [ "$1" = "1" ] && echo "Error: cannot locate bay device."
+        [ "$1" = "1" ] && echo "Error: cannot locate bay device." 1>&2
         return 1
     fi
     echo_debug "pm" "poweroff_drivebay: dock=$dock"
