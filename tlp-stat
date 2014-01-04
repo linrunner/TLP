@@ -763,12 +763,12 @@ if [ "$show_all" = "1" ]; then
     fi
 
     # Add other suggestions
-    cmd_exists ethtool || suout="${suout}Install ethtool to disable Wake on LAN\n"
+    cmd_exists ethtool || suout="${suout}Install ethtool to disable Wake On LAN (WOL)\n"
     cmd_exists smartctl || suout="${suout}Install smartmontools for disk drive health info\n"
 
     if [ -n "$suout" ]; then
         echo "+++ Suggestions"
-        echo -n $suout | sed -r 's/^/\* /'
+        printf "$suout" | sed -r 's/^/\* /'
         echo
     fi
 
