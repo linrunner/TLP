@@ -24,10 +24,9 @@ install-tlp:
 	# Package tlp
 	install -D -m 755 tlp $(SBIN)/tlp
 	install -D -m 755 tlp-rf $(BIN)/bluetooth
-	ln -f $(BIN)/bluetooth $(BIN)/wifi
-	ln -f $(BIN)/bluetooth $(BIN)/wwan
+	(cd $(BIN); ln -sf bluetooth wifi; ln -s bluetooth wwan)
 	install -m 755 tlp-run-on $(BIN)/run-on-ac
-	ln -f $(BIN)/run-on-ac $(BIN)/run-on-bat
+	(cd $(BIN); ln -sf run-on-ac run-on-bat)
 	install -m 755 tlp-stat $(BIN)/
 	install -m 755 tlp-usblist $(BIN)/
 	install -m 755 tlp-pcilist $(BIN)/
