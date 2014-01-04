@@ -744,9 +744,10 @@ if [ "$show_all" = "1" ]; then
         # Add ThinkPad specific suggestions
         read_dmi product_version
         model=${dmirslt#ThinkPad }
+        model=${model#Edge }
 
         case $model in
-            X230*|T430*|T530|W530)
+            X240*|T?40*|W540|L?40|E?4?|S?40|X230*|T?3?*|W530|L?30|E?3?*|S?3?*)
                 [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
                 ;;
 
