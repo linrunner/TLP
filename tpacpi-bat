@@ -39,18 +39,14 @@ use warnings;
 use File::Basename;
 
 my $acpiCallDev = '/proc/acpi/call';
-my $aslBases = {
-  'default'                                 => '\_SB.PCI0.LPC.EC.HKEY',
-  'ThinkPad (Edge )?E[1345][234][01]s?'     => '\_SB.PCI0.LPCB.EC0.HKEY',
-  'ThinkPad (Edge )?E[1345][34]5'           => '\_SB.PCI0.LPC0.EC0.HKEY',
-  'ThinkPad L[45][34]0'                     => '\_SB.PCI0.LPCB.H_EC.HKEY',
-  'ThinkPad (Edge )?(S\d+-)?S[45][34][01]'  => '\_SB.PCI0.LPCB.EC0.HKEY',
-  'ThinkPad T430u'                          => '\_SB.PCI0.LPCB.EC.HKEY',
-  'ThinkPad X1[23][01]e'                    => '\_SB.PCI0.LPCB.EC.HKEY',
-};
+my @aslBases = ( '\_SB.PCI0.LPC.EC.HKEY',
+                 '\_SB.PCI0.LPC0.EC0.HKEY',
+                 '\_SB.PCI0.LPCB.EC0.HKEY',
+                 '\_SB.PCI0.LPCB.H_EC.HKEY',
+);
 
-sub getMethod($$$);
-sub setMethod($$$@);
+sub getMethod($$);
+sub setMethod($$@);
 
 sub readPeakShiftState($);
 sub readInhibitCharge($);
@@ -66,8 +62,8 @@ sub writeForceDischarge($);
 
 sub getASLBase();
 sub acpiCall($);
-sub acpiCallGet($$$);
-sub acpiCallSet($$$);
+sub acpiCallGet($$);
+sub acpiCallSet($$);
 
 sub revpadzero($$);
 
@@ -112,7 +108,6 @@ my $usage = "Usage:
   Set peak shift state, which is mysterious and inhibits charge:
     $name [-v] -s $methodPS <inhibit{1,0}> [<min{0,1-1440,65535}>]
 
-
   Synonyms:
     $methodST -> $$methodSyns{$methodST}
     $methodSP -> $$methodSyns{$methodSP}
@@ -152,8 +147,6 @@ sub main(@){
   }
   die $usage if not defined $method or $cmd !~ /^(-g|-s)$/;
 
-  my $aslBase = getASLBase();
-
   my $bat;
   if($method eq $methodPS){
     $bat = 0;
@@ -163,16 +156,15 @@ sub main(@){
   die "<bat> missing or incorrect\n" if not defined $bat or $bat !~ /^0|1|2$/;
 
   if($cmd eq '-g' and @_ == 0){
-    print getMethod($aslBase, $method, $bat) . "\n";
+    print getMethod($method, $bat) . "\n";
   }elsif($cmd eq '-s'){
-    print setMethod($aslBase, $method, $bat, @_);
+    print setMethod($method, $bat, @_);
   }else{
     die $usage;
   }
 }
 
-sub getMethod($$$){
-  my $aslBase = shift;
+sub getMethod($$){
   my $method = shift;
   my $bat = shift;
 
@@ -186,20 +178,19 @@ sub getMethod($$$){
   $bat = parseArgDecToBin $bat;
 
   if($method eq $methodST){
-    return readStartChargeThreshold(acpiCallGet $aslBase, 'BCTG', $bat);
+    return readStartChargeThreshold(acpiCallGet 'BCTG', $bat);
   }elsif($method eq $methodSP){
-    return readStopChargeThreshold(acpiCallGet $aslBase, 'BCSG', $bat);
+    return readStopChargeThreshold(acpiCallGet 'BCSG', $bat);
   }elsif($method eq $methodIC){
     #this is actually reading peak shift state
-    return readInhibitCharge(acpiCallGet $aslBase, 'PSSG', $bat);
+    return readInhibitCharge(acpiCallGet 'PSSG', $bat);
   }elsif($method eq $methodFD){
-    return readForceDischarge(acpiCallGet $aslBase, 'BDSG', $bat);
+    return readForceDischarge(acpiCallGet 'BDSG', $bat);
   }else{
     die $usage;
   }
 }
-sub setMethod($$$@){
-  my $aslBase = shift;
+sub setMethod($$@){
   my $method = shift;
   my $bat = shift;
 
@@ -250,15 +241,15 @@ sub setMethod($$$@){
   %info = map {$_ => parseArgDecToBin $info{$_}} keys %info;
 
   if($method eq $methodST){
-    acpiCallSet $aslBase, 'BCCS', writeStartChargeThreshold(\%info);
+    acpiCallSet 'BCCS', writeStartChargeThreshold(\%info);
   }elsif($method eq $methodSP){
-    acpiCallSet $aslBase, 'BCSS', writeStopChargeThreshold(\%info);
+    acpiCallSet 'BCSS', writeStopChargeThreshold(\%info);
   }elsif($method eq $methodIC){
-    acpiCallSet $aslBase, 'BICS', writeInhibitCharge(\%info);
+    acpiCallSet 'BICS', writeInhibitCharge(\%info);
   }elsif($method eq $methodFD){
-    acpiCallSet $aslBase, 'BDSS', writeForceDischarge(\%info);
+    acpiCallSet 'BDSS', writeForceDischarge(\%info);
   }elsif($method eq $methodPS){
-    acpiCallSet $aslBase, 'PSSS', writePeakShiftState(\%info);
+    acpiCallSet 'PSSS', writePeakShiftState(\%info);
   }else{
     die $usage;
   }
@@ -389,52 +380,45 @@ sub writeForceDischarge($){
   ;
 }
 
-sub getASLBase(){
-  my $dmiVersion = `cat /sys/class/dmi/id/product_version 2>/dev/null`;
-  chomp $dmiVersion;
-  for my $v(keys %$aslBases){
-    if($dmiVersion =~ /($v)/){
-      return $$aslBases{$v};
-    }
-  }
-  return $$aslBases{default};
-}
-
 sub acpiCall($){
   my $call = shift;
+  my $val;
+  my $aslb;
 
   if(not -e $acpiCallDev){
-    system "insmod /lib/modules/\$(uname -r)/extra/acpi_call.ko";
+    system "modprobe acpi_call";
   }
   if(not -e $acpiCallDev){
     die "Could not find $acpiCallDev. Is module acpi_call loaded?\n";
   }
 
-  open FH, "> $acpiCallDev" or die "Cannot write to $acpiCallDev: $!";
-  print FH "$call\n";
-  close FH;
-  open FH, "< $acpiCallDev" or die "Cannot read $acpiCallDev: $!";
-  my $val = <FH>;
-  close FH;
+  foreach (@aslBases) {
+    $aslb = $_;
+    open FH, "> $acpiCallDev" or die "Cannot write to $acpiCallDev: $!";
+    print FH "$aslb.$call\n";
+    close FH;
+    open FH, "< $acpiCallDev" or die "Cannot read $acpiCallDev: $!";
+    $val = <FH>;
+    close FH;
+    last if(not $val =~ "Error: AE_NOT_FOUND");
+  }
+  print "Call    : $aslb.$call\n" if $verbose;
+  print "Response: $val\n" if $verbose;
   return $val;
 }
-sub acpiCallGet($$$){
-  my ($aslBase, $method, $bits) = @_;
-  my $call = "$aslBase.$method 0x" . binToHex($bits);
-  print "Call    : $call\n" if $verbose;
+sub acpiCallGet($$){
+  my ($method, $bits) = @_;
+  my $call = "$method 0x" . binToHex($bits);
   my $val = acpiCall $call;
-  print "Response: $val\n" if $verbose;
   if($val eq '0x80000000'){
     die "Call failure status returned: $val";
   }
   return $val;
 }
-sub acpiCallSet($$$){
-  my ($aslBase, $method, $bits) = @_;
-  my $call = "$aslBase.$method 0x" . binToHex($bits);
-  print "Call    : $call\n" if $verbose;
+sub acpiCallSet($$){
+  my ($method, $bits) = @_;
+  my $call = "$method 0x" . binToHex($bits);
   my $val = acpiCall $call;
-  print "Response: $val\n" if $verbose;
   if($val eq '0x80000000'){
     die "Call failure status returned: $val";
   }
