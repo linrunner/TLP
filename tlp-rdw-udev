@@ -1,7 +1,7 @@
 #!/bin/sh
 # tlp-rdw - handle dock/undock events
 #
-# Copyright (c) 2013 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2014 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants

@@ -1,7 +1,7 @@
 #!/bin/sh
 # thinkpad-radiosw.sh - handle ThinkPad hardware radio switch
 #
-# Copyright (c) 2013 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2014 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
