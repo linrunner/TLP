@@ -39,10 +39,11 @@ use warnings;
 use File::Basename;
 
 my $acpiCallDev = '/proc/acpi/call';
-my @aslBases = ( '\_SB.PCI0.LPC.EC.HKEY',
-                 '\_SB.PCI0.LPC0.EC0.HKEY',
-                 '\_SB.PCI0.LPCB.EC0.HKEY',
-                 '\_SB.PCI0.LPCB.H_EC.HKEY',
+my @aslBases = (
+  '\_SB.PCI0.LPC.EC.HKEY',
+  '\_SB.PCI0.LPC0.EC0.HKEY',
+  '\_SB.PCI0.LPCB.EC0.HKEY',
+  '\_SB.PCI0.LPCB.H_EC.HKEY',
 );
 
 sub getMethod($$);
@@ -62,6 +63,7 @@ sub writeForceDischarge($);
 
 sub getASLBase();
 sub acpiCall($);
+sub runAcpiCall($$);
 sub acpiCallGet($$);
 sub acpiCallSet($$);
 
@@ -382,8 +384,6 @@ sub writeForceDischarge($){
 
 sub acpiCall($){
   my $call = shift;
-  my $val;
-  my $aslb;
 
   if(not -e $acpiCallDev){
     system "modprobe acpi_call";
@@ -392,18 +392,25 @@ sub acpiCall($){
     die "Could not find $acpiCallDev. Is module acpi_call loaded?\n";
   }
 
-  foreach (@aslBases) {
-    $aslb = $_;
-    open FH, "> $acpiCallDev" or die "Cannot write to $acpiCallDev: $!";
-    print FH "$aslb.$call\n";
-    close FH;
-    open FH, "< $acpiCallDev" or die "Cannot read $acpiCallDev: $!";
-    $val = <FH>;
-    close FH;
-    last if(not $val =~ "Error: AE_NOT_FOUND");
+  my ($aslBase, $val);
+  foreach my $aslBase(@aslBases) {
+    $val = runAcpiCall $call, $aslBase;
+    last if not $val =~ /Error: AE_NOT_FOUND/;
   }
-  print "Call    : $aslb.$call\n" if $verbose;
+  print "Call    : $aslBase.$call\n" if $verbose;
   print "Response: $val\n" if $verbose;
+  return $val;
+}
+sub runAcpiCall($$){
+  my ($call, $aslBase) = @_;
+  open FH, "> $acpiCallDev" or die "Cannot write to $acpiCallDev: $!";
+  print FH "$aslBase.$call\n";
+  close FH;
+
+  open FH, "< $acpiCallDev" or die "Cannot read $acpiCallDev: $!";
+  my $val = <FH>;
+  close FH;
+
   return $val;
 }
 sub acpiCallGet($$){
@@ -443,7 +450,17 @@ sub parseArgDecToBin($){
 sub parseStatusHexToBitArray($){
   my $hex = shift;
   if($hex !~ /0x([0-9a-f]+)/i){
-    die "Bad status returned: $hex\n";
+    my $msg = "Bad status returned: $hex\n";
+    if($hex =~ /Error: AE_NOT_FOUND/){
+      $msg .= ''
+        . "ASL base not found for this machine\n"
+        . "  {perhaps it does not have the ThinkPad ACPI interface}\n"
+        . "ASL bases checked:\n  "
+        . (join "\n  ", @aslBases)
+        . "\n"
+        ;
+    }
+    die $msg;
   }
   return split //, revpadzero 32, hexToBin($1);
 }
