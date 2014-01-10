@@ -42,6 +42,7 @@ my $acpiCallDev = '/proc/acpi/call';
 my @aslBases = (
   '\_SB.PCI0.LPC.EC.HKEY',
   '\_SB.PCI0.LPC0.EC0.HKEY',
+  '\_SB.PCI0.LPCB.EC.HKEY',
   '\_SB.PCI0.LPCB.EC0.HKEY',
   '\_SB.PCI0.LPCB.H_EC.HKEY',
 );
