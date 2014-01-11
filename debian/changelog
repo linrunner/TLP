@@ -3,13 +3,18 @@ tlp (0.4.900-1) unstable; urgency=low
   *** Development version ***
 
   * Features
-    - tpacpi-bat: auto detection of all ThinkPad models
+    - tpacpi-bat: auto detection of all ThinkPad models (v2.1)
+    - tlp-stat: include newer models in tpacpi-bat suggestions
+    - tlp-rdw: support newer docks
     
   * Bugfixes
+    - run-on-ac/bat: check if command exists
 
   * Packaging
+    - Create symlinks instead of hardlinks for bluetooth/wifi/wwan,
+      run-on-ac/bat
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 04 Jan 2014 19:24:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 10 Jan 2014 14:28:42 +0100
 
 tlp (0.4.1-1) unstable; urgency=low
 
