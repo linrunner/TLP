@@ -393,13 +393,15 @@ sub acpiCall($){
     die "Could not find $acpiCallDev. Is module acpi_call loaded?\n";
   }
 
-  my ($aslBase, $val);
+  my ($val);
   foreach my $aslBase(@aslBases) {
     $val = runAcpiCall $call, $aslBase;
-    last if not $val =~ /Error: AE_NOT_FOUND/;
+    if (not $val =~ /Error: AE_NOT_FOUND/){
+      print "Call    : $aslBase.$call\n" if $verbose;
+      print "Response: $val\n" if $verbose;
+      last
+    }
   }
-  print "Call    : $aslBase.$call\n" if $verbose;
-  print "Response: $val\n" if $verbose;
   return $val;
 }
 sub runAcpiCall($$){
