@@ -5,7 +5,7 @@
 
 [Unit]
 Description=TLP system startup/shutdown
-After=multi-user.target
+After=basic.target
 Before=shutdown.target
 
 [Service]
@@ -15,4 +15,4 @@ ExecStart=/usr/sbin/tlp init start
 ExecStop=/usr/sbin/tlp init stop
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=basic.target
