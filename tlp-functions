@@ -729,24 +729,31 @@ set_disk_io_sched () { # set disk io scheduler
 set_sata_link_power () { # set sata link power management
     # $1: 0=ac mode, 1=battery mode
 
-    local i pwr
+    local i
+    local pwr=""
     local ctrl_avail="0"
 
     if [ "$1" = "1" ]; then
-        pwr=${SATA_LINKPWR_ON_BAT:-min_power}
+        pwr=${SATA_LINKPWR_ON_BAT}
     else
-        pwr=${SATA_LINKPWR_ON_AC:-max_perfomance}
+        pwr=${SATA_LINKPWR_ON_AC}
     fi
-    echo_debug "pm" "set_sata_link_power($1): $pwr"
 
-    for i in /sys/class/scsi_host/host*/link_power_management_policy ; do
-        if [ -f $i ]; then
-            echo "$pwr" > $i
-            ctrl_avail="1"
-        fi
-    done
+    if [ -n "$pwr" ]; then
+        echo_debug "pm" "set_sata_link_power($1): $pwr"
 
-    [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_sata_link_power($1).not_available"
+        for i in /sys/class/scsi_host/host*/link_power_management_policy ; do
+            if [ -f $i ]; then
+                echo "$pwr" > $i
+                ctrl_avail="1"
+            fi
+        done
+
+        [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_sata_link_power($1).not_available"
+    else
+        # no setting configured
+        echo_debug "pm" "set_sata_link_power($1).not_configured"
+    fi
 
     return 0
 }
