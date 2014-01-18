@@ -50,10 +50,17 @@ case $devtype in
     *) exit 0 ;; # Unknown device type
 esac
 
-# TODO: locking for docks mit multiple usb devices matching the rules
+# Quit if timed lock in progress
+if check_timed_lock tlp-rdw-dock; then
+    echo_debug "udev" "rdw_udev.locked"
+    exit 0
+done
 
 case $action in
     dock) # laptop was docked
+
+        # lock for 2 seconds in case dock has multiple devices
+        set_timed_lock tlp-rdw-dock 2
 
         # enable configured radios
         for dev in $DEVICES_TO_ENABLE_ON_DOCK; do
@@ -67,6 +74,9 @@ case $action in
         ;;
 
     undock) # laptop was undocked
+
+        # lock for 2 seconds in case dock has multiple devices
+        set_timed_lock tlp-rdw-dock 2
 
         # enable configured radios
         for dev in $DEVICES_TO_ENABLE_ON_UNDOCK; do

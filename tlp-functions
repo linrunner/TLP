@@ -303,7 +303,7 @@ set_timed_lock () { # create timestamp n seconds in the future
 }
 
 check_timed_lock () { # check if active timestamp exists
-    # $1: lock id
+    # $1: lock id; rc: 0=locked/1=not locked
 
     local lockid=$1
     local locktime

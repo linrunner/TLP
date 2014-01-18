@@ -9,12 +9,13 @@ tlp (0.4.900-1) unstable; urgency=low
     
   * Bugfixes
     - run-on-ac/bat: check if command exists
+    - Issue #59: do not write sata link power when not configured
 
   * Packaging
     - Create symlinks instead of hardlinks for bluetooth/wifi/wwan,
       run-on-ac/bat
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 10 Jan 2014 14:28:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 18 Jan 2014 16:42:38 +0100
 
 tlp (0.4.1-1) unstable; urgency=low
 
