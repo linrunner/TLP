@@ -313,15 +313,11 @@ restore_device_states () { # restore radio type states
     echo_debug "rf" "restore_device_states"
 
     if [ -f $RFSTATEFILE ]; then
-        set_run_flag $LOCK_RDW
-
         # read state file
         while read sline; do
             set -- $sline # read dev, state into $1, $2
             device_set_state $1 $2
         done < $RFSTATEFILE
-
-        reset_run_flag $LOCK_RDW
 
         return 0
     else

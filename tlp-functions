@@ -45,8 +45,6 @@ readonly USB_TIMEOUT_MS=2000
 readonly USB_WWAN_VENDORS="0bdb 05c6 1199"
 readonly USB_DONE=usb_done
 
-readonly LOCK_RDW=lock.rdw
-
 readonly TPMODULES="thinkpad_acpi tp_smapi coretemp acpi_call"
 
 readonly STATEDIR="/var/lib/tlp"
@@ -239,16 +237,14 @@ echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
     return 0
 }
 
-# --- Locking
+# --- Locking and Semaphores
 
 set_run_flag () { # set flag -- $1: flag name
+                  # rc: 0=success/1,2=failed
     local rc
 
-    [ -d $RUNDIR ] || mkdir $RUNDIR
-
-    if [ -d $RUNDIR ]; then
-        touch $RUNDIR/$1
-        rc=$?
+    if mkdir -p $RUNDIR 2> /dev/null 1>&2 ; then
+        touch $RUNDIR/$1; rc=$?
         echo_debug "lock" "set_run_flag.touch: $1; rc=$rc"
 
         return $rc
@@ -260,8 +256,7 @@ set_run_flag () { # set flag -- $1: flag name
 }
 
 reset_run_flag () { # reset flag -- $1: flag name
-    if [ -f $RUNDIR/$1 ]; then
-        rm $RUNDIR/$1
+    if rm $RUNDIR/$1 2> /dev/null 1>&2 ; then
         echo_debug "lock" "reset_run_flag.remove: $1"
     else
         echo_debug "lock" "reset_run_flag.not_found: $1"
@@ -271,11 +266,32 @@ reset_run_flag () { # reset flag -- $1: flag name
 }
 
 check_run_flag () { # check flag -- $1: flag name
+                    # rc: 0=flag set/1=flag not set
     local rc
 
-    [ -f $RUNDIR/$1 ]
-    rc=$?
+    [ -f $RUNDIR/$1 ]; rc=$?
     echo_debug "lock" "check_run_flag: $1; rc=$rc"
+
+    return $rc
+}
+
+check_and_set_semaphore () { # check and set semaphore -- $1: semaphore name
+                             # rc: 0=success/1=failed
+    local rc
+
+    mkdir -p $RUNDIR && mkdir $RUNDIR/$1 2> /dev/null 1>&2
+    rc=$?
+    echo_debug "lock" "check_and_set_semaphore: $1; rc=$rc"
+
+    return $rc
+}
+
+unset_semaphore () { # unset semaphore -- $1: semaphore name
+    local rc
+
+    rmdir $RUNDIR/$1 2> /dev/null 1>&2
+    rc=$?
+    echo_debug "lock" "unset_semaphore: $1; rc=$rc"
 
     return $rc
 }
