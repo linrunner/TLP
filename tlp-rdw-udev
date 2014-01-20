@@ -8,6 +8,9 @@
 readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
 readonly LIBS="tlp-functions tlp-rf-func"
 
+readonly RDW_DOCK_LOCK="rdw_dock_lock"
+readonly RDW_DOCK_LOCKTIME=2
+
 # --- Locate and source libraries
 for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
 [ -d $libdir ] || exit 0
@@ -51,16 +54,16 @@ case $devtype in
 esac
 
 # Quit if timed lock in progress
-if check_timed_lock tlp-rdw-dock; then
+if check_timed_lock $RDW_DOCK_LOCK ; then
     echo_debug "udev" "rdw_udev.locked"
     exit 0
-done
+fi
 
 case $action in
     dock) # laptop was docked
 
         # lock for 2 seconds in case dock has multiple devices
-        set_timed_lock tlp-rdw-dock 2
+        set_timed_lock $RDW_DOCK_LOCK $RDW_DOCK_LOCKTIME
 
         # enable configured radios
         for dev in $DEVICES_TO_ENABLE_ON_DOCK; do
@@ -76,7 +79,7 @@ case $action in
     undock) # laptop was undocked
 
         # lock for 2 seconds in case dock has multiple devices
-        set_timed_lock tlp-rdw-dock 2
+        set_timed_lock $RDW_DOCK_LOCK $RDW_DOCK_LOCKTIME
 
         # enable configured radios
         for dev in $DEVICES_TO_ENABLE_ON_UNDOCK; do

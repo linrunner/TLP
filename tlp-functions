@@ -306,7 +306,7 @@ check_timed_lock () { # check if active timestamp exists
     # $1: lock id; rc: 0=locked/1=not locked
 
     local lockid=$1
-    local locktime
+    local lockfile locktime
     local time=$(date +%s)
 
     for lockfile in $RUNDIR/${lockid}_timed_lock_*; do
