@@ -257,9 +257,9 @@ set_run_flag () { # set flag -- $1: flag name
 
 reset_run_flag () { # reset flag -- $1: flag name
     if rm $RUNDIR/$1 2> /dev/null 1>&2 ; then
-        echo_debug "lock" "reset_run_flag.remove: $1"
+        echo_debug "lock" "reset_run_flag($1).remove"
     else
-        echo_debug "lock" "reset_run_flag.not_found: $1"
+        echo_debug "lock" "reset_run_flag($1).not_found"
     fi
 
     return 0
@@ -270,7 +270,7 @@ check_run_flag () { # check flag -- $1: flag name
     local rc
 
     [ -f $RUNDIR/$1 ]; rc=$?
-    echo_debug "lock" "check_run_flag: $1; rc=$rc"
+    echo_debug "lock" "check_run_flag($1): rc=$rc"
 
     return $rc
 }
@@ -281,7 +281,7 @@ check_and_set_semaphore () { # check and set semaphore -- $1: semaphore name
 
     mkdir -p $RUNDIR && mkdir $RUNDIR/$1 2> /dev/null 1>&2
     rc=$?
-    echo_debug "lock" "check_and_set_semaphore: $1; rc=$rc"
+    echo_debug "lock" "check_and_set_semaphore($1): rc=$rc"
 
     return $rc
 }
@@ -291,7 +291,7 @@ unset_semaphore () { # unset semaphore -- $1: semaphore name
 
     rmdir $RUNDIR/$1 2> /dev/null 1>&2
     rc=$?
-    echo_debug "lock" "unset_semaphore: $1; rc=$rc"
+    echo_debug "lock" "unset_semaphore($1): rc=$rc"
 
     return $rc
 }
@@ -299,7 +299,12 @@ unset_semaphore () { # unset semaphore -- $1: semaphore name
 set_timed_lock () { # create timestamp n seconds in the future
     # $1: lock id, $2: lock duration [s]
 
-    set_run_flag ${1}_timed_lock_$(date +%s -d "+${2} seconds")
+    local rc
+
+    set_run_flag ${1}_timed_lock_$(date +%s -d "+${2} seconds"); rc=$?
+    echo_debug "lock" "set_timed_lock($1, $2): ${lockfile#${RUNDIR}/}; rc=$rc"
+
+    return $rc
 }
 
 check_timed_lock () { # check if active timestamp exists
@@ -316,20 +321,20 @@ check_timed_lock () { # check if active timestamp exists
                 # timestamp is more than 120 secs in the future,
                 # something weird has happened -> remove it
                 rm $lockfile
-                echo_debug "lock" "check_timed_lock.remove_invalid: $1; ${lockfile#${RUNDIR}/}"
+                echo_debug "lock" "check_timed_lock($1).remove_invalid: ${lockfile#${RUNDIR}/}"
             elif [ $time -lt $locktime ]; then
                 # timestamp in the future -> we're locked
-                echo_debug "lock" "check_timed_lock.locked: $1; $time, $locktime"
+                echo_debug "lock" "check_timed_lock($1).locked: $time, $locktime"
                 return 0
             else
                 # obsolete timestamp -> remove it
                 rm $lockfile
-                echo_debug "lock" "check_timed_lock.remove_obsolete: $1; ${lockfile#${RUNDIR}/}"
+                echo_debug "lock" "check_timed_lock($1).remove_obsolete: ${lockfile#${RUNDIR}/}"
             fi
         fi
     done
 
-    echo_debug "lock" "check_timed_lock.not_locked: $1; $time"
+    echo_debug "lock" "check_timed_lock($1).not_locked: $time"
     return 1
 }
 

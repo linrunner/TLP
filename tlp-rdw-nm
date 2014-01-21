@@ -9,6 +9,9 @@
 readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
 readonly LIBS="tlp-functions tlp-rf-func"
 
+readonly RDW_NM_LOCK="rdw_nm_lock"
+readonly RDW_NM_LOCKTIME=2
+
 # --- Locate and source libraries
 for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
 [ -d $libdir ] || exit 0
@@ -33,7 +36,7 @@ itype="unknown"
 echo_debug "nm" "rdw_nm($iface).$action"
 
 # Quit if timed lock in progress
-check_timed_lock tlp-rdw-nm && exit 0
+check_timed_lock $RDW_NM_LOCK && exit 0
 
 # Determine interface type
 if cmd_exists $NMCLI ; then
@@ -90,7 +93,7 @@ fi
 case $action in
     up) # interface up, disable configured interfaces
 
-        set_timed_lock tlp-rdw-nm 2 # lock rdw events for 2 seconds
+        set_timed_lock $RDW_NM_LOCK $RDW_NM_LOCKTIME # lock rdw events
 
         case $itype in
             *ethernet)
