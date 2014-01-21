@@ -90,7 +90,7 @@ fi
 case $action in
     up) # interface up, disable configured interfaces
 
-        set_timed_lock tlp-rdw-nm 5 # lock rdw events for 5 seconds
+        set_timed_lock tlp-rdw-nm 2 # lock rdw events for 2 seconds
 
         case $itype in
             *ethernet)
