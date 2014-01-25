@@ -615,11 +615,11 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
             if [ -d $batd ]; then
                 batt=${batd##/*/}
 
-                if bat_exists $batt ; then
-                    case $batt in
-                        BAT0) bati=1; echo "+++ ThinkPad Battery Status (Main)" ;;
-                        BAT1) bati=2; echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
-                        *)    bati=1  echo "+++ ThinkPad Battery Status" ;;
+                if check_tp_battery $batt; then # battery is present
+                    case $bat_idx in
+                        1) echo "+++ ThinkPad Battery Status (Main)" ;;
+                        2) echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
+                        0) echo "+++ ThinkPad Battery Status" ;;
                     esac
 
                     printparm "%-59s = ##%s##" $batd/manufacturer
@@ -639,7 +639,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
                     if [ $tpacpi -eq 0 ]; then
                         # --- show ThinkPad charge thresholds via tpacpi-bat
-                        print_tpacpi_thresholds $batt $bati
+                        print_tpacpi_thresholds $batt $bat_idx
                     else
                         # show thresholds via tp-smapi
                         printparm "%-59s = ##%6d## [%%]" $batd/start_charge_thresh
@@ -654,24 +654,30 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         # --- show ACPI data
 
         for batd in $ACPIBATDIR/*; do
-            if [ -d $batd ] \
-                && [ "$(cat $batd/type)" = "Battery" ] \
-                && [ "$(cat $batd/present)" = "1" ]; then
+            batt=${batd##/*/}
 
-                batt=${batd##/*/}
-
+            if check_tp_battery $batt; then # battery is present
                 if [ $tpacpi -eq 0 ]; then
                     # it's a ThinkPad with tpacpi-bat only
-                    case $batt in
-                        BAT0) bati=1; echo "+++ ThinkPad Battery Status (Main)" ;;
-                        BAT1) bati=2; echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
-                        *)    bati=1; echo "+++ ThinkPad Battery Status" ;;
+                    case $bat_idx in
+                        1) echo "+++ ThinkPad Battery Status (Main)" ;;
+                        2) echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
+                        0) echo "+++ ThinkPad Battery Status" ;;
                     esac
                 else
-                    # it's some other laptop model or brand
+                   # it's a ThinkPad with neither tp-smapi nor tpacpi-bat 
                     echo "+++ Battery Status"
                 fi
+            elif [ -d $batd ] \
+                 && [ "$(cat $batd/type)" = "Battery" ] \
+                 && [ "$(cat $batd/present)" = "1" ]; then
+                    # it's some other laptop model or brand
+                    echo "+++ Battery Status"
+            else
+                batt="" # power supply is not a battery
+            fi
 
+            if [ -n "$batt" ]; then
                 printparm "%-59s = ##%s##" $batd/manufacturer
                 printparm "%-59s = ##%s##" $batd/model_name
 
@@ -698,10 +704,10 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
                 if [ $tpacpi -eq 0 ]; then
                     # --- show ThinkPad charge thresholds via tpacpi-bat
-                    print_tpacpi_thresholds $batt $bati
+                    print_tpacpi_thresholds $batt $bat_idx
                     echo
                 fi # if $tpcacpi
-            fi # if $batd
+            fi # if $batt
         done # $batd
 
     fi # if /sys/class/power_supply

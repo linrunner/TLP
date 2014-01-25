@@ -6,6 +6,8 @@ tlp (0.4.900-1) unstable; urgency=low
     - tpacpi-bat: auto detection of all ThinkPad models (v2.1)
     - tlp-stat: include newer models in tpacpi-bat suggestions
     - tlp-rdw: support newer docks
+    - Handle special case where BAT1 = main battery
+      (Thinkpad Edge/L/S series)
     
   * Bugfixes
     - run-on-ac/bat: check if command exists
@@ -15,7 +17,7 @@ tlp (0.4.900-1) unstable; urgency=low
     - Create symlinks instead of hardlinks for bluetooth/wifi/wwan,
       run-on-ac/bat
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 18 Jan 2014 16:42:38 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 25 Jan 2014 13:42:56 +0100
 
 tlp (0.4.1-1) unstable; urgency=low
 
