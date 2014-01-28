@@ -1,10 +1,13 @@
 # Makefile for TLP
 
+LIBDIR_NAME = lib
+LIBDIR      = $(DESTDIR)/usr/$(LIBDIR_NAME)
+
 SBIN  = $(DESTDIR)/usr/sbin
 BIN   = $(DESTDIR)/usr/bin
 PMETC = $(DESTDIR)/etc/pm/power.d
-TLIB  = $(DESTDIR)/usr/lib/tlp-pm
-PLIB  = $(DESTDIR)/usr/lib/pm-utils
+TLIB  = $(LIBDIR)/tlp-pm
+PLIB  = $(LIBDIR)/pm-utils
 ULIB  = $(DESTDIR)/lib/udev
 ACPI  = $(DESTDIR)/etc/acpi
 NMDSP = $(DESTDIR)/etc/NetworkManager/dispatcher.d
@@ -30,18 +33,24 @@ install-tlp:
 	install -m 755 tlp-stat $(BIN)/
 	install -m 755 tlp-usblist $(BIN)/
 	install -m 755 tlp-pcilist $(BIN)/
+ifneq ($(TLP_NO_TPACPI),1)
 	install -D -m 755 tpacpi-bat $(TLIB)/tpacpi-bat
-	install -m 755 tlp-functions $(TLIB)/
+endif
+	install -D -m 755 tlp-functions $(TLIB)/tlp-functions
 	install -m 755 tlp-rf-func $(TLIB)/
 	install -m 755 tlp-nop $(TLIB)/
 	install -D -m 755 tlp-usb-udev $(ULIB)/tlp-usb-udev
 	install -D -m 644 tlp.rules $(ULIB)/rules.d/40-tlp.rules
 	[ -f $(CONFFILE) ] || install -D -m 644 default $(CONFFILE)
+ifneq ($(TLP_NO_INIT),1)
 	install -D -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
+endif
 	install -D -m 755 49tlp $(PLIB)/sleep.d/49tlp
 	install -D -m 644 thinkpad-radiosw $(ACPI)/events/thinkpad-radiosw
 	install -m 755 thinkpad-radiosw.sh $(ACPI)/
+ifneq ($(TLP_NO_BASHCOMP),1)
 	install -D -m 644 tlp.bash_completion $(DESTDIR)/etc/bash_completion.d/tlp
+endif
 
 install-rdw:
 	# Package tlp-rdw
