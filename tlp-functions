@@ -838,7 +838,7 @@ set_radeon_profile () { # set radeon power profile
             fi
 
             if [ -n "$pwr" ]; then
-                echo_debug "pm" "set_radeon_profile($1): $card profile=$pwr "
+                echo_debug "pm" "set_radeon_profile($1): $card profile=$pwr"
                 echo "profile" > $card/power_method 2> /dev/null
                 echo "$pwr" > $card/power_profile 2> /dev/null
             fi
@@ -854,22 +854,39 @@ set_radeon_profile () { # set radeon power profile
     return 0
 }
 
+set_sound_power_mode () { # set sound chip power modes
+    # $1: 0=ac mode, 1=battery mode
 
-set_sound_power_mode () { # set sound chip power mode
-    SOUND_POWER_SAVE=${SOUND_POWER_SAVE:-1}
-    SOUND_POWER_SAVE_CONTROLLER=${SOUND_POWER_SAVE_CONTROLLER:-Y}
+    local pwr cpwr
+
+    # new config param
+    if [ "$1" = "1" ]; then
+        pwr=$SOUND_POWER_SAVE_ON_BAT
+    else
+        pwr=$SOUND_POWER_SAVE_ON_AC
+    fi
+
+    # when unconfigured consider legacy config param
+    [ -z "$pwr" ] && pwr=${SOUND_POWER_SAVE:-1}
+
+    cpwr=${SOUND_POWER_SAVE_CONTROLLER:-Y}
 
     check_sysfs "set_sound_power_mode" "/sys/module"
 
     if [ -d /sys/module/snd_hda_intel ]; then
-        echo_debug "pm" "set_sound_power_mode.hda: $SOUND_POWER_SAVE $SOUND_POWER_SAVE_CONTROLLER"
-        echo "$SOUND_POWER_SAVE" > /sys/module/snd_hda_intel/parameters/power_save
-        echo "$SOUND_POWER_SAVE_CONTROLLER" > /sys/module/snd_hda_intel/parameters/power_save_controller
+        echo_debug "pm" "set_sound_power_mode($1).hda: $pwr controller=$cpwr"
+        echo "$pwr" > /sys/module/snd_hda_intel/parameters/power_save
+
+        if [ "$pwr" = "0" ]; then
+            echo "N" >  /sys/module/snd_hda_intel/parameters/power_save_controller
+        else
+            echo "$cpwr" > /sys/module/snd_hda_intel/parameters/power_save_controller
+        fi
     fi
 
     if [ -d /sys/module/snd_ac97_codec ]; then
-        echo_debug "pm" "set_sound_power_mode.ac97: $SOUND_POWER_SAVE"
-        echo "$SOUND_POWER_SAVE" > /sys/module/snd_ac97_codec/parameters/power_save
+        echo_debug "pm" "set_sound_power_mode($1).ac97: $pwr"
+        echo "$pwr"  > /sys/module/snd_ac97_codec/parameters/power_save
     fi
 
     return 0

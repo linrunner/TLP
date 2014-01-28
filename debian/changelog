@@ -8,6 +8,7 @@ tlp (0.4.900-1) unstable; urgency=low
     - tlp-rdw: support newer docks
     - Handle special case where BAT1 = main battery
       (Thinkpad Edge/L/S series)
+    - Issue #61: sound power save depending on power source ac/bat
     
   * Bugfixes
     - run-on-ac/bat: check if command exists
@@ -17,7 +18,7 @@ tlp (0.4.900-1) unstable; urgency=low
     - Create symlinks instead of hardlinks for bluetooth/wifi/wwan,
       run-on-ac/bat
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 25 Jan 2014 13:42:56 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 28 Jan 2014 19:36:42 +0100
 
 tlp (0.4.1-1) unstable; urgency=low
 
@@ -48,7 +49,6 @@ tlp (0.4-1) unstable; urgency=low
 tlp (0.3.11-1) unstable; urgency=low
 
   *** Testing version (for Arch Linux) ***
-
   * Bugfixes
     - Issue #42:
       - Remove dependency to on_ac_power (part of pm-utils in
