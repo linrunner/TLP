@@ -5,7 +5,6 @@ LIBDIR      = $(DESTDIR)/usr/$(LIBDIR_NAME)
 
 SBIN  = $(DESTDIR)/usr/sbin
 BIN   = $(DESTDIR)/usr/bin
-PMETC = $(DESTDIR)/etc/pm/power.d
 TLIB  = $(LIBDIR)/tlp-pm
 PLIB  = $(LIBDIR)/pm-utils
 ULIB  = $(DESTDIR)/lib/udev
@@ -45,7 +44,9 @@ endif
 ifneq ($(TLP_NO_INIT),1)
 	install -D -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
 endif
+ifneq ($(TLP_NO_PMUTILS),1)
 	install -D -m 755 49tlp $(PLIB)/sleep.d/49tlp
+endif
 	install -D -m 644 thinkpad-radiosw $(ACPI)/events/thinkpad-radiosw
 	install -m 755 thinkpad-radiosw.sh $(ACPI)/
 ifneq ($(TLP_NO_BASHCOMP),1)
@@ -71,18 +72,18 @@ uninstall-tlp:
 	rm $(BIN)/tlp-stat
 	rm $(BIN)/tlp-usblist
 	rm $(BIN)/tlp-pcilist
-	rm $(TLIB)/tpacpi-bat
+	rm -f $(TLIB)/tpacpi-bat
 	rm $(TLIB)/tlp-functions
 	rm $(TLIB)/tlp-rf-func
 	rmdir $(TLIB)
 	rm $(ULIB)/tlp-usb-udev
 	rm $(ULIB)/rules.d/40-tlp.rules
-	rm $(DESTDIR)/etc/init.d/tlp
+	rm -f $(DESTDIR)/etc/init.d/tlp
 	rm $(DESTDIR)/etc/network/if-up.d/tlp-ifup
-	rm $(PLIB)/sleep.d/49tlp
+	rm -f $(PLIB)/sleep.d/49tlp
 	rm $(ACPI)/events/thinkpad-radiosw
 	rm $(ACPI)/thinkpad-radiosw.sh
-	rm $(DESTDIR)/etc/bash_completion.d/tlp
+	rm -f $(DESTDIR)/etc/bash_completion.d/tlp
 
 uninstall-rdw:
 	# Package tlp-rdw
