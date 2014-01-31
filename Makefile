@@ -1,13 +1,23 @@
 # Makefile for TLP
 
-LIBDIR_NAME = lib
-LIBDIR      = $(DESTDIR)/usr/$(LIBDIR_NAME)
+ifndef LIBDIR_NAME
+	LIBDIR_NAME = lib
+endif
+LIBDIR = $(DESTDIR)/usr/$(LIBDIR_NAME)
 
-SBIN  = $(DESTDIR)/usr/sbin
+ifndef SBIN
+	SBIN  = $(DESTDIR)/usr/sbin
+else
+	SBIN  = $(DESTDIR)$(SBIN)
+endif
 BIN   = $(DESTDIR)/usr/bin
 TLIB  = $(LIBDIR)/tlp-pm
 PLIB  = $(LIBDIR)/pm-utils
-ULIB  = $(DESTDIR)/lib/udev
+ifndef ULIB
+	ULIB  = $(DESTDIR)/lib/udev
+else
+	ULIB  = $(DESTDIR)$(ULIB)
+endif
 ACPI  = $(DESTDIR)/etc/acpi
 NMDSP = $(DESTDIR)/etc/NetworkManager/dispatcher.d
 
