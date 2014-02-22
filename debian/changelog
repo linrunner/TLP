@@ -9,7 +9,7 @@ tlp (0.4.900-1) unstable; urgency=low
     - Handle special case where BAT1 = main battery
       (Thinkpad Edge/L/S series)
     - Issue #61: sound power save depending on power source ac/bat
-    
+
   * Bugfixes
     - run-on-ac/bat: check if command exists
     - Issue #59: do not write sata link power when not configured
@@ -19,7 +19,7 @@ tlp (0.4.900-1) unstable; urgency=low
       run-on-ac/bat
     - Makefile: new params TLP_NO_TPACPI, TLP_NO_INIT, TLP_NO_BASHCOMP
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 28 Jan 2014 19:36:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 22 Feb 2014 14:39:42 +0100
 
 tlp (0.4.1-1) unstable; urgency=low
 

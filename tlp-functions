@@ -1559,30 +1559,34 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
         echo "  start = not configured"
     fi
 
-    # trigger charging via discharge
+    # activate new thresholds (= trigger charging) via force_discharge - tp-smapi only
+    rc=0
+
     if [ $act -eq 1 ]; then
-        trap cancel_setcharge INT # enable ^C hook
-
-        do_force_discharge $bat 1; rc=$?
-        if [ $rc -eq 0 ]; then
-            echo -n "Activating..."
-            sleep 2
-            do_force_discharge $bat 0
-            echo_debug "bat" "setcharge_battery.initiated($bat)"
-            sleep 2
-            echo "done."
+        if [ $tpacpi -eq 0 ]; then
+            # tpacpi-bat: no activation necessary
+            echo "Done."
         else
-            trap - INT # remove ^C hook
+            # tp-smapi
+            trap cancel_setcharge INT # enable ^C hook
 
-            echo_debug "bat" "setcharge_battery.force_discharge_not_available($bat): rc=$rc"
-            echo "Cannot activate immediately on this ThinkPad model. Please power off."
-            return 1
+            do_force_discharge $bat 1; rc=$?
+            if [ $rc -eq 0 ]; then
+                echo -n "Activating..."
+                sleep 1
+                do_force_discharge $bat 0
+                echo_debug "bat" "setcharge_battery.initiated($bat)"
+                echo "done."
+            else
+                echo_debug "bat" "setcharge_battery.force_discharge_not_available($bat): rc=$rc"
+                echo "Cannot activate immediately on this ThinkPad model. Please power off."
+            fi
+
+            trap - INT  # remove ^C hook
         fi
-
-        trap - INT  # remove ^C hook
     fi
 
-    return 0
+    return $rc
 }
 
 get_sysval () { # $1: file; rc: sysfile value
