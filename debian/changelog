@@ -19,7 +19,7 @@ tlp (0.4.901-1) unstable; urgency=low
       run-on-ac/bat
     - Makefile: new params TLP_NO_TPACPI, TLP_NO_INIT, TLP_NO_BASHCOMP
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 22 Feb 2014 14:39:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 01 Mar 2014 15:04:42 +0100
 
 tlp (0.4.1-1) unstable; urgency=low
 

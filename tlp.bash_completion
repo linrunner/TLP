@@ -35,8 +35,8 @@ _tlp() {
             if [ "${COMP_WORDS[1]}" = "setcharge" ]; then
                 # show list of batteries
                 bats=$( { local b
-                    for b in /sys/devices/platform/smapi/BAT*; do
-                        if [ -f $b/installed ] && [ $(cat $b/installed) = "1" ]; then
+                    for b in /sys/class/power_supply/BAT*; do
+                        if [ -f $b/present ] && [ $(cat $b/present) = "1" ]; then
                             echo "${b##/*/} "
                         fi
                     done } )
