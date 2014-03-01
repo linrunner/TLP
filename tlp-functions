@@ -1487,7 +1487,7 @@ get_force_discharge () { # $1: BAT0/BAT1,
 cancel_force_discharge () { # called from trap -- global param: $bat_str
     do_force_discharge $bat_str 0
     echo_debug "bat" "force_discharge.cancelled($bat_str)"
-    echo "Cancelled."
+    echo " Cancelled."
 
     exit 0
 }
@@ -1510,17 +1510,32 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     fi
 
     # check params
-    if [ $# -gt 0 ]; then # some parameters given, check them
-        # get battery arg
-        bat=${3:-DEF}
-        bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
+    case $# in
+        0) # no args
+            bat=DEF   # use default(1st) battery
+            use_cfg=1 # use configured values
+            ;;
 
-        # get thresholds args
-        st="$1" sp="$2"
-    else # no parameters given
-        bat=DEF   # use default(1st) battery
-        use_cfg=1 # use configured values
-    fi
+        1) # assume $1 is battery
+            bat=$1
+            use_cfg=1 # use configured values
+            ;;
+
+        2) # assume $1,$2 are thresholds
+            st=$1
+            sp=$2
+            bat=DEF # use default(1st) battery
+            ;;
+
+        3) # assume $1,$2 are thresholds, $3 is battery
+            st=$1
+            sp=$2
+            bat=$3
+            ;;
+    esac
+
+    # convert bat to uppercase
+    bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
 
     # check bat presence and/or get default(1st) battery
     check_tp_battery $bat
