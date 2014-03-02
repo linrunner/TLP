@@ -290,7 +290,7 @@ echo_device_state () { # print radio type state -- $1: rftype, $2: state
 
 save_device_states () { # save radio states  -- $1: list of rftypes
     local dev
-    local devlist=${1:-$ALLDEV} # when arg empty -> use all
+    local devlist="${1:-$ALLDEV}" # when arg empty -> use all
 
     echo_debug "rf" "save_device_states($devlist)"
 
