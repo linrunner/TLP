@@ -222,6 +222,7 @@ case "$mode" in
         check_root
         load_tp_modules
         setcharge_battery 96 100 $2
+        sleep 1
         discharge_battery $2
         ;;
 

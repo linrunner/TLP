@@ -4,7 +4,7 @@
 #   render the installation unusable. You have to change several
 #   definitions and absolute paths in scripts too!
 
-# Evaluate paramaters
+# Evaluate parameters
 TLP_LIBDIR ?= /usr/lib
 TLP_SBIN   ?= /usr/sbin
 TLP_BIN    ?= /usr/bin

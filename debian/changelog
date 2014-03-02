@@ -1,4 +1,4 @@
-tlp (0.4.901-1) unstable; urgency=low
+tlp (0.4.902-1) unstable; urgency=low
 
   *** Development version ***
 
@@ -17,9 +17,9 @@ tlp (0.4.901-1) unstable; urgency=low
   * Packaging
     - Create symlinks instead of hardlinks for bluetooth/wifi/wwan,
       run-on-ac/bat
-    - Makefile: new params TLP_NO_TPACPI, TLP_NO_INIT, TLP_NO_BASHCOMP
+    - Makefile: new params TLP_*
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 01 Mar 2014 15:04:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 02 Mar 2014 12:42:36 +0100
 
 tlp (0.4.1-1) unstable; urgency=low
 
