@@ -51,7 +51,7 @@ endif
 	install -m 755 tlp-nop $(_TLIB)/
 	install -D -m 755 tlp-usb-udev $(_ULIB)/tlp-usb-udev
 	install -D -m 644 tlp.rules $(_ULIB)/rules.d/40-tlp.rules
-	[ -f $(_CONFFILE) ] || install -D -m 644 default $(_CONF)
+	[ -f $(_CONF) ] || install -D -m 644 default $(_CONF)
 ifneq ($(TLP_NO_INIT),1)
 	install -D -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
 endif
