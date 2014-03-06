@@ -1,4 +1,4 @@
-tlp (0.4.903-1) unstable; urgency=low
+tlp (0.4.904-1) unstable; urgency=low
 
   *** Development version ***
 
@@ -14,6 +14,8 @@ tlp (0.4.903-1) unstable; urgency=low
     - run-on-ac/bat: check if command exists
     - Issue #59: do not write sata link power when not configured
     - Fix RESTORE_DEVICE_STATE_ON_STARTUP (fabio)
+    - Restore bay power state upon resume only when on bat power
+      and the setting is active (xudabit)
 
   * Packaging
     - Create symlinks instead of hardlinks for bluetooth/wifi/wwan,

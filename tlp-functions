@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.4.903"
+readonly TLPVER="0.4.904"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -1851,45 +1851,59 @@ get_drivebay_device () { # Find generic dock interface for drive bay
 }
 
 suspend_drivebay () { # Save power state of drive bay before suspend
+                      # $1: 0=ac mode, 1=battery mode
 
-    get_drivebay_device
-	if [ -n "$dock" ]; then
-		if [ -e $dock/docked ]; then
-            mkdir -p $STATEDIR
+    if [ "$1" = "1" ] && [ "$BAY_POWEROFF_ON_BAT" = "1" ]; then
+        # bat power and setting is active -> save state
+        get_drivebay_device
 
-			if [ "$(cat $dock/docked)" = "0" ]; then
-				echo "off" > $BAYSTATEFILE
-				echo_debug "pm" "suspend_drivebay: bay=off"
-			else
-                echo "on" > $BAYSTATEFILE
-				echo_debug "pm" "suspend_drivebay: bay=on"
-			fi
-		fi
-	fi
+        if [ -n "$dock" ]; then
+            if [ -e $dock/docked ]; then
+                mkdir -p $STATEDIR
+
+                if [ "$(cat $dock/docked)" = "0" ]; then
+                    echo "off" > $BAYSTATEFILE
+                    echo_debug "pm" "suspend_drivebay: bay=off"
+                else
+                    echo "on" > $BAYSTATEFILE
+                    echo_debug "pm" "suspend_drivebay: bay=on"
+                fi
+            fi
+        fi
+    else
+        # not on bat or setting not active -> remove state file
+        rm -f $BAYSTATEFILE 2> /dev/null
+    fi
 
     return 0
 }
 
-resume_drivebay () { # Restore power state of drive bay after restore
+resume_drivebay () { # Restore power state of drive bay after resume
+                     # $1: 0=ac mode, 1=battery mode
 	local cnt rc
 
-	[ -f $BAYSTATEFILE ] || return 0
+	[ -f $BAYSTATEFILE ] || return 0 # no state file -> do nothing
 
     if [ "$(cat $BAYSTATEFILE)" = "off" ]; then
         get_drivebay_device
-        if [ -n "$dock" ]; then
-            if [ -e $dock/undock ]; then
-                cnt=5
-                rc=1
-                until [ $rc = 0 -o $cnt = 0 ]; do
-                    cnt=$((cnt - 1))
-                    echo 1 > $dock/undock
-                    rc=$?
-                    [ $rc = 0 ] || sleep 0.5
-                done
-                echo_debug "pm" "resume_drivebay.off: rc=$rc"
-                return 0
+
+        if [ "$(cat $dock/docked)" = "1" ]; then
+            # device active -> deactivate
+            if [ -n "$dock" ]; then
+                if [ -e $dock/undock ]; then
+                    cnt=5
+                    rc=1
+                    until [ $rc = 0 -o $cnt = 0 ]; do
+                        cnt=$((cnt - 1))
+                        echo 1 > $dock/undock
+                        rc=$?
+                        [ $rc = 0 ] || sleep 0.5
+                    done
+                    echo_debug "pm" "resume_drivebay.bay_off: rc=$rc"
+                fi
             fi
+        else
+            echo_debug "pm" "resume_drivebay.already_off"
         fi
     fi
 

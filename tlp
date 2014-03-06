@@ -169,19 +169,21 @@ case "$mode" in
     suspend) # handle suspend/hibernate
         check_root
         save_device_states "wwan"
-        suspend_drivebay
 
+        get_power_state
+        pwrmode=$?
         apply_common_settings 0
+        suspend_drivebay $pwrmode
         ;;
 
     resume) # handle resume
         check_root
         restore_device_states
-        resume_drivebay
 
         get_power_state
         pwrmode=$?
         apply_common_settings $pwrmode
+        resume_drivebay $pwrmode
         ;;
 
     usb) # Enable usb autosuspend
