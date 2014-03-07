@@ -31,6 +31,7 @@ readonly TPACPIBAT=$libdir/tpacpi-bat # libdir is initialized by main program
 
 readonly SMAPIDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
+readonly ACPIWAKEUP=/proc/acpi/wakeup
 readonly NETD=/sys/class/net
 readonly PCID=/sys/bus/pci/devices
 readonly I915D=/sys/module/i915/parameters
@@ -1110,6 +1111,43 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
     return 0
 }
 
+# --- ACPI WakeUp on lid open
+
+set_acpi_lid_wakeup () {
+    local lid lidname lidstatus
+    local lidset=${WAKEUP_ON_LID_OPEN:-1}
+
+    lid=$(grep "LID" /proc/acpi/wakeup)
+    if [ "$lid" = "" ];
+    then
+        echo "No ACPI LID detected!"
+        return 1
+    fi
+    lidname=$(echo "$lid" | awk "{print \$1}")
+    lidstatus=$(echo "$lid" | awk "{print \$3}")
+    if [ "$lidname" = "" -o "$lidstatus" = "" ];
+    then
+        echo "Error: Can't detect ACPI LID name or status!"
+        return 2
+    fi
+
+    if [ "$lidstatus" = "*enabled" ];
+    then
+        if [ "$lidset" = "0" ];
+        then
+            echo "$lidname" > "$ACPIWAKEUP"
+            echo "ACPI LID wakeup disabled"
+        fi
+    else
+        if [ "$lidset" = "1" ];
+        then
+            echo "$lidname" > "$ACPIWAKEUP"
+            echo "ACPI LID wakeup enabled"
+        fi
+    fi
+
+    return 0
+}
 # --- ThinkPad Battery Functions
 
 check_tpsmapi () {  # check if tp_smapi is supported and loaded
