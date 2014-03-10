@@ -1,4 +1,4 @@
-tlp (0.4.904-1) unstable; urgency=low
+tlp (0.4.905-1) unstable; urgency=low
 
   *** Development version ***
 
@@ -9,6 +9,8 @@ tlp (0.4.904-1) unstable; urgency=low
     - Handle special case where BAT1 = main battery
       (Thinkpad Edge/L/S series)
     - Issue #61: sound power save depending on power source ac/bat
+    - Issue #62: don't touch devices in RUNTIME_PM_BLACKLIST or excluded
+      by RUNTIME_PM_ALL=0
 
   * Bugfixes
     - run-on-ac/bat: check if command exists
@@ -22,7 +24,7 @@ tlp (0.4.904-1) unstable; urgency=low
       run-on-ac/bat
     - Makefile: new params TLP_*
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 02 Mar 2014 18:24:36 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 10 Mar 2014 20:42:18 +0100
 
 tlp (0.4.1-1) unstable; urgency=low
 

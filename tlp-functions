@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.4.904"
+readonly TLPVER="0.4.905"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -915,10 +915,10 @@ get_pci_class_descr () { # get long descr of pci device class
 set_runtime_pm () { # set runtime power management
     # $1: 0=ac mode, 1=battery mode
 
-    local adress class ccontrol control device doall exc type
+    local address class ccontrol control device doall type
 
     if [ "$1" = "1" ]; then
-        ccontrol=${RUNTIME_PM_ON_BAT:-on}
+        ccontrol=${RUNTIME_PM_ON_BAT:-auto}
     else
         ccontrol=${RUNTIME_PM_ON_AC:-on}
     fi
@@ -932,30 +932,30 @@ set_runtime_pm () { # set runtime power management
                 get_pci_class_descr $class
 
                 control=$ccontrol
-                exc=""
 
-                if [ "$control" = "auto" ]; then
-                    if [ -z "$lclass" ] && [ $doall -ne 1 ]; then
-                        # device has no long descr and all flag is not set
-                        control="on"
-                        exc="_class"
-                    else
-                        # device has log descr, now check if in blacklist
-                        adress=${device##/*/}
-                        adress=${adress#0000:}
+                # get short device address
+                address=${device##/*/}
+                address=${address#0000:}
 
-                        if wordinlist "$adress" "$RUNTIME_PM_BLACKLIST"; then
-                            # device is in blacklist
-                            control="on"
-                            exc="_bl"
-                        fi
-                    fi
+                if wordinlist "$address" "$RUNTIME_PM_BLACKLIST"; then
+                    # device is in blacklist
+                    control="black"
+                elif [ -z "$lclass" ] && [ $doall -ne 1 ]; then
+                    # device has no long descr and all flag is not set
+                    control="class"
                 fi
 
-                echo $control > $device/power/control;
-
                 [ -n "$lclass" ] && lclass=" $lclass"
-                echo_debug "pm" "set_runtime_pm($1).$control$exc: $device [$class$lclass]"
+
+                case $control in
+                    auto|on)
+                        echo $control > $device/power/control
+                        ;;
+
+                    class|black) ;; # do nothing
+                esac
+
+                echo_debug "pm" "set_runtime_pm($1).$control: $device [$class$lclass]"
             fi
         done
     done
