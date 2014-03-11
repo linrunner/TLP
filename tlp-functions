@@ -927,36 +927,36 @@ set_runtime_pm () { # set runtime power management
 
     for type in $PCID; do
         for device in $type/*; do
-            if [ -f $device/class ] && [ -f $device/power/control ]; then
+
+            class="none"; lclass=""
+
+            # get short device address
+            address=${device##/*/}
+            address=${address#0000:}
+
+            if wordinlist "$address" "$RUNTIME_PM_BLACKLIST"; then
+                # device is in blacklist
+                control="black"
+
+            elif [ -f $device/class ] && [ -f $device/power/control ]; then
                 class=$(cat $device/class)
                 get_pci_class_descr $class
+                control=$ccontrol                
 
-                control=$ccontrol
-
-                # get short device address
-                address=${device##/*/}
-                address=${address#0000:}
-
-                if wordinlist "$address" "$RUNTIME_PM_BLACKLIST"; then
-                    # device is in blacklist
-                    control="black"
-                elif [ -z "$lclass" ] && [ $doall -ne 1 ]; then
+                if [ -z "$lclass" ] && [ $doall -ne 1 ]; then
                     # device has no long descr and all flag is not set
                     control="class"
                 fi
 
-                [ -n "$lclass" ] && lclass=" $lclass"
-
                 case $control in
-                    auto|on)
-                        echo $control > $device/power/control
-                        ;;
+                    auto|on) echo $control > $device/power/control ;;
 
-                    class|black) ;; # do nothing
+                    class) ;; # do nothing
                 esac
-
-                echo_debug "pm" "set_runtime_pm($1).$control: $device [$class$lclass]"
             fi
+
+            [ -n "$lclass" ] && lclass=" $lclass"
+            echo_debug "pm" "set_runtime_pm($1).$control: $device [$class$lclass]"
         done
     done
 
