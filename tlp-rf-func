@@ -295,7 +295,7 @@ save_device_states () { # save radio states  -- $1: list of rftypes
     echo_debug "rf" "save_device_states($devlist)"
 
     # create empty state file
-    mkdir -p $STATEDIR
+    mkdir -p $STATEDIR 2> /dev/null 1>&2
     : > $RFSTATEFILE
 
     # iterate over all possible devices -> save state in file

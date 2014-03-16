@@ -183,7 +183,7 @@ case "$mode" in
         get_power_state
         pwrmode=$?
         apply_common_settings $pwrmode
-        resume_drivebay $pwrmode
+        resume_drivebay
         ;;
 
     usb) # Enable usb autosuspend

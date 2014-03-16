@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.4.905"
+readonly TLPVER="0.4.906"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -280,7 +280,7 @@ check_and_set_semaphore () { # check and set semaphore -- $1: semaphore name
                              # rc: 0=success/1=failed
     local rc
 
-    mkdir -p $RUNDIR && mkdir $RUNDIR/$1 2> /dev/null 1>&2
+    { mkdir -p $RUNDIR && mkdir $RUNDIR/$1 ; } 2> /dev/null 1>&2
     rc=$?
     echo_debug "lock" "check_and_set_semaphore($1): rc=$rc"
 
@@ -1859,7 +1859,7 @@ suspend_drivebay () { # Save power state of drive bay before suspend
 
         if [ -n "$dock" ]; then
             if [ -e $dock/docked ]; then
-                mkdir -p $STATEDIR
+                mkdir -p $STATEDIR 2> /dev/null 1>&2
 
                 if [ "$(cat $dock/docked)" = "0" ]; then
                     echo "off" > $BAYSTATEFILE
@@ -1879,7 +1879,7 @@ suspend_drivebay () { # Save power state of drive bay before suspend
 }
 
 resume_drivebay () { # Restore power state of drive bay after resume
-                     # $1: 0=ac mode, 1=battery mode
+
 	local cnt rc
 
 	[ -f $BAYSTATEFILE ] || return 0 # no state file -> do nothing
