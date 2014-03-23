@@ -301,9 +301,10 @@ set_timed_lock () { # create timestamp n seconds in the future
     # $1: lock id, $2: lock duration [s]
 
     local rc
+    local lock=${1}_timed_lock_$(date +%s -d "+${2} seconds")
 
-    set_run_flag ${1}_timed_lock_$(date +%s -d "+${2} seconds"); rc=$?
-    echo_debug "lock" "set_timed_lock($1, $2): ${lockfile#${RUNDIR}/}; rc=$rc"
+    set_run_flag $lock; rc=$?
+    echo_debug "lock" "set_timed_lock($1, $2): $lock; rc=$rc"
 
     return $rc
 }

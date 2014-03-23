@@ -9,7 +9,7 @@
 readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
 readonly LIBS="tlp-functions tlp-rf-func"
 
-readonly RDW_NM_LOCK="rdw_nm_lock"
+readonly RDW_NM_LOCK="rdw_nm"
 readonly RDW_NM_LOCKTIME=2
 
 # --- Locate and source libraries
