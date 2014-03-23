@@ -1,6 +1,4 @@
-tlp (0.4.906-1) unstable; urgency=low
-
-  *** Development version ***
+tlp (0.4.907-1) unstable; urgency=low
 
   * Features
     - tpacpi-bat: auto detection of all ThinkPad models (v2.1)
@@ -23,8 +21,9 @@ tlp (0.4.906-1) unstable; urgency=low
     - Create symlinks instead of hardlinks for bluetooth/wifi/wwan,
       run-on-ac/bat
     - Makefile: new params TLP_*
+    - tlp.init: remove requirement $all
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 16 Mar 2014 22:22:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 22 Mar 2014 18:12:42 +0100
 
 tlp (0.4.1-1) unstable; urgency=low
 
