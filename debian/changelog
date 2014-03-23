@@ -16,6 +16,7 @@ tlp (0.4.907-1) unstable; urgency=low
     - Fix RESTORE_DEVICE_STATE_ON_STARTUP (fabio)
     - Restore bay power state upon resume only when on bat power
       and the setting is active (xudabit)
+    - Ubuntu 14.04: use nmcli before rfkill to change radio state
 
   * Packaging
     - Create symlinks instead of hardlinks for bluetooth/wifi/wwan,
@@ -23,7 +24,7 @@ tlp (0.4.907-1) unstable; urgency=low
     - Makefile: new params TLP_*
     - tlp.init: remove requirement $all
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 22 Mar 2014 18:12:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 23 Mar 2014 19:29:42 +0100
 
 tlp (0.4.1-1) unstable; urgency=low
 

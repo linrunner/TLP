@@ -109,14 +109,21 @@ device_on () { # enable radio type -- $1: rftype
     [ -z "$devc" ] && return 0
 
     get_devs $1
+    [ "$devs" = "1" ] && return 0 # quit if device is already on
 
-    # quit if device is already on
-    [ "$devs" = "1" ] && return 0
+    if [ "$1" = "wifi" ] && cmd_exists $NMCLI ; then
+        # use nmcli to switch wifi on
+        $NMCLI nm wifi on > /dev/null 2>&1
+        echo_debug "rf" "device_on($1).nmcli"
+
+        get_devs $1
+        [ "$devs" = "1" ] && return 0 # quit if device is now on
+    fi
 
     if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
         if test_rfkill_perms ; then
             echo_debug "rf" "device_on($1).rfkill"
-            $RFKILL unblock $1
+            $RFKILL unblock $1 > /dev/null 2>&1
         else
             err_no_root_priv "device_on($1).rfkill"
         fi
@@ -143,14 +150,21 @@ device_off () { # disable radio type -- $1: rftype
     [ -z "$devc" ] && return 0
 
     get_devs $1
+    [ "$devs" = "0" ] && return 0 # quit if device is already off
 
-    # quit if device is already off
-    [ "$devs" = "0" ] && return 0
+    if [ "$1" = "wifi" ] && cmd_exists $NMCLI ; then
+        # use nmcli to switch wifi off
+        $NMCLI nm wifi off > /dev/null 2>&1
+        echo_debug "rf" "device_off($1).nmcli"
+
+        get_devs $1
+        [ "$devs" = "0" ] && return 0 # quit if device is now off
+    fi
 
     if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
         if test_rfkill_perms ; then
-           echo_debug "rf" "device_off($1).rfkill"
-            $RFKILL block $1
+            echo_debug "rf" "device_off($1).rfkill"
+            $RFKILL block $1 > /dev/null 2>&1
         else
             err_no_root_priv "device_off($1).rfkill"
         fi
@@ -178,12 +192,27 @@ device_toggle () { # toggle radio type state -- $1: rftype
 
     get_devs $1
 
+    if [ "$1" = "wifi" ] && cmd_exists $NMCLI ; then
+        # use nmcli to toggle wifi
+        local olds=$devs
+
+        case $devs in
+            0) $NMCLI nm wifi on  > /dev/null 2>&1 ;;
+            1) $NMCLI nm wifi off > /dev/null 2>&1 ;;
+            *) ;;
+        esac
+        echo_debug "rf" "device_toggle($1).nmcli"
+
+        get_devs $1
+        [ "$devs" != "$olds" ] && return 0 # quit if device is now toggled
+    fi
+
     if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
         if test_rfkill_perms ; then
             echo_debug "rf" "device_toggle($1).rfkill"
             case $devs in
-                0) $RFKILL unblock $1 ;;
-                1) $RFKILL block $1   ;;
+                0) $RFKILL unblock $1 > /dev/null 2>&1 ;;
+                1) $RFKILL block $1   > /dev/null 2>&1 ;;
                 *) ;;
             esac
         else
@@ -218,12 +247,29 @@ device_set_state () { # set radio type state -- $1: rftype, $2: state 0=off/1=on
     # quit if state not 0 nor 1
     [ "$2" = "0" ] || [ "$2" = "1" ] || return 0
 
+    get_devs $1
+
+    if [ "$1" = "wifi" ] && cmd_exists $NMCLI ; then
+        # use nmcli to set wifi state
+        local olds=$devs
+
+        case $2 in
+            0) $NMCLI nm wifi off > /dev/null 2>&1 ;;
+            1) $NMCLI nm wifi on  > /dev/null 2>&1 ;;
+            *) ;;
+        esac
+        echo_debug "rf" "device_set_state($1).nmcli"
+
+        get_devs $1
+        [ "$devs" != "$olds" ] && return 0 # quit if device state is now set
+    fi
+
     if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
         if test_rfkill_perms ; then
             echo_debug "rf" "device_set_state($1, $2).rfkill"
             case $2 in
-                0) $RFKILL block $1 ;;
-                1) $RFKILL unblock $1 ;;
+                0) $RFKILL block $1   > /dev/null 2>&1 ;;
+                1) $RFKILL unblock $1 > /dev/null 2>&1 ;;
             esac
         else
             err_no_root_priv "device_set_state($1).rfkill"
