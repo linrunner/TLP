@@ -1,4 +1,4 @@
-tlp (0.4.907-1) unstable; urgency=low
+tlp (0.5-1) unstable; urgency=low
 
   * Features
     - tpacpi-bat: auto detection of all ThinkPad models (v2.1)
