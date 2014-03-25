@@ -1,4 +1,4 @@
-TLP README - 27.09.2013
+TLP README - 25.03.2014
 
 TLP brings you the benefits of advanced power management for Linux without the need
 to understand every technical detail. TLP comes with a default configuration already
@@ -19,11 +19,11 @@ Settings depending on the power source ac/bat:
 - Radeon graphics dynamic power management - Kernel 3.11 and above, not fglrx
 - Wifi power saving mode -  depending on kernel/driver
 - Power off optical drive in drive bay (on battery)
+- Audio power saving mode - hda_intel, ac97
 
 Additional functions:
 - I/O scheduler (per disk)
 - USB autosuspend with blacklist (input devices excluded automatically)
-- Audio power saving mode - hda_intel, ac97
 - Enable or disable integrated radio devices upon system startup and shutdown
 - Restore radio device state on system startup (from previous shutdown).
 - Radio device wizard: switch radios upon network connect/disconnect and dock/undock
