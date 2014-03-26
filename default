@@ -131,7 +131,7 @@ BAY_DEVICE="sr0"
 RUNTIME_PM_ON_AC=on
 RUNTIME_PM_ON_BAT=auto
 
-# Runtime PM for *all* pci(e) bus devices, expect backlisted ones:
+# Runtime PM for *all* pci(e) bus devices, except blacklisted ones:
 # 0=disable / 1=enable
 # Warning: experimental option, could cause system instabilities
 RUNTIME_PM_ALL=0
