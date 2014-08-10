@@ -9,7 +9,7 @@ After=multi-user.target
 Before=shutdown.target
 
 [Service]
-Type=oneshot
+Type=simple
 RemainAfterExit=yes
 ExecStart=/usr/sbin/tlp init start
 ExecStop=/usr/sbin/tlp init stop
