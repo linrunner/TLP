@@ -21,9 +21,13 @@ readonly TPACPI=/sys/devices/platform/thinkpad_acpi
 
 
 readonly IBMTHERMAL=/proc/acpi/ibm/thermal
-readonly CORETEMP='/sys/devices/platform/coretemp.0'
+readonly CORETEMP_DIRS='\
+/sys/devices/platform/coretemp.0 \
+/sys/devices/platform/coretemp.0/hwmon/hwmon*'
 readonly IBMFAN=/proc/acpi/ibm/fan
-readonly HWMONFAN='/sys/class/hwmon/hwmon*/device'
+readonly HWMONFAN_DIRS='\
+/sys/class/hwmon/hwmon*/device \
+/sys/class/hwmon/hwmon*'
 
 readonly DEBUGLOG=/var/log/debug
 
@@ -134,6 +138,24 @@ print_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
     fi
 
     return 0
+}
+
+# @stdout glob_files ( glob_pattern, dir[, dir...] )
+#
+#  Nested for-loop that applies a glob expression to several directories
+#  (or file path prefixes) and prints matching file paths to stdout.
+#
+glob_files () {
+    [ -n "${1-}" ] || return 64
+    local glob_pattern file_iter
+
+    glob_pattern="${1}"
+
+    while shift && [ $# -gt 0 ]; do
+        for file_iter in ${1}${glob_pattern}; do
+            [ ! -f "${file_iter}" ] || echo "${file_iter}"
+        done
+    done
 }
 
 read_args () {
@@ -342,17 +364,14 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     else
         # use sensors
         cmax=0
-        for sens in $CORETEMP/temp?_input; do
-            if [ -f $sens ]; then
-                if cat ${sens%input}label | grep -q "Physical"; then
-                    # package info is available -> ignore remaining sensors
-                    cmax=$(cat $sens)
-                    break
-                else
-                    # core info -> find max value
-                    ctemp=$(cat $sens)
-                    [ $ctemp -gt $cmax ] && cmax=$ctemp
-                fi
+        for sens in $(glob_files '/temp?*_input' $CORETEMP_DIRS); do
+            if grep -q -- 'Physical' ${sens%input}label 2>/dev/null; then
+                # package info is available -> ignore remaining sensors
+                read -r cmax < $sens
+                break
+            else
+                # core info -> find max value
+                read -r ctemp < $sens && [ $ctemp -gt $cmax ] && cmax=$ctemp
             fi
         done
         if [ $cmax -gt 0 ]; then
@@ -364,17 +383,20 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show fan speed
     if [ -f $IBMFAN ]; then
         # use thinkpad-specific sysfile
-        cat $IBMFAN | \
-            awk '$1 ~ /speed:/ { printf "'$IBMFAN'     = %5d [/min]\n", $2 }'
+        awk '$1 ~ /speed:/ { printf "'$IBMFAN'     = %5d [/min]\n", $2 }' $IBMFAN
     else
         # use hwmon
-        for fan in $HWMONFAN/fan?_input; do
-            if [ -f $fan ]; then
-                printf "Fan speed              = %5d [/min]\n" $(cat $fan)
-                break;
+        have_any_fan=
+        for fan in $(glob_files '/fan?*_input' $HWMONFAN_DIRS); do
+            if read -r fan_speed < $fan; then
+                fan_name="${fan##*/}"; fan_name="${fan_name%_input}"
+                have_any_fan=y
+
+                printf "Fan speed (%s)       = %5d [/min]\n" \
+                    ${fan_name} ${fan_speed}
             fi
         done
-        if [ ! -f $fan ]; then
+        if [ -z "${have_any_fan}" ]; then
             printf "Fan speed              = (not available)\n"
         fi
     fi
