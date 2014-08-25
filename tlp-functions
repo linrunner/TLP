@@ -55,6 +55,7 @@ readonly BAYSTATEFILE=$STATEDIR/bay-saved
 
 readonly DISK_NOP_WORDS="_ keep"
 readonly DEFAULT_DISK_DEVICES="sda"
+readonly DEFAULT_DISK_IO_SCHEDULER="cfq"
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -808,8 +809,8 @@ set_disk_io_sched () { # set disk io scheduler
     #
     for dev in $DISK_DEVICES; do
         get_disk_dev $dev
-        # get sched from argv, add cfq as default when list is too short
-        sched=${1:-cfq}
+        # get sched from argv, use default scheduler when list is too short
+        sched=${1:-${DEFAULT_DISK_IO_SCHEDULER}}
         schedctrl="/sys/block/$disk_dev/queue/scheduler"
         log_message="set_disk_io_sched: $disk_dev [$disk_id] $sched"
 
