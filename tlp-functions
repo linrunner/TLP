@@ -53,6 +53,7 @@ readonly STATEDIR="/var/lib/tlp"
 readonly RFSTATEFILE=$STATEDIR/rfkill-saved
 readonly BAYSTATEFILE=$STATEDIR/bay-saved
 
+readonly DISK_NOP_WORDS="_ keep"
 readonly DEFAULT_DISK_DEVICES="sda"
 
 # ----------------------------------------------------------------------------
@@ -736,6 +737,8 @@ set_disk_apm_level () { # set disk apm level
             echo_debug "pm" "${log_message} -- missing"
         elif ! check_disk_hdparm_cap $disk_dev; then
             echo_debug "pm" "${log_message} -- not supported"
+        elif wordinlist "$1" "$DISK_NOP_WORDS"; then
+            echo_debug "pm" "${log_message} -- keep as is"
         else
             echo_debug "pm" "${log_message}"
             $HDPARM -B $1 /dev/$disk_dev > /dev/null 2>&1
@@ -776,6 +779,8 @@ set_disk_spindown_timeout () { # set disk spindown timeout
             echo_debug "pm" "${log_message} -- missing"
         elif ! check_disk_hdparm_cap $disk_dev; then
             echo_debug "pm" "${log_message} -- not supported"
+        elif wordinlist "$1" "$DISK_NOP_WORDS"; then
+            echo_debug "pm" "${log_message} -- keep as is"
         else
             echo_debug "pm" "${log_message}"
             $HDPARM -S $1 /dev/$disk_dev > /dev/null 2>&1
@@ -812,6 +817,8 @@ set_disk_io_sched () { # set disk io scheduler
             echo_debug "pm" "${log_message} -- missing"
         elif [ ! -f $schedctrl ]; then
             echo_debug "pm" "${log_message} -- not supported"
+        elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
+            echo_debug "pm" "${log_message} -- keep as is"
         else
             echo_debug "pm" "${log_message}"
             echo -n $sched > $schedctrl
