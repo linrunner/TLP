@@ -694,7 +694,7 @@ get_disk_dev () { # translate disk id to device (sdX)
     if [ -h /dev/disk/by-id/$1 ]; then
         # $1 is disk id
         disk_id=$1
-        disk_dev=$(echo $disk_id | sed -r 's/-part[1-9]+$//')
+        disk_dev=$(echo $disk_id | sed -r 's/-part[1-9][0-9]*$//')
         disk_dev=$(readlink /dev/disk/by-id/$disk_dev)
         disk_dev=${disk_dev##*/}
     else
@@ -703,7 +703,7 @@ get_disk_dev () { # translate disk id to device (sdX)
         disk_id=""
     fi
     # strip partition number
-    disk_dev=$(echo $disk_dev | sed -r 's/[1-9]+$//')
+    disk_dev=$(echo $disk_dev | sed -r 's/[1-9][0-9]*$//')
 }
 
 set_disk_apm_level () { # set disk apm level
