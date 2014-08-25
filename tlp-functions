@@ -53,6 +53,8 @@ readonly STATEDIR="/var/lib/tlp"
 readonly RFSTATEFILE=$STATEDIR/rfkill-saved
 readonly BAYSTATEFILE=$STATEDIR/bay-saved
 
+readonly DEFAULT_DISK_DEVICES="sda"
+
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -711,7 +713,7 @@ set_disk_apm_level () { # set disk apm level
 
     local dev apm apmlist
 
-    DISK_DEVICES=${DISK_DEVICES:=sda}
+    : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
     if [ $1 = "1" ]; then
         apmlist=$DISK_APM_LEVEL_ON_BAT
     else
@@ -747,7 +749,7 @@ set_disk_spindown_timeout () { # set disk spindown timeout
 
     local dev timeout timeoutlist
 
-    DISK_DEVICES=${DISK_DEVICES:=sda}
+    : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
     if [ $1 = "1" ]; then
         timeoutlist=$DISK_SPINDOWN_TIMEOUT_ON_BAT
     else
@@ -782,8 +784,8 @@ set_disk_io_sched () { # set disk io scheduler
     local dev sched schedlist schedctrl
 
     [ -n "$DISK_IOSCHED" ] || return 0
+    : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
 
-    DISK_DEVICES=${DISK_DEVICES:=sda}
     # strip excess blanks from list
     schedlist=$(echo -n $DISK_IOSCHED | sed -r 's/ +/ /g; s/^ | $//g')
 

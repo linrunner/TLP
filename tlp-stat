@@ -430,7 +430,7 @@ if [ "$show_all" = "1" ]; then
 
     # --- show disk info form hdparm
     echo "+++ Storage Devices"
-    DISK_DEVICES=${DISK_DEVICES:=sda}
+    : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
     for dev in $DISK_DEVICES; do # iterate all devices
         get_disk_dev $dev
 
