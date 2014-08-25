@@ -711,7 +711,7 @@ get_disk_dev () { # translate disk id to device (sdX)
 set_disk_apm_level () { # set disk apm level
     # $1: 0=ac mode, 1=battery mode
 
-    local dev _pwrmode
+    local dev log_message _pwrmode
     _pwrmode="$1"
 
     : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
@@ -730,13 +730,15 @@ set_disk_apm_level () { # set disk apm level
     for dev in $DISK_DEVICES; do
         : ${1:?BUG: broken apmlist handling}
         get_disk_dev $dev
+        log_message="set_disk_apm_level(${_pwrmode}): $disk_dev [$disk_id] $1"
 
-        if [ -b /dev/$disk_dev ]; then
-            if check_disk_hdparm_cap $disk_dev; then
-                echo_debug "pm" "set_disk_apm_level(${_pwrmode}): $disk_dev [$disk_id] $1"
-                $HDPARM -B $1 /dev/$disk_dev > /dev/null 2>&1
-
-            fi
+        if [ ! -b /dev/$disk_dev ]; then
+            echo_debug "pm" "${log_message} -- missing"
+        elif ! check_disk_hdparm_cap $disk_dev; then
+            echo_debug "pm" "${log_message} -- not supported"
+        else
+            echo_debug "pm" "${log_message}"
+            $HDPARM -B $1 /dev/$disk_dev > /dev/null 2>&1
         fi
 
         # last entry in apmlist applies to all remaining disks
@@ -749,7 +751,7 @@ set_disk_apm_level () { # set disk apm level
 set_disk_spindown_timeout () { # set disk spindown timeout
     # $1: 0=ac mode, 1=battery mode
 
-    local dev _pwrmode
+    local dev log_message _pwrmode
     _pwrmode="$1"
 
     : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
@@ -768,12 +770,15 @@ set_disk_spindown_timeout () { # set disk spindown timeout
     for dev in $DISK_DEVICES; do
         : ${1:?BUG: broken spindown timeout list handling}
         get_disk_dev $dev
+        log_message="set_disk_spindown_timeout(${_pwrmode}): $disk_dev [$disk_id] $1"
 
-        if [ -b /dev/$disk_dev ]; then
-            if check_disk_hdparm_cap $disk_dev; then
-                echo_debug "pm" "set_disk_spindown_timeout(${_pwrmode}): $disk_dev [$disk_id] $1"
-                $HDPARM -S $1 /dev/$disk_dev > /dev/null 2>&1
-            fi
+        if [ ! -b /dev/$disk_dev ]; then
+            echo_debug "pm" "${log_message} -- missing"
+        elif ! check_disk_hdparm_cap $disk_dev; then
+            echo_debug "pm" "${log_message} -- not supported"
+        else
+            echo_debug "pm" "${log_message}"
+            $HDPARM -S $1 /dev/$disk_dev > /dev/null 2>&1
         fi
 
         # last entry in timeoutlist applies to all remaining disks
@@ -784,7 +789,7 @@ set_disk_spindown_timeout () { # set disk spindown timeout
 }
 
 set_disk_io_sched () { # set disk io scheduler
-    local dev sched schedctrl
+    local dev sched schedctrl log_message
 
     : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
     # set @argv := schedlist
@@ -798,16 +803,18 @@ set_disk_io_sched () { # set disk io scheduler
     #
     for dev in $DISK_DEVICES; do
         get_disk_dev $dev
+        # get sched from argv, add cfq as default when list is too short
+        sched=${1:-cfq}
+        schedctrl="/sys/block/$disk_dev/queue/scheduler"
+        log_message="set_disk_io_sched: $disk_dev [$disk_id] $sched"
 
-        if [ -b /dev/$disk_dev ]; then
-            # parse list, add cfq as default when list is too short
-            sched=${1:-cfq}
-            schedctrl="/sys/block/$disk_dev/queue/scheduler"
-
-            if [ -f $schedctrl ]; then
-                echo_debug "pm" "set_disk_io_sched: $disk_dev [$disk_id] $sched"
-                echo -n $sched > $schedctrl
-            fi
+        if [ ! -b /dev/$disk_dev ]; then
+            echo_debug "pm" "${log_message} -- missing"
+        elif [ ! -f $schedctrl ]; then
+            echo_debug "pm" "${log_message} -- not supported"
+        else
+            echo_debug "pm" "${log_message}"
+            echo -n $sched > $schedctrl
         fi
 
         # using %DEFAULT_DISK_IO_SCHEDULER when argv is empty
