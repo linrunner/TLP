@@ -8,8 +8,11 @@
     - Remove DISABLE_TPACPIBAT from configuration
     - Enable RUNTIME_PM_ALL by default
     - Do not touch kernel settings if param is empty or commented:
-      SCHED_POWERSAVE_ON, NMI_WATCHDOG, SATA_LINKPWR_ON, PCIE_ASPM_ON,
-      SOUND_POWER_SAVE_ON, RUNTIME_PM_ON, WIFI_PWR_ON
+        DISK_IDLE_SECS_ON, MAX_LOST_WORK_SECS_ON,
+        SCHED_POWERSAVE_ON, NMI_WATCHDOG,
+        SATA_LINKPWR_ON, PCIE_ASPM_ON,
+        RADEON_DPM_STATE_ON, RADEON_POWER_PROFILE_ON,
+        WIFI_PWR_ON, SOUND_POWER_SAVE_ON, RUNTIME_PM_ON.
 
   * Bugfixes
     - Issue #74: Makefile: remove tlp-nop in uninstall-tlp target
