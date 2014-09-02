@@ -5,6 +5,7 @@
   * Features
     - Set systemd service type to simple, allows tlp service
       to start asynchronously in the background (Timofey)
+    - Remove DISABLE_TPACPIBAT from configuration
 
   * Bugfixes
     - Issue #74: Makefile: remove tlp-nop in uninstall-tlp target
