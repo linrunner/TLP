@@ -11,9 +11,14 @@
 # Uncomment this to turn on verbose mode.
 # export DH_VERBOSE=1
 
-build:
+# Build: no binaries to build; but keeps lintian happy ...
+build-arch:
 	# do nothing
+build-indep:
+	# do nothing
+build: build-indep build-arch
 
+# Cleanup after build
 clean:
 	dh_testdir
 	dh_testroot
@@ -21,6 +26,7 @@ clean:
 	# $(MAKE) clean
 	dh_clean
 
+# Install tlp
 tlp:
 	dh_testdir
 	dh_testroot
@@ -43,6 +49,7 @@ tlp:
 	dh_md5sums -p$@
 	dh_builddeb -p$@
 
+# Install tlp-rdw 
 tlp-rdw:
 	dh_testdir
 	dh_testroot
@@ -63,14 +70,14 @@ tlp-rdw:
 	dh_md5sums -p$@
 	dh_builddeb -p$@
 
-# Build architecture-independent files here.
-binary-indep: tlp tlp-rdw
+# Install 
+install-indep: tlp tlp-rdw
 
-# Build architecture-dependent files here.
+# Build + Install
+binary-indep: build-indep install-indep
 binary-arch:
 	# do nothing
-
 binary: binary-indep binary-arch
 
 # Run targets that don't result in corresponding files
-.PHONY: clean tlp tlp-rdw binary-indep binary-arch binary
+.PHONY: clean tlp tlp-rdw binary-indep binary-arch binary install install-indep

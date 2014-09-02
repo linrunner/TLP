@@ -1,4 +1,6 @@
-#!/bin/sh -e
+#!/bin/sh -
+set -e
+
 #DEBHELPER#
 
 case "$1" in
@@ -12,15 +14,10 @@ case "$1" in
             fi
         done
 
-        # Re-enable conflicting upstart jobs (Package rfkill, Ubuntu 12.04)
+        # Re-enable conflicting upstart jobs (Package rfkill in Ubuntu)
         for i in /etc/init/rfkill-*.override; do
             [ ! -f "$i" ] || rm -f $i
         done
         ;;
 
-    purge) # Restart acpid to insert thinkpad-radiosw event
-        if invoke-rc.d acpid restart > /dev/null 2>&1 ; then
-            echo "acpid restarted."
-        fi
-        ;;
 esac

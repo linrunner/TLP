@@ -1,27 +1,44 @@
-#!/bin/sh -e
+#!/bin/sh
+set -e
+
 #DEBHELPER#
+
+PMD="/usr/lib/pm-utils/power.d/"
+ETD="/etc/pm/power.d"
+NOP="/usr/lib/tlp-pm/tlp-nop"
 
 case "$1" in
     configure)
-        # Disable conflicting pm-utils hooks
+        # Disable conflicting pm-utils hooks:
+        # creating a file in /etc/pm/power.d/ with the same name as the
+        # hook script in /usr/lib/pm-utils/power.d/ is the documented
+        # way to disable pm-utils' builtin hooks
+        #
         for i in 95hdparm-apm disable_wol hal-cd-polling intel-audio-powersave harddrive \
                  laptop-mode journal-commit pci_devices pcie_aspm readahead sata_alpm \
                  sched-powersave usb_bluetooth wireless xfs_buffer; do
-            if [ -x /usr/lib/pm-utils/power.d/$i ]; then
-                ln -sf /usr/lib/tlp-pm/tlp-nop /etc/pm/power.d/$i
+            if [ -x ${PMD}/${i} ]; then
+                # Executable hook in /usr/lib/pm-utils/power.d/ exists
+                if [ -f ${ETD}/${i} ]; then
+                    # Exclude symlinks to tlp-nop
+                    if [ "$(readlink -s ${ETD}/${i})" != "${NOP}" ]; then
+                        # Move aside superseding hook of same name in /etc/pm/power.d/
+                        mv -n ${ETD}/${i} ${ETD}/${i}.tlp-save
+                    fi
+                fi
+                # Make a soft link to tlp-nop in /etc/pm/power.d/
+                # to disable corresponding hook /usr/lib/pm-utils/power.d/
+                ln -sf ${NOP} ${ETD}/${i}
             fi
         done
 
-        # Disable conflicting upstart jobs (Package rfkill, Ubuntu 12.04)
+        # Disable conflicting upstart jobs (Package rfkill in Ubuntu)
         for i in /etc/init/rfkill-*.conf; do
             if [ -f "$i" ] && [ ! -f "${i%.conf}.override" ]; then
+                # Do this only when no .override exists
                 echo "manual" > ${i%.conf}.override
             fi
         done
-
-        # Restart acpid to insert thinkpad-radiosw event
-        if invoke-rc.d acpid restart > /dev/null 2>&1 ; then
-            echo "acpid restarted."
-        fi
         ;;
+
 esac

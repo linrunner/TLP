@@ -1,17 +1,23 @@
 Source: tlp
+Maintainer: Thomas Koch <linrunner@gmx.net>
 Section: utils
 Priority: optional
-Maintainer: Thomas Koch <linrunner@gmx.net>
-Build-Depends: debhelper (>= 7)
-Standards-Version: 3.9.3
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/tlp.git
+Vcs-Git: git://anonscm.debian.org/collab-maint/tlp.git
 Homepage: http://linrunner.de/tlp
 
 Package: tlp
 Architecture: all
-Depends: ${misc:Depends}, pm-utils
-Recommends: tlp-rdw, acpid, ethtool, smartmontools, wireless-tools
-Suggests: acpi-call, tp-smapi-dkms
-Conflicts: pm-utils-powersave-policy
+Depends: ${misc:Depends},
+         pm-utils
+Recommends: tlp-rdw,
+            ethtool,
+            smartmontools,
+            wireless-tools
+Suggests: tp-smapi-dkms
+Conflicts: laptop-mode-tools
 Description: Save battery power on laptops
  TLP implements advanced power management for Linux. TLP is a pure
  command line tool with automated background tasks. It does not
@@ -19,6 +25,8 @@ Description: Save battery power on laptops
 
 Package: tlp-rdw
 Architecture: all
-Depends: ${misc:Depends}, network-manager, tlp
+Depends: ${misc:Depends},
+         network-manager,
+         tlp
 Description: Radio device wizard
  Switch radios upon network connect/disconnect and dock/undock.
