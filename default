@@ -82,7 +82,6 @@ SATA_LINKPWR_ON_BAT=min_power
 
 # PCI Express Active State Power Management (PCIe ASPM):
 # default/performance/powersave
-# Hint: needs kernel boot option pcie_aspm=force on some machines
 PCIE_ASPM_ON_AC=performance
 PCIE_ASPM_ON_BAT=powersave
 
