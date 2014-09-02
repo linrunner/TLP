@@ -495,10 +495,17 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
     local avail=0
 
     if [ "$1" = "1" ]; then
-        pwr=${SCHED_POWERSAVE_ON_BAT:-1}
+        pwr=${SCHED_POWERSAVE_ON_BAT:-}
     else
-        pwr=${SCHED_POWERSAVE_ON_AC:-0}
+        pwr=${SCHED_POWERSAVE_ON_AC:-}
     fi
+
+    if [ -z "$pwr" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_sched_powersave($1).not_configured"
+        return 0
+    fi
+
 
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
@@ -515,7 +522,13 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
 }
 
 set_nmi_watchdog () { # enable/disable nmi watchdog
-    local nmiwd=${NMI_WATCHDOG:-0}
+    local nmiwd=${NMI_WATCHDOG:-}
+
+    if [ -z "$nmiwid" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_nmi_watchdog.not_configured"
+        return 0
+    fi
 
     if [ -f /proc/sys/kernel/nmi_watchdog ]; then
         echo "$nmiwd" > /proc/sys/kernel/nmi_watchdog 2> /dev/null
@@ -535,19 +548,23 @@ set_phc_controls () { # set core voltages
     local control
     local ctrl_avail="0"
 
-    PHC_CONTROLS=${PHC_CONTROLS:-}
+    phc_controls=${PHC_CONTROLS:-}
 
-    if [ -n "$PHC_CONTROLS" ]; then
-        for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do
-            if [ -f $control ]; then
-                echo_debug "pm" "set_phc_controls: $control $PHC_CONTROLS"
-                echo $PHC_CONTROLS > $control
-                ctrl_avail="1"
-            fi
-        done
-
-        [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_phc_controls.not_available"
+    if [ -z "$phc_controls" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_phc_controls.not_configured"
+        return 0
     fi
+
+    for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do
+        if [ -f $control ]; then
+            echo_debug "pm" "set_phc_controls: $control $phc_controls"
+            echo $phc_controls > $control
+            ctrl_avail="1"
+        fi
+    done
+
+    [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_phc_controls.not_available"
 
     return 0
 }
@@ -757,27 +774,27 @@ set_sata_link_power () { # set sata link power management
     local ctrl_avail="0"
 
     if [ "$1" = "1" ]; then
-        pwr=${SATA_LINKPWR_ON_BAT}
+        pwr=${SATA_LINKPWR_ON_BAT:-}
     else
-        pwr=${SATA_LINKPWR_ON_AC}
+        pwr=${SATA_LINKPWR_ON_AC:-}
     fi
 
-    if [ -n "$pwr" ]; then
-        echo_debug "pm" "set_sata_link_power($1): $pwr"
-
-        for i in /sys/class/scsi_host/host*/link_power_management_policy ; do
-            if [ -f $i ]; then
-                echo "$pwr" > $i
-                ctrl_avail="1"
-            fi
-        done
-
-        [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_sata_link_power($1).not_available"
-    else
-        # no setting configured
+    if [ -z "$pwr" ]; then
+        # do nothing if unconfigured
         echo_debug "pm" "set_sata_link_power($1).not_configured"
+        return 0
     fi
 
+    echo_debug "pm" "set_sata_link_power($1): $pwr"
+
+    for i in /sys/class/scsi_host/host*/link_power_management_policy ; do
+        if [ -f $i ]; then
+            echo "$pwr" > $i
+            ctrl_avail="1"
+        fi
+    done
+
+    [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_sata_link_power($1).not_available"
     return 0
 }
 
@@ -787,9 +804,15 @@ set_pcie_aspm () { # set pcie active state power management
     local pwr
 
     if [ "$1" = "1" ]; then
-        pwr=${PCIE_ASPM_ON_BAT:-powersave}
+        pwr=${PCIE_ASPM_ON_BAT:-}
     else
-        pwr=${PCIE_ASPM_ON_AC:-performance}
+        pwr=${PCIE_ASPM_ON_AC:-}
+    fi
+
+    if [ -z "$pwr" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_pcie_aspm($1).not_configured"
+        return 0
     fi
 
     if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
@@ -865,13 +888,19 @@ set_sound_power_mode () { # set sound chip power modes
 
     # new config param
     if [ "$1" = "1" ]; then
-        pwr=$SOUND_POWER_SAVE_ON_BAT
+        pwr=${SOUND_POWER_SAVE_ON_BAT:-}
     else
-        pwr=$SOUND_POWER_SAVE_ON_AC
+        pwr=${SOUND_POWER_SAVE_ON_AC:-}
     fi
 
     # when unconfigured consider legacy config param
-    [ -z "$pwr" ] && pwr=${SOUND_POWER_SAVE:-1}
+    [ -z "$pwr" ] && pwr=${SOUND_POWER_SAVE:-}
+
+    if [ -z "$pwr" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_sound_power_mode($1).not_configured"
+        return 0
+    fi
 
     cpwr=${SOUND_POWER_SAVE_CONTROLLER:-Y}
 
@@ -919,9 +948,15 @@ set_runtime_pm () { # set runtime power management
     local address class ccontrol control device doall type
 
     if [ "$1" = "1" ]; then
-        ccontrol=${RUNTIME_PM_ON_BAT:-auto}
+        ccontrol=${RUNTIME_PM_ON_BAT:-}
     else
-        ccontrol=${RUNTIME_PM_ON_AC:-on}
+        ccontrol=${RUNTIME_PM_ON_AC:-}
+    fi
+
+    if [ -z "$ccontrol" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_runtime_pm($1).not_configured"
+        return 0
     fi
 
     doall=${RUNTIME_PM_ALL:-0}
@@ -999,10 +1034,17 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
     local cmdx=0
 
     if [ "$1" = "1" ]; then
-        pwr=${WIFI_PWR_ON_BAT:-5}
+        pwr=${WIFI_PWR_ON_BAT:-}
     else
-        pwr=${WIFI_PWR_ON_AC:-0}
+        pwr=${WIFI_PWR_ON_AC:-}
     fi
+
+    if [ -z "$pwr" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_wif_power_mode($1).not_configured"
+        return 0
+    fi
+
     case $pwr in
         0|1|N)          pwr="off" ;;
         2|3|4|5|6|Y)    pwr="on"  ;;

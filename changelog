@@ -7,6 +7,9 @@
       to start asynchronously in the background (Timofey)
     - Remove DISABLE_TPACPIBAT from configuration
     - Enable RUNTIME_PM_ALL by default
+    - Do not touch kernel settings if param is empty or commented:
+      SCHED_POWERSAVE_ON, NMI_WATCHDOG, SATA_LINKPWR_ON, PCIE_ASPM_ON,
+      SOUND_POWER_SAVE_ON, RUNTIME_PM_ON, WIFI_PWR_ON
 
   * Bugfixes
     - Issue #74: Makefile: remove tlp-nop in uninstall-tlp target
