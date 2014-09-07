@@ -79,13 +79,25 @@ printparm () { # $1: format, $2: file, $3: namsg, $4: cutoff
     return 0
 }
 
-printparm_i915 () { # $1: file
-    local val b
+printparm_i915 () { # $1: sysfile, $2: alternative
+    local sysf val b
 
+    # Check if sysfile or alternative exist
     if [ -f $1 ]; then
-        val=$(cat $1 2> /dev/null)
+        sysf=$1
+    elif [ -f $2 ]; then
+        sysf=$2
+    else
+        sysf=""
+    fi
+
+    if [ -n "$sysf" ]; then
+        # sysfile exists, get content
+        val=$(cat $sysf 2> /dev/null)
         if [ $? = 0 ]; then
-            printf "%-44s = %2d " $1 $val
+            # sysfile was readable, output content
+            printf "%-44s = %2d " $sysf $val
+            # Explain content
             if [ "$val" = "-1" ]; then
                 echo "(use per-chip default)"
             else
@@ -100,9 +112,11 @@ printparm_i915 () { # $1: file
                 echo ")"
             fi
         else
-            printf "%-44s = (not available)\n" $1
+            # sysfile was not readable
+            printf "%-44s = (not available)\n" $sysf
         fi
     else
+        # Neither sysfile nor alternative exists
         printf "%-44s = (not available)\n" $1
     fi
 
@@ -520,15 +534,14 @@ if [ "$show_all" = "1" ]; then
     if [ -d $I915D ]; then
         echo "+++ Intel Graphics"
         printparm_i915 $I915D/powersave
-        printparm_i915 $I915D/i915_enable_rc6
-        printparm_i915 $I915D/i915_enable_fbc
+        printparm_i915 $I915D/enable_rc6 $I915D/i915_enable_rc6
+        printparm_i915 $I915D/enable_fbc $I915D/i915_enable_fbc
         printparm_i915 $I915D/lvds_downclock
         printparm_i915 $I915D/semaphores
         echo
     fi
 
     # --- show radeon power profile or dpm state
-
     if [ -d $RADD ]; then
         for card in /sys/class/drm/card[0-9]/device ; do
             if [ -f $card/power_dpm_state ] && [ -f $card/power_dpm_force_performance_level ]; then

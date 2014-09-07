@@ -13,14 +13,16 @@
         SATA_LINKPWR_ON, PCIE_ASPM_ON,
         RADEON_DPM_STATE_ON, RADEON_POWER_PROFILE_ON,
         WIFI_PWR_ON, SOUND_POWER_SAVE_ON, RUNTIME_PM_ON.
+    - tlp-stat
+      - Consider changed sysfs paths for i915 enable_rc6/fbc
+        as of kernel 3.15 (M@C)
+      - Consider changed sysfs paths for hwmon coretemp/sensors
+        as of kernel 3.15/3.16
+      - Report speed of all fans, not just the first one
 
   * Bugfixes
     - Issue #74: Makefile: remove tlp-nop in uninstall-tlp target
       (peterkenji94)
-    - tlp-stat:
-      - Consider changed sysfs paths for hwmon coretemp/sensors
-        (as of kernel 3.15/3.16)
-      - Report speed of all fans, not just the first one
 
 +++ 0.5 --- 24.03.2014 +++
 
