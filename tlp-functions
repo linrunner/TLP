@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.5"
+readonly TLPVER="0.5.0.900"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -29,6 +29,7 @@ readonly NMTOOL=nm-tool
 
 readonly TPACPIBAT=$libdir/tpacpi-bat # libdir is initialized by main program
 
+readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
 readonly NETD=/sys/class/net
@@ -124,12 +125,6 @@ check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=
     fi
 }
 
-is_thinkpad () { # check if running on a ThinkPad w/ thinkpad_acpi loaded
-                 # rc: 0=ThinkPad, 1=other hardware
-
-    [ -d /sys/devices/platform/thinkpad_acpi ]
-}
-
 # --- PATH
 add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
                    # retval: $PATH, $oldpath, $addpath
@@ -188,21 +183,41 @@ load_tp_modules () { # load ThinkPad specific kernel modules
 
 # --- DMI
 
-read_dmi () { # read dmi data -- $*: keywords; retval: $dmirslt
-    local ds key
+read_dmi () { # read dmi data -- $*: keywords; stdout: dmi strings
+    local ds key outr
 
-    dmirslt=""
+    outr=""
     for key in $*; do
         ds="$( cat ${DMID}/$key 2> /dev/null | \
                 egrep -iv 'not available|to be filled|DMI table is broken' )"
-        if [ -n "$dmirslt" ]; then
-            [ -n "$ds" ] && dmirslt="$dmirslt $ds"
+        if [ -n "$outr" ]; then
+            [ -n "$ds" ] && dmirslt="$outr $ds"
         else
-            dmirslt="$ds"
+            outr="$ds"
         fi
     done
 
+    echo $outr
     return 0
+}
+
+# --- ThinkPad
+
+is_thinkpad () { # check for ThinkPad hardware
+                 # rc: 0=ThinkPad, 1=other hardware
+
+    if [ -d $TPACPIDIR ]; then
+        # Kernel module thinkpad_acpi is loaded
+
+        # Check dmi product string for occurence of "ThinkPad"
+        if read_dmi product_version | grep -q "ThinkPadX"; then
+            # It's a real ThinkPad
+            return 0
+        fi
+    fi
+
+    # No ThinkPad detected
+    return 1
 }
 
 # --- Power Source

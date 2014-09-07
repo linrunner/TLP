@@ -22,7 +22,9 @@
 
   * Bugfixes
     - Issue #74: Makefile: remove tlp-nop in uninstall-tlp target
-      (peterkenji94)
+      (beatinho, peterkenji94)
+    - Issue #86: tlp-stat: don't suggest tp-smapi on non-ThinkPad
+      hardware with thinkpad_acpi loaded (sayantandas)
 
 +++ 0.5 --- 24.03.2014 +++
 

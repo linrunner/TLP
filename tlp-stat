@@ -17,8 +17,6 @@ readonly LSBREL=lsb_release
 
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
-readonly TPACPI=/sys/devices/platform/thinkpad_acpi
-
 
 readonly IBMTHERMAL=/proc/acpi/ibm/thermal
 readonly CORETEMP_DIRS='\
@@ -266,10 +264,9 @@ fi
 if [ "$show_all" = "1" ]; then
     # --- show system info
     echo "+++ System Info"
-    read_dmi sys_vendor product_version product_name
-    echo "System         = $dmirslt"
-    read_dmi bios_version
-    echo "BIOS           = $dmirslt"
+
+    echo "System         = $( read_dmi sys_vendor product_version product_name )"
+    echo "BIOS           = $( read_dmi bios_version )"
 
     # --- show release & kernel info
     cmd_exists $LSBREL && echo "Release        = $($LSBREL -d -s)"
@@ -625,7 +622,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show battery info & charge thresholds
 
     # --- show availability of ThinkPad battery functions
-    if [ -d $TPACPI ]; then
+    if is_thinkpad; then
         echo "+++ ThinkPad Extended Battery Functions"
         echo -n "tp-smapi   = "
         case $tpsmapi in
@@ -786,8 +783,8 @@ if [ "$show_all" = "1" ]; then
 
     if is_thinkpad; then
         # Add ThinkPad specific suggestions
-        read_dmi product_version
-        model=${dmirslt#ThinkPad }
+        model="$( read_dmi product_version )"
+        model=${model#ThinkPad }
         model=${model#Edge }
 
         case $model in
@@ -805,7 +802,8 @@ if [ "$show_all" = "1" ]; then
             *) [ $tpsmapi -eq 127 ]  && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
                 ;;
         esac
-    fi
+
+    fi # if ThinkPad
 
     # Add other suggestions
     cmd_exists ethtool || suout="${suout}Install ethtool to disable Wake On LAN (WOL)\n"
