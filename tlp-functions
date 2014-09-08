@@ -1014,7 +1014,7 @@ set_runtime_pm () { # set runtime power management
         return 0
     fi
 
-    doall=${RUNTIME_PM_ALL:-0}
+    doall=${RUNTIME_PM_ALL:-1}
 
     for type in $PCID; do
         for device in $type/*; do
