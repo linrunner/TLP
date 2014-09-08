@@ -735,13 +735,13 @@ set_disk_apm_level () { # set disk apm level
         log_message="set_disk_apm_level(${_pwrmode}): $disk_dev [$disk_id] $1"
 
         if [ ! -b /dev/$disk_dev ]; then
-            echo_debug "pm" "${log_message} -- missing"
+            echo_debug "disk" "${log_message} -- missing"
         elif ! check_disk_hdparm_cap $disk_dev; then
-            echo_debug "pm" "${log_message} -- not supported"
+            echo_debug "disk" "${log_message} -- not supported"
         elif wordinlist "$1" "$DISK_NOP_WORDS"; then
-            echo_debug "pm" "${log_message} -- keep as is"
+            echo_debug "disk" "${log_message} -- keep as is"
         else
-            echo_debug "pm" "${log_message}"
+            echo_debug "disk" "${log_message}"
             $HDPARM -B $1 /dev/$disk_dev > /dev/null 2>&1
         fi
 
@@ -777,13 +777,13 @@ set_disk_spindown_timeout () { # set disk spindown timeout
         log_message="set_disk_spindown_timeout(${_pwrmode}): $disk_dev [$disk_id] $1"
 
         if [ ! -b /dev/$disk_dev ]; then
-            echo_debug "pm" "${log_message} -- missing"
+            echo_debug "disk" "${log_message} -- missing"
         elif ! check_disk_hdparm_cap $disk_dev; then
-            echo_debug "pm" "${log_message} -- not supported"
+            echo_debug "disk" "${log_message} -- not supported"
         elif wordinlist "$1" "$DISK_NOP_WORDS"; then
-            echo_debug "pm" "${log_message} -- keep as is"
+            echo_debug "disk" "${log_message} -- keep as is"
         else
-            echo_debug "pm" "${log_message}"
+            echo_debug "disk" "${log_message}"
             $HDPARM -S $1 /dev/$disk_dev > /dev/null 2>&1
         fi
 
@@ -815,13 +815,13 @@ set_disk_io_sched () { # set disk io scheduler
         log_message="set_disk_io_sched: $disk_dev [$disk_id] $sched"
 
         if [ ! -b /dev/$disk_dev ]; then
-            echo_debug "pm" "${log_message} -- missing"
+            echo_debug "disk" "${log_message} -- missing"
         elif [ ! -f $schedctrl ]; then
-            echo_debug "pm" "${log_message} -- not supported"
+            echo_debug "disk" "${log_message} -- not supported"
         elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
-            echo_debug "pm" "${log_message} -- keep as is"
+            echo_debug "disk" "${log_message} -- keep as is"
         else
-            echo_debug "pm" "${log_message}"
+            echo_debug "disk" "${log_message}"
             echo -n $sched > $schedctrl
         fi
 
