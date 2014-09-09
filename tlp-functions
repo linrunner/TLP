@@ -2091,9 +2091,18 @@ poweroff_drivebay () { # power off optical drive in drive bay
             sleep 1
 
             # Unregister scsi device
-            syspath="/sys$($UDEVADM info --query=path --name=$optdrv | perl -pe 's!/block/...$!!')"
-            echo_debug "pm" "poweroff_drivebay: syspath=$syspath"
-            [ -n "$syspath" ] && echo 1 > $syspath/delete
+            if syspath="$($UDEVADM info --query=path --name=$optdrv)"; then
+                syspath="/sys${syspath%/block/*}"
+
+                if [ "$syspath" != "/sys" ]; then
+                    echo_debug "pm" "poweroff_drivebay: syspath=$syspath"
+                    echo 1 > $syspath/delete
+                else
+                    echo_debug "pm" "poweroff_drivebay: got empty/invalid syspath for $optdrv"
+                fi
+            else
+                echo_debug "pm" "poweroff_drivebay: failed to get syspath (udevadm returned $?)"
+            fi
 
             # Turn power off
             echo 1 > $dock/undock
