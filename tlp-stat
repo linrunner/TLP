@@ -276,13 +276,14 @@ if [ "$show_all" = "1" ]; then
 
     # --- show TLP status
     echo "+++ System Status"
-    if check_laptop_mode_tools; then
-        if [ "$TLP_ENABLE" = "1" ]; then
-            echo "TLP power save = enabled"
-        else
-            echo "TLP power save = not enabled"
-        fi
+    if [ "$TLP_ENABLE" = "1" ]; then
+        echo "TLP power save = enabled"
+    else
+        echo "TLP power save = not enabled"
     fi
+
+    # -- show warning if l-m-t detected
+    check_laptop_mode_tools
 
     # --- show power source
     if get_power_state; then

@@ -119,8 +119,9 @@ check_tlp_enabled () { # check if TLP is enabled in config file
 
 check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=installed
     if cmd_exists $LAPMODE; then
-        echo "Error: TLP power save is disabled because laptop-mode-tools is installed." 1>&2
-        echo "       Please uninstall laptop-mode-tools." 1>&2
+        echo 1>&2
+        echo "***Warning: laptop-mode-tools detected, this may cause conflicts with TLP." 1>&2
+        echo "            Please uninstall laptop-mode-tools." 1>&2
         echo 1>&2
         echo_debug "pm" "check_laptop_mode_tools: yes"
         return 1

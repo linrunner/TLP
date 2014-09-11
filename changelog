@@ -21,6 +21,8 @@
       - Consider changed sysfs paths for hwmon coretemp/sensors
         as of kernel 3.15/3.16
       - Report speed of all fans, not just the first one
+    - Do not disable TLP when laptop-mode-tools is detected,
+      just output a warning about possible conflicts
 
   * Bugfixes
     - Issue #74: Makefile: remove tlp-nop in uninstall-tlp target
