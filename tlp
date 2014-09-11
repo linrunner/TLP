@@ -55,7 +55,7 @@ read_defaults
 check_tlp_enabled || exit 1
 add_sbin2path
 
-check_laptop_mode_tools || exit 2
+check_laptop_mode_tools
 
 # get cmd line args
 mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
