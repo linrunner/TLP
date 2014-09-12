@@ -215,7 +215,7 @@ is_thinkpad () { # check for ThinkPad hardware
         # Kernel module thinkpad_acpi is loaded
 
         # Check dmi product string for occurence of "ThinkPad"
-        if read_dmi product_version | grep -q "ThinkPadX"; then
+        if read_dmi product_version | grep -q "ThinkPad"; then
             # It's a real ThinkPad
             return 0
         fi
