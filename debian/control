@@ -10,8 +10,7 @@ Homepage: http://linrunner.de/tlp
 
 Package: tlp
 Architecture: all
-Depends: ${misc:Depends},
-         pm-utils
+Depends: ${misc:Depends}
 Recommends: tlp-rdw,
             ethtool,
             smartmontools,
