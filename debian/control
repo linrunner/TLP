@@ -8,7 +8,7 @@ Homepage: http://linrunner.de/tlp
 
 Package: tlp
 Architecture: all
-Depends: ${misc:Depends}, pm-utils
+Depends: ${misc:Depends}
 Recommends: tlp-rdw, acpid, ethtool, smartmontools, wireless-tools
 Suggests: acpi-call, tp-smapi-dkms
 Conflicts: pm-utils-powersave-policy
