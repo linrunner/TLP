@@ -4,7 +4,7 @@ tlp (0.5.900-1) unstable; urgency=low
   * Packaging:
     - Changes from Debian package submission merged
     - debian/changelog: upstream changelog removed (moved to ./changelog)
-    - debian/control: add suggests acpi-call-tools
+    - debian/control: add suggests acpi-call-dkms
 
  -- Thomas Koch <linrunner@gmx.net>  Tue, 11 Sep 2014 19:21:42 +0200
 

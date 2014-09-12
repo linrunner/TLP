@@ -17,7 +17,7 @@ Recommends: tlp-rdw,
             smartmontools,
             wireless-tools
 Suggests: tp-smapi-dkms,
-          acpi-call-tools
+          acpi-call-dkms
 Conflicts: laptop-mode-tools
 Description: Save battery power on laptops
  TLP implements advanced power management for Linux. TLP is a pure
