@@ -196,7 +196,7 @@ read_dmi () { # read dmi data -- $*: keywords; stdout: dmi strings
         ds="$( cat ${DMID}/$key 2> /dev/null | \
                 egrep -iv 'not available|to be filled|DMI table is broken' )"
         if [ -n "$outr" ]; then
-            [ -n "$ds" ] && dmirslt="$outr $ds"
+            [ -n "$ds" ] && outr="$outr $ds"
         else
             outr="$ds"
         fi
