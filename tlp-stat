@@ -43,7 +43,8 @@ show_trace=0
 
 # --- Functions
 
-printparm () { # $1: format, $2: file, $3: namsg, $4: cutoff
+printparm () { # formatted output of sysfile - general
+    # $1: format, $2: sysfile, $3: namsg, $4: cutoff
     local format="$1"
     local sysf="$2"    local namsg="$3"
     local cutoff="$4"
@@ -77,7 +78,8 @@ printparm () { # $1: format, $2: file, $3: namsg, $4: cutoff
     return 0
 }
 
-printparm_i915 () { # $1: sysfile, $2: alternative
+printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
+    # $1: sysfile, $2: alternative
     local sysf val b
 
     # Check if sysfile or alternative exist
@@ -121,7 +123,9 @@ printparm_i915 () { # $1: sysfile, $2: alternative
     return 0
 }
 
-print_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
+print_tpacpi_thresholds () { # formatted output of ThinkPad charging thresholds
+    # - tpcapi-bat variant
+    # $1: BAT0/BAT1; $2: bat # = 1/2
     local start_thresh stop_thresh force
 
     read_tpacpi_threshold ST $2
@@ -152,6 +156,24 @@ print_tpacpi_thresholds () { # $1: BAT0/BAT1; $2: bat # = 1/2
     return 0
 }
 
+check_ata_errors () { # check kernel log for ata errors
+    # (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
+    # stdout: error count
+
+    if wordinlist $SATA_LINKPWR_ON_BAT "min_power medium_power" || \
+       wordinlist $SATA_LINKPWR_ON_AC "min_power medium_power"; then
+        # config values != max_performance exist --> check kernel log
+
+        # count matching error lines
+        echo $( dmesg | egrep -c "ata[0-9]+: SError: { .*CommWake }" 2> /dev/null )
+    else
+        # no values in question configured 
+        echo "0"
+    fi
+
+    return 0
+}
+
 # @stdout glob_files ( glob_pattern, dir[, dir...] )
 #
 #  Nested for-loop that applies a glob expression to several directories
@@ -170,7 +192,7 @@ glob_files () {
     done
 }
 
-read_args () {
+read_args () { # read command line arguments
     for a in $*; do
         case $a in
             "-b"|"--battery")
@@ -813,6 +835,19 @@ if [ "$show_all" = "1" ]; then
     if [ -n "$suout" ]; then
         echo "+++ Suggestions"
         printf "$suout" | sed -r 's/^/\* /'
+        echo
+    fi
+
+    # --show warnings
+
+    # ata errors (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
+    ecnt=$( check_ata_errors )
+    if [ $ecnt -ne 0 ]; then
+        echo "+++ Warnings"
+        printf "* Kernel log shows ata errors (%d) possibly caused by the configuration: SATA_LINKPWR_ON_AC/BAT=min/medium_power\n" $ecnt
+        echo "  --> Consider using medium_power or max_performance instead!"
+        echo "  --> Check yourself with:"
+        echo "      dmesg | egrep -A 5 \"ata[0-9]+: SError: { .*CommWake }\""
         echo
     fi
 
