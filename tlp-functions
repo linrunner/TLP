@@ -26,6 +26,7 @@ readonly UDEVADM=udevadm
 readonly LAPMODE=laptop_mode
 readonly NMCLI=nmcli
 readonly NMTOOL=nm-tool
+readonly ENERGYPERF=x86_energy_perf_policy
 
 readonly TPACPIBAT=$libdir/tpacpi-bat # libdir is initialized by main program
 
@@ -613,6 +614,26 @@ set_phc_controls () { # set core voltages
     done
 
     [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_phc_controls.not_available"
+
+    return 0
+}
+
+set_energy_perf_policy () { # set x86 energy perf policy
+    # $1: 0=ac mode, 1=battery mode
+
+    local perf
+
+    if [ "$1" = "1" ]; then
+        perf=${ENERGY_PERF_ON_BAT:-}
+    else
+        perf=${ENERGY_PERF_ON_AC:-}
+    fi
+
+    if [ -n "$perf" ]; then
+        echo_debug "pm" "set_energy_perf_policy($1): $perf"
+        $ENERGYPERF $perf
+        return $?
+    fi
 
     return 0
 }
