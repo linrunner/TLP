@@ -471,6 +471,17 @@ set_radio_devices () { # set radio devices -- $1: 0=ac mode, 1=battery mode
     if [ "$1" = "1" ]; then
         enable=""
         disable="${DEVICES_TO_DISABLE_ON_BAT:-}"
+        for dev in ${DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE:-}; do
+            case $dev in
+                wifi)
+                    any_wifi_in_use || wordinlist wifi "$disable" || disable="wifi $disable"
+                    ;;
+                bluetooth)
+                    any_bluetooth_in_use || wordinlist bluetooth "$disable" || disable="bluetooth $disable"
+                    ;;
+            esac
+        done
+        disable="${disable# }"
     else
         enable="${DEVICES_TO_ENABLE_ON_AC:-}"
         disable=""

@@ -33,6 +33,7 @@ readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
 readonly NETD=/sys/class/net
+readonly BLUETOOTHD=/sys/class/bluetooth
 readonly PCID=/sys/bus/pci/devices
 readonly PCIDRV=/sys/bus/pci/drivers
 readonly I915D=/sys/module/i915/parameters
@@ -1259,6 +1260,87 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
     done
 
     return 0
+}
+
+wifi_in_use () { # check if wifi device is in use -- $1: iface
+    if [ -f $NETD/$1/carrier ]; then
+        if [ "$(cat $NETD/$1/carrier 2>/dev/null)" = "1" ]; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+any_wifi_in_use () { # check if some wifi device is in use
+    local iface
+
+    get_wifi_ifaces
+    for iface in $wifaces; do
+        wifi_in_use $iface && return 0
+    done
+
+    return 1
+}
+
+# --- Bluetooth
+
+get_bluetooth_ifaces () { # get all bluetooth devices -- retval: $bifaces
+    bifaces="$(ls $BLUETOOTHD)"
+    return 0
+}
+
+get_bluetooth_driver () { # get driver associated with interface -- $1: iface; retval: $bluetoothdrv
+    local drvl
+
+    bluetoothdrv=""
+    if [ -d $BLUETOOTHD/$1 ]; then
+        drvl=$(readlink $BLUETOOTHD/$1/device/driver)
+        [ -n "$drvl" ] && bluetoothdrv=${drvl##*/}
+    fi
+
+    return 0
+}
+
+dbus_call () { # call method via system dbus -- $1: dest; $2: $path; $3: interface, $4: $method
+    dbus-send --system --type=method_call --print-reply --dest="$1" "$2" "$3.$4" 2> /dev/null
+}
+
+bluez_call () { # call bluez method via dbus -- $1: path; $2: interface; $3: $method
+    dbus_call "org.bluez" "$1" "org.bluez.$2" "$3"
+}
+
+bluez_bluetooth_in_use () { # check if bluetooth device (specified as dbus path) is in use $1: dbus path
+    local devices device connected
+
+    devices=$(bluez_call $1 Adapter ListDevices | sed -n 's/\s*object path "\(.*\)"\s*/\1/p')
+    for device in $devices; do
+        connected="$(bluez_call $device Device GetProperties | grep -A 1 Connected | sed -n 's/.*boolean //p')"
+        test "$connected" = "true" && return 0
+    done
+
+    return 1
+}
+
+bluetooth_in_use () { # check if bluetooth device is in use -- $1: iface
+    local paths path
+
+    paths="$(bluez_call / Manager ListAdapters | sed -n 's/\s*object path "\(.*\)"\s*/\1/p' | grep /$1\$)"
+    for path in $paths; do
+        bluez_bluetooth_in_use "$path" && return 0
+    done
+
+    return 1
+}
+
+any_bluetooth_in_use () { # check if some bluetooth device is in use
+    local paths path
+
+    paths="$(bluez_call / Manager ListAdapters | sed -n 's/\s*object path "\(.*\)"\s*/\1/p')"
+    for path in $paths; do
+        bluez_bluetooth_in_use "$path" && return 0
+    done
+
+    return 1
 }
 
 # --- LAN
