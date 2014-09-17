@@ -40,6 +40,8 @@ readonly RADD=/sys/module/radeon
 readonly DMID=/sys/class/dmi/id/
 readonly CPU_BOOST_ALL_CTRL=/sys/devices/system/cpu/cpufreq/boost
 readonly INTEL_PSTATED=/sys/devices/system/cpu/intel_pstate
+readonly CPU_MIN_PERF_PCT=$INTEL_PSTATED/min_perf_pct
+readonly CPU_MAX_PERF_PCT=$INTEL_PSTATED/max_perf_pct
 readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
 
 readonly USBD=/sys/bus/usb/devices
@@ -486,6 +488,32 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
     fi
 
     return 0
+}
+
+set_cpu_perf_pct () { # set intel pstate perf pct -- $1: 0=ac mode, 1=battery mode
+    local min max
+
+    if [ "$1" = "1" ]; then
+        min="${CPU_MIN_PERF_ON_BAT:-}"
+        max="${CPU_MAX_PERF_ON_BAT:-}"
+    else
+        min="${CPU_MIN_PERF_ON_AC:-}"
+        max="${CPU_MAX_PERF_ON_AC:-}"
+    fi
+
+    if [ -n "$min" ] && [ -f $CPU_MIN_PERF_PCT ]; then
+        { echo "$min" > $CPU_MIN_PERF_PCT; } 2> /dev/null
+        echo_debug "pm" "set_cpu_perf_pct($1).min: $min"
+    else
+        echo_debug "pm" "set_cpu_perf_pct($1).min.not_configured"
+    fi
+
+    if [ -n "$max" ] && [ -f $CPU_MAX_PERF_PCT ]; then
+        { echo "$max" > $CPU_MAX_PERF_PCT; } 2> /dev/null
+        echo_debug "pm" "set_cpu_perf_pct($1).max: $max"
+    else
+        echo_debug "pm" "set_cpu_perf_pct($1).max.not_configured"
+    fi
 }
 
 set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
