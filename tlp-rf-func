@@ -465,3 +465,24 @@ init_radio_devices () { # initialize all radio type states
     return 0
 }
 
+set_radio_devices () { # set radio devices -- $1: 0=ac mode, 1=battery mode
+    local enable disable dev
+
+    if [ "$1" = "1" ]; then
+        enable=""
+        disable="${DEVICES_TO_DISABLE_ON_BAT:-}"
+    else
+        enable="${DEVICES_TO_ENABLE_ON_AC:-}"
+        disable=""
+    fi
+
+    echo_debug "rf" "set_radio_devices($1): enable=$enable"
+    for dev in $enable; do
+        device_on $dev
+    done
+
+    echo_debug "rf" "set_radio_devices($1): disable=$disable"
+    for dev in $disable; do
+        device_off $dev
+    done
+}
