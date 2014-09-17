@@ -2146,9 +2146,13 @@ poweroff_drivebay () { # power off optical drive in drive bay
             # Unmount media
             umount -l $optdrv > /dev/null 2>&1
 
+            # Sync drive
+            sync
+            sleep 1
+
             # Power off drive
             $HDPARM -Y $optdrv > /dev/null 2>&1
-            sleep 1
+            sleep 5
 
             # Unregister scsi device
             if syspath="$($UDEVADM info --query=path --name=$optdrv)"; then
