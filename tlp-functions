@@ -2050,6 +2050,23 @@ get_drivebay_device () { # Find generic dock interface for drive bay
     return 0
 }
 
+check_is_docked() { # check if $dock is docked;
+                    # rc: 0 if docked, else 1
+
+   local dock_status dock_info_file
+
+   # return 0 if any sysfs file indicates "docked"
+   for dock_info_file in docked firmware_node/status; do
+      if read -r dock_status < "$dock/$dock_info_file" 2>/dev/null; then
+         # catch empty $dock_status (safety check, unlikely case)
+         [ "${dock_status:-0}" != "0" ] && return 0
+      fi
+   done
+
+   # otherwise assume "not docked"
+   return 1
+}
+
 suspend_drivebay () { # Save power state of drive bay before suspend
                       # $1: 0=ac mode, 1=battery mode
 
@@ -2058,16 +2075,14 @@ suspend_drivebay () { # Save power state of drive bay before suspend
         get_drivebay_device
 
         if [ -n "$dock" ]; then
-            if [ -e $dock/docked ]; then
-                mkdir -p $STATEDIR 2> /dev/null 1>&2
+            mkdir -p $STATEDIR 2> /dev/null 1>&2
 
-                if [ "$(cat $dock/docked)" = "0" ]; then
-                    echo "off" > $BAYSTATEFILE
-                    echo_debug "pm" "suspend_drivebay: bay=off"
-                else
-                    echo "on" > $BAYSTATEFILE
-                    echo_debug "pm" "suspend_drivebay: bay=on"
-                fi
+            if ! check_is_docked; then
+                echo "off" > $BAYSTATEFILE
+                echo_debug "pm" "suspend_drivebay: bay=off"
+            else
+                echo "on" > $BAYSTATEFILE
+                echo_debug "pm" "suspend_drivebay: bay=on"
             fi
         fi
     else
@@ -2087,9 +2102,9 @@ resume_drivebay () { # Restore power state of drive bay after resume
     if [ "$(cat $BAYSTATEFILE)" = "off" ]; then
         get_drivebay_device
 
-        if [ "$(cat $dock/docked)" = "1" ]; then
-            # device active -> deactivate
-            if [ -n "$dock" ]; then
+        if [ -n "$dock" ]; then
+            if check_is_docked; then
+                # device active -> deactivate
                 if [ -e $dock/undock ]; then
                     cnt=5
                     rc=1
@@ -2101,9 +2116,9 @@ resume_drivebay () { # Restore power state of drive bay after resume
                     done
                     echo_debug "pm" "resume_drivebay.bay_off: rc=$rc"
                 fi
+            else
+                echo_debug "pm" "resume_drivebay.already_off"
             fi
-        else
-            echo_debug "pm" "resume_drivebay.already_off"
         fi
     fi
 
@@ -2130,7 +2145,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
     echo_debug "pm" "poweroff_drivebay: dock=$dock"
 
     # Check if bay is occupied
-    if [ $(cat $dock/docked) = "0" ]; then
+    if ! check_is_docked; then
         echo_debug "pm" "poweroff_drivebay.drive_already_off"
         [ "$1" = "1" ] && echo "No drive in bay (or power already off)."
     else
