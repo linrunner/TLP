@@ -355,6 +355,8 @@ if [ "$show_all" = "1" ]; then
     check_intel_pstate
 
     if [ $intel_pstate -eq 1 ]; then
+        printparm "%-54s = ##%d##" $CPU_MIN_PERF_PCT
+        printparm "%-54s = ##%d##" $CPU_MAX_PERF_PCT
         printparm "%-54s = ##%d##" $CPU_TURBO_PSTATE
     elif [ -f $CPU_BOOST_ALL_CTRL ]; then
         get_sysval $CPU_BOOST_ALL_CTRL; boost=$?
