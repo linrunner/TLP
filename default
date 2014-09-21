@@ -16,6 +16,7 @@ MAX_LOST_WORK_SECS_ON_AC=15
 MAX_LOST_WORK_SECS_ON_BAT=60
 
 # Select a cpu frequency scaling governor: ondemand/powersave/performance/conservative
+# Intel Core i processor with intel_pstate driver: powersave/performance 
 # Important:
 # - You *must* disable your distribution's governor settings or conflicts will occur
 # - ondemand is sufficient for *almost all* workloads, you should know what you're doing!
@@ -116,11 +117,11 @@ SOUND_POWER_SAVE_ON_BAT=1
 # Disable controller too (HDA only): Y/N
 SOUND_POWER_SAVE_CONTROLLER=Y
 
-# Set to 1 to power off optical drive in UltraBay (ThinkPads only)
-# when running on battery. A value of 0 disables this Feature (Default).
+# Set to 1 to power off optical drive in UltraBay/MediaBay when running
+# on battery. A value of 0 disables this Feature (Default).
 # Drive can be powered on again by releasing (and reinserting) the
 # eject lever or by pressing the disc eject button on newer models.
-# Note: an UltraBay hard disk is never powered off.
+# Note: an UltraBay/MediaBay hard disk is never powered off.
 BAY_POWEROFF_ON_BAT=0
 # Optical drive device to power off (default sr0)
 BAY_DEVICE="sr0"
