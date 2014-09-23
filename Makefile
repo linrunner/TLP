@@ -14,6 +14,7 @@ TLP_ULIB   ?= /lib/udev
 TLP_ACPI   ?= /etc/acpi
 TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
 TLP_CONF   ?= /etc/default/tlp
+TLP_SYSD   ?= /lib/systemd/system
 
 # Catenate DESTDIR to paths
 _SBIN  = $(DESTDIR)$(TLP_SBIN)
@@ -24,6 +25,7 @@ _ULIB  = $(DESTDIR)$(TLP_ULIB)
 _ACPI  = $(DESTDIR)$(TLP_ACPI)
 _NMDSP = $(DESTDIR)$(TLP_NMDSP)
 _CONF  = $(DESTDIR)$(TLP_CONF)
+_SYSD  = $(DESTDIR)$(TLP_SYSD)
 
 # Make targets
 all:
@@ -54,6 +56,10 @@ endif
 	[ -f $(_CONF) ] || install -D -m 644 default $(_CONF)
 ifneq ($(TLP_NO_INIT),1)
 	install -D -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
+endif
+ifeq ($(TLP_WITH_SYSTEMD),1)
+	install -D -m 644 tlp.service $(_SYSD)/tlp.service
+	install -m 644 tlp-sleep.service $(_SYSD)/
 endif
 ifneq ($(TLP_NO_PMUTILS),1)
 	install -D -m 755 49tlp $(_PLIB)/sleep.d/49tlp
@@ -86,11 +92,12 @@ uninstall-tlp:
 	rm -f $(_TLIB)/tpacpi-bat
 	rm $(_TLIB)/tlp-functions
 	rm $(_TLIB)/tlp-rf-func
-	rm $(_TLIB)/tlp-nop
 	rmdir $(_TLIB)
 	rm $(_ULIB)/tlp-usb-udev
 	rm $(_ULIB)/rules.d/40-tlp.rules
 	rm -f $(DESTDIR)/etc/init.d/tlp
+	rm -f $(_SYSD)/tlp.service
+	rm -f $(_SYSD)/tlp-sleep.service
 	rm -f $(_PLIB)/sleep.d/49tlp
 	rm $(_ACPI)/events/thinkpad-radiosw
 	rm $(_ACPI)/thinkpad-radiosw.sh
