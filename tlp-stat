@@ -27,6 +27,7 @@ readonly HWMONFAN_DIRS='\
 /sys/class/hwmon/hwmon*/device \
 /sys/class/hwmon/hwmon*'
 
+readonly JOURNALCTL=journalctl
 readonly DEBUGLOG=/var/log/debug
 
 # --- Variables
@@ -222,7 +223,7 @@ read_args () { # read command line arguments
             "-T"|"--trace")
                 show_all=0
                 show_trace=1
-                : ${needs_root_priv:=0}
+                needs_root_priv=1
                 ;;
 
             *)
@@ -855,18 +856,31 @@ fi # show_all
 
 if [ "$show_trace" = "1" ]; then
     # --- show debug log
-    if [ -f $DEBUGLOG ]; then
-        grep "tlp\[" $DEBUGLOG
-    else
-        echo "Error: $DEBUGLOG does not exist." 1>&2
-        echo 1>&2
-        echo "Solution: create an rsyslog conffile /etc/rsyslog.d/90-debug.conf with the following contents" 1>&2
-        echo " *.=debug;\\" 1>&2
-        echo " mail,authpriv,cron.none;\\" 1>&2
-        echo " local0,local1,local3,local4,\\" 1>&2
-        echo " local5,local6,local7.none    -/var/log/debug" 1>&2
-        echo "and restart the rsyslog daemon." 1>&2
-        echo 1>&2
+
+    # check for systemd journal
+    jdone=0
+    if cmd_exists $JOURNALCTL; then
+        # retrieve trace output from journal
+        $JOURNALCTL -p debug --no-pager SYSLOG_IDENTIFIER=tlp 2> /dev/null
+        # check result -- rc=1 if journald has no data available
+        [ $? -eq 0 ] && jdone=1
+    fi
+
+    if [ "$jdone" = "0"  ]; then
+        # no journald data available --> retrieve trace output from logfile
+        if [ -f $DEBUGLOG ]; then
+            grep "tlp\[" $DEBUGLOG
+        else
+            echo "Error: $DEBUGLOG does not exist." 1>&2
+            echo 1>&2
+            echo "Solution: create an rsyslog conffile /etc/rsyslog.d/90-debug.conf with the following contents" 1>&2
+            echo " *.=debug;\\" 1>&2
+            echo " mail,authpriv,cron.none;\\" 1>&2
+            echo " local0,local1,local3,local4,\\" 1>&2
+            echo " local5,local6,local7.none    -/var/log/debug" 1>&2
+            echo "and restart the rsyslog daemon." 1>&2
+            echo 1>&2
+        fi
     fi
 fi # show_trace
 
