@@ -572,7 +572,7 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
 set_nmi_watchdog () { # enable/disable nmi watchdog
     local nmiwd=${NMI_WATCHDOG:-}
 
-    if [ -z "$nmiwid" ]; then
+    if [ -z "$nmiwd" ]; then
         # do nothing if unconfigured
         echo_debug "pm" "set_nmi_watchdog.not_configured"
         return 0
