@@ -8,7 +8,7 @@
 # ThinkPad Advanced Mini Dock (and all older models), ThinkPad UltraBase
 ACTION=="change", SUBSYSTEM=="platform", KERNEL=="dock.*", ATTR{type}=="dock_station", RUN+="/lib/udev/tlp-rdw-udev %p dock"
 
-# ThinkPad Mini Dock Plus Series 3 
+# ThinkPad Mini Dock (Plus) Series 3
 ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/100a/*", RUN+="/lib/udev/tlp-rdw-udev %p usb_dock"
 
 # ThinkPad Ultra Dock
