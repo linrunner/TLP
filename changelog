@@ -21,6 +21,8 @@
       - Consider changed sysfs paths for hwmon coretemp/sensors
         as of kernel 3.15/3.16
       - Report speed of all fans, not just the first one
+      - Show warning for kernel sata errors (possibly) caused by
+        SATA_LINKPWR_ON_BAT/AC=min/medium power
       - Retrieve trace output from systemd journal if present
     - Do not disable TLP when laptop-mode-tools is detected,
       just output a warning about possible conflicts

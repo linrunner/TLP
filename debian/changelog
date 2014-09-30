@@ -1,4 +1,4 @@
-tlp (0.5.900-1) unstable; urgency=low
+tlp (0.5.901-1~jessie) unstable; urgency=low
 
   * New upstream release
   * Packaging:
@@ -6,7 +6,7 @@ tlp (0.5.900-1) unstable; urgency=low
     - debian/changelog: upstream changelog removed (moved to ./changelog)
     - debian/control: add suggests acpi-call-dkms
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 11 Sep 2014 19:21:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 30 Sep 2014 21:24:42 +0200
 
 tlp (0.5-1) unstable; urgency=low
 
