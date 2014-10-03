@@ -1,25 +1,33 @@
-.TH TLP-STAT 8 "2012-08-13" "Power Management" ""
+.TH TLP-STAT 8 "2014-10-03" "Power Management" ""
+
 .SH NAME
 tlp-stat \- show power management settings
+
 .SH SYNOPSIS
 .B tlp-stat \fI[option]\fR
+
 .SH DESCRIPTION
 This command shows the configuration, affected power management settings
 and additional system info.
 
 .SH OPTIONS
+
 .TP
 .B -b, --battery
 Show battery data only.
+
 .TP
 .B -c, --config
 Show configuration only.
+
 .TP
 .B -r, --rfkill
 Show radio devices switch state only.
+
 .TP
 .B -t, --temp
 Show temperatures and fan speed only.
+
 .TP
 .B -T, --trace
 Show trace output from /var/log/debug.
@@ -28,7 +36,9 @@ Show trace output from /var/log/debug.
 .I /etc/default/tlp
 .RS
 System configuration file containing all power management settings.
+
 .SH SEE ALSO
 .BR tlp (8).
+
 .SH AUTHOR
 Thomas Koch <linrunner at gmx.net>
