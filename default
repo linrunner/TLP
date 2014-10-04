@@ -176,10 +176,6 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 # (to prevent other operating systems from missing radios)
 #DEVICES_TO_ENABLE_ON_SHUTDOWN="wwan"
 
-# Radio devices to enable when wireless radio switch is turned on:
-# bluetooth wifi wwan (Ubuntu + ThinkPad only)
-#DEVICES_TO_ENABLE_ON_RADIOSW="wifi wwan"
-
 # Battery charge thresholds (ThinkPad only, tp-smapi or acpi-call kernel module required)
 # Charging starts when the remaining capacity falls below the START_CHARGE_TRESH
 # value and stops when exceeding the STOP_CHARGE_TRESH value.

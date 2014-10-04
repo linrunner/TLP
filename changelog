@@ -6,6 +6,8 @@
     - Set systemd service type to simple, allows tlp service
       to start asynchronously in the background (Timofey)
     - Remove DISABLE_TPACPIBAT from configuration
+    - Remove DEVICES_TO_ENABLE_ON_RADIOSW from configuration because
+      it's deprecated: works with Ubuntu 12.04/Kernel 3.2 only
     - Enable RUNTIME_PM_ALL by default
     - Do not touch kernel settings if param is empty or commented:
         DISK_IDLE_SECS_ON, MAX_LOST_WORK_SECS_ON,
