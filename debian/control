@@ -11,7 +11,7 @@ Homepage: http://linrunner.de/tlp
 Package: tlp
 Architecture: all
 Depends: ${misc:Depends},
-         util-linux,
+         util-linux (>= 2.17),
          pm-utils
 Recommends: tlp-rdw,
             ethtool,
