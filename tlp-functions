@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.5.901"
+readonly TLPVER="0.6"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -407,7 +407,7 @@ set_dirty_parms () { # set filesystem buffer params
     fi
 
     # calc age in centisecs, non numeric values result in "0"
-    cage=$(($age * 100)) 
+    cage=$(($age * 100))
 
     if [ "$cage" = "0" ]; then
         # do nothing if unconfigured or invalid age
@@ -774,7 +774,7 @@ set_disk_spindown_timeout () { # set disk spindown timeout
     fi
 
     # exit if empty timeoutlist
-    [ $# -gt 0 ] || return 0 
+    [ $# -gt 0 ] || return 0
 
     # pairwise iteration DISK_DEVICES[1,n], timeoutlist[1,m]; m > 0
     #  for j in [1,n]: disk_dev[j], timeoutlist[min(j,m)]
@@ -1495,7 +1495,7 @@ normalize_thresholds () { # check values and enforce start < stop - 3
         # check for 1..3 digits, replace with empty string if non-numeric chars are contained
         thresh=$(echo "$thresh" | egrep '^[0-9]{1,3}$')
         # replace empty string with -1
-        [ -z "$thresh" ] && thresh=-1 
+        [ -z "$thresh" ] && thresh=-1
 
         # ensure min/max values; replace 0 with defaults 96/100
         case $type in
@@ -1774,7 +1774,7 @@ get_sysval () { # $1: file; rc: sysfile value
     [ -f $sysf ] && val=$(cat $sysf 2> /dev/null)
 
     # replace with 0 if empty string or non-numeric chars are contained
-    [ -z "$(echo "$val" | egrep '^[0-9]+$')" ] && val=0 
+    [ -z "$(echo "$val" | egrep '^[0-9]+$')" ] && val=0
 
     return $val
 }

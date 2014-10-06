@@ -1,6 +1,4 @@
-+++ 0.6 --- ??.??.???? +++
-
-  *** Development version ***
++++ 0.6 --- 06.10.2014 +++
 
   * Features
     - Set systemd service type to simple, allows tlp service

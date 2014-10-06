@@ -167,7 +167,7 @@ check_ata_errors () { # check kernel log for ata errors
         # config values != max_performance exist --> check kernel log
 
         # count matching error lines
-        echo $( dmesg | egrep -c "ata[0-9]+: SError: { .*CommWake }" 2> /dev/null )
+        echo $( dmesg | egrep -c "ata[0-9]+: SError: {.*CommWake.*}" 2> /dev/null )
     else
         # no values in question configured 
         echo "0"
