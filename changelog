@@ -1,3 +1,10 @@
++++ 0.6.001 --- 15.10.2014 +++
+
+  *** Development release ***
+
+  * Bugfixes
+    - Exclude pseudo usb disks (Raphaël Halimi)
+
 +++ 0.6 --- 06.10.2014 +++
 
   * Features
