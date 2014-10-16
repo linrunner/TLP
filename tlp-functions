@@ -47,7 +47,7 @@ readonly USB_TIMEOUT_MS=2000
 readonly USB_WWAN_VENDORS="0bdb 05c6 1199"
 readonly USB_DONE=usb_done
 
-readonly TPMODULES="thinkpad_acpi tp_smapi coretemp acpi_call"
+readonly MODULES="acpi_call coretemp msr thinkpad_acpi tp_smapi"
 
 readonly STATEDIR="/var/lib/tlp"
 readonly RFSTATEFILE=$STATEDIR/rfkill-saved
@@ -172,7 +172,7 @@ read_defaults () { # read config file
 
 # --- Kernel Modules
 
-load_tp_modules () { # load ThinkPad specific kernel modules
+load_modules () { # load needed kernel modules
     local mod
 
     # verify module loading is allowed (else explicitly disabled)
@@ -180,7 +180,7 @@ load_tp_modules () { # load ThinkPad specific kernel modules
     [ "${TLP_LOAD_MODULES:-y}" = "y" ] && [ -e /proc/modules ] || return 0
 
     # load modules, ignore any errors
-    for mod in $TPMODULES; do
+    for mod in $MODULES; do
         $MODPRO $mod > /dev/null 2>&1
     done
     return 0

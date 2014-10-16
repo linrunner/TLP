@@ -271,7 +271,7 @@ conf_present=$?
 # check prereqisites
 if [ "$needs_root_priv" = "1" ]; then
     check_root
-    load_tp_modules
+    load_modules
     check_tpacpi
     check_tpsmapi
 fi
