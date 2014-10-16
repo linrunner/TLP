@@ -1,8 +1,10 @@
 tlp (0.6.001-1) unstable; urgency=medium
 
-  * Testing package
+  *** Testing package ***
+  * debian/control:
+    - add depends: hdparm, iw | wireless-tools, rfkill
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 10 Oct 2014 20:21:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 15 Oct 2014 21:21:42 +0200
 
 tlp (0.6-1) unstable; urgency=low
 

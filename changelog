@@ -4,6 +4,8 @@
 
   * Bugfixes
     - Exclude pseudo usb disks (Raphaël Halimi)
+    - Issue #94: do not touch sleeping hybrid radeon graphics
+        with radeon dpm and runtime pm (Lathanderjk)
 
 +++ 0.6 --- 06.10.2014 +++
 

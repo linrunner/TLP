@@ -3,27 +3,30 @@ Maintainer: Thomas Koch <linrunner@gmx.net>
 Section: utils
 Priority: optional
 Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.5
-Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/tlp.git
-Vcs-Git: git://anonscm.debian.org/collab-maint/tlp.git
+Standards-Version: 3.9.6
 Homepage: http://linrunner.de/tlp
 
 Package: tlp
 Architecture: all
 Depends: ${misc:Depends},
-         util-linux (>= 2.17),
-         pm-utils
+         hdparm,
+         iw | wireless-tools,
+         pm-utils,
+         rfkill,
+         util-linux (>= 2.17)
 Recommends: tlp-rdw,
             ethtool,
-            smartmontools,
-            wireless-tools
+            smartmontools
 Suggests: tp-smapi-dkms,
           acpi-call-dkms
 Conflicts: laptop-mode-tools
 Description: Save battery power on laptops
- TLP implements advanced power management for Linux. TLP is a pure
- command line tool with automated background tasks. It does not
- contain a GUI.
+ TLP is an advanced power management tool for Linux. It comes with a
+ default configuration already optimized for battery life. At the same
+ time it is highly customizable to fulfil specific user requirements.
+ .
+ TLP is a pure command line tool with automated background tasks, it
+ does not contain a GUI.
 
 Package: tlp-rdw
 Architecture: all
@@ -31,4 +34,8 @@ Depends: ${misc:Depends},
          network-manager,
          tlp
 Description: Radio device wizard
- Switch radios upon network connect/disconnect and dock/undock.
+ Radio device wizard is an add-on to TLP. It provides event based
+ switching of
+  - bluetooth, wifi, wwan radio devices
+  - upon network connect/disconnect
+  - and dock/undock.
