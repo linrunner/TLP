@@ -1981,7 +1981,7 @@ discharge_battery () { # discharge battery
 
 get_drivebay_device () { # Find generic dock interface for drive bay
                          # rc: 0; retval: $dock
-	dock=$(grep -l ata_bay /sys/devices/platform/dock.?/type)
+	dock=$(grep -l ata_bay /sys/devices/platform/dock.?/type 2> /dev/null)
 	dock=${dock%%/type}
 	if [ ! -d "$dock" ]; then
 		dock=""
