@@ -1,12 +1,13 @@
 # ------------------------------------------------------------------------------
 # tlp - Parameters for power save
 
-# Hint: some features are disabled by default, remove the leading # to enable them
+# Hint: some features are disabled by default, remove the leading # to enable
+# them.
 
-# Set to 0 to disable/1 to enable TLP
+# Set to 0 to disable / 1 to enable TLP.
 TLP_ENABLE=1
 
-# Seconds laptop mode has to to wait after the disk goes idle before doing a sync.
+# Seconds laptop mode has to wait after the disk goes idle before doing a sync.
 # Non-zero value enables, zero disables laptop mode.
 DISK_IDLE_SECS_ON_AC=0
 DISK_IDLE_SECS_ON_BAT=2
@@ -15,16 +16,18 @@ DISK_IDLE_SECS_ON_BAT=2
 MAX_LOST_WORK_SECS_ON_AC=15
 MAX_LOST_WORK_SECS_ON_BAT=60
 
-# Select a cpu frequency scaling governor: ondemand/powersave/performance/conservative
-# Intel Core i processor with intel_pstate driver: powersave/performance 
+# Select a CPU frequency scaling governor: ondemand, powersave, performance,
+# conservative.
+# Intel Core i processor with intel_pstate driver: powersave/performance.
 # Important:
-# - You *must* disable your distribution's governor settings or conflicts will occur
-# - ondemand is sufficient for *almost all* workloads, you should know what you're doing!
+#   You *must* disable your distribution's governor settings or conflicts will 
+#   occur.  ondemand is sufficient for *almost all* workloads, you should know
+#   what you're doing!
 #CPU_SCALING_GOVERNOR_ON_AC=ondemand
 #CPU_SCALING_GOVERNOR_ON_BAT=ondemand
 
 # Set the min/max frequency available for the scaling governor.
-# Possible values strongly depend on your cpu. For available frequencies see
+# Possible values strongly depend on your CPU. For available frequencies see
 # tlp-stat output, Section "+++ Processor".
 # Hint: Parameters are disabled by default, remove the leading # to enable them,
 #       otherwise kernel default values are used.
@@ -33,33 +36,34 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #CPU_SCALING_MIN_FREQ_ON_BAT=0
 #CPU_SCALING_MAX_FREQ_ON_BAT=0
 
-# Set the cpu "turbo boost" feature: 0=disable / 1=allow
+# Set the CPU "turbo boost" feature: 0=disable, 1=allow
 # Requires an Intel Core i processor and kernel 3.7 or later.
 # Important:
-# - This may conflict with your distribution's governor settings
-# - A value of 1 does *not* activate boosting, it just allows it
+# - This may conflict with your distribution's governor settings.
+# - A value of 1 does *not* activate boosting, it just allows it.
 #CPU_BOOST_ON_AC=1
 #CPU_BOOST_ON_BAT=0
 
-# Minimize number of used cpu cores/hyper-threads under light load conditions
+# Minimize number of used CPU cores/hyper-threads under light, load conditions.
 SCHED_POWERSAVE_ON_AC=0
 SCHED_POWERSAVE_ON_BAT=1
 
 # Kernel NMI Watchdog
-# 0=disable (default, saves power) / 1=enable (for kernel debugging only)
+# 0=disable (default, saves power), 1=enable (for kernel debugging only)
 NMI_WATCHDOG=0
 
-# Change CPU voltages aka "undervolting" - Kernel with PHC patch required
-# Freq:voltage pairs are written to /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
+# Change CPU voltages (a.k.a. "undervolting"), kernel with PHC patch required.
+# Freq. voltage pairs are written to:
+# /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
 # CAUTION: only use this, if you thoroughly understand what you are doing!
 #PHC_CONTROLS="F:V F:V F:V F:V"
 
-# Hard disk devices, separate multiple devices with spaces (default: sda).
-# Devices can be specified by disk id too (lookup with: tlp diskid).
+# Hard disk devices; separate multiple devices with spaces (default: sda).
+# Devices can be specified by disk ID also (lookup with: tlp diskid).
 DISK_DEVICES="sda sdb"
 
-# Hard disk advanced power management level: 1(max saving)..254(off)
-# Levels 1..127 may spin down the disk.
+# Hard disk advanced power management level: 1...254,255 (max saving, min, off)
+# Levels 1..127 may spin down the disk; 255 allowable on most drives.
 # Separate values for multiple devices with spaces.
 DISK_APM_LEVEL_ON_AC="254 254"
 DISK_APM_LEVEL_ON_BAT="128 128"
@@ -72,7 +76,7 @@ DISK_APM_LEVEL_ON_BAT="128 128"
 #DISK_SPINDOWN_TIMEOUT_ON_AC="0 0"
 #DISK_SPINDOWN_TIMEOUT_ON_BAT="0 0"
 
-# Select io scheduler for the disk devices: noop/deadline/cfq (Default: cfq)
+# Select IO scheduler for the disk devices: noop/deadline/cfq (Default: cfq);
 # Separate values for multiple devices with spaces.
 #DISK_IOSCHED="cfq cfq"
 
@@ -86,27 +90,27 @@ SATA_LINKPWR_ON_BAT=min_power
 PCIE_ASPM_ON_AC=performance
 PCIE_ASPM_ON_BAT=powersave
 
-# Radeon graphics clock speed (profile method): low/mid/high/auto/default
+# Radeon graphics clock speed (profile method): low/mid/high/auto/default.
 # auto = mid on BAT, high on AC; default = use hardware defaults
-# (Kernel >= 2.6.35 only, not with fglrx driver!)
+# (Kernel >= 2.6.35 only, open-source radeon driver explicitly.)
 RADEON_POWER_PROFILE_ON_AC=high
 RADEON_POWER_PROFILE_ON_BAT=low
 
-# New radeon dynamic power management method (dpm): battery/performance
+# Radeon dynamic power management method (DPM): battery/performance.
 # (Kernel >= 3.11 only, requires boot option radeon.dpm=1)
 RADEON_DPM_STATE_ON_AC=performance
 RADEON_DPM_STATE_ON_BAT=battery
 
-# New radeon dpm performance level: auto/low/high (auto is recommended)
+# New radeon DPM performance level: auto/low/high (auto is recommended).
 RADEON_DPM_PERF_LEVEL_ON_AC=auto
 RADEON_DPM_PERF_LEVEL_ON_BAT=auto
 
-# WiFi power saving mode: 1=disable/5=enable
+# WiFi power saving mode: 1=disable/5=enable.
 # (Linux 2.6.32 and later, some adapters only!)
 WIFI_PWR_ON_AC=1
 WIFI_PWR_ON_BAT=5
 
-# Disable wake on lan: Y/N
+# Disable wake on LAN: Y/N
 WOL_DISABLE=Y
 
 # Enable audio power saving for Intel HDA, AC97 devices (timeout in secs).
@@ -117,66 +121,67 @@ SOUND_POWER_SAVE_ON_BAT=1
 # Disable controller too (HDA only): Y/N
 SOUND_POWER_SAVE_CONTROLLER=Y
 
-# Set to 1 to power off optical drive in UltraBay/MediaBay when running
-# on battery. A value of 0 disables this Feature (Default).
-# Drive can be powered on again by releasing (and reinserting) the
-# eject lever or by pressing the disc eject button on newer models.
+# Set to 1 to power off optical drive in UltraBay/MediaBay when running on
+# battery. A value of 0 disables this Feature (Default).
+# Drive can be powered on again by releasing (and reinserting) the eject lever
+# or by pressing the disc eject button on newer models.
 # Note: an UltraBay/MediaBay hard disk is never powered off.
 BAY_POWEROFF_ON_BAT=0
-# Optical drive device to power off (default sr0)
+# Optical drive device to power off (default sr0).
 BAY_DEVICE="sr0"
 
-# Runtime Power Management for pci(e) bus devices
+# Runtime Power Management for PCI(E) bus devices.
 # (Kernel >= 2.6.35 only): on=disable/auto=enable
 RUNTIME_PM_ON_AC=on
 RUNTIME_PM_ON_BAT=auto
 
-# Runtime PM for *all* pci(e) bus devices, except blacklisted ones:
+# Runtime PM for *all* PCI(E) bus devices, except blacklisted ones:
 # 0=disable / 1=enable
 RUNTIME_PM_ALL=1
 
-# Exclude pci(e) device adresses the following list from Runtime PM
+# Exclude PCI(E) device adresses the following list from Runtime PM
 # (separate with spaces). Use lspci to get the adresses (1st column).
 #RUNTIME_PM_BLACKLIST="bb:dd.f 11:22.3 44:55.6"
 
-# Set to 0 to disable/1 to enable usb autosuspend feature
+# Set to 0 to disable/1 to enable USB autosuspend feature.
 USB_AUTOSUSPEND=1
 
-# Devices from the following list are excluded from usb autosuspend
+# Devices from the following list are excluded from USB autosuspend
 # (separate with spaces). Use lsusb to get the ids.
-# Note: input devices (usbhid) are excluded automatically
+# Note: input devices (usbhid) are excluded automatically.
 #USB_BLACKLIST="1111:2222 3333:4444"
 
-# WWAN devices are excluded from usb autosuspend:
+# WWAN devices are excluded from USB autosuspend:
 # 0=do not exclude / 1=exclude
-# Note: works for ids 05c6:* 0bdb:* 1199:* only
+# Note: works for ids 05c6:* 0bdb:* 1199:* only.
 USB_BLACKLIST_WWAN=1
 
 # Set to 1 to disable autosuspend before shutdown/0 to do nothing
-# (workaround for usb devices that cause shutdown problems)
+# (workaround for USB devices that cause shutdown problems)
 #USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN=1
 
-# Restore radio device state (bluetooth, wifi, wwan) from previous shutdown
-# on system startup: 0=disable/1=enable
+# Restore radio device state (Bluetooth, WiFi, WWAN) from previous shutdown
+# on system startup: 0=disable/1=enable.
 # Hint: the parameters DEVICES_TO_DISABLE/ENABLE_ON_STARTUP/SHUTDOWN below
 #       are ignored when this is enabled!
 RESTORE_DEVICE_STATE_ON_STARTUP=0
 
-# Radio devices to disable on startup: bluetooth wifi wwan
+# Radio devices to disable on startup: bluetooth wifi wwan.
 #DEVICES_TO_DISABLE_ON_STARTUP="bluetooth wifi wwan"
 
-# Radio devices to enable on startup: bluetooth wifi wwan
+# Radio devices to enable on startup: bluetooth wifi wwan.
 #DEVICES_TO_ENABLE_ON_STARTUP="wifi"
 
 # Radio devices to disable on shutdown: bluetooth wifi wwan
-# (workaround for devices that are blocking shutdown)
+# (workaround for devices that are blocking shutdown).
 #DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi wwan"
 
 # Radio devices to enable on shutdown: bluetooth wifi wwan
-# (to prevent other operating systems from missing radios)
+# (to prevent other operating systems from missing radios).
 #DEVICES_TO_ENABLE_ON_SHUTDOWN="wwan"
 
-# Battery charge thresholds (ThinkPad only, tp-smapi or acpi-call kernel module required)
+# Battery charge thresholds (ThinkPad only, tp-smapi or acpi-call kernel module
+# required).
 # Charging starts when the remaining capacity falls below the START_CHARGE_TRESH
 # value and stops when exceeding the STOP_CHARGE_TRESH value.
 # Main battery (values in %)
@@ -190,23 +195,23 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 # tlp-rdw - Parameters for the radio device wizard
 # Possible devices: bluetooth/wifi/wwan
 
-# Hint: parameters are disabled by default, remove the leading # to enable them
+# Hint: parameters are disabled by default, remove the leading # to enable them.
 
-# Radio devices to disable on connect
+# Radio devices to disable on connect.
 #DEVICES_TO_DISABLE_ON_LAN_CONNECT="wifi wwan"
 #DEVICES_TO_DISABLE_ON_WIFI_CONNECT="wwan"
 #DEVICES_TO_DISABLE_ON_WWAN_CONNECT="wifi"
 
-# Radio devices to enable on disconnect
+# Radio devices to enable on disconnect.
 #DEVICES_TO_ENABLE_ON_LAN_DISCONNECT="wifi wwan"
 #DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT=""
 #DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT=""
 
-# Radio devices to enable/disable when docked
+# Radio devices to enable/disable when docked.
 #DEVICES_TO_ENABLE_ON_DOCK=""
 #DEVICES_TO_DISABLE_ON_DOCK=""
 
-# Radio devices to enable/disable when undocked
+# Radio devices to enable/disable when undocked.
 #DEVICES_TO_ENABLE_ON_UNDOCK="wifi"
 #DEVICES_TO_DISABLE_ON_UNDOCK=""
 
