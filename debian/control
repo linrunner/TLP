@@ -16,6 +16,7 @@ Depends: ${misc:Depends},
          util-linux (>= 2.17)
 Recommends: tlp-rdw,
             ethtool,
+            linux-tools,
             smartmontools
 Suggests: tp-smapi-dkms,
           acpi-call-dkms

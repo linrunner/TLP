@@ -1,4 +1,4 @@
-TLP README - 25.03.2014
+TLP README - 16.10.2014
 
 TLP brings you the benefits of advanced power management for Linux without the need
 to understand every technical detail. TLP comes with a default configuration already
@@ -11,6 +11,7 @@ Settings depending on the power source ac/bat:
 - Kernel laptop mode and dirty buffer params
 - Processor frequency scaling including "turbo boost" / "turbo core"
 - Power aware process scheduler for multi-core/hyper-threading
+- X86 energy perf policy
 - Hard disk advanced power magement level and spin down timeout (per disk)
 - SATA aggressive link power management (ALPM)
 - PCIe active state power management (PCIe ASPM) - Kernel 2.6.35 and above

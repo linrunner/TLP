@@ -12,7 +12,6 @@
 # Constants
 
 readonly TLPVER="0.6.001"
-
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
 
@@ -624,12 +623,16 @@ set_energy_perf_policy () { # set x86 energy perf policy
     local perf
 
     if [ "$1" = "1" ]; then
-        perf=${ENERGY_PERF_ON_BAT:-}
+        perf=${ENERGY_PERF_POLICY_ON_BAT:-}
     else
-        perf=${ENERGY_PERF_ON_AC:-}
+        perf=${ENERGY_PERF_POLICY_ON_AC:-}
     fi
 
-    if [ -n "$perf" ]; then
+    if [ -z "$perf" ]; then
+        echo_debug "pm" "set_energy_perf_policy($1).not_configured"
+    elif ! cmd_exists $ENERGYPERF; then
+        echo_debug "pm" "set_energy_perf_policy($1).not_available"
+    else
         echo_debug "pm" "set_energy_perf_policy($1): $perf"
         $ENERGYPERF $perf
         return $?

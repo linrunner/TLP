@@ -54,10 +54,10 @@ NMI_WATCHDOG=0
 # CAUTION: only use this, if you thoroughly understand what you are doing!
 #PHC_CONTROLS="F:V F:V F:V F:V"
 
-# Set x86 energy perf policy: performance normal powersave
+# Set x86 energy perf policy: performance/normal/powersave
 # Requires kernel module msr and program x86_energy_perf_policy from linux-tools
-ENERGY_PERF_ON_AC=performance
-ENERGY_PERF_ON_BAT=powersave
+ENERGY_PERF_POLICY_ON_AC=performance
+ENERGY_PERF_POLICY_ON_BAT=powersave
 
 # Hard disk devices, separate multiple devices with spaces (default: sda).
 # Devices can be specified by disk id too (lookup with: tlp diskid).

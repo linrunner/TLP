@@ -1,6 +1,9 @@
-+++ 0.6.001 --- 15.10.2014 +++
++++ 0.6.001 --- 16.10.2014 +++
 
   *** Development release ***
+
+  * Features
+    - Set x86 energy perf policy
 
   * Bugfixes
     - Exclude pseudo usb disks (Raphaël Halimi)
