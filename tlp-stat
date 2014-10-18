@@ -684,9 +684,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
                 if check_tp_battery $batt; then # battery is present
                     case $bat_idx in
-                        1) echo "+++ ThinkPad Battery Status (Main)" ;;
-                        2) echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
-                        0) echo "+++ ThinkPad Battery Status" ;;
+                        1) echo "+++ ThinkPad Battery Status: $batt (Main / Internal)" ;;
+                        2) echo "+++ ThinkPad Battery Status: $batt (Ultrabay / Slice / Replaceable)" ;;
+                        0) echo "+++ ThinkPad Battery Status: $batt" ;;
                     esac
 
                     printparm "%-59s = ##%s##" $batd/manufacturer
@@ -727,9 +727,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 if [ $tpacpi -eq 0 ]; then
                     # it's a ThinkPad with tpacpi-bat only
                     case $bat_idx in
-                        1) echo "+++ ThinkPad Battery Status (Main)" ;;
-                        2) echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
-                        0) echo "+++ ThinkPad Battery Status" ;;
+                        1) echo "+++ ThinkPad Battery Status: $batt (Main / Internal)" ;;
+                        2) echo "+++ ThinkPad Battery Status: $batt (Ultrabay / Slice / Replaceable)" ;;
+                        0) echo "+++ ThinkPad Battery Status: $batt" ;;
                     esac
                 else
                    # it's a ThinkPad with neither tp-smapi nor tpacpi-bat 
