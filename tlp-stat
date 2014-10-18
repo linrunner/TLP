@@ -498,7 +498,8 @@ if [ "$show_all" = "1" ]; then
                     1) echo "          TRIM      = supported" ;;
                 esac
 
-                echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
+                [ -f /sys/block/$disk_dev/queue/scheduler ] && \
+                    echo "          Scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
 
                 if cmd_exists $SMARTCTL ; then
                     # --- show SMART data
