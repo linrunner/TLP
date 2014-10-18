@@ -15,7 +15,7 @@ done
 if [ -n "$blocked" ] && [ -x "$blocked" ]; then
     # else nothing to disable -> don't read $CONFFILE
 
-    if [ -e "$CONFFILE" ] && . "$CONFFILE" -- && [ "$TLP_ENABLE" = '1' ]; then
+    if [ -e "$CONFFILE" ] && . "$CONFFILE" && [ "$TLP_ENABLE" = '1' ]; then
         # TLP is enabled -> disable $blocked
         echo "Notice: '${blocked}' disabled by TLP."
     else

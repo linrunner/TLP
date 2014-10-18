@@ -163,7 +163,7 @@ add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
 
 read_defaults () { # read config file
     if [ -f $CONFFILE ]; then
-        . $CONFFILE --
+        . $CONFFILE
         return 0
     else
         return 1
