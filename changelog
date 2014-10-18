@@ -1,4 +1,4 @@
-+++ 0.6 --- 16.10.2014 +++
++++ 0.6 --- 18.10.2014 +++
 
   *** Development release ***
 
@@ -9,6 +9,9 @@
     - Exclude pseudo usb disks (Raphaël Halimi)
     - Issue #94: do not touch sleeping hybrid radeon graphics
         with radeon dpm and runtime pm (Lathanderjk)
+
+  * Misc
+    - Add AUTHORS file
 
 +++ 0.6 --- 06.10.2014 +++
 
