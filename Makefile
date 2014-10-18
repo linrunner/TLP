@@ -92,6 +92,7 @@ uninstall-tlp:
 	rm -f $(_TLIB)/tpacpi-bat
 	rm $(_TLIB)/tlp-functions
 	rm $(_TLIB)/tlp-rf-func
+	rm $(_TLIB)/tlp-nop
 	rmdir $(_TLIB)
 	rm $(_ULIB)/tlp-usb-udev
 	rm $(_ULIB)/rules.d/40-tlp.rules
