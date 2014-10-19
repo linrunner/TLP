@@ -57,7 +57,7 @@ readonly BAYSTATEFILE=$STATEDIR/bay-saved
 readonly DISK_NOP_WORDS="_ keep"
 readonly DEFAULT_DISK_DEVICES="sda"
 readonly DEFAULT_DISK_IO_SCHEDULER="cfq"
-readonly DEFAULT_PM_DRIVER_BLACKLIST="radeon nvidia"
+readonly DEFAULT_PM_DRIVER_BLACKLIST="radeon nouveau"
 
 # ----------------------------------------------------------------------------
 # Functions

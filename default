@@ -149,9 +149,9 @@ RUNTIME_PM_ALL=1
 
 # Exclude PCI(e) devices assigned to the listed drivers from Runtime PM
 # (should prevent accidential power on of hybrid graphics' discrete part).
-# Default is "radeon nvidia"; use "" to disable this feature completely.
+# Default is "radeon nouveau"; use "" to disable this feature completely.
 # Separate multiple drivers with spaces. 
-RUNTIME_PM_DRIVER_BLACKLIST="radeon nvidia"
+RUNTIME_PM_DRIVER_BLACKLIST="radeon nouveau"
 
 # Set to 0 to disable, 1 to enable USB autosuspend feature.
 USB_AUTOSUSPEND=1
