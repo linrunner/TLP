@@ -4,6 +4,8 @@
 
   * Features
     - Set x86 energy perf policy
+    - RUNTIME_PM_DRIVER_BLACKLIST: exclude PCI(e) devices assigned to drivers
+      (solves issue #94)
 
   * Bugfixes
     - Exclude pseudo usb disks (Raphaël Halimi)
