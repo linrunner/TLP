@@ -147,6 +147,12 @@ RUNTIME_PM_ALL=1
 # (separate with spaces). Use lspci to get the adresses (1st column).
 #RUNTIME_PM_BLACKLIST="bb:dd.f 11:22.3 44:55.6"
 
+# Exclude PCI(e) devices assigned to the listed drivers from Runtime PM
+# (should prevent accidential power on of hybrid graphics' discrete part).
+# Default is "radeon nvidia"; use "" to disable this feature completely.
+# Separate multiple drivers with spaces. 
+RUNTIME_PM_DRIVER_BLACKLIST="radeon nvidia"
+
 # Set to 0 to disable, 1 to enable USB autosuspend feature.
 USB_AUTOSUSPEND=1
 
