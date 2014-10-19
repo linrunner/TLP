@@ -2158,6 +2158,8 @@ poweroff_drivebay () { # power off optical drive in drive bay
         else
             echo_debug "pm" "poweroff_drivebay: optdrv=$optdrv"
 
+            echo -n "Powering off drive bay..."
+
             # Unmount media
             umount -l $optdrv > /dev/null 2>&1
 
@@ -2185,7 +2187,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
 
             # Turn power off
             echo 1 > $dock/undock
-            [ "$1" = "1" ] && echo "Bay is powered off now."
+            [ "$1" = "1" ] && echo "done."
             echo_debug "pm" "poweroff_drivebay.bay_powered_off"
         fi
     fi
