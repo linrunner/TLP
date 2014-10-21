@@ -352,6 +352,12 @@ if [ "$show_all" = "1" ]; then
         fi
     done
 
+    if cmd_exists $ENERGYPERF; then
+        echo "x86 energy perf policy:"
+        $ENERGYPERF -r 2>/dev/null | sed 's/0x0000000000000000/performance/;s/0x0000000000000006/normal/;s/0x000000000000000f/powersave/'
+        echo
+    fi
+
     check_intel_pstate
 
     if [ $intel_pstate -eq 1 ]; then
