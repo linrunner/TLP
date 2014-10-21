@@ -494,6 +494,12 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
 set_cpu_perf_pct () { # set intel pstate perf pct -- $1: 0=ac mode, 1=battery mode
     local min max
 
+    check_intel_pstate
+    if [ "$intel_pstate" != "1" ]; then
+        echo_debug "pm" "set_cpu_perf_pct($1).no_intel_pstate"
+        return 0
+    fi
+
     if [ "$1" = "1" ]; then
         min="${CPU_MIN_PERF_ON_BAT:-}"
         max="${CPU_MAX_PERF_ON_BAT:-}"
@@ -502,19 +508,25 @@ set_cpu_perf_pct () { # set intel pstate perf pct -- $1: 0=ac mode, 1=battery mo
         max="${CPU_MAX_PERF_ON_AC:-}"
     fi
 
-    if [ -n "$min" ] && [ -f $CPU_MIN_PERF_PCT ]; then
+    if [ ! -f $CPU_MIN_PERF_PCT ]; then
+        echo_debug "pm" "set_cpu_perf_pct($1).min.not_supported"
+    elif [ -n "$min" ]; then
         { echo "$min" > $CPU_MIN_PERF_PCT; } 2> /dev/null
         echo_debug "pm" "set_cpu_perf_pct($1).min: $min"
     else
         echo_debug "pm" "set_cpu_perf_pct($1).min.not_configured"
     fi
 
-    if [ -n "$max" ] && [ -f $CPU_MAX_PERF_PCT ]; then
+    if [ ! -f $CPU_MAX_PERF_PCT ]; then
+        echo_debug "pm" "set_cpu_perf_pct($1).max.not_supported"
+    elif [ -n "$max" ]; then
         { echo "$max" > $CPU_MAX_PERF_PCT; } 2> /dev/null
         echo_debug "pm" "set_cpu_perf_pct($1).max: $max"
     else
         echo_debug "pm" "set_cpu_perf_pct($1).max.not_configured"
     fi
+
+    return 0
 }
 
 set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode

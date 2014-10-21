@@ -16,6 +16,9 @@ DISK_IDLE_SECS_ON_BAT=2
 MAX_LOST_WORK_SECS_ON_AC=15
 MAX_LOST_WORK_SECS_ON_BAT=60
 
+# Hint: CPU parameters below are disabled by default, remove the leading #
+# to enable them, otherwise kernel default values are used.
+
 # Select a cpu frequency scaling governor:
 #   ondemand, powersave, performance, conservative
 # Intel Core i processor with intel_pstate driver:
@@ -30,24 +33,22 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 # Set the min/max frequency available for the scaling governor.
 # Possible values strongly depend on your CPU. For available frequencies see
 # tlp-stat output, Section "+++ Processor".
-# Hint: Parameters are disabled by default, remove the leading # to enable them,
-#       otherwise kernel default values are used.
 #CPU_SCALING_MIN_FREQ_ON_AC=0
 #CPU_SCALING_MAX_FREQ_ON_AC=0
 #CPU_SCALING_MIN_FREQ_ON_BAT=0
 #CPU_SCALING_MAX_FREQ_ON_BAT=0
 
-# Set intel pstate perf pct: 0..100
-#   max - limits the maximum P state that will be requested by the driver stated as a percentage of the avail performance
-#   min - limits the minimum P state that will be requested by the driver stated as a percentage of the avail performance
-# Requires an Intel Core i processor
-#CPU_MIN_PERF_ON_AC=100
+# Set Intel P-state perf pct: 0..100 (%)
+# Limits the max/min P-state and thus the power dissipation of the CPU.
+# Values are stated as a percentage of the avail performance.
+# Requires an Intel Core i processor with intel_pstate driver.
+#CPU_MIN_PERF_ON_AC=0
 #CPU_MAX_PERF_ON_AC=100
 #CPU_MIN_PERF_ON_BAT=0
 #CPU_MAX_PERF_ON_BAT=30
 
 # Set the CPU "turbo boost" feature: 0=disable, 1=allow
-# Requires an Intel Core i processor and kernel 3.7 or later.
+# Requires an Intel Core i processor.
 # Important:
 # - This may conflict with your distribution's governor settings
 # - A value of 1 does *not* activate boosting, it just allows it
