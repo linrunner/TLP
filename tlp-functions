@@ -2167,10 +2167,11 @@ check_is_docked() { # check if $dock is docked;
 
    # return 0 if any sysfs file indicates "docked"
    for dock_info_file in docked firmware_node/status; do
-      if read -r dock_status < "$dock/$dock_info_file" 2>/dev/null; then
-         # catch empty $dock_status (safety check, unlikely case)
-         [ "${dock_status:-0}" != "0" ] && return 0
-      fi
+        if [ -f $dock/$dock_info_file ] && \
+            read -r dock_status= < $dock/$dock_info_file 2>/dev/null; then
+            # catch empty $dock_status (safety check, unlikely case)
+            [ "${dock_status:-0}" != "0" ] && return 0
+        fi
    done
 
    # otherwise assume "not docked"
