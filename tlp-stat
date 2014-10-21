@@ -352,9 +352,17 @@ if [ "$show_all" = "1" ]; then
         fi
     done
 
+    if cmd_exists $ENERGYPERF; then
+        echo "x86 energy perf policy:"
+        $ENERGYPERF -r 2>/dev/null | sed 's/0x0000000000000000/performance/;s/0x0000000000000006/normal/;s/0x000000000000000f/powersave/'
+        echo
+    fi
+
     check_intel_pstate
 
     if [ $intel_pstate -eq 1 ]; then
+        printparm "%-54s = ##%d##" $CPU_MIN_PERF_PCT
+        printparm "%-54s = ##%d##" $CPU_MAX_PERF_PCT
         printparm "%-54s = ##%d##" $CPU_TURBO_PSTATE
     elif [ -f $CPU_BOOST_ALL_CTRL ]; then
         get_sysval $CPU_BOOST_ALL_CTRL; boost=$?
@@ -601,7 +609,22 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
         get_devs $i
         echo_device_state $i $devs
     done
-    echo
+
+    # --- show bluetooth
+    get_bluetooth_ifaces
+    for iface in $bifaces; do
+        if [ -n "$iface" ]; then
+            get_bluetooth_driver $iface
+            echo
+            echo "$iface($bluetoothdrv):"
+            echo -n "in use           = "
+            if bluetooth_in_use $iface; then
+                echo "Y"
+            else
+                echo "N"
+            fi
+        fi
+    done
 
     # --- show wifi power mode
     get_wifi_ifaces
@@ -626,11 +649,19 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
             fi
 
             get_wifi_driver $iface
-            echo -n "$iface($wifidrv): power management = "
+            echo
+            echo "$iface($wifidrv):"
+            echo -n "power management = "
             case $wifipm in
                 on|off) echo "$wifipm" ;;
                 *)      echo "unknown" ;;
             esac
+            echo -n "in use           = "
+            if wifi_in_use $iface; then
+                echo "Y"
+            else
+                echo "N"
+            fi
         fi
     done
     [ -n "$wifaces" ] && echo
