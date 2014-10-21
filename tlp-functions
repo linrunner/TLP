@@ -1011,6 +1011,25 @@ set_radeon_profile () { # set radeon power profile
     return 0
 }
 
+set_screen_brightness () { # set screen backlight brightness
+    # $1: 0=ac mode, 1=battery mode
+
+    local brightmax brightvar brightset
+
+    for screen in /sys/class/backlight/*; do
+        # brightness +1 as 0 is being counted as a value, needed to calculate
+        brightmax=$(( $(<"$screen"/max_brightness) + 1 ))
+        if   [ "$1" = 0 ]; then
+            brightvar=$(( $SCREEN_BRIGHTNESS_ON_AC + 1 ))
+            brightset=$(( $brightmax * $brightvar / 10 - 1 ))
+        elif [ "$1" = 1 ]; then
+            brightvar=$(( $SCREEN_BRIGHTNESS_ON_BAT + 1 ))
+            brightset=$(( $brightmax * $brightvar / 10 - 1 ))
+        fi
+        echo "$brightset" > "$screen"/brightness
+    done
+}
+
 set_sound_power_mode () { # set sound chip power modes
     # $1: 0=ac mode, 1=battery mode
 
