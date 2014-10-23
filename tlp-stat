@@ -220,7 +220,7 @@ read_args () { # read command line arguments
             "-p"|"--processor")
                 show_all=0
                 show_proc=1
-                : ${needs_root_priv:=0}
+                needs_root_priv=1
                 ;;
 
             "-r"|"--rfkill")
@@ -344,6 +344,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     sed -rn 's/model name[ \t]+: (.+)/CPU Model      = \1/p' /proc/cpuinfo | head -1
     echo
 
+    # -- show scaling gov and freq info
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
         if [ -f $cpuf/scaling_driver ]; then
             printparm "%-54s = ##%s##" $cpuf/scaling_driver
@@ -368,19 +369,32 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     done
 
+    # --- show x86 energy perf policy info
     if cmd_exists $ENERGYPERF; then
-        echo "x86 energy perf policy:"
-        $ENERGYPERF -r 2>/dev/null | sed 's/0x0000000000000000/performance/;s/0x0000000000000006/normal/;s/0x000000000000000f/powersave/'
+        echo -n "X86 Energy Perf Policy: "
+        # Parse x86_energy_perf_policy output:
+        # - replace numbers with descriptive strings
+        # - remove ":"
+        # - indent and align
+        $ENERGYPERF -r 2>/dev/null | \
+            sed 's/0x0000000000000000/performance/;s/0x0000000000000006/normal/;s/0x000000000000000f/powersave/' | \
+            awk '{ printf "%-5s = %s\n                        ", gensub(/:/, "", "g", $1), $2; }'
         echo
+    else
+        echo "X86 Energy Perf Policy: \"x86_energy_perf_policy\" for your kernel
+              is not installed."
     fi
 
     check_intel_pstate
 
     if [ $intel_pstate -eq 1 ]; then
+        # show Intel P-state info
         printparm "%-54s = ##%d##" $CPU_MIN_PERF_PCT
         printparm "%-54s = ##%d##" $CPU_MAX_PERF_PCT
         printparm "%-54s = ##%d##" $CPU_TURBO_PSTATE
+
     elif [ -f $CPU_BOOST_ALL_CTRL ]; then
+        # show turbo boost info
         get_sysval $CPU_BOOST_ALL_CTRL; boost=$?
 
         # simple test for attribute "w" doesn't work, so actually write
@@ -393,7 +407,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
          printparm "%-54s = (not available)" $CPU_BOOST_ALL_CTRL
     fi
 
-
+    # --- show sched power save info
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
         [ -f $sdev ] && printparm "%-54s = ##%d##" $sdev
