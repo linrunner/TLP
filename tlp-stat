@@ -38,6 +38,8 @@ needs_root_priv=
 show_all=1
 show_bat=0
 show_conf=0
+show_disk=0
+show_proc=0
 show_rfkill=0
 show_temp=0
 show_trace=0
@@ -209,6 +211,18 @@ read_args () { # read command line arguments
                 : ${needs_root_priv:=0}
                 ;;
 
+            "-d"|"--disk")
+                show_all=0
+                show_disk=1
+                needs_root_priv=1
+                ;;
+
+            "-p"|"--processor")
+                show_all=0
+                show_proc=1
+                : ${needs_root_priv:=0}
+                ;;
+
             "-r"|"--rfkill")
                 show_all=0
                 show_rfkill=1
@@ -289,7 +303,7 @@ if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
         echo "Warning: config file $CONFFILE not present." 1>&2
         echo
     fi
-fi
+fi # show_conf
 
 if [ "$show_all" = "1" ]; then
     # --- show system info
@@ -322,7 +336,9 @@ if [ "$show_all" = "1" ]; then
         echo "power source   = battery"
     fi
     echo
+fi # show_all
 
+if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show cpu info
     echo "+++ Processor"
     sed -rn 's/model name[ \t]+: (.+)/CPU Model      = \1/p' /proc/cpuinfo | head -1
@@ -402,8 +418,7 @@ if [ "$show_all" = "1" ]; then
         echo "PHC kernel not available."
         echo
     fi
-
-fi # show_all
+fi # show_proc
 
 if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show temperatures
@@ -451,7 +466,6 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     fi
     echo
-
 fi # show_temp
 
 if [ "$show_all" = "1" ]; then
@@ -466,7 +480,9 @@ if [ "$show_all" = "1" ]; then
     printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/xfssyncd_centisecs
     printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/xfsbufd_centisecs
     echo
+fi # show_all
 
+if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show disk info form hdparm
     echo "+++ Storage Devices"
     : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
@@ -551,7 +567,9 @@ if [ "$show_all" = "1" ]; then
         echo "No AHCI-enabled host controller detected."
     fi
     echo
+fi # show_disk
 
+if [ "$show_all" = "1" ]; then
     # --- show pcie aspm state
     echo "+++ PCIe Active State Power Management"
     if [ -f $ASPM ]; then

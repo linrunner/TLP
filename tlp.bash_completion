@@ -73,7 +73,7 @@ _tlp_stat() {
     local cur opts
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
-    opts="-b --battery -c --config"
+    opts="-b --battery -c --config -d --disk -p --processor -r --rfkill -t --temp -w --warn -T --trace"
 
     if [ $COMP_CWORD -eq 1 ]; then
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
