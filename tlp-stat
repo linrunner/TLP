@@ -369,22 +369,6 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     done
 
-    # --- show x86 energy perf policy info
-    if cmd_exists $ENERGYPERF; then
-        echo -n "X86 Energy Perf Policy: "
-        # Parse x86_energy_perf_policy output:
-        # - replace numbers with descriptive strings
-        # - remove ":"
-        # - indent and align
-        $ENERGYPERF -r 2>/dev/null | \
-            sed 's/0x0000000000000000/performance/;s/0x0000000000000006/normal/;s/0x000000000000000f/powersave/' | \
-            awk '{ printf "%-5s = %s\n                        ", gensub(/:/, "", "g", $1), $2; }'
-        echo
-    else
-        echo "X86 Energy Perf Policy: \"x86_energy_perf_policy\" for your kernel
-              is not installed."
-    fi
-
     check_intel_pstate
 
     if [ $intel_pstate -eq 1 ]; then
@@ -412,6 +396,33 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
         [ -f $sdev ] && printparm "%-54s = ##%d##" $sdev
     done
+    echo
+
+    # --- show x86 energy perf policy info
+    if cmd_exists $ENERGYPERF; then
+        echo -n "X86 Energy Perf Policy: "
+        # check CPU support
+        $ENERGYPERF -r > /dev/null 2>&1
+        case $? in
+            0)  echo -n "                         "
+                # parse x86_energy_perf_policy output:
+                # - replace numbers with descriptive strings
+                # - remove ":"
+                # - indent and align
+                $ENERGYPERF -r 2>/dev/null | \
+                    sed 's/0x0000000000000000/performance/;s/0x0000000000000006/normal/;s/0x000000000000000f/powersave/' | \
+                    awk '{ printf "%-5s = %s\n                                                 ",
+                             gensub(/:/, "", "g", $1), $2; }'
+                ;;
+
+            1) echo "unsupported CPU." ;;
+            2) echo "linux-tools for your kernel are not installed." ;;
+            *) echo "not available." ;;
+        esac
+        echo
+    else
+        echo "X86 Energy Perf Policy: \"linux-tools\" are not installed."
+    fi
 
     # --- show nmi watchdog
     printparm "%-54s = ##%d##" $NMIWD
