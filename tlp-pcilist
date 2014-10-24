@@ -8,8 +8,9 @@
 package tlp_pcilist;
 use strict;
 use warnings;
+use File::Basename;
 
-# Get sysfs value, return empty string if nonexistent or not readable
+# get sysfs value, return empty string if nonexistent or not readable
 sub catsysf {
     my $sysval = "";
     if (open SYSF, "$_[0]") {
@@ -19,14 +20,33 @@ sub catsysf {
     return $sysval;
 }
 
-# Output device list with runtime pm mode and device class
+# output device list with runtime pm mode and device class
 foreach (`lspci -m`) {
+    # parse lspci output: get short PCI(e) id and long description of device
     my ($dev, $classdesc) = /(\S+) \"(.+?)\"/;
+    # join device path
     my $devp = "/sys/bus/pci/devices/0000:$dev";
+    # control file for Runtime PM
     my $devc = "$devp/power/control";
-    if (-f $devc) {
+
+    if (-f $devc) { # control file exists
+
+        # get Runtime PM mode
         my $pmode = catsysf ("$devc");
+        # get device class
         my $class = catsysf ("$devp/class");
-        printf "%s/power/control = %-4s (%s %s)\n", $devp, $pmode, $class, $classdesc;
+
+        # read path to driver from softlink
+        my $driver = readlink ("$devp/driver");
+        if ( (defined $driver) and ($driver ne "") ) {
+            # basename(path) = driver name
+            $driver = basename($driver);
+        } else {
+            # no driver assigned
+            $driver = "no driver";
+        }
+
+        # output device data
+        printf "%s/power/control = %-4s (%s, %s, %s)\n", $devp, $pmode, $class, $classdesc, $driver;
     }
 }
