@@ -1,14 +1,18 @@
-+++ 0.7 --- 24.10.2014 +++
++++ 0.7 --- 25.10.2014 +++
 
   *** Development release ***
 
   * Features
+    - Limit max/min P-state and control power dissipation of the CPU
+      (intel_pstate)
     - Set x86 energy perf policy
-    - Limit max/min P-state and thus power dissipation of the CPU (intel_pstate)
     - RUNTIME_PM_DRIVER_BLACKLIST: exclude PCI(e) devices assigned to drivers;
       default: radeon, nouveau (solves issue #94)
     - Support Dell Latitude docks
-    - tlp-stat: new options -d | --disk, -p | --processor
+    - tlp-stat:
+      - new options -d | --disk, -p | --processor
+      - show driver name in Runtime PM PCI(e) device list
+      - show type and state of docks and device bays
 
   * Bugfixes
     - Exclude pseudo usb disks (Raphaël Halimi)
