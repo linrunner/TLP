@@ -722,6 +722,34 @@ if [ "$show_all" = "1" ]; then
     fi
     echo
 
+    # -- show runtime pm
+    echo "+++ Runtime Power Management"
+    doall=${RUNTIME_PM_ALL:-0}
+
+    if cmd_exists $TLPPCI; then
+        $TLPPCI
+    else
+        echo "Error: missing subcommand $TLPPCI." 1>&2
+    fi
+    echo
+
+    # -- show usb autosuspend
+    echo "+++ USB"
+    if [ "$USB_AUTOSUSPEND" = "1" ]; then
+        echo "tlp usb autosuspend = enabled"
+    else
+        echo "tlp usb autosuspend = not enabled"
+    fi
+    echo "tlp usb blacklist   = ${USB_BLACKLIST:=(not configured)}"
+    echo
+
+    if cmd_exists $TLPUSB; then
+        $TLPUSB
+    else
+        echo "Error: missing subcommand $TLPUSB." 1>&2
+    fi
+    echo
+
 fi # show_all
 
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
@@ -856,34 +884,6 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 fi # show_bat
 
 if [ "$show_all" = "1" ]; then
-    # -- show runtime pm
-    echo "+++ Runtime Power Management"
-    doall=${RUNTIME_PM_ALL:-0}
-
-    if cmd_exists $TLPPCI; then
-        $TLPPCI
-    else
-        echo "Error: missing subcommand $TLPPCI." 1>&2
-    fi
-    echo
-
-    # -- show usb autosuspend
-    echo "+++ USB"
-    if [ "$USB_AUTOSUSPEND" = "1" ]; then
-        echo "tlp usb autosuspend = enabled"
-    else
-        echo "tlp usb autosuspend = not enabled"
-    fi
-    echo "tlp usb blacklist   = ${USB_BLACKLIST:=(not configured)}"
-    echo
-
-    if cmd_exists $TLPUSB; then
-        $TLPUSB
-    else
-        echo "Error: missing subcommand $TLPUSB." 1>&2
-    fi
-    echo
-
     # -- show suggestions
     suout=""
 
