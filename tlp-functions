@@ -51,6 +51,8 @@ readonly USB_TIMEOUT_MS=2000
 readonly USB_WWAN_VENDORS="0bdb 05c6 1199"
 readonly USB_DONE=usb_done
 
+readonly DOCKGLOB="/sys/devices/platform/dock.?"
+
 readonly MODULES="acpi_call coretemp msr thinkpad_acpi tp_smapi"
 
 readonly STATEDIR="/var/lib/tlp"
@@ -2163,7 +2165,7 @@ discharge_battery () { # discharge battery
 
 get_drivebay_device () { # Find generic dock interface for drive bay
                          # rc: 0; retval: $dock
-	dock=$(grep -l ata_bay /sys/devices/platform/dock.?/type 2> /dev/null)
+	dock=$(grep -l ata_bay $DOCKGLOB/type 2> /dev/null)
 	dock=${dock%%/type}
 	if [ ! -d "$dock" ]; then
 		dock=""

@@ -722,6 +722,48 @@ if [ "$show_all" = "1" ]; then
     fi
     echo
 
+    # -- show docks
+    cnt=0
+    for dock in $DOCKGLOB; do
+        [ ! -d $dock ] && break # no dock/bay detected
+
+        # dock/bay detected, print header
+        [ $cnt -eq 0 ] && echo "+++ Docks and Device Bays"
+        cnt=$((cnt+1))
+
+        # get dock type
+        { read -r dock_type < $dock/type; } 2>/dev/null
+
+        # get dock state
+        if check_is_docked; then
+            # docked
+            case $dock_type in
+                ata_bay)      dock_state="drive present" ;;
+                battery_bay)  dock_state="battery present" ;;
+                dock_station) dock_state="docked" ;;
+
+                *)  dock_state="docked"
+                    dock_type="unknown"
+                    ;;
+            esac
+        else
+            # not docked
+            case $dock_type in
+                ata_bay)      dock_state="no drive (or powered off)" ;;
+                battery_bay)  dock_state="no battery " ;;
+                dock_station) dock_state="undocked" ;;
+
+                *)  dock_state="undocked"
+                    dock_type="unknown"
+                    ;;
+            esac
+        fi
+
+        # print dock data
+        printf "%s: %-13s = %s\n" "$dock" "$dock_type" "$dock_state"
+    done
+    [ $cnt -gt 0 ] && echo
+
     # -- show runtime pm
     echo "+++ Runtime Power Management"
     doall=${RUNTIME_PM_ALL:-0}
