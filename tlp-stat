@@ -421,7 +421,8 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         esac
         echo
     else
-        echo "x86_energy_perf_policy: \"linux-tools\" are not installed."
+        echo "x86_energy_perf_policy: linux-tools are not installed."
+        echo
     fi
 
     # --- show nmi watchdog
