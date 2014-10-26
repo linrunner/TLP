@@ -8,6 +8,8 @@
     - Set x86 energy perf policy
     - RUNTIME_PM_DRIVER_BLACKLIST: exclude PCI(e) devices assigned to drivers;
       default: radeon, nouveau (solves issue #94)
+    - USB_DRIVER_BLACKLIST: exclude devices assigned to the listed drivers
+      from USB autosuspend; default: usbhid
     - Support Dell Latitude docks
     - tlp-stat:
       - new options -d | --disk, -p | --processor

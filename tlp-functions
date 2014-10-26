@@ -63,6 +63,7 @@ readonly DISK_NOP_WORDS="_ keep"
 readonly DEFAULT_DISK_DEVICES="sda"
 readonly DEFAULT_DISK_IO_SCHEDULER="cfq"
 readonly DEFAULT_PM_DRIVER_BLACKLIST="radeon nouveau"
+readonly DEFAULT_USB_DRIVER_BLACKLIST="usbhid"
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -1399,7 +1400,7 @@ disable_wake_on_lan () {  # disable WOL
 set_usb_suspend () { # activate usb autosuspend for all devices except input and blacklisted
     # $1: 0=silent/1=report result; $2: on/auto
 
-    local devices usbdev subdev control exc usbid busdev vendor
+    local busdev control devices drv drv_bl exc usbdev usbid subdev vendor
     local ctrlf="control"
     local autof="autosuspend_delay_ms"
 
@@ -1419,14 +1420,23 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                     if wordinlist "$usbid" "$USB_BLACKLIST"; then
                         # device is in blacklist
                         control="on"
-                        exc="_bl"
+                        exc="_dev_black"
                     else
-                        # check for hid subdevices
+                        # check subdevices for blacklisted drivers
+                        drv_bl=${USB_DRIVER_BLACKLIST:-$DEFAULT_USB_DRIVER_BLACKLIST}
+
                         for subdev in $USBD/$usbdev/*:*; do
-                            if [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
-                                control="on"
-                                exc="_hid"
-                                break
+                            if [ -h $subdev/driver ]; then
+                                # Get driver name from device symlink
+                                drv=$(readlink $subdev/driver)
+                                drv=${drv##*/}
+                                # Check against driver blacklist
+                                if wordinlist "$drv" "$drv_bl"; then
+                                    # Driver is blacklisted
+                                    control="on"
+                                    exc="_drv_black"
+                                    break
+                                fi
                             fi
                         done
 
@@ -1437,7 +1447,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                             vendor="$(cat $USBD/$usbdev/idVendor)"
                             if wordinlist "$vendor" "$USB_WWAN_VENDORS"; then
                                 control="on"
-                                exc="_wwan"
+                                exc="_wwan_black"
                             fi
                         fi
                     fi
@@ -1467,9 +1477,9 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                 echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $USBD/$usbdev [$ctrlf $autof]"
             fi
         done
-        [ "$1" = "1" ] && echo "usb autosuspend settings applied."
+        [ "$1" = "1" ] && echo "USB autosuspend settings applied."
     else
-        [ "$1" = "1" ] && echo "Error: usb autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $DEFAULT_FILE." 1>&2
+        [ "$1" = "1" ] && echo "Error: USB autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $DEFAULT_FILE." 1>&2
     fi
 
     # set "startup completion" flag for tlp-usb-udev
