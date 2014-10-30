@@ -45,6 +45,7 @@ my @aslBases = (
   '\_SB.PCI0.LPCB.EC.HKEY',
   '\_SB.PCI0.LPCB.EC0.HKEY',
   '\_SB.PCI0.LPCB.H_EC.HKEY',
+  '\_SB.PCI0.LPC0.EC.HKEY',
 );
 
 sub getMethod($$);
@@ -387,21 +388,27 @@ sub acpiCall($){
   my $call = shift;
 
   if(not -e $acpiCallDev){
+    $ENV{'PATH'} = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin';
     system "modprobe acpi_call";
   }
   if(not -e $acpiCallDev){
     die "Could not find $acpiCallDev. Is module acpi_call loaded?\n";
   }
 
-  my ($val);
-  foreach my $aslBase(@aslBases) {
+  my $val;
+  for my $aslBase(@aslBases) {
     $val = runAcpiCall $call, $aslBase;
-    if (not $val =~ /Error: AE_NOT_FOUND/){
+    if($val !~ /Error: AE_NOT_FOUND/){
       print "Call    : $aslBase.$call\n" if $verbose;
       print "Response: $val\n" if $verbose;
-      last
+      last;
+    }else{
+      $val = undef;
     }
   }
+
+  die "Error: no ASL base found\n" if not defined $val;
+
   return $val;
 }
 sub runAcpiCall($$){
