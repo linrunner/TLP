@@ -11,8 +11,10 @@ Architecture: all
 Depends: ${misc:Depends},
          hdparm,
          iw | wireless-tools,
+         pciutils,
          pm-utils,
          rfkill,
+         usbutils,
          util-linux (>= 2.17)
 Recommends: tlp-rdw,
             ethtool,
