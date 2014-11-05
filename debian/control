@@ -28,6 +28,10 @@ Description: Save battery power on laptops
  default configuration already optimized for battery life. At the same
  time it is highly customizable to fulfil specific user requirements.
  .
+ TLP supplies separate settings profiles for AC and battery power and can
+ enable or disable bluetooth, wifi and wwan radio devices upon system startup.
+ For ThinkPads only it provides battery charge thresholds and recalibration.
+ .
  TLP is a pure command line tool with automated background tasks, it
  does not contain a GUI.
 
