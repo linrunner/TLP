@@ -14,8 +14,7 @@ Depends: ${misc:Depends},
          pciutils,
          pm-utils,
          rfkill,
-         usbutils,
-         util-linux (>= 2.17)
+         usbutils
 Recommends: tlp-rdw,
             ethtool,
             linux-tools,
