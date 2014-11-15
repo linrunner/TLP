@@ -208,14 +208,14 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 #DEVICES_TO_ENABLE_ON_SHUTDOWN="wwan"
 
 # Radio devices to enable on AC: bluetooth wifi wwan
-DEVICES_TO_ENABLE_ON_AC="wifi bluetooth wwan"
+#DEVICES_TO_ENABLE_ON_AC="wifi bluetooth wwan"
 
 # Radio devices to disable on battery: bluetooth wifi wwan
 #DEVICES_TO_DISABLE_ON_BAT="wwan"
 
 # Radio devices to disable on battery when are not in use: bluetooth wifi
 # When laptop is connected to wifi AP then wifi device will not be disabled
-DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE="bluetooth wifi"
+#DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE="bluetooth wifi"
 
 # Battery charge thresholds (ThinkPad only, tp-smapi or acpi-call kernel module
 # required). Charging starts when the remaining capacity falls below the
