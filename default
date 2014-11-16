@@ -229,7 +229,7 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 
 # ------------------------------------------------------------------------------
 # tlp-rdw - Parameters for the radio device wizard
-# Possible devices: bluetooth/wifi/wwan
+# Possible devices: bluetooth, wifi, wwan
 
 # Hints:
 # - Parameters are disabled by default, remove the leading # to enable them.
