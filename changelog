@@ -19,6 +19,7 @@
       - show type and state of docks and device bays
 
   * Bugfixes
+    - Issue #109: tlp-stat: report "unknown" power source when no AC detected
     - Issue #98: do not change autosuspend_delay_ms, keep kernel default
       settings (garyp)
     - Exclude pseudo usb disks (Raphaël Halimi)

@@ -235,25 +235,44 @@ is_thinkpad () { # check for ThinkPad hardware
 
 # --- Power Source
 
-get_power_state () { # get current power source -- rc: 0=ac, 1=battery
+get_sys_power_supply () { # get current power source
+                          # rc: 0=ac, 1=battery, 2=unknown
+
     # Adapted from pm-utils' on_ac_power
     local psrc
-    local rc=1 # battery is default when no ac is available
+    local rc= # battery is default when no ac is available
 
     for psrc in /sys/class/power_supply/*; do
-        if [ -d "$psrc" ] && [ -r "$psrc/type" ] ; then
-            if [ "$(cat $psrc/type 2> /dev/null)" = "Mains" ]; then
-                if [ -r "$psrc/online" ]; then
+        #if [ -f $psrc/type ]; then  ## not necessary - cat 2>.. handles this
+        case "$(cat $psrc/type 2> /dev/null)" in
+            Mains)
                     if [ "$(cat $psrc/online 2> /dev/null)" = "1" ]; then
                         rc=0
                         break
                     fi
-                fi
-            fi
-        fi
+                # else AC not online => keep $rc as-is
+                ;;
+
+            Battery)
+                # set rc to battery, but don't stop looking for AC
+                rc=1
+                ;;
+
+            *)
+                echo_debug "pm" "unknown power supply: ${psrc##*/}"
+                ;;
+        esac
     done
 
+    # set rc to unknown if we haven't seen any AC/bat power source so far
+    : ${rc:=2}
+
     return $rc
+}
+
+get_power_state () { # get current power source -- rc: 0=ac, 1=battery
+    # similar to get_sys_power_supply(), but maps any non-zero value to battery
+    get_sys_power_supply || return 1
 }
 
 echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode

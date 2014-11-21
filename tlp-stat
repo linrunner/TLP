@@ -330,11 +330,12 @@ if [ "$show_all" = "1" ]; then
     check_laptop_mode_tools
 
     # --- show power source
-    if get_power_state; then
-        echo "power source   = ac"
-    else
-        echo "power source   = battery"
-    fi
+    get_sys_power_supply
+    case $? in
+        0) echo "power source   = ac" ;;
+        1) echo "power source   = battery" ;;
+        *) echo "power source   = unknown (using battery settings)" ;;
+    esac
     echo
 fi # show_all
 
