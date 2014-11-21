@@ -1,4 +1,4 @@
-+++ 0.7 --- 05.11.2014 +++
++++ 0.7 --- 21.11.2014 +++
 
   *** Development release ***
 
@@ -10,6 +10,7 @@
       default: radeon, nouveau (solves issue #94)
     - USB_DRIVER_BLACKLIST: exclude devices assigned to the listed drivers
       from USB autosuspend; default: usbhid
+    - USB_BLACKLIST_WWAN: match internal driver list instead of USB vendor ids
     - tpacpi-bat: support for ThinkPad E325 charge thresholds
     - Support Dell Latitude docks
     - tlp-stat:
@@ -18,6 +19,8 @@
       - show type and state of docks and device bays
 
   * Bugfixes
+    - Issue #98: do not change autosuspend_delay_ms, keep kernel default
+      settings (garyp)
     - Exclude pseudo usb disks (Raphaël Halimi)
 
   * Misc

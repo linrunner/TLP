@@ -10,7 +10,7 @@ readonly LOGGER=logger
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT=2
 readonly USB_TIMEOUT_MS=2000
-readonly USB_WWAN_VENDORS="0bdb 05c6 1199"
+readonly USB_WWAN_DRIVERS="cdc_acm cdc_wdm cdc_ether qcserial sierra"
 readonly DEFAULT_USB_DRIVER_BLACKLIST="usbhid"
 
 readonly RUNDIR=/var/run/tlp
@@ -72,9 +72,17 @@ if [ -f $usbdev/power/autosuspend ] || [ -f $usbdev/power/autosuspend_delay_ms ]
     # wait for sysfs to settle
     sleep 0.5
 
-    # Check subdevices for blacklisted drivers
+    # initialize driver blacklist from settings
     drv_bl=${USB_DRIVER_BLACKLIST:-$DEFAULT_USB_DRIVER_BLACKLIST}
 
+    # add wwan driver blacklist if enabled
+    USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
+
+    if [ $USB_BLACKLIST_WWAN = "1" ]; then
+        drv_bl="$drv_bl $USB_WWAN_DRIVERS"
+    fi
+
+    # check subdevices for blacklisted drivers
     for subdev in $usbdev/*:*; do
         if [ -h $subdev/driver ]; then
             # Get driver name from device symlink
@@ -90,17 +98,7 @@ if [ -f $usbdev/power/autosuspend ] || [ -f $usbdev/power/autosuspend_delay_ms ]
         fi
     done
 
-    # Check for wwan vendor ids
-    USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
-
-    if [ $USB_BLACKLIST_WWAN = "1" ] && [ -z "$exc" ]; then
-        vendor="$(cat $usbdev/idVendor)"
-        if wordinlist "$vendor" "$USB_WWAN_VENDORS"; then
-            exc="_wwan_black"
-        fi
-    fi
-
-    # Apply autosuspend
+    # apply autosuspend
     ctrlf="control"
     autof="autosuspend_delay_ms"
     usbid="$(cat $usbdev/idVendor):$(cat $usbdev/idProduct)"
@@ -124,21 +122,26 @@ if [ -f $usbdev/power/autosuspend ] || [ -f $usbdev/power/autosuspend_delay_ms ]
         ctrlf="level"
     fi
 
-    if [ -f $usbdev/power/autosuspend_delay_ms ]; then
-        echo $USB_TIMEOUT_MS > $usbdev/power/autosuspend_delay_ms 2> /dev/null
-        if [ $? != 0 ]; then
-            # openSUSE 11.4/2.6.37: writing to autosuspend_delay_ms fails -> fallback to autosuspend
-            echo_debug "usb" "udev_usb.autosuspend_delay_ms_not_writable: $busdev ID $usbid $usbdev"
+    if [ "$X_TLP_USB_SET_AUTOSUSPEND_DELAY" = "1" ]; then
+        # Set autosuspend_delay
+        if [ -f $usbdev/power/autosuspend_delay_ms ]; then
+            echo $USB_TIMEOUT_MS > $usbdev/power/autosuspend_delay_ms 2> /dev/null
+            if [ $? != 0 ]; then
+                # openSUSE 11.4/2.6.37: writing to autosuspend_delay_ms fails -> fallback to autosuspend
+                echo_debug "usb" "udev_usb.autosuspend_delay_ms_not_writable: $busdev ID $usbid $usbdev"
+                echo $USB_TIMEOUT > $usbdev/power/autosuspend
+                autof="autosuspend"
+            fi
+        else
+            # autosuspend is deprecated
             echo $USB_TIMEOUT > $usbdev/power/autosuspend
             autof="autosuspend"
         fi
+        echo_debug "usb" "udev_usb.$control$exc: $busdev ID $usbid $usbdev [$ctrlf $autof]"
     else
-        # autosuspend is deprecated
-        echo $USB_TIMEOUT > $usbdev/power/autosuspend
-        autof="autosuspend"
+        # Default: do not change autosuspend_delay, i.e. keep kernel default setting
+        echo_debug "usb" "udev_usb.$control$exc: $busdev ID $usbid $usbdev [$ctrlf]"
     fi
-
-    echo_debug "usb" "udev_usb.$control$exc: $busdev ID $usbid $usbdev [$ctrlf $autof]"
 fi
 
 exit 0

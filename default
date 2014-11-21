@@ -178,7 +178,6 @@ USB_DRIVER_BLACKLIST="usbhid"
 
 # WWAN devices are excluded from USB autosuspend:
 # 0=do not exclude / 1=exclude
-# Note: works for ids 05c6:* 0bdb:* 1199:* only.
 USB_BLACKLIST_WWAN=1
 
 # Set to 1 to disable autosuspend before shutdown, 0 to do nothing
