@@ -816,6 +816,7 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
     else
         echo "tlp usb wwan blacklist     = disabled"
     fi
+    echo "tlp usb device whitelist   = ${USB_WHITELIST:=(not configured)}"
     echo
 
     if cmd_exists $TLPUSB; then

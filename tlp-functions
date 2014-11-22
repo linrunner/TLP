@@ -1466,6 +1466,11 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                 fi
                             fi
                         done
+
+                        if [ -n "$exc" ] && wordinlist "$usbid" "$USB_WHITELIST"; then
+                            control="auto"
+                            exc="_dev_white"
+                        fi
                     fi
                 fi
 
