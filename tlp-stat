@@ -805,11 +805,17 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show usb autosuspend
     echo "+++ USB"
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
-        echo "tlp usb autosuspend = enabled"
+        echo "tlp usb autosuspend        = enabled"
     else
-        echo "tlp usb autosuspend = not enabled"
+        echo "tlp usb autosuspend        = disabled"
     fi
-    echo "tlp usb blacklist   = ${USB_BLACKLIST:=(not configured)}"
+    echo "tlp usb device blacklist   = ${USB_BLACKLIST:=(not configured)}"
+    echo "tlp usb driver blacklist   = ${USB_DRIVER_BLACKLIST:=(not configured)}"
+    if [ "$USB_BLACKLIST_WWAN" = "1" ]; then
+        echo "tlp usb wwan blacklist     = enabled ($USB_WWAN_DRIVERS)"
+    else
+        echo "tlp usb wwan blacklist     = disabled"
+    fi
     echo
 
     if cmd_exists $TLPUSB; then
