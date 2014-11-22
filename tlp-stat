@@ -39,10 +39,13 @@ show_all=1
 show_bat=0
 show_conf=0
 show_disk=0
+show_pcie=0
 show_proc=0
 show_rfkill=0
+show_system=0
 show_temp=0
 show_trace=0
+show_usb=0
 show_warn=0
 
 # --- Functions
@@ -217,6 +220,12 @@ read_args () { # read command line arguments
                 needs_root_priv=1
                 ;;
 
+            "-e"|"--pcie")
+                show_all=0
+                show_pcie=1
+                : ${needs_root_priv:=0}
+                ;;
+
             "-p"|"--processor")
                 show_all=0
                 show_proc=1
@@ -229,9 +238,21 @@ read_args () { # read command line arguments
                 : ${needs_root_priv:=0}
                 ;;
 
+            "-s"|"--system")
+                show_all=0
+                show_system=1
+                : ${needs_root_priv:=0}
+                ;;
+
             "-t"|"--temp")
                 show_all=0
                 show_temp=1
+                : ${needs_root_priv:=0}
+                ;;
+
+            "-u"|"--usb")
+                show_all=0
+                show_usb=1
                 : ${needs_root_priv:=0}
                 ;;
 
@@ -305,7 +326,7 @@ if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
     fi
 fi # show_conf
 
-if [ "$show_all" = "1" ]; then
+if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # --- show system info
     echo "+++ System Info"
 
@@ -337,7 +358,7 @@ if [ "$show_all" = "1" ]; then
         *) echo "power source   = unknown (using battery settings)" ;;
     esac
     echo
-fi # show_all
+fi # show_system
 
 if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show cpu info
@@ -765,7 +786,9 @@ if [ "$show_all" = "1" ]; then
         printf "%s: %-13s = %s\n" "$dock" "$dock_type" "$dock_state"
     done
     [ $cnt -gt 0 ] && echo
+fi # show_all
 
+if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show runtime pm
     echo "+++ Runtime Power Management"
     doall=${RUNTIME_PM_ALL:-0}
@@ -776,7 +799,9 @@ if [ "$show_all" = "1" ]; then
         echo "Error: missing subcommand $TLPPCI." 1>&2
     fi
     echo
+fi # show_pcie
 
+if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show usb autosuspend
     echo "+++ USB"
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
@@ -794,7 +819,7 @@ if [ "$show_all" = "1" ]; then
     fi
     echo
 
-fi # show_all
+fi # show_usb
 
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show battery info & charge thresholds

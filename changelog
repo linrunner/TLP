@@ -14,7 +14,8 @@
     - tpacpi-bat: support for ThinkPad E325 charge thresholds
     - Support Dell Latitude docks
     - tlp-stat:
-      - new options -d | --disk, -p | --processor
+      - new options -d|--disk, -e|--pcie, -p|--processor,
+                    -s|--system, -u|--usb
       - show driver name in Runtime PM PCI(e) device list
       - show type and state of docks and device bays
 
