@@ -432,9 +432,9 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                 $ENERGYPERF -r 2>/dev/null | \
                     sed 's/0x0000000000000000/performance/;
                          s/0x0000000000000006/normal/;
-                         s/0x000000000000000f/powersave/' | \
-                    awk '{ printf "x86_energy_perf_policy.%-31s = %s\n",
-                             gensub(/:/, "", "g", $1), $2; }'
+                         s/0x000000000000000f/powersave/;
+                         s/://' | \
+                    awk '{ printf "x86_energy_perf_policy.%-31s = %s\n", $1, $2; }'
                 ;;
 
             1) echo "x86_energy_perf_policy: unsupported CPU." ;;
