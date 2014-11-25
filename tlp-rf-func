@@ -134,7 +134,7 @@ device_on () { # enable radio type -- $1: rftype
     if cmd_exists $NMCLI ; then
         case "$1" in
             wifi|wwan)
-                $NMCLI nm wifi on > /dev/null 2>&1
+                $NMCLI nm $1 on > /dev/null 2>&1
                 echo_debug "rf" "device_on($1).nmcli"
                 ;;
         esac
@@ -179,7 +179,7 @@ device_off () { # disable radio type -- $1: rftype
     if cmd_exists $NMCLI ; then
         case "$1" in
             wifi|wwan)
-                $NMCLI nm wifi off > /dev/null 2>&1
+                $NMCLI nm $1 off > /dev/null 2>&1
                 echo_debug "rf" "device_off($1).nmcli"
                 ;;
         esac
@@ -231,8 +231,8 @@ device_toggle () { # toggle radio type state -- $1: rftype
         case "$1" in
             wifi|wwan)
                 case $devs in
-                    1) $NMCLI nm wifi on  > /dev/null 2>&1 ;;
-                    0) $NMCLI nm wifi off > /dev/null 2>&1 ;;
+                    1) $NMCLI nm $1 on  > /dev/null 2>&1 ;;
+                    0) $NMCLI nm $1 off > /dev/null 2>&1 ;;
                     *) ;;
                 esac
                 echo_debug "rf" "device_toggle($1).nmcli"
@@ -287,8 +287,8 @@ device_set_state () { # set radio type state -- $1: rftype, $2: state 0=off/1=on
         case "$1" in
             wifi|wwan)
                 case $devs in
-                    1) $NMCLI nm wifi on  > /dev/null 2>&1 ;;
-                    0) $NMCLI nm wifi off > /dev/null 2>&1 ;;
+                    1) $NMCLI nm $1 on  > /dev/null 2>&1 ;;
+                    0) $NMCLI nm $1 off > /dev/null 2>&1 ;;
                     *) ;;
                 esac
                 echo_debug "rf" "device_toggle($1).nmcli"
