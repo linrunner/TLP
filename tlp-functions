@@ -470,16 +470,25 @@ set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mod
     local gov cpu
 
     if [ "$1" = "1" ]; then
-        gov=$CPU_SCALING_GOVERNOR_ON_BAT
+    	gov=$CPU_SCALING_GOVERNOR_ON_BAT
     else
         gov=$CPU_SCALING_GOVERNOR_ON_AC
     fi
-
-    if [ -n "$gov" ]; then
-        echo_debug "pm" "set_scaling_governor($1): $gov"
-        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-            [ -f $cpu ] && echo $gov > $cpu 2> /dev/null
-        done
+   
+    check_intel_pstate
+    
+    if [ "$intel_pstate" != "1" ]; then
+    	if [ -n "$gov" ]; then
+        	echo_debug "pm" "set_scaling_governor($1): $gov"
+	        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+        	    [ -f $cpu ] && echo $gov > $cpu 2> /dev/null
+	        done
+    	fi
+    else
+	if [ -n "$gov" ]; then
+        	echo_debug "pm" "set_scaling_governor($1): $gov"
+		cpupower frequency-set -g $gov 2>/dev/null 1>&2
+	fi
     fi
 
     return 0
