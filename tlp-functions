@@ -26,6 +26,7 @@ readonly LAPMODE=laptop_mode
 readonly NMCLI=nmcli
 readonly NMTOOL=nm-tool
 readonly ENERGYPERF=x86_energy_perf_policy
+readonly DBUSSEND=dbus-send
 
 readonly TPACPIBAT=$libdir/tpacpi-bat # libdir is initialized by main program
 
@@ -1221,7 +1222,7 @@ get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
     local wi wip
     wifaces=""
 
-    for wip in /sys/class/net/*/phy80211; do
+    for wip in $NETD/*/phy80211; do
         if [ -d $wip ]; then
             wi=${wip%/phy80211}; wi=${wi##*/}
             wifaces="$wifaces $wi"
@@ -1336,7 +1337,7 @@ get_bluetooth_driver () { # get driver associated with interface -- $1: iface; r
 }
 
 dbus_call () { # call method via system dbus -- $1: dest; $2: $path; $3: interface, $4: $method
-    dbus-send --system --type=method_call --print-reply --dest="$1" "$2" "$3.$4" 2> /dev/null
+    $DBUSSEND --system --type=method_call --print-reply --dest="$1" "$2" "$3.$4" 2> /dev/null
 }
 
 bluez_call () { # call bluez method via dbus -- $1: path; $2: interface; $3: $method
@@ -1383,7 +1384,7 @@ get_eth_ifaces () { # get all eth devices -- retval: $ethifaces
     local ei eic
     ethifaces=''
 
-    for eic in /sys/class/net/*/device/class; do
+    for eic in $NETD/*/device/class; do
         if [ -f $eic ] \
             && [ "$(cat $eic)" = "0x020000" ] \
             && [ ! -d "${eic%/class}/ieee80211" ]; then
