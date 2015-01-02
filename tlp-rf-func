@@ -475,35 +475,39 @@ init_radio_devices () { # initialize all radio type states
     return 0
 }
 
-set_radio_devices () { # set radio devices -- $1: 0=ac mode, 1=battery mode
-    local enable disable dev
+set_radio_devices_state () { # set radio devices state depending on power source
+                             # $1: 0=ac mode, 1=battery mode
+    local devs2enable devs2disable dev
 
     if [ "$1" = "1" ]; then
-        enable=""
-        disable="${DEVICES_TO_DISABLE_ON_BAT:-}"
+        # Battery power --> build disable list
+        devs2enable=""
+        devs2disable="${DEVICES_TO_DISABLE_ON_BAT:-}"
+
+        # Check configured list for connected devices
         for dev in ${DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE:-}; do
             case $dev in
-                wifi)
-                    any_wifi_in_use || wordinlist wifi "$disable" || disable="wifi $disable"
-                    ;;
-                bluetooth)
-                    any_bluetooth_in_use || wordinlist bluetooth "$disable" || disable="bluetooth $disable"
-                    ;;
+                bluetooth) any_bluetooth_in_use ;;
+                wifi) any_wifi_in_use ;;
+                wwan) any_wwan_in_use ;;
             esac
+            # If device is not connected and not in list yet --> add to disable list
+            [ $? = 0 ] || wordinlist $dev "$devs2disable" || devs2disable="$dev $devs2disable"
         done
-        disable="${disable# }"
+        devs2disable="${devs2disable# }"
     else
-        enable="${DEVICES_TO_ENABLE_ON_AC:-}"
-        disable=""
+        # AC power --> build enable list
+        devs2enable="${DEVICES_TO_ENABLE_ON_AC:-}"
+        devs2disable=""
     fi
 
-    echo_debug "rf" "set_radio_devices($1): enable=$enable"
-    for dev in $enable; do
+    echo_debug "rf" "set_radio_devices_state($1): enable=$devs2enable"
+    for dev in $devs2enable; do
         device_on $dev
     done
 
-    echo_debug "rf" "set_radio_devices($1): disable=$disable"
-    for dev in $disable; do
+    echo_debug "rf" "set_radio_devices_state($1): disable=$devs2disable"
+    for dev in $devs2disable; do
         device_off $dev
     done
 }

@@ -1,4 +1,4 @@
-+++ 0.7 --- 21.11.2014 +++
++++ 0.7 --- 02.01.2015 +++
 
   *** Development release ***
 
@@ -13,6 +13,9 @@
     - USB_BLACKLIST_WWAN: match internal driver list instead of USB vendor ids
     - USB_WHITELIST: include devices into USB autosuspend even if
       already excluded by the driver or WWAN blacklists
+    - DEVICES_TO_ENABLE_ON_AC/DISABLE_ON_BAT/DISABLE_ON_BAT_NOT_IN_USE:
+      enable/disable radio devices upon change of power source;
+      check if device is connected before disabling
     - tpacpi-bat: support for ThinkPad E325 charge thresholds
     - Support Dell Latitude docks
     - tlp-stat:

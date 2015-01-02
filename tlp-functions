@@ -1297,7 +1297,7 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
     return 0
 }
 
-wifi_in_use () { # check if wifi device is in use -- $1: iface
+wireless_in_use () { # check if wifi or wwan device is in use -- $1: iface
     if [ -f $NETD/$1/carrier ]; then
         if [ "$(cat $NETD/$1/carrier 2>/dev/null)" = "1" ]; then
             return 0
@@ -1306,18 +1306,46 @@ wifi_in_use () { # check if wifi device is in use -- $1: iface
     return 1
 }
 
-any_wifi_in_use () { # check if some wifi device is in use
+any_wifi_in_use () { # check if any wifi device is in use
     local iface
 
     get_wifi_ifaces
     for iface in $wifaces; do
-        wifi_in_use $iface && return 0
+        wireless_in_use $iface && return 0
     done
 
     return 1
 }
 
-# --- Bluetooth
+# --- WWAN Power Management
+
+get_wwan_ifaces () { # get all wwan devices -- retval: $wanifaces
+    local wi wiu
+    wanifaces=""
+
+    for wiu in $NETD/*/uevent; do
+        if grep -q -s "DEVTYPE=wwan" $wiu ; then
+            wi=${wiu%/uevent}; wi=${wi##*/}
+            wanifaces="$wwifaces $wi"
+        fi
+    done
+
+    wanifaces="${wanifaces# }"
+    return 0
+}
+
+any_wwan_in_use () { # check if any wwan device is in use
+    local iface
+
+    get_wwan_ifaces
+    for iface in $wanifaces; do
+        wireless_in_use $iface && return 0
+    done
+
+    return 1
+}
+
+# --- Bluetooth Power Management
 
 get_bluetooth_ifaces () { # get all bluetooth devices -- retval: $bifaces
     bifaces="$(ls $BLUETOOTHD)"
@@ -1382,7 +1410,7 @@ any_bluetooth_in_use () { # check if some bluetooth device is in use
 
 get_eth_ifaces () { # get all eth devices -- retval: $ethifaces
     local ei eic
-    ethifaces=''
+    ethifaces=""
 
     for eic in $NETD/*/device/class; do
         if [ -f $eic ] \

@@ -723,7 +723,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
                 *)      echo "unknown" ;;
             esac
             echo -n "in use           = "
-            if wifi_in_use $iface; then
+            if wireless_in_use $iface; then
                 echo "Y"
             else
                 echo "N"
