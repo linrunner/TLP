@@ -1219,12 +1219,12 @@ set_runtime_pm () { # set runtime power management
 # --- Wifi Power Management
 
 get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
-    local wi wip
+    local wi wiu
     wifaces=""
 
-    for wip in $NETD/*/phy80211; do
-        if [ -d $wip ]; then
-            wi=${wip%/phy80211}; wi=${wi##*/}
+    for wiu in $NETD/*/uevent; do
+        if grep -q -s "DEVTYPE=wifi" $wiu ; then
+            wi=${wiu%/uevent}; wi=${wi##*/}
             wifaces="$wifaces $wi"
         fi
     done
@@ -1326,7 +1326,7 @@ get_wwan_ifaces () { # get all wwan devices -- retval: $wanifaces
     for wiu in $NETD/*/uevent; do
         if grep -q -s "DEVTYPE=wwan" $wiu ; then
             wi=${wiu%/uevent}; wi=${wi##*/}
-            wanifaces="$wwifaces $wi"
+            wanifaces="$wanifaces $wi"
         fi
     done
 
