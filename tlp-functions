@@ -1223,7 +1223,7 @@ get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
     wifaces=""
 
     for wiu in $NETD/*/uevent; do
-        if grep -q -s "DEVTYPE=wifi" $wiu ; then
+        if grep -q -s "DEVTYPE=wlan" $wiu ; then
             wi=${wiu%/uevent}; wi=${wi##*/}
             wifaces="$wifaces $wi"
         fi
@@ -1233,7 +1233,8 @@ get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
     return 0
 }
 
-get_wifi_driver () { # get driver associated with interface -- $1: iface; retval: $wifidrv
+get_wifi_driver () { # get driver associated with interface
+                     # $1: iface; retval: $wifidrv
     local drvl
 
     wifidrv=""
@@ -1343,6 +1344,19 @@ any_wwan_in_use () { # check if any wwan device is in use
     done
 
     return 1
+}
+
+get_wwan_driver () { # get driver associated with interface
+                     # $1: iface; retval: $wwandrv
+    local drvl
+
+    wwandrv=""
+    if [ -d $NETD/$1 ]; then
+        drvl=$(readlink $NETD/$1/device/driver)
+        [ -n "$drvl" ] && wwandrv=${drvl##*/}
+    fi
+
+    return 0
 }
 
 # --- Bluetooth Power Management

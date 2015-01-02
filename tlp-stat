@@ -675,36 +675,41 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
         get_devs $i
         echo_device_state $i $devs
     done
+    echo
+
+    ifshown=0
 
     # --- show bluetooth
     get_bluetooth_ifaces
     for iface in $bifaces; do
         if [ -n "$iface" ]; then
+            ifshown=1
+
+            # get bluetooth driver
             get_bluetooth_driver $iface
-            echo
-            echo "$iface($bluetoothdrv):"
-            echo -n "in use           = "
+            printf "%-20s: " "$iface($bluetoothdrv)"
             if bluetooth_in_use $iface; then
-                echo "Y"
+                echo "connected"
             else
-                echo "N"
+                echo "not connected"
             fi
         fi
     done
 
-    # --- show wifi power mode
+    # --- show wifi data
     get_wifi_ifaces
     for iface in $wifaces; do
         if [ -n "$iface" ]; then
-            wifipm=""
+            ifshown=1
 
+            # get wifi power mgmt state
+            wifipm=""
             if [ "$X_DONT_USE_IW" != "1" ] && cmd_exists $IW; then
                 # try with iw first
                 wifipm=$($IW dev $iface get power_save 2> /dev/null | \
                     grep "Power save" | \
                     sed -r 's/.*Power save: (on|off).*/\1/')
             fi
-
             if cmd_exists $IWC; then
                 if [ -z "$wifipm" ]; then
                     # iw did not succeed or iw not installed -> try with iwconfig
@@ -714,23 +719,43 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
                 fi
             fi
 
+            # get wifi driver
             get_wifi_driver $iface
-            echo
-            echo "$iface($wifidrv):"
-            echo -n "power management = "
-            case $wifipm in
-                on|off) echo "$wifipm" ;;
-                *)      echo "unknown" ;;
-            esac
-            echo -n "in use           = "
+            printf "%-20s: " "$iface($wifidrv)" 
             if wireless_in_use $iface; then
-                echo "Y"
+                printf "connected, "
             else
-                echo "N"
+                printf "not connected, "
             fi
+            printf "power management = "
+            case $wifipm in
+                on|off) printf "$wifipm" ;;
+                *)      printf "unknown" ;;
+            esac
+            printf "\n"
         fi
     done
-    [ -n "$wifaces" ] && echo
+
+    # --- show wwan data
+    get_wwan_ifaces
+    for iface in $wanifaces; do
+        if [ -n "$iface" ]; then
+            ifshown=1
+
+            # get wwan driver
+            get_wwan_driver $iface
+
+            printf "%-20s: " "$iface($wwandrv)"
+            if wireless_in_use $iface; then
+                printf "connected"
+            else
+                printf "not connected"
+            fi
+            printf "\n"
+        fi
+    done
+    [ "$ifshown" = "1" ] && echo
+
 fi # show_rfkill
 
 if [ "$show_all" = "1" ]; then
