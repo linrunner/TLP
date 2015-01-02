@@ -229,6 +229,10 @@ case "$mode" in
         setcharge_battery 96 100 $2
         sleep 1
         discharge_battery $2
+        if [ $? -eq 0 ]; then
+            echo "      The battery starts charging now. For a complete recalibration"
+            echo "      keep AC connected until the battery is fully charged."
+        fi
         ;;
 
     stat) # show status
