@@ -1362,7 +1362,7 @@ get_wwan_driver () { # get driver associated with interface
 # --- Bluetooth Power Management
 
 get_bluetooth_ifaces () { # get all bluetooth devices -- retval: $bifaces
-    bifaces="$(ls $BLUETOOTHD | grep -v ':')"
+    bifaces="$(ls $BLUETOOTHD 2> /dev/null | grep -v ':')"
     return 0
 }
 
@@ -1469,7 +1469,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
     check_sysfs "set_usb_suspend" "$USBD"
 
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
-        devices=$(ls $USBD | grep -v ':')
+        devices=$(ls $USBD 2> /dev/null | grep -v ':')
         for usbdev in $devices; do
             if [ -f $USBD/$usbdev/power/autosuspend ] || [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
                 usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
