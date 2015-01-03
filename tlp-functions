@@ -49,7 +49,7 @@ readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT=2
 readonly USB_TIMEOUT_MS=2000
-readonly USB_WWAN_DRIVERS="cdc_acm cdc_wdm cdc_ether qcserial sierra"
+readonly USB_WWAN_DRIVERS="cdc_acm cdc_wdm cdc_ether hso qcserial sierra"
 readonly USB_DONE=usb_done
 
 readonly DOCKGLOB="/sys/devices/platform/dock.?"
