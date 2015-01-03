@@ -22,7 +22,7 @@ Separate settings profiles depending on the power source AC/battery:
 - Radeon graphics dynamic power management - Kernel 3.11 and above, not fglrx
 - Wifi power saving mode -  depending on kernel/driver
 - Enable/disable integrated radio devices (excluding connected devices)
-- Power off optical drive in drive bay (on battery)
+- Power off optical drive in UltraBay/MediaBay (on battery)
 - Audio power saving mode - hda_intel, ac97
 
 Additional functions:
