@@ -1911,7 +1911,6 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     # rc: 0=ok/1=error
 
     local bat rc st sp
-    local act=0
     local use_cfg=0
     # $bat_str is global for cancel_force_discharge() trap
 
@@ -1979,7 +1978,6 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
         echo_debug "bat" "setcharge_battery.stop($bat_str): $stop_thresh; rc=$rc"
         if [ $rc -eq 0 ]; then
             echo "  stop  = $stop_thresh"
-            act=1
         else
             echo "  stop  => Error: cannot set threshold. Aborting." 1>&2
             return 1
@@ -1995,7 +1993,6 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
         echo_debug "bat" "setcharge_battery.start($bat_str): $start_thresh; rc=$rc"
         if [ $rc -eq 0 ]; then
             echo "  start = $start_thresh"
-            act=1
         else
             echo "  start => Warning: cannot set threshold." 1>&2
             return 1
@@ -2005,33 +2002,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
         echo "  start = not configured"
     fi
 
-    # activate new thresholds (= trigger charging) via force_discharge - tp-smapi only
-    rc=0
-    if [ $act -eq 1 ]; then
-        if [ $tpacpi -eq 0 ]; then
-            # tpacpi-bat: no activation necessary
-            echo "Done."
-        else
-            # tp-smapi
-            trap cancel_force_discharge INT # enable ^C hook
-
-            do_force_discharge $bat_str 1; rc=$?
-            if [ $rc -eq 0 ]; then
-                echo -n "Activating..."
-                sleep 1
-                do_force_discharge $bat_str 0
-                echo_debug "bat" "setcharge_battery.initiated($bat_str)"
-                echo "done."
-            else
-                echo_debug "bat" "setcharge_battery.force_discharge_not_available($bat_str): rc=$rc"
-                echo "Cannot activate immediately on this ThinkPad model. Please power off."
-            fi
-
-            trap - INT  # remove ^C hook
-        fi
-    fi
-
-    return $rc
+    return 0
 }
 
 get_sysval () { # $1: file; rc: sysfile value

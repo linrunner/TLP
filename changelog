@@ -20,6 +20,7 @@
     ThinkPad Battery:
     - Issue #105: provide proper return codes for all battery functions
     - Issue #106: setcharge allowed on battery power
+    - Do not activate new thresholds with force_discharge anymore (tp-smapi)
     - tpacpi-bat: support for ThinkPad E325 charge thresholds
     Misc:
     - RUNTIME_PM_DRIVER_BLACKLIST: exclude PCI(e) devices assigned to drivers;
