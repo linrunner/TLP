@@ -1,28 +1,36 @@
-+++ 0.7 --- 02.01.2015 +++
++++ 0.7 --- 03.01.2015 +++
 
   *** Development release ***
 
   * Features
-    - Limit max/min P-state and control power dissipation of the CPU
-      (intel_pstate)
+    Processor:
+    - Limit max/min P-state to control power dissipation of the CPU
+      (intel_pstate only)
     - Set x86 energy perf policy
-    - RUNTIME_PM_DRIVER_BLACKLIST: exclude PCI(e) devices assigned to drivers;
-      default: radeon, nouveau (solves issue #94)
+    USB:
     - USB_DRIVER_BLACKLIST: exclude devices assigned to the listed drivers
       from USB autosuspend; default: usbhid
     - USB_BLACKLIST_WWAN: match internal driver list instead of USB vendor ids
     - USB_WHITELIST: include devices into USB autosuspend even if
       already excluded by the driver or WWAN blacklists
+    Radio devices:
     - DEVICES_TO_ENABLE_ON_AC/DISABLE_ON_BAT/DISABLE_ON_BAT_NOT_IN_USE:
-      enable/disable radio devices upon change of power source;
-      do not disable connected devices
+      enable/disable radio devices upon change of power source
+      (excluding connected devices)
+    ThinkPad Battery:
+    - Issue #105: provide proper return codes for all battery functions
+    - Issue #106: setcharge allowed on battery power
     - tpacpi-bat: support for ThinkPad E325 charge thresholds
+    Misc:
+    - RUNTIME_PM_DRIVER_BLACKLIST: exclude PCI(e) devices assigned to drivers;
+      default: radeon, nouveau (solves issue #94)
     - Support Dell Latitude docks
-    - tlp-stat:
-      - new options -d|--disk, -e|--pcie, -p|--processor,
+    tlp-stat:
+      - New options -d|--disk, -e|--pcie, -p|--processor,
                     -s|--system, -u|--usb
-      - show driver name in Runtime PM PCI(e) device list
-      - show type and state of docks and device bays
+      - Show driver and connection state for all enabled radio devices
+      - Show driver name in Runtime PM PCI(e) device list
+      - Show type and state of docks and device bays
 
   * Bugfixes
     - Issue #109: tlp-stat: report "unknown" power source when no AC detected

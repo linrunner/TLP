@@ -1894,6 +1894,17 @@ cancel_force_discharge () { # called from trap -- global param: $bat_str
     exit 0
 }
 
+check_ac_power () { # check if ac power connected -- $1: function
+
+    if ! get_power_state ; then
+        echo_debug "bat" "check_ac_power($1).no_ac_power"
+        echo "Error: $1 is possible on AC power only." 1>&2
+        return 1
+    fi
+
+    return 0
+}
+
 setcharge_battery () { # write charge thresholds (called from cmd line)
     # $1: start charge threshold, $2: stop charge threshold, $3: battery
     # global param: $tpacpi, $tpsmapi
@@ -1903,13 +1914,6 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     local act=0
     local use_cfg=0
     # $bat_str is global for cancel_force_discharge() trap
-
-    # check prerequisites: must be on ac power
-    if ! get_power_state ; then
-        echo_debug "bat" "setcharge_battery.no_ac_power"
-        echo "Error: setting charge thresholds is possible on ac power only." 1>&2
-        return 1
-    fi
 
     # check params
     case $# in
@@ -2144,13 +2148,6 @@ discharge_battery () { # discharge battery
 
     local bat bdir ef pn rc
     # $bat_str is global for cancel_force_discharge() trap
-
-    # check prerequisites: must be on ac power
-    if ! get_power_state ; then
-        echo_debug "bat" "discharge_battery.no_ac_power"
-        echo "Error: discharge is possible on ac power only." 1>&2
-        return 1
-    fi
 
     # check params
     bat=$1

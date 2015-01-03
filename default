@@ -39,7 +39,7 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #CPU_SCALING_MAX_FREQ_ON_BAT=0
 
 # Set Intel P-state perf pct: 0..100 (%)
-# Limits the max/min P-state and thus the power dissipation of the CPU.
+# Limit the max/min P-state to control the power dissipation of the CPU.
 # Values are stated as a percentage of the avail performance.
 # Requires an Intel Core i processor with intel_pstate driver.
 #CPU_MIN_PERF_ON_AC=0

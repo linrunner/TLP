@@ -87,6 +87,7 @@ else
     echo_debug "run" "power_source=ac"
 fi
 
+rc=0
 
 case "$mode" in
     init) # system initialization/shutdown: sysv, upstart, systemd, ...
@@ -203,35 +204,56 @@ case "$mode" in
         check_root
         load_modules
         setcharge_battery $2 $3 $4
+        rc=$?
         ;;
 
     fullcharge) # charge battery up to 100% (temporarily)
-        check_root
-        load_modules
-        setcharge_battery 96 100 $2
+        if check_ac_power fullcharge; then
+            check_root
+            load_modules
+            setcharge_battery 96 100 $2
+            rc=$?
+        else
+            rc=2
+        fi
         ;;
 
     chargeonce) # charge battery to upper threshold once
-        check_root
-        load_modules
-        chargeonce_battery $2
+        if check_ac_power chargeonce; then
+            check_root
+            load_modules
+            chargeonce_battery $2
+            rc=$?
+        else
+            rc=2
+        fi
         ;;
 
     discharge) # discharge battery completely (to recalibrate)
-        check_root
-        load_modules
-        discharge_battery $2
+        if check_ac_power discharge; then
+            check_root
+            load_modules
+            discharge_battery $2
+            rc=$?
+        else
+            rc=2
+        fi
         ;;
 
     recalibrate) # recalibrate battery, i.e. discharge and charge to 100%
-        check_root
-        load_modules
-        setcharge_battery 96 100 $2
-        sleep 1
-        discharge_battery $2
-        if [ $? -eq 0 ]; then
-            echo "      The battery starts charging now. For a complete recalibration"
-            echo "      keep AC connected until the battery is fully charged."
+        if check_ac_power recalibrate; then
+            check_root
+            load_modules
+            setcharge_battery 96 100 $2
+            sleep 1
+            discharge_battery $2
+            rc=$?
+            if [ $rc -eq 0 ]; then
+                echo "      The battery starts charging now. For a complete recalibration"
+                echo "      keep AC connected until the battery is fully charged."
+            fi
+        else
+            rc=2
         fi
         ;;
 
