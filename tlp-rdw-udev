@@ -25,10 +25,10 @@ read_defaults
 check_tlp_enabled || exit 0
 add_sbin2path
 
-# Get power state
+# get power state
 get_power_state; onbat=$?
 
-# Get device/type
+# get device/type
 ddev=/sys$1
 devtype=$2
 
@@ -50,10 +50,10 @@ case $devtype in
         echo_debug "udev" "rdw_udev($2).$action dev=$ddev onbat=$onbat"
         ;;
 
-    *) exit 0 ;; # Unknown device type
+    *) exit 0 ;; # unknown device type
 esac
 
-# Quit if timed lock in progress
+# quit if timed lock in progress
 if check_timed_lock $RDW_DOCK_LOCK ; then
     echo_debug "udev" "rdw_udev.locked"
     exit 0
