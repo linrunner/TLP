@@ -52,7 +52,7 @@ endif
 	install -m 755 tlp-rf-func $(_TLIB)/
 	install -m 755 tlp-nop $(_TLIB)/
 	install -D -m 755 tlp-usb-udev $(_ULIB)/tlp-usb-udev
-	install -D -m 644 tlp.rules $(_ULIB)/rules.d/40-tlp.rules
+	install -D -m 644 tlp.rules $(_ULIB)/rules.d/85-tlp.rules
 	[ -f $(_CONF) ] || install -D -m 644 default $(_CONF)
 ifneq ($(TLP_NO_INIT),1)
 	install -D -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
@@ -72,7 +72,7 @@ endif
 
 install-rdw:
 	# Package tlp-rdw
-	install -D -m 644 tlp-rdw.rules $(_ULIB)/rules.d/40-tlp-rdw.rules
+	install -D -m 644 tlp-rdw.rules $(_ULIB)/rules.d/85-tlp-rdw.rules
 	install -D -m 755 tlp-rdw-udev $(_ULIB)/tlp-rdw-udev
 	install -D -m 755 tlp-rdw-nm $(_NMDSP)/99tlp-rdw-nm
 
@@ -95,7 +95,7 @@ uninstall-tlp:
 	rm $(_TLIB)/tlp-nop
 	rmdir $(_TLIB)
 	rm $(_ULIB)/tlp-usb-udev
-	rm $(_ULIB)/rules.d/40-tlp.rules
+	rm $(_ULIB)/rules.d/85-tlp.rules
 	rm -f $(DESTDIR)/etc/init.d/tlp
 	rm -f $(_SYSD)/tlp.service
 	rm -f $(_SYSD)/tlp-sleep.service
@@ -106,7 +106,7 @@ uninstall-tlp:
 
 uninstall-rdw:
 	# Package tlp-rdw
-	rm $(_ULIB)/rules.d/40-tlp-rdw.rules
+	rm $(_ULIB)/rules.d/85-tlp-rdw.rules
 	rm $(_ULIB)/tlp-rdw-udev
 	rm $(_NMDSP)/99tlp-rdw-nm
 

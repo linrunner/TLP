@@ -34,11 +34,14 @@ devtype=$2
 
 case $devtype in
     dock)
+        # check if type is "dock_station", exit if not
         type=$(cat $ddev/type)
+        [ "$type" = "dock_station" ] || exit 0
+
         docked=$(cat $ddev/docked)
         action=$EVENT
 
-        echo_debug "udev" "rdw_udev($2).$action dev=$ddev type=$type docked=$docked onbat=$onbat"
+        echo_debug "udev" "rdw_udev($devtype).$action dev=$ddev type=$type docked=$docked onbat=$onbat"
         ;;
 
     usb_dock)
@@ -47,7 +50,7 @@ case $devtype in
             remove) action="undock"  ;;
         esac
 
-        echo_debug "udev" "rdw_udev($2).$action dev=$ddev onbat=$onbat"
+        echo_debug "udev" "rdw_udev($devtype).$action dev=$ddev onbat=$onbat"
         ;;
 
     *) exit 0 ;; # unknown device type
