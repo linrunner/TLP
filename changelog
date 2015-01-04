@@ -34,10 +34,13 @@
       - Show type and state of docks and device bays
 
   * Bugfixes
+    Udev:
+    - Run change of power source in a detached subshell to avoid blocking udev
     - Fix dock/undock event processing for ThinkPad Adv Mini Dock and Ultrabase 
-    - Make USB device udev event processing more robust
-      - run in a detached subshell to avoid blocking udev
-      - wait 2s for subdevices to populate for proper black/whitelist detection
+    - Make USB device event processing more robust
+      - Run in a detached subshell to avoid blocking udev
+      - Wait 2s for subdevices to populate for proper black/whitelist detection
+    Misc:
     - Issue #109: tlp-stat: report "unknown" power source when no AC detected
     - Issue #98: do not change autosuspend_delay_ms, keep kernel default
       settings (garyp)

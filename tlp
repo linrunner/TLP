@@ -138,15 +138,21 @@ case "$mode" in
         esac
         ;;
 
-    auto|start) # set start power mode depending on state
+    auto) # set mode depending on state (called by udev rule)
+        check_root
+        ( # run in a detached subshell to avoid blocking udev
+            apply_common_settings $pwrmode
+            [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+        ) &
+        ;;
+
+    start) # set mode depending on state (interactive mode)
         check_root
         apply_common_settings $pwrmode
         [ "$pwrmode" = "1" ] && poweroff_drivebay 0
 
-        if [ "$mode" = "start" ]; then
-            set_usb_suspend 0 auto
-            set_charge_thresholds
-        fi
+        set_usb_suspend 0 auto
+        set_charge_thresholds
 
         echo_started_mode $pwrmode
         ;;
