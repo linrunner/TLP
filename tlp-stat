@@ -30,6 +30,8 @@ readonly HWMONFAN_DIRS='\
 readonly JOURNALCTL=journalctl
 readonly DEBUGLOG=/var/log/debug
 
+readonly SYSTEMD_SERVICES="tlp.service tlp-sleep.service"
+
 # --- Variables
 
 nodebug=1
@@ -345,6 +347,15 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         echo "TLP power save = enabled"
     else
         echo "TLP power save = not enabled"
+    fi
+
+    # -- check systemd service units status
+    if check_systemd; then
+        for su in $SYSTEMD_SERVICES; do
+            if ! $SYSTEMCTL is-enabled $su > /dev/null 2>&1 ; then
+                echo "***Warning: $su is not enabled -- invoke \"systemctl enable $su\" to correct this!"
+            fi
+        done
     fi
 
     # -- show warning if l-m-t detected

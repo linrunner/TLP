@@ -32,6 +32,7 @@
       - Show driver and connection state for all enabled radio devices
       - Show driver name in Runtime PM PCI(e) device list
       - Show type and state of docks and device bays
+      - Check if TLP's systemd services are enabled (zenox)
 
   * Bugfixes
     Udev:

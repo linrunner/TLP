@@ -27,6 +27,7 @@ readonly NMCLI=nmcli
 readonly NMTOOL=nm-tool
 readonly ENERGYPERF=x86_energy_perf_policy
 readonly DBUSSEND=dbus-send
+readonly SYSTEMCTL=systemctl
 
 readonly TPACPIBAT=$libdir/tpacpi-bat # libdir is initialized by main program
 
@@ -137,6 +138,11 @@ check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=
     else
         return 0
     fi
+}
+
+check_systemd () { # check if systemd is active (pid 1) and systemctl is installed
+                   # rc: 0=yes, 1=no
+    pidof systemd > /dev/null && cmd_exists $SYSTEMCTL
 }
 
 # --- PATH
