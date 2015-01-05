@@ -2,7 +2,7 @@
 
 # tlp - system startup/shutdown
 #
-# Copyright (c) 2014 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2015 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 ### BEGIN INIT INFO
@@ -14,8 +14,6 @@
 # Short-Description: tlp start/stop script
 # Description:       Initialize tlp
 ### END INIT INFO
-
-. /lib/lsb/init-functions
 
 case "$1" in
     start|\

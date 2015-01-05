@@ -4,7 +4,7 @@ Upstream-Contact: Thomas Koch <linrunner at gmx.net>
 Source: https://github.com/linrunner/TLP/
 
 Files: *
-Copyright: 2014 Thomas Koch, André Erdmann, Pali Rohár
+Copyright: 2015 Thomas Koch, André Erdmann, Pali Rohár
 License: GPL-2+
 Comment:
   Some code and descriptions were adapted from:
@@ -18,7 +18,7 @@ Copyright: 2011 Elliot Wolk
 License: GPL-3+
 
 Files: debian/*
-Copyright: 2014 Thomas Koch
+Copyright: 2015 Thomas Koch
 License: GPL-2+
 
 License: GPL-2+
