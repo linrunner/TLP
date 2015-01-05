@@ -501,12 +501,12 @@ set_radio_devices_state () { # set radio devices state depending on power source
         devs2disable=""
     fi
 
-    echo_debug "rf" "set_radio_devices_state($1): enable=$devs2enable"
+    echo_debug "rf" "set_radio_devices_state($1).enable: $devs2enable"
     for dev in $devs2enable; do
         device_on $dev
     done
 
-    echo_debug "rf" "set_radio_devices_state($1): disable=$devs2disable"
+    echo_debug "rf" "set_radio_devices_state($1).disable: $devs2disable"
     for dev in $devs2disable; do
         device_off $dev
     done
