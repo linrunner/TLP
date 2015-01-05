@@ -15,14 +15,26 @@
 # Description:       Initialize tlp
 ### END INIT INFO
 
+. /lib/lsb/init-functions
+
+TLP=/usr/sbin/tlp
+[ -x $TLP ] || exit 0
+
 case "$1" in
+    status)
+        tlp-stat -s
+        ;;
+
     start|\
     stop|\
     restart|\
-    force-reload|\
-    *)
-        TLP=/usr/sbin/tlp
-        [ -x $TLP ] && $TLP init $1
+    force-reload)
+        $TLP init $1
+        ;;
+
+     *)
+        echo "Usage: $0 start|stop|restart|force-reload|status" 1>&2
+        exit 3
         ;;
 esac
 
