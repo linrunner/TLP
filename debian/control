@@ -18,6 +18,8 @@ Depends: ${misc:Depends},
 Recommends: tlp-rdw,
             ethtool,
             linux-tools,
+            linux-tools-common,
+            linux-tools-generic,
             smartmontools
 Suggests: tp-smapi-dkms,
           acpi-call-dkms
@@ -28,8 +30,11 @@ Description: Save battery power on laptops
  time it is highly customizable to fulfil specific user requirements.
  .
  TLP supplies separate settings profiles for AC and battery power and can
- enable or disable bluetooth, wifi and wwan radio devices upon system startup.
- For ThinkPads only it provides battery charge thresholds and recalibration.
+ enable or disable bluetooth, WiFi and WWAN radio devices upon system startup.
+ .
+ For ThinkPads it provides a unified way to configure charging thresholds and
+ recalibrate the battery for all models which support it (via tp-smapi or
+ acpi-call).
  .
  TLP is a pure command line tool with automated background tasks, it
  does not contain a GUI.
