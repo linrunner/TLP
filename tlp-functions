@@ -24,9 +24,11 @@ readonly LOGGER=logger
 readonly UDEVADM=udevadm
 readonly LAPMODE=laptop_mode
 readonly NMCLI=nmcli
+readonly NMD=NetworkManager
 readonly NMTOOL=nm-tool
 readonly ENERGYPERF=x86_energy_perf_policy
 readonly DBUSSEND=dbus-send
+readonly SYSTEMD=systemd
 readonly SYSTEMCTL=systemctl
 
 readonly TPACPIBAT=$libdir/tpacpi-bat # libdir is initialized by main program
@@ -142,7 +144,7 @@ check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=
 
 check_systemd () { # check if systemd is active (pid 1) and systemctl is installed
                    # rc: 0=yes, 1=no
-    pidof systemd > /dev/null && cmd_exists $SYSTEMCTL
+    pidof $SYSTEMD > /dev/null && cmd_exists $SYSTEMCTL
 }
 
 # --- PATH

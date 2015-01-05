@@ -71,13 +71,6 @@ get_devc () { # get control device for radio type -- $1: rftype; retval $devc
     return 0
 }
 
-err_no_root_priv () { # check root privilege
-    echo "Error: missing root privilege." 1>&2
-    echo_debug "rf" "$1.missing_root_privilege"
-
-    return 0
-}
-
 get_devs () { # get radio device state -- $1: rftype; retval $devs: 0=off/1=on
     if [ -n "$devc" ]; then
         devs=$(cat $devc)
@@ -89,9 +82,22 @@ get_devs () { # get radio device state -- $1: rftype; retval $devs: 0=off/1=on
     return 0
 }
 
+err_no_root_priv () { # check root privilege
+    echo "Error: missing root privilege." 1>&2
+    echo_debug "rf" "$1.missing_root_privilege"
+
+    return 0
+}
+
 test_rfkill_perms () { # test if either root priv or rfkill device writable
     test_root || [ -w $RFKD ]
 }
+
+check_nm () { # test if NetworkManager is running and nmcli is installed
+
+    pidof $NMD > /dev/null && cmd_exists $NMCLI
+}
+
 
 device_state () { # get radio type state -- $1: rftype; retval $devc, $devs: 0=off/1=on
     echo_debug "rf" "device_state($1)"
@@ -131,7 +137,7 @@ device_on () { # enable radio type -- $1: rftype
     fi
 
     # use nmcli to notify NM that device is now on
-    if cmd_exists $NMCLI ; then
+    if check_nm ; then
         case "$1" in
             wifi|wwan)
                 $NMCLI nm $1 on > /dev/null 2>&1
@@ -176,7 +182,7 @@ device_off () { # disable radio type -- $1: rftype
     fi
 
     # use nmcli to notify NM that device is now off
-    if cmd_exists $NMCLI ; then
+    if check_nm ; then
         case "$1" in
             wifi|wwan)
                 $NMCLI nm $1 off > /dev/null 2>&1
@@ -227,7 +233,7 @@ device_toggle () { # toggle radio type state -- $1: rftype
     fi
 
     # use nmcli to notify NM of new device state
-    if cmd_exists $NMCLI ; then
+    if check_nm ; then
         case "$1" in
             wifi|wwan)
                 case $devs in
@@ -283,7 +289,7 @@ device_set_state () { # set radio type state -- $1: rftype, $2: state 0=off/1=on
     fi
 
     # use nmcli to notify NM of new device state
-    if cmd_exists $NMCLI ; then
+    if check_nm ; then
         case "$1" in
             wifi|wwan)
                 case $devs in
