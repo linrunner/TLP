@@ -1,4 +1,4 @@
-+++ 0.7 --- 04.01.2015 +++
++++ 0.7 --- 05.01.2015 +++
 
   *** Development release ***
 
@@ -6,7 +6,7 @@
     Processor:
     - Limit max/min P-state to control power dissipation of the CPU
       (intel_pstate only)
-    - Set x86 energy perf policy
+    - Set performance versus energy savings policy (x86_energy_perf_policy)
     USB:
     - USB_DRIVER_BLACKLIST: exclude devices assigned to the listed drivers
       from USB autosuspend; default: usbhid

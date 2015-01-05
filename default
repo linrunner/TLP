@@ -19,7 +19,7 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 # Hint: CPU parameters below are disabled by default, remove the leading #
 # to enable them, otherwise kernel default values are used.
 
-# Select a cpu frequency scaling governor:
+# Select a CPU frequency scaling governor:
 #   ondemand, powersave, performance, conservative
 # Intel Core i processor with intel_pstate driver:
 #   powersave, performance
@@ -38,9 +38,9 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #CPU_SCALING_MIN_FREQ_ON_BAT=0
 #CPU_SCALING_MAX_FREQ_ON_BAT=0
 
-# Set Intel P-state perf pct: 0..100 (%)
+# Set Intel P-state performance: 0..100 (%)
 # Limit the max/min P-state to control the power dissipation of the CPU.
-# Values are stated as a percentage of the avail performance.
+# Values are stated as a percentage of the available performance.
 # Requires an Intel Core i processor with intel_pstate driver.
 #CPU_MIN_PERF_ON_AC=0
 #CPU_MAX_PERF_ON_AC=100
@@ -69,8 +69,9 @@ NMI_WATCHDOG=0
 # CAUTION: only use this, if you thoroughly understand what you are doing!
 #PHC_CONTROLS="F:V F:V F:V F:V"
 
-# Set x86 energy perf policy: performance, normal, powersave
-# Requires kernel module msr and program x86_energy_perf_policy from linux-tools
+# Set CPU performance versus energy savings policy:
+#   performance, normal, powersave
+# Requires kernel module msr and x86_energy_perf_policy from linux-tools
 ENERGY_PERF_POLICY_ON_AC=performance
 ENERGY_PERF_POLICY_ON_BAT=powersave
 

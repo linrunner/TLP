@@ -522,7 +522,8 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
     return 0
 }
 
-set_cpu_perf_pct () { # set intel pstate perf pct -- $1: 0=ac mode, 1=battery mode
+set_cpu_perf_pct () { # set Intel P-state performance
+                      # $1: 0=ac mode, 1=battery mode
     local min max
 
     check_intel_pstate
@@ -691,7 +692,7 @@ set_phc_controls () { # set core voltages
     return 0
 }
 
-set_energy_perf_policy () { # set x86 energy perf policy
+set_energy_perf_policy () { # set performance versus energy savings policy
     # $1: 0=ac mode, 1=battery mode
 
     local perf rc
