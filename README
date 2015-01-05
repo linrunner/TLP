@@ -10,7 +10,6 @@ TLP is a pure command line tool with automated background tasks. It does not con
 Separate settings profiles depending on the power source AC/battery:
 - Kernel laptop mode and dirty buffer params
 - Processor frequency scaling including "turbo boost" / "turbo core"
-- Set : 0..100 (%)
 - Limit max/min P-state to control power dissipation of the CPU - intel_pstate only
 - Power aware process scheduler for multi-core/hyper-threading
 - X86 energy perf policy
