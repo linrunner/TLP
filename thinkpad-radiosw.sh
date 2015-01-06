@@ -41,6 +41,6 @@ done
 
 # Disable configured radios
 echo_debug "rf" "thinkpad-radiosw: on"
-init_radio_devices radiosw
+set_radio_devices_state radiosw
 
 exit 0

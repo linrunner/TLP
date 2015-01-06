@@ -48,7 +48,11 @@ apply_common_settings () { # apply settings common to all modes
     disable_wake_on_lan
     set_sound_power_mode $1
     set_runtime_pm $1
-    set_radio_devices_state $1
+    if [ "$1" = "1" ]; then
+        set_radio_devices_state bat
+    else
+        set_radio_devices_state ac
+    fi
 
     return 0
 }
@@ -99,7 +103,7 @@ case "$mode" in
                 load_modules
                 echo "done. "
 
-                init_radio_devices start
+                set_radio_devices_state start
 
                 echo -n "Setting battery charge thresholds..."
                 set_charge_thresholds
@@ -114,7 +118,7 @@ case "$mode" in
                 ;;
 
             stop)
-                init_radio_devices stop
+                set_radio_devices_state stop
 
                 if [ "$USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN" = "1" ]; then
                     echo -n "Disabling usb autosuspend..."

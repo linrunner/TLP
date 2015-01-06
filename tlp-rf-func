@@ -123,6 +123,7 @@ device_on () { # enable radio type -- $1: rftype
             if test_rfkill_perms ; then
                 echo_debug "rf" "device_on($1).rfkill"
                 $RFKILL unblock $1 > /dev/null 2>&1
+                get_devs $1
             else
                 err_no_root_priv "device_on($1).rfkill"
             fi
@@ -130,6 +131,7 @@ device_on () { # enable radio type -- $1: rftype
             if test_root ; then
                 echo_debug "rf" "device_on($1).devc"
                 echo -n $devon > $devc
+                get_devs $1
             else
                 err_no_root_priv "device_on($1).devc"
             fi
@@ -142,11 +144,10 @@ device_on () { # enable radio type -- $1: rftype
             wifi|wwan)
                 $NMCLI nm $1 on > /dev/null 2>&1
                 echo_debug "rf" "device_on($1).nmcli"
+                get_devs $1
                 ;;
         esac
     fi
-
-    get_devs $1
 
     return 0
 }
@@ -168,6 +169,7 @@ device_off () { # disable radio type -- $1: rftype
             if test_rfkill_perms ; then
                 echo_debug "rf" "device_off($1).rfkill"
                 $RFKILL block $1 > /dev/null 2>&1
+                get_devs $1
             else
                 err_no_root_priv "device_off($1).rfkill"
             fi
@@ -175,6 +177,7 @@ device_off () { # disable radio type -- $1: rftype
             if test_root ; then
                 echo_debug "rf" "device_off($1).devc"
                 echo -n $devoff > $devc
+                get_devs $1
             else
                 err_no_root_priv "device_off($1).devc"
             fi
@@ -187,11 +190,10 @@ device_off () { # disable radio type -- $1: rftype
             wifi|wwan)
                 $NMCLI nm $1 off > /dev/null 2>&1
                 echo_debug "rf" "device_off($1).nmcli"
+                get_devs $1
                 ;;
         esac
     fi
-
-    get_devs $1
 
     return 0
 }
@@ -216,6 +218,7 @@ device_toggle () { # toggle radio type state -- $1: rftype
                 1) $RFKILL block $1   > /dev/null 2>&1 ;;
                 *) ;;
             esac
+            get_devs $1
         else
             err_no_root_priv "device_toogle($1).rfkill"
         fi
@@ -227,6 +230,7 @@ device_toggle () { # toggle radio type state -- $1: rftype
                 1) echo -n $devoff > $devc ;;
                 *) ;;
             esac
+            get_devs $1
         else
             err_no_root_priv "device_toogle($1).devc"
         fi
@@ -242,11 +246,10 @@ device_toggle () { # toggle radio type state -- $1: rftype
                     *) ;;
                 esac
                 echo_debug "rf" "device_toggle($1).nmcli"
+                get_devs $1
                 ;;
         esac
     fi
-
-    get_devs $1
 
     return 0
 }
@@ -273,6 +276,7 @@ device_set_state () { # set radio type state -- $1: rftype, $2: state 0=off/1=on
                 0) $RFKILL block $1   > /dev/null 2>&1 ;;
                 1) $RFKILL unblock $1 > /dev/null 2>&1 ;;
             esac
+            get_devs $1
         else
             err_no_root_priv "device_set_state($1).rfkill"
         fi
@@ -283,6 +287,7 @@ device_set_state () { # set radio type state -- $1: rftype, $2: state 0=off/1=on
                 0) echo -n $devoff > $devc ;;
                 1) echo -n $devon > $devc ;;
             esac
+            get_devs $1
         else
             err_no_root_priv "device_set_state($1, $2).devc"
         fi
@@ -298,11 +303,10 @@ device_set_state () { # set radio type state -- $1: rftype, $2: state 0=off/1=on
                     *) ;;
                 esac
                 echo_debug "rf" "device_toggle($1).nmcli"
+                get_devs $1
                 ;;
         esac
     fi
-
-    get_devs $1
 
     return 0
 }
@@ -387,11 +391,11 @@ restore_device_states () { # restore radio type states
     fi
 }
 
-init_radio_devices () { # initialize all radio type states
-    # $1: start/stop/radiosw
-    # called from init scripts
-
+set_radio_devices_state () { # set/initialize all radio states
+    # $1: start/stop/bat/ac/radiosw
+    # called from init scripts or upon change of power source
     local dev devs2disable devs2enable restore
+    local quiet=0
 
     # save/restore mode is disabled by default
     if [ "$1" != "radiosw" ]; then
@@ -400,7 +404,7 @@ init_radio_devices () { # initialize all radio type states
         restore=0
     fi
 
-    echo_debug "rf" "init_radio_devices($1): restore=$restore"
+    echo_debug "rf" "set_radio_devices_state($1): restore=$restore"
 
     if [ "$restore" = "1" ]; then
         # "save/restore" mode
@@ -420,14 +424,14 @@ init_radio_devices () { # initialize all radio type states
                 ;;
         esac
     else
-        # "disable/enable on startup/shutdown" or "radiosw" mode
+        # "disable/enable on startup/shutdown or bat/ac" or "radiosw" mode
         case $1 in
-            start)
+            start) # system startup
                 devs2disable="$DEVICES_TO_DISABLE_ON_STARTUP"
                 devs2enable="$DEVICES_TO_ENABLE_ON_STARTUP"
                 ;;
 
-            stop)
+            stop) # system shutdown
                 devs2disable="$DEVICES_TO_DISABLE_ON_SHUTDOWN"
                 devs2enable="$DEVICES_TO_ENABLE_ON_SHUTDOWN"
 
@@ -438,6 +442,30 @@ init_radio_devices () { # initialize all radio type states
                 fi
                 ;;
 
+            bat) # battery power --> build disable list
+                quiet=1 # do not display progress
+                devs2enable=""
+                devs2disable="${DEVICES_TO_DISABLE_ON_BAT:-}"
+
+                # check configured list for connected devices
+                for dev in ${DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE:-}; do
+                    case $dev in
+                        bluetooth) any_bluetooth_in_use ;;
+                        wifi) any_wifi_in_use ;;
+                        wwan) any_wwan_in_use ;;
+                    esac
+                    # if device is not connected and not in list yet --> add to disable list
+                    [ $? = 0 ] || wordinlist $dev "$devs2disable" || devs2disable="$dev $devs2disable"
+                done
+                devs2disable="${devs2disable# }"
+                ;;
+
+            ac) # AC power --> build enable list
+                quiet=1 # do not display progress
+                devs2enable="${DEVICES_TO_ENABLE_ON_AC:-}"
+                devs2disable=""
+                ;;
+
             radiosw)
                 devs2disable=""
                 devs2enable="$DEVICES_TO_ENABLE_ON_RADIOSW"
@@ -446,12 +474,12 @@ init_radio_devices () { # initialize all radio type states
 
         # Disable configured radios
         if [ -n "$devs2disable" ]; then
-            echo -n "Disabling radios:"
+            [ "$quiet" = "1" ] || echo -n "Disabling radios:"
             for dev in $devs2disable; do
-                echo -n " $dev"
+                [ "$quiet" = "1" ] || echo -n " $dev"
                 device_off $dev
             done
-            echo "."
+            [ "$quiet" = "1" ] || echo "."
         fi
 
         # Enable configured radios
@@ -465,12 +493,12 @@ init_radio_devices () { # initialize all radio type states
                 done
             else
                 # start mode: enable listed radios
-                echo -n "Enabling radios:"
+                [ "$quiet" = "1" ] || echo -n "Enabling radios:"
                 for dev in $devs2enable; do
-                    echo -n " $dev"
+                    [ "$quiet" = "1" ] || echo -n " $dev"
                     device_on $dev
                 done
-                echo "."
+                [ "$quiet" = "1" ] || echo "."
             fi
         fi
 
@@ -479,41 +507,4 @@ init_radio_devices () { # initialize all radio type states
     fi
 
     return 0
-}
-
-set_radio_devices_state () { # set radio devices state depending on power source
-                             # $1: 0=ac mode, 1=battery mode
-    local devs2enable devs2disable dev
-
-    if [ "$1" = "1" ]; then
-        # Battery power --> build disable list
-        devs2enable=""
-        devs2disable="${DEVICES_TO_DISABLE_ON_BAT:-}"
-
-        # Check configured list for connected devices
-        for dev in ${DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE:-}; do
-            case $dev in
-                bluetooth) any_bluetooth_in_use ;;
-                wifi) any_wifi_in_use ;;
-                wwan) any_wwan_in_use ;;
-            esac
-            # If device is not connected and not in list yet --> add to disable list
-            [ $? = 0 ] || wordinlist $dev "$devs2disable" || devs2disable="$dev $devs2disable"
-        done
-        devs2disable="${devs2disable# }"
-    else
-        # AC power --> build enable list
-        devs2enable="${DEVICES_TO_ENABLE_ON_AC:-}"
-        devs2disable=""
-    fi
-
-    echo_debug "rf" "set_radio_devices_state($1).enable: $devs2enable"
-    for dev in $devs2enable; do
-        device_on $dev
-    done
-
-    echo_debug "rf" "set_radio_devices_state($1).disable: $devs2disable"
-    for dev in $devs2disable; do
-        device_off $dev
-    done
 }
