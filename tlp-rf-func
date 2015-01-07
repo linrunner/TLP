@@ -391,8 +391,8 @@ restore_device_states () { # restore radio type states
     fi
 }
 
-set_radio_devices_state () { # set/initialize all radio states
-    # $1: start/stop/bat/ac/radiosw
+set_radio_device_states () { # set/initialize all radio states
+    # $1: start/stop/1/0/radiosw
     # called from init scripts or upon change of power source
     local dev devs2disable devs2enable restore
     local quiet=0
@@ -442,7 +442,7 @@ set_radio_devices_state () { # set/initialize all radio states
                 fi
                 ;;
 
-            bat) # battery power --> build disable list
+            1) # battery power --> build disable list
                 quiet=1 # do not display progress
                 devs2enable=""
                 devs2disable="${DEVICES_TO_DISABLE_ON_BAT:-}"
@@ -460,7 +460,7 @@ set_radio_devices_state () { # set/initialize all radio states
                 devs2disable="${devs2disable# }"
                 ;;
 
-            ac) # AC power --> build enable list
+            0) # AC power --> build enable list
                 quiet=1 # do not display progress
                 devs2enable="${DEVICES_TO_ENABLE_ON_AC:-}"
                 devs2disable=""
