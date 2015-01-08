@@ -6,7 +6,7 @@ tlp (0.6.900-1) unstable; urgency=medium
     - add Recommends: linux-tools, linux-tools-common, linux-tools-generic
   * debian/tlp.init: add option "status"
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 05 Jan 2015 16:08:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 09 Jan 2015 17:51:42 +0100
 
 tlp (0.6-1) unstable; urgency=low
 

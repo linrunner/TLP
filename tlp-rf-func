@@ -102,11 +102,11 @@ invoke_nmcli () { # call nmcli with radio option according to the program versio
                # $1: rftype, $2: on/off, $3: caller; rc: last nmcli rc
     local rc
 
-    $NMCLI nm $1 $2 > /dev/null 2>&1; rc = $?
+    $NMCLI nm $1 $2 > /dev/null 2>&1; rc=$?
     echo_debug "rf" "invoke_nmcli($1, $2).nm: rc=$rc"
     if [ $rc -eq 2 ]; then
         # option "nm" is invalid for this NM version, try "radio" instead
-        $NMCLI radio $1 $2 > /dev/null 2>&1; rc = $?
+        $NMCLI radio $1 $2 > /dev/null 2>&1; rc=$?
         echo_debug "rf" "invoke_nmcli($1, $2).radio: rc=$rc"
     fi
     get_devs $1
