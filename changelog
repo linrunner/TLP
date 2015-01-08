@@ -42,6 +42,7 @@
       - Run in a detached subshell to avoid blocking udev
       - Wait 2s for subdevices to populate for proper black/whitelist detection
     Misc:
+    - Support for NM 0.9.10 (Debian Jessie)
     - Issue #109: tlp-stat: report "unknown" power source when no AC detected
     - Issue #98: do not change autosuspend_delay_ms, keep kernel default
       settings (garyp)
