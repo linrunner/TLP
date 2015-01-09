@@ -44,7 +44,7 @@ if cmd_exists $NMCLI ; then
     itype="$($NMCLI device | awk '$1 ~ /'$iface'/ { print $2; }')"
 
     if [ -z "$itype" ]; then
-        itype="unkown"
+        itype="unknown"
 
         case $iface in
             ppp*|wwan*) # iface != device -> maybe 3g card or usb stick?
