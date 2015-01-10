@@ -97,7 +97,7 @@ foreach $udev (grep { ! /:/ } glob "/sys/bus/usb/devices/*") {
 }
 
 # Output device list with attributes and drivers
-foreach (`lsusb`) {
+foreach (`lsusb 2> /dev/null`) {
     my ($bus, $dev, $usbid, $desc) = /Bus (\S+) Device (\S+): ID (\S+)[ ]+(.*)/;
     my $usbk = $bus . "_" . $dev;
     $desc ||= "<unknown>";
