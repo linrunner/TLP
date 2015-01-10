@@ -449,12 +449,12 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                 ;;
 
             1) echo "x86_energy_perf_policy: unsupported CPU." ;;
-            2) echo "x86_energy_perf_policy: linux-tools for your kernel are not installed." ;;
+            2) echo "x86_energy_perf_policy: program for your kernel not installed." ;;
             *) echo "x86_energy_perf_policy: not available." ;;
         esac
         echo
     else
-        echo "x86_energy_perf_policy: linux-tools are not installed."
+        echo "x86_energy_perf_policy: program not installed."
         echo
     fi
 
