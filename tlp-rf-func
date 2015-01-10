@@ -416,10 +416,9 @@ set_radio_device_states () { # set/initialize all radio states
         restore=0
     fi
 
-    echo_debug "rf" "set_radio_device_states($1): restore=$restore"
-
     if [ "$restore" = "1" ]; then
         # "save/restore" mode
+        echo_debug "rf" "set_radio_device_states($1).restore"
         case $1 in
             start)
                 restore_device_states
@@ -483,6 +482,8 @@ set_radio_device_states () { # set/initialize all radio states
                 devs2enable="$DEVICES_TO_ENABLE_ON_RADIOSW"
                 ;;
         esac
+
+        echo_debug "rf" "set_radio_device_states($1): enable=$devs2enable disable=$devs2disable"
 
         # Disable configured radios
         if [ -n "$devs2disable" ]; then
