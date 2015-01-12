@@ -41,7 +41,7 @@ check_timed_lock $RDW_NM_LOCK && exit 0
 # Determine interface type
 if cmd_exists $NMCLI ; then
     # nmcli is available
-    itype="$($NMCLI device | awk '$1 ~ /'$iface'/ { print $2; }')"
+    itype="$($NMCLI dev | awk '$1 ~ /'$iface'/ { print $2; }')"
 
     if [ -z "$itype" ]; then
         itype="unknown"
@@ -50,7 +50,7 @@ if cmd_exists $NMCLI ; then
             ppp*|wwan*) # iface != device -> maybe 3g card or usb stick?
 
                 # get connection state for devices != hso|usb|wwan
-                nmstate=$($NMCLI device | grep 'gsm' | egrep -v 'hso|usb|wwan' | awk '{ print $3; }')
+                nmstate=$($NMCLI dev | grep 'gsm' | egrep -v 'hso|usb|wwan' | awk '{ print $3; }')
 
                 # when action matches state, then it is probably type 3g/gsm
                 case $action in
