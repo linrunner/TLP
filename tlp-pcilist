@@ -7,7 +7,6 @@
 package tlp_pcilist;
 use strict;
 use warnings;
-use File::Basename;
 
 # Read content from a sysfile
 # $_[0]: input file
@@ -31,7 +30,7 @@ sub getdriver {
         # read file line by line
         while (<SYSF>) {
             # match line content and return DRIVER= value
-            if ( s/DRIVER=(.*)/$1/ ) {
+            if ( s/^DRIVER=(.*)/$1/ ) {
                 chomp ($driver = $_);
                 last; # break loop
             }
@@ -51,17 +50,12 @@ foreach (`lspci -m`) {
     my $devc = "$devp/power/control";
 
     if (-f $devc) { # control file exists
-        my $driver;
-
         # get Runtime PM mode
         my $pmode = catsysf ("$devc");
         # get device class
         my $class = catsysf ("$devp/class");
-
         # get device driver
-        if ( length ($driver = getdriver ("$devp")) == 0 ) {
-            $driver = "no driver";
-        }
+        my $driver = getdriver ("$devp") || "no driver";
 
         # output device data
         printf "%s/power/control = %-4s (%s, %s, %s)\n", $devp, $pmode, $class, $classdesc, $driver;

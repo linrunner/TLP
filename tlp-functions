@@ -1506,7 +1506,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                         # check subdevices for blacklisted drivers
                         for subdev in $USBD/$usbdev/*:*; do
                             # get driver name from subdev uevent file
-                            drv=$(sed -rn 's/DRIVER=(.*)/\1/p' $subdev/uevent)
+                            drv=$(sed -rn 's/^DRIVER=(.*)/\1/p' $subdev/uevent)
 
                             # check against driver blacklist
                             if wordinlist "$drv" "$drv_bl"; then

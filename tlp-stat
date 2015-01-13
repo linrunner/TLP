@@ -271,8 +271,13 @@ read_args () { # read command line arguments
                 ;;
 
             *)
-                echo "Usage: tlp-stat [-b|--battery|-c|--config|-r|--rfkill|-t|--temp|-T|--trace]"
-                exit 1
+                echo "Usage: tlp-stat [ -b |--battery    | -c |--config  |"
+                echo "                  -d | --disk      | -e |--pcie    |"
+                echo "                  -p | --processor | -r | --rfkill |"
+                echo "                  -s | --system    | -t | --temp   |"
+                echo "                  -u | --usb       | -w | --warn   |"
+                echo "                  -T | --trace                       ]"
+                exit 3
                 ;;
         esac
     done

@@ -86,7 +86,7 @@ else
     echo_debug "run" "power_source=ac"
 fi
 
-rc=0
+exitcode=0
 
 case "$mode" in
     init) # system initialization/shutdown: sysv, upstart, systemd, ...
@@ -210,7 +210,7 @@ case "$mode" in
         check_root
         load_modules
         setcharge_battery $2 $3 $4
-        rc=$?
+        exitcode=$?
         ;;
 
     fullcharge) # charge battery up to 100% (temporarily)
@@ -218,9 +218,9 @@ case "$mode" in
             check_root
             load_modules
             setcharge_battery 96 100 $2
-            rc=$?
+            exitcode=$?
         else
-            rc=2
+            exitcode=2
         fi
         ;;
 
@@ -229,9 +229,9 @@ case "$mode" in
             check_root
             load_modules
             chargeonce_battery $2
-            rc=$?
+            exitcode=$?
         else
-            rc=2
+            exitcode=2
         fi
         ;;
 
@@ -240,9 +240,9 @@ case "$mode" in
             check_root
             load_modules
             discharge_battery $2
-            rc=$?
+            exitcode=$?
         else
-            rc=2
+            exitcode=2
         fi
         ;;
 
@@ -253,13 +253,13 @@ case "$mode" in
             setcharge_battery 96 100 $2
             sleep 1
             discharge_battery $2
-            rc=$?
+            exitcode=$?
             if [ $rc -eq 0 ]; then
                 echo "      The battery starts charging now. For a complete recalibration"
                 echo "      keep AC connected until the battery is fully charged."
             fi
         else
-            rc=2
+            exitcode=2
         fi
         ;;
 
@@ -280,9 +280,10 @@ case "$mode" in
     *)
         echo "Error: unknown command \"$mode\"."  1>&2
         echo "Usage: tlp start|true|bat|false|ac|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid" 1>&2
+        exitcode=3
         ;;
 esac
 
-exit 0
+exit $exitcode
 
 

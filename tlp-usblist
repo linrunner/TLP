@@ -33,7 +33,7 @@ sub getdriver {
         # read file line by line
         while (<SYSF>) {
             # match line content and return DRIVER= value
-            if ( s/DRIVER=(.*)/$1/ ) {
+            if ( s/^DRIVER=(.*)/$1/ ) {
                 chomp ($driver = $_);
                 last; # break loop
             }
@@ -53,7 +53,8 @@ sub usbdriverlist {
     # iterate subdevices
     foreach $subdev (glob "$_[0]/*:*") {
         # get subdevice driver
-        if ( length (my $driver = getdriver ("$subdev")) > 0 ) {
+        my $driver = getdriver ("$subdev");
+        if ( $driver ) {
             if (index ($driverlist, $driver) == -1) {
                 if ($driverlist) { $driverlist = $driverlist . ", " . $driver; }
                 else { $driverlist = $driver; }
