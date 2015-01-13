@@ -144,7 +144,7 @@ check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=
 
 check_systemd () { # check if systemd is active (pid 1) and systemctl is installed
                    # rc: 0=yes, 1=no
-    pidof $SYSTEMD > /dev/null && cmd_exists $SYSTEMCTL
+    [ -d /run/systemd/system ] && cmd_exists $SYSTEMCTL
 }
 
 # --- PATH
