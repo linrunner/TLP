@@ -1,4 +1,4 @@
-+++ 0.7 --- 09.01.2015 +++
++++ 0.7 --- 18.01.2015 +++
 
   *** Development release ***
 
@@ -32,6 +32,7 @@
       - Show driver and connection state for all enabled radio devices
       - Show driver name in Runtime PM PCI(e) device list
       - Show type and state of docks and device bays
+      - Show type of init system
       - Check if TLP's systemd services are enabled (zenox)
 
   * Bugfixes

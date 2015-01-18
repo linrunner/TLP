@@ -351,7 +351,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     elif check_upstart; then
         echo "Init system    = upstart"
     else
-        echo "Init system    = sysvinit / OpenRC"
+        echo "Init system    = sysvinit / openrc"
     fi
     echo
 

@@ -95,7 +95,7 @@ test_rfkill_perms () { # test if either root priv or rfkill device writable
 
 check_nm () { # test if NetworkManager is running and nmcli is installed
 
-    cmd_exists $NMCLI && pidof $NMD > /dev/null
+    cmd_exists $NMCLI
 }
 
 invoke_nmcli () { # call nmcli with radio option according to the program version
