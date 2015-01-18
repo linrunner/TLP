@@ -24,6 +24,7 @@ done
 # --- MAIN
 read_defaults
 check_tlp_enabled || exit 0
+add_sbin2path
 
 # Get args
 iface="$1"
@@ -34,6 +35,11 @@ itype="unknown"
 [ -n "$iface" ] && [ "$iface" != "none" ] || exit 0
 
 echo_debug "nm" "rdw_nm($iface).$action"
+if [ -n "$addpath" ]; then
+    echo_debug "path" "PATH=$oldpath[$addpath]"
+else
+    echo_debug "path" "PATH=$oldpath"
+fi
 
 # Quit if timed lock in progress
 check_timed_lock $RDW_NM_LOCK && exit 0
