@@ -416,9 +416,9 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
     local isec
 
     if [ "$1" = "1" ]; then
-        isec=${DISK_IDLE_SECS_ON_AC:-}
-    else
         isec=${DISK_IDLE_SECS_ON_BAT:-}
+    else
+        isec=${DISK_IDLE_SECS_ON_AC:-}
     fi
     # replace with empty string if non-numeric chars are contained
     isec=$(echo "$isec" | egrep '^[0-9]+$')
@@ -429,13 +429,8 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
         return 0
     fi
 
-    if [ "$1" = "1" ]; then
-        echo_debug "pm" "set_laptopmode($1): $DISK_IDLE_SECS_ON_BAT"
-        echo $DISK_IDLE_SECS_ON_BAT > /proc/sys/vm/laptop_mode
-    else
-        echo_debug "pm" "set_laptopmode($1): $DISK_IDLE_SECS_ON_AC"
-        echo $DISK_IDLE_SECS_ON_AC > /proc/sys/vm/laptop_mode
-    fi
+    echo_debug "pm" "set_laptopmode($1): $isec"
+    echo $isec > /proc/sys/vm/laptop_mode
 
     return 0
 }
@@ -775,7 +770,7 @@ get_disk_state () { # get disk power state -- $1: dev; retval: $disk_state
 }
 
 spindown_disk () { # stop spindle motor -- $1: dev
-    $HDPARM -y /dev/$1 2>&1 > /dev/null
+    $HDPARM -y /dev/$1 > /dev/null 2>&1
 
     return 0
 }
