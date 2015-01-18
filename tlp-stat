@@ -350,8 +350,10 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         echo "Init system    = systemd"
     elif check_upstart; then
         echo "Init system    = upstart"
+    elif check_openrc; then
+        echo "Init system    = openrc"
     else
-        echo "Init system    = sysvinit / openrc"
+        echo "Init system    = sysvinit"
     fi
     echo
 

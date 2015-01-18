@@ -153,6 +153,12 @@ check_upstart () { # check if upstart is active init system (PID 1)
     cmd_exists $INITCTL && $INITCTL --version | grep -q upstart
 }
 
+check_openrc () { # check if openrc is the active init system (PID 1)
+                   # rc: 0=yes, 1=no
+    [ -e /run/openrc/softlevel ]
+}
+
+
 # --- PATH
 add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
                    # retval: $PATH, $oldpath, $addpath
