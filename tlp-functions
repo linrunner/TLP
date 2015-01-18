@@ -30,6 +30,7 @@ readonly ENERGYPERF=x86_energy_perf_policy
 readonly DBUSSEND=dbus-send
 readonly SYSTEMD=systemd
 readonly SYSTEMCTL=systemctl
+readonly INITCTL=initctl
 
 readonly TPACPIBAT=$libdir/tpacpi-bat # libdir is initialized by main program
 
@@ -142,9 +143,14 @@ check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=
     fi
 }
 
-check_systemd () { # check if systemd is active (pid 1) and systemctl is installed
+check_systemd () { # check if systemd is the active init system (PID 1) and systemctl is installed
                    # rc: 0=yes, 1=no
     [ -d /run/systemd/system ] && cmd_exists $SYSTEMCTL
+}
+
+check_upstart () { # check if upstart is active init system (PID 1)
+                   # rc: 0=yes, 1=no
+    cmd_exists $INITCTL && $INITCTL --version | grep -q upstart
 }
 
 # --- PATH

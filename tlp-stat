@@ -344,6 +344,15 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     cmd_exists $LSBREL && echo "Release        = $($LSBREL -d -s)"
     echo "Kernel         = $(uname -r -m)"
     printparm "%-14s = %s" /proc/cmdline
+
+    # --- show init system info
+    if check_systemd; then
+        echo "Init system    = systemd"
+    elif check_upstart; then
+        echo "Init system    = upstart"
+    else
+        echo "Init system    = sysvinit / OpenRC"
+    fi
     echo
 
     # --- show TLP status
