@@ -5,7 +5,8 @@
 
 [Unit]
 Description=TLP system startup/shutdown
-After=multi-user.target
+Wants=bluetooth.service NetworkManager.service
+After=multi-user.target bluetooth.service NetworkManager.service
 Before=shutdown.target
 
 [Service]
