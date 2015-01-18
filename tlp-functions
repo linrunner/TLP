@@ -1483,14 +1483,28 @@ disable_wake_on_lan () {  # disable WOL
 set_usb_suspend () { # activate usb autosuspend for all devices except input and blacklisted
     # $1: 0=silent/1=report result; $2: on/auto
 
-    local busdev control devices drv drv_bl exc usbdev usbid subdev vendor
+    local busdev control devices drv drv_bl exc usbdev usbid subdev
     local ctrlf="control"
     local autof="autosuspend_delay_ms"
 
     check_sysfs "set_usb_suspend" "$USBD"
 
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
+        # autosuspend is configured
+
+        # initialize driver blacklist from settings
+        drv_bl=${USB_DRIVER_BLACKLIST:-$DEFAULT_USB_DRIVER_BLACKLIST}
+
+        # add wwan driver blacklist if enabled
+        USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
+
+        if [ $USB_BLACKLIST_WWAN = "1" ]; then
+            drv_bl="$drv_bl $USB_WWAN_DRIVERS"
+        fi
+
+        # iterate devices
         devices=$(ls $USBD 2> /dev/null | grep -v ':')
+
         for usbdev in $devices; do
             if [ -f $USBD/$usbdev/power/autosuspend ] || [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
                 usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
@@ -1500,21 +1514,15 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                 exc=""
 
                 if [ "$control" != "on" ]; then
-                    if wordinlist "$usbid" "$USB_BLACKLIST"; then
+                    if wordinlist "$usbid" "$USB_WHITELIST"; then
+                        # device is in whitelist -- whitelist always wins
+                        control="auto"
+                        exc="_dev_white"
+                    elif wordinlist "$usbid" "$USB_BLACKLIST"; then
                         # device is in blacklist
                         control="on"
                         exc="_dev_black"
                     else
-                        # initialize driver blacklist from settings
-                        drv_bl=${USB_DRIVER_BLACKLIST:-$DEFAULT_USB_DRIVER_BLACKLIST}
-
-                        # add wwan driver blacklist if enabled
-                        USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
-
-                        if [ $USB_BLACKLIST_WWAN = "1" ]; then
-                            drv_bl="$drv_bl $USB_WWAN_DRIVERS"
-                        fi
-
                         # check subdevices for blacklisted drivers
                         for subdev in $USBD/$usbdev/*:*; do
                             # get driver name from subdev uevent file
@@ -1528,11 +1536,6 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                 break
                             fi
                         done
-
-                        if [ -n "$exc" ] && wordinlist "$usbid" "$USB_WHITELIST"; then
-                            control="auto"
-                            exc="_dev_white"
-                        fi
                     fi
                 fi
 
@@ -1547,13 +1550,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                 if [ "$X_TLP_USB_SET_AUTOSUSPEND_DELAY" = "1" ]; then
                     # set autosuspend_delay
                     if [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
-                        echo $USB_TIMEOUT_MS > $USBD/$usbdev/power/autosuspend_delay_ms 2> /dev/null
-                        if [ $? != 0 ]; then
-                            # openSUSE 11.4/2.6.37: writing to autosuspend_delay_ms fails -> fallback to autosuspend
-                            echo_debug "usb" "set_usb_suspend.autosuspend_delay_ms_not_writable: $busdev ID $usbid $USBD/$usbdev"
-                            echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
-                            autof="autosuspend"
-                        fi
+                        echo $USB_TIMEOUT_MS > $USBD/$usbdev/power/autosuspend_delay_ms
                     else
                         # autosuspend is deprecated
                         echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
