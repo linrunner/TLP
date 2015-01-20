@@ -161,7 +161,7 @@ RUNTIME_PM_ALL=1
 # Exclude PCI(e) devices assigned to the listed drivers from Runtime PM
 # (should prevent accidential power on of hybrid graphics' discrete part).
 # Default is "radeon nouveau"; use "" to disable the feature completely.
-# Separate multiple drivers with spaces. 
+# Separate multiple drivers with spaces.
 RUNTIME_PM_DRIVER_BLACKLIST="radeon nouveau"
 
 # Set to 0 to disable, 1 to enable USB autosuspend feature.
@@ -174,7 +174,7 @@ USB_AUTOSUSPEND=1
 
 # Exclude devices assigned to the listed drivers from USB autosuspend.
 # Default is "usbhid" (input devices); use "" to disable the feature
-# completely. Separate multiple drivers with spaces. 
+# completely. Separate multiple drivers with spaces.
 USB_DRIVER_BLACKLIST="usbhid"
 
 # WWAN devices are excluded from USB autosuspend:
@@ -257,4 +257,3 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 # Radio devices to enable/disable when undocked.
 #DEVICES_TO_ENABLE_ON_UNDOCK="wifi"
 #DEVICES_TO_DISABLE_ON_UNDOCK=""
-
