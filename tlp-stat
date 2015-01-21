@@ -19,13 +19,13 @@ readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
 
 readonly IBMTHERMAL=/proc/acpi/ibm/thermal
-readonly CORETEMP_DIRS='\
-/sys/devices/platform/coretemp.0 \
-/sys/devices/platform/coretemp.0/hwmon/hwmon*'
+readonly CORETEMP_DIRS="
+/sys/devices/platform/coretemp.0
+/sys/devices/platform/coretemp.0/hwmon/hwmon*"
 readonly IBMFAN=/proc/acpi/ibm/fan
-readonly HWMONFAN_DIRS='\
-/sys/class/hwmon/hwmon*/device \
-/sys/class/hwmon/hwmon*'
+readonly HWMONFAN_DIRS="
+/sys/class/hwmon/hwmon*/device
+/sys/class/hwmon/hwmon*"
 
 readonly JOURNALCTL=journalctl
 readonly DEBUGLOG=/var/log/debug
