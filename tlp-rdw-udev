@@ -1,7 +1,7 @@
 #!/bin/sh
 # tlp-rdw - handle dock/undock events
 #
-# Copyright (c) 2014 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2015 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants
@@ -25,20 +25,23 @@ read_defaults
 check_tlp_enabled || exit 0
 add_sbin2path
 
-# Get power state
+# get power state
 get_power_state; onbat=$?
 
-# Get device/type
+# get device/type
 ddev=/sys$1
 devtype=$2
 
 case $devtype in
     dock)
+        # check if type is "dock_station", exit if not
         type=$(cat $ddev/type)
+        [ "$type" = "dock_station" ] || exit 0
+
         docked=$(cat $ddev/docked)
         action=$EVENT
 
-        echo_debug "udev" "rdw_udev($2).$action dev=$ddev type=$type docked=$docked onbat=$onbat"
+        echo_debug "udev" "rdw_udev($devtype).$action dev=$ddev type=$type docked=$docked onbat=$onbat"
         ;;
 
     usb_dock)
@@ -47,13 +50,13 @@ case $devtype in
             remove) action="undock"  ;;
         esac
 
-        echo_debug "udev" "rdw_udev($2).$action dev=$ddev onbat=$onbat"
+        echo_debug "udev" "rdw_udev($devtype).$action dev=$ddev onbat=$onbat"
         ;;
 
-    *) exit 0 ;; # Unknown device type
+    *) exit 0 ;; # unknown device type
 esac
 
-# Quit if timed lock in progress
+# quit if timed lock in progress
 if check_timed_lock $RDW_DOCK_LOCK ; then
     echo_debug "udev" "rdw_udev.locked"
     exit 0

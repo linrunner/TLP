@@ -1,7 +1,7 @@
 #!/bin/sh
 # tlp - display power save and usb autosuspend status
 #
-# Copyright (c) 2014 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2015 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants
@@ -19,16 +19,18 @@ readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
 
 readonly IBMTHERMAL=/proc/acpi/ibm/thermal
-readonly CORETEMP_DIRS='\
-/sys/devices/platform/coretemp.0 \
-/sys/devices/platform/coretemp.0/hwmon/hwmon*'
+readonly CORETEMP_DIRS="
+/sys/devices/platform/coretemp.0
+/sys/devices/platform/coretemp.0/hwmon/hwmon*"
 readonly IBMFAN=/proc/acpi/ibm/fan
-readonly HWMONFAN_DIRS='\
-/sys/class/hwmon/hwmon*/device \
-/sys/class/hwmon/hwmon*'
+readonly HWMONFAN_DIRS="
+/sys/class/hwmon/hwmon*/device
+/sys/class/hwmon/hwmon*"
 
 readonly JOURNALCTL=journalctl
 readonly DEBUGLOG=/var/log/debug
+
+readonly SYSTEMD_SERVICES="tlp.service tlp-sleep.service"
 
 # --- Variables
 
@@ -38,9 +40,14 @@ needs_root_priv=
 show_all=1
 show_bat=0
 show_conf=0
+show_disk=0
+show_pcie=0
+show_proc=0
 show_rfkill=0
+show_system=0
 show_temp=0
 show_trace=0
+show_usb=0
 show_warn=0
 
 # --- Functions
@@ -209,15 +216,45 @@ read_args () { # read command line arguments
                 : ${needs_root_priv:=0}
                 ;;
 
+            "-d"|"--disk")
+                show_all=0
+                show_disk=1
+                needs_root_priv=1
+                ;;
+
+            "-e"|"--pcie")
+                show_all=0
+                show_pcie=1
+                : ${needs_root_priv:=0}
+                ;;
+
+            "-p"|"--processor")
+                show_all=0
+                show_proc=1
+                needs_root_priv=1
+                ;;
+
             "-r"|"--rfkill")
                 show_all=0
                 show_rfkill=1
                 : ${needs_root_priv:=0}
                 ;;
 
+            "-s"|"--system")
+                show_all=0
+                show_system=1
+                : ${needs_root_priv:=0}
+                ;;
+
             "-t"|"--temp")
                 show_all=0
                 show_temp=1
+                : ${needs_root_priv:=0}
+                ;;
+
+            "-u"|"--usb")
+                show_all=0
+                show_usb=1
                 : ${needs_root_priv:=0}
                 ;;
 
@@ -234,8 +271,13 @@ read_args () { # read command line arguments
                 ;;
 
             *)
-                echo "Usage: tlp-stat [-b|--battery|-c|--config|-r|--rfkill|-t|--temp|-T|--trace]"
-                exit 1
+                echo "Usage: tlp-stat [ -b |--battery    | -c |--config  |"
+                echo "                  -d | --disk      | -e |--pcie    |"
+                echo "                  -p | --processor | -r | --rfkill |"
+                echo "                  -s | --system    | -t | --temp   |"
+                echo "                  -u | --usb       | -w | --warn   |"
+                echo "                  -T | --trace                       ]"
+                exit 3
                 ;;
         esac
     done
@@ -271,7 +313,7 @@ conf_present=$?
 # check prereqisites
 if [ "$needs_root_priv" = "1" ]; then
     check_root
-    load_tp_modules
+    load_modules
     check_tpacpi
     check_tpsmapi
 fi
@@ -289,9 +331,9 @@ if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
         echo "Warning: config file $CONFFILE not present." 1>&2
         echo
     fi
-fi
+fi # show_conf
 
-if [ "$show_all" = "1" ]; then
+if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # --- show system info
     echo "+++ System Info"
 
@@ -302,6 +344,17 @@ if [ "$show_all" = "1" ]; then
     cmd_exists $LSBREL && echo "Release        = $($LSBREL -d -s)"
     echo "Kernel         = $(uname -r -m)"
     printparm "%-14s = %s" /proc/cmdline
+
+    # --- show init system info
+    if check_systemd; then
+        echo "Init system    = systemd"
+    elif check_upstart; then
+        echo "Init system    = upstart"
+    elif check_openrc; then
+        echo "Init system    = openrc"
+    else
+        echo "Init system    = sysvinit"
+    fi
     echo
 
     # --- show TLP status
@@ -312,22 +365,35 @@ if [ "$show_all" = "1" ]; then
         echo "TLP power save = not enabled"
     fi
 
+    # -- check systemd service units status
+    if check_systemd; then
+        for su in $SYSTEMD_SERVICES; do
+            if ! $SYSTEMCTL is-enabled $su > /dev/null 2>&1 ; then
+                echo "***Warning: $su is not enabled -- invoke \"systemctl enable $su\" to correct this!"
+            fi
+        done
+    fi
+
     # -- show warning if l-m-t detected
     check_laptop_mode_tools
 
     # --- show power source
-    if get_power_state; then
-        echo "power source   = ac"
-    else
-        echo "power source   = battery"
-    fi
+    get_sys_power_supply
+    case $? in
+        0) echo "power source   = ac" ;;
+        1) echo "power source   = battery" ;;
+        *) echo "power source   = unknown (using battery settings)" ;;
+    esac
     echo
+fi # show_system
 
+if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show cpu info
     echo "+++ Processor"
     sed -rn 's/model name[ \t]+: (.+)/CPU Model      = \1/p' /proc/cpuinfo | head -1
     echo
 
+    # -- show scaling gov and freq info
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
         if [ -f $cpuf/scaling_driver ]; then
             printparm "%-54s = ##%s##" $cpuf/scaling_driver
@@ -355,8 +421,13 @@ if [ "$show_all" = "1" ]; then
     check_intel_pstate
 
     if [ $intel_pstate -eq 1 ]; then
+        # show Intel P-state info
+        printparm "%-54s = ##%d##" $CPU_MIN_PERF_PCT
+        printparm "%-54s = ##%d##" $CPU_MAX_PERF_PCT
         printparm "%-54s = ##%d##" $CPU_TURBO_PSTATE
+
     elif [ -f $CPU_BOOST_ALL_CTRL ]; then
+        # show turbo boost info
         get_sysval $CPU_BOOST_ALL_CTRL; boost=$?
 
         # simple test for attribute "w" doesn't work, so actually write
@@ -369,11 +440,39 @@ if [ "$show_all" = "1" ]; then
          printparm "%-54s = (not available)" $CPU_BOOST_ALL_CTRL
     fi
 
-
+    # --- show sched power save info
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
         [ -f $sdev ] && printparm "%-54s = ##%d##" $sdev
     done
+    echo
+
+    # --- show x86 energy perf policy info
+    if cmd_exists $ENERGYPERF; then
+        # check CPU support
+        $ENERGYPERF -r > /dev/null 2>&1
+        case $? in
+            0)  # parse x86_energy_perf_policy output:
+                # - replace numbers with descriptive strings
+                # - remove ":"
+                # - indent and align
+                $ENERGYPERF -r 2>/dev/null | \
+                    sed 's/0x0000000000000000/performance/;
+                         s/0x0000000000000006/normal/;
+                         s/0x000000000000000f/powersave/;
+                         s/://' | \
+                    awk '{ printf "x86_energy_perf_policy.%-31s = %s\n", $1, $2; }'
+                ;;
+
+            1) echo "x86_energy_perf_policy: unsupported CPU." ;;
+            2) echo "x86_energy_perf_policy: program for your kernel not installed." ;;
+            *) echo "x86_energy_perf_policy: not available." ;;
+        esac
+        echo
+    else
+        echo "x86_energy_perf_policy: program not installed."
+        echo
+    fi
 
     # --- show nmi watchdog
     printparm "%-54s = ##%d##" $NMIWD
@@ -394,8 +493,7 @@ if [ "$show_all" = "1" ]; then
         echo "PHC kernel not available."
         echo
     fi
-
-fi # show_all
+fi # show_proc
 
 if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show temperatures
@@ -443,7 +541,6 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     fi
     echo
-
 fi # show_temp
 
 if [ "$show_all" = "1" ]; then
@@ -458,7 +555,9 @@ if [ "$show_all" = "1" ]; then
     printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/xfssyncd_centisecs
     printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/xfsbufd_centisecs
     echo
+fi # show_all
 
+if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show disk info form hdparm
     echo "+++ Storage Devices"
     : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
@@ -498,7 +597,8 @@ if [ "$show_all" = "1" ]; then
                     1) echo "          TRIM      = supported" ;;
                 esac
 
-                echo "          scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
+                [ -f /sys/block/$disk_dev/queue/scheduler ] && \
+                    echo "          Scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
 
                 if cmd_exists $SMARTCTL ; then
                     # --- show SMART data
@@ -542,7 +642,9 @@ if [ "$show_all" = "1" ]; then
         echo "No AHCI-enabled host controller detected."
     fi
     echo
+fi # show_disk
 
+if [ "$show_all" = "1" ]; then
     # --- show pcie aspm state
     echo "+++ PCIe Active State Power Management"
     if [ -f $ASPM ]; then
@@ -602,19 +704,39 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
     done
     echo
 
-    # --- show wifi power mode
+    ifshown=0
+
+    # --- show bluetooth
+    get_bluetooth_ifaces
+    for iface in $bifaces; do
+        if [ -n "$iface" ]; then
+            ifshown=1
+
+            # get bluetooth driver
+            get_bluetooth_driver $iface
+            printf "%-20s: " "$iface($bluetoothdrv)"
+            if bluetooth_in_use $iface; then
+                echo "connected"
+            else
+                echo "not connected"
+            fi
+        fi
+    done
+
+    # --- show wifi data
     get_wifi_ifaces
     for iface in $wifaces; do
         if [ -n "$iface" ]; then
-            wifipm=""
+            ifshown=1
 
+            # get wifi power mgmt state
+            wifipm=""
             if [ "$X_DONT_USE_IW" != "1" ] && cmd_exists $IW; then
                 # try with iw first
                 wifipm=$($IW dev $iface get power_save 2> /dev/null | \
                     grep "Power save" | \
                     sed -r 's/.*Power save: (on|off).*/\1/')
             fi
-
             if cmd_exists $IWC; then
                 if [ -z "$wifipm" ]; then
                     # iw did not succeed or iw not installed -> try with iwconfig
@@ -624,15 +746,43 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
                 fi
             fi
 
+            # get wifi driver
             get_wifi_driver $iface
-            echo -n "$iface($wifidrv): power management = "
+            printf "%-20s: " "$iface($wifidrv)" 
+            if wireless_in_use $iface; then
+                printf "connected, "
+            else
+                printf "not connected, "
+            fi
+            printf "power management = "
             case $wifipm in
-                on|off) echo "$wifipm" ;;
-                *)      echo "unknown" ;;
+                on|off) printf "$wifipm" ;;
+                *)      printf "unknown" ;;
             esac
+            printf "\n"
         fi
     done
-    [ -n "$wifaces" ] && echo
+
+    # --- show wwan data
+    get_wwan_ifaces
+    for iface in $wanifaces; do
+        if [ -n "$iface" ]; then
+            ifshown=1
+
+            # get wwan driver
+            get_wwan_driver $iface
+
+            printf "%-20s: " "$iface($wwandrv)"
+            if wireless_in_use $iface; then
+                printf "connected"
+            else
+                printf "not connected"
+            fi
+            printf "\n"
+        fi
+    done
+    [ "$ifshown" = "1" ] && echo
+
 fi # show_rfkill
 
 if [ "$show_all" = "1" ]; then
@@ -647,7 +797,97 @@ if [ "$show_all" = "1" ]; then
     fi
     echo
 
+    # -- show docks
+    cnt=0
+    for dock in $DOCKGLOB; do
+        [ ! -d $dock ] && break # no dock/bay detected
+
+        # dock/bay detected, print header
+        [ $cnt -eq 0 ] && echo "+++ Docks and Device Bays"
+        cnt=$((cnt+1))
+
+        # get dock type
+        { read -r dock_type < $dock/type; } 2>/dev/null
+
+        # get dock state
+        if check_is_docked; then
+            # docked
+            case $dock_type in
+                ata_bay)      dock_state="drive present" ;;
+                battery_bay)  dock_state="battery present" ;;
+                dock_station) dock_state="docked" ;;
+
+                *)  dock_state="docked"
+                    dock_type="unknown"
+                    ;;
+            esac
+        else
+            # not docked
+            case $dock_type in
+                ata_bay)      dock_state="no drive (or powered off)" ;;
+                battery_bay)  dock_state="no battery " ;;
+                dock_station) dock_state="undocked" ;;
+
+                *)  dock_state="undocked"
+                    dock_type="unknown"
+                    ;;
+            esac
+        fi
+
+        # print dock data
+        printf "%s: %-13s = %s\n" "$dock" "$dock_type" "$dock_state"
+    done
+    [ $cnt -gt 0 ] && echo
 fi # show_all
+
+if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
+    # -- show runtime pm
+    doall=${RUNTIME_PM_ALL:-0}
+
+    echo "+++ Runtime Power Management"
+    if [ "$doall" = "1" ]; then
+        echo "device classes   = all"
+    else
+        echo "device classes   = Ethernet, Wireless, Audio, Host Bridge, [SD] Card Reader, Firewire"
+    fi
+    echo "device blacklist = ${RUNTIME_PM_BLACKLIST:=(not configured)}"
+    echo "driver blacklist = ${RUNTIME_PM_DRIVER_BLACKLIST:=(not configured)}"
+    echo
+
+    if cmd_exists $TLPPCI; then
+        $TLPPCI
+    else
+        echo "Error: missing subcommand $TLPPCI." 1>&2
+    fi
+    echo
+fi # show_pcie
+
+if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
+    # -- show usb autosuspend
+    echo "+++ USB"
+    if [ "$USB_AUTOSUSPEND" = "1" ]; then
+        echo "autosuspend        = enabled"
+    else
+        echo "autosuspend        = disabled"
+    fi
+    echo "device whitelist   = ${USB_WHITELIST:=(not configured)}"
+    echo "device blacklist   = ${USB_BLACKLIST:=(not configured)}"
+    echo "driver blacklist   = ${USB_DRIVER_BLACKLIST:=(not configured)}"
+    if [ "$USB_BLACKLIST_WWAN" = "1" ]; then
+        echo "wwan blacklist     = enabled ($USB_WWAN_DRIVERS)"
+    else
+        echo "wwan blacklist     = disabled"
+    fi
+    echo
+
+    if cmd_exists $TLPUSB; then
+        $TLPUSB
+    else
+        echo "Error: missing subcommand $TLPUSB." 1>&2
+    fi
+    echo
+
+fi # show_usb
 
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show battery info & charge thresholds
@@ -683,9 +923,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
                 if check_tp_battery $batt; then # battery is present
                     case $bat_idx in
-                        1) echo "+++ ThinkPad Battery Status (Main)" ;;
-                        2) echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
-                        0) echo "+++ ThinkPad Battery Status" ;;
+                        1) echo "+++ ThinkPad Battery Status: $batt (Main / Internal)" ;;
+                        2) echo "+++ ThinkPad Battery Status: $batt (Ultrabay / Slice / Replaceable)" ;;
+                        0) echo "+++ ThinkPad Battery Status: $batt" ;;
                     esac
 
                     printparm "%-59s = ##%s##" $batd/manufacturer
@@ -726,9 +966,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 if [ $tpacpi -eq 0 ]; then
                     # it's a ThinkPad with tpacpi-bat only
                     case $bat_idx in
-                        1) echo "+++ ThinkPad Battery Status (Main)" ;;
-                        2) echo "+++ ThinkPad Battery Status (Ultrabay/Slice)" ;;
-                        0) echo "+++ ThinkPad Battery Status" ;;
+                        1) echo "+++ ThinkPad Battery Status: $batt (Main / Internal)" ;;
+                        2) echo "+++ ThinkPad Battery Status: $batt (Ultrabay / Slice / Replaceable)" ;;
+                        0) echo "+++ ThinkPad Battery Status: $batt" ;;
                     esac
                 else
                    # it's a ThinkPad with neither tp-smapi nor tpacpi-bat 
@@ -781,34 +1021,6 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 fi # show_bat
 
 if [ "$show_all" = "1" ]; then
-    # -- show runtime pm
-    echo "+++ Runtime Power Management"
-    doall=${RUNTIME_PM_ALL:-0}
-
-    if cmd_exists $TLPPCI; then
-        $TLPPCI
-    else
-        echo "Error: missing subcommand $TLPPCI." 1>&2
-    fi
-    echo
-
-    # -- show usb autosuspend
-    echo "+++ USB"
-    if [ "$USB_AUTOSUSPEND" = "1" ]; then
-        echo "tlp usb autosuspend = enabled"
-    else
-        echo "tlp usb autosuspend = not enabled"
-    fi
-    echo "tlp usb blacklist   = ${USB_BLACKLIST:=(not configured)}"
-    echo
-
-    if cmd_exists $TLPUSB; then
-        $TLPUSB
-    else
-        echo "Error: missing subcommand $TLPUSB." 1>&2
-    fi
-    echo
-
     # -- show suggestions
     suout=""
 

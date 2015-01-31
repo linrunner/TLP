@@ -1,4 +1,4 @@
-TLP README - 25.03.2014
+TLP README - 05.01.2015
 
 TLP brings you the benefits of advanced power management for Linux without the need
 to understand every technical detail. TLP comes with a default configuration already
@@ -7,10 +7,12 @@ is highly customizable to fulfil your specific requirements.
 
 TLP is a pure command line tool with automated background tasks. It does not contain a GUI.
 
-Settings depending on the power source ac/bat:
+Separate settings profiles depending on the power source AC/battery:
 - Kernel laptop mode and dirty buffer params
 - Processor frequency scaling including "turbo boost" / "turbo core"
+- Limit max/min P-state to control power dissipation of the CPU - intel_pstate only
 - Power aware process scheduler for multi-core/hyper-threading
+- Processor performance versus energy savings policy (x86_energy_perf_policy)
 - Hard disk advanced power magement level and spin down timeout (per disk)
 - SATA aggressive link power management (ALPM)
 - PCIe active state power management (PCIe ASPM) - Kernel 2.6.35 and above
@@ -18,14 +20,16 @@ Settings depending on the power source ac/bat:
 - Radeon graphics KMS power management - Kernel 2.6.35 and above, not fglrx
 - Radeon graphics dynamic power management - Kernel 3.11 and above, not fglrx
 - Wifi power saving mode -  depending on kernel/driver
-- Power off optical drive in drive bay (on battery)
+- Enable/disable integrated radio devices (excluding connected devices)
+- Power off optical drive in UltraBay/MediaBay (on battery)
 - Audio power saving mode - hda_intel, ac97
 
 Additional functions:
 - I/O scheduler (per disk)
-- USB autosuspend with blacklist (input devices excluded automatically)
+- X86 energy perf policy
+- USB autosuspend with driver and device blacklist (input devices excluded automatically)
 - Enable or disable integrated radio devices upon system startup and shutdown
-- Restore radio device state on system startup (from previous shutdown).
+- Restore radio device state on system startup (from previous shutdown)
 - Radio device wizard: switch radios upon network connect/disconnect and dock/undock
 - Disable Wake On LAN
 - Integrated wwan state is restored after suspend/hibernate

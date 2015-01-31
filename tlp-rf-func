@@ -1,7 +1,7 @@
 #!/bin/sh
 # tlp - rf switch functions
 #
-# Copyright (c) 2014 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2015 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # ----------------------------------------------------------------------------
@@ -71,13 +71,6 @@ get_devc () { # get control device for radio type -- $1: rftype; retval $devc
     return 0
 }
 
-err_no_root_priv () { # check root privilege
-    echo "Error: missing root privilege." 1>&2
-    echo_debug "rf" "$1.missing_root_privilege"
-
-    return 0
-}
-
 get_devs () { # get radio device state -- $1: rftype; retval $devs: 0=off/1=on
     if [ -n "$devc" ]; then
         devs=$(cat $devc)
@@ -89,8 +82,37 @@ get_devs () { # get radio device state -- $1: rftype; retval $devs: 0=off/1=on
     return 0
 }
 
+err_no_root_priv () { # check root privilege
+    echo "Error: missing root privilege." 1>&2
+    echo_debug "rf" "$1.missing_root_privilege"
+
+    return 0
+}
+
 test_rfkill_perms () { # test if either root priv or rfkill device writable
     test_root || [ -w $RFKD ]
+}
+
+check_nm () { # test if NetworkManager is running and nmcli is installed
+
+    cmd_exists $NMCLI
+}
+
+invoke_nmcli () { # call nmcli with radio option according to the program version
+                  # $1: rftype, $2: on/off, $3: caller; rc: last nmcli rc
+    local rc
+
+    check_nm || return 0 # return if NetworkManager not running
+
+    $NMCLI nm $1 $2 > /dev/null 2>&1; rc=$?
+    echo_debug "rf" "invoke_nmcli($1, $2).nm: rc=$rc"
+    if [ $rc -eq 2 ]; then
+        # option "nm" is invalid for this NM version, try "radio" instead
+        $NMCLI radio $1 $2 > /dev/null 2>&1; rc=$?
+        echo_debug "rf" "invoke_nmcli($1, $2).radio: rc=$rc"
+    fi
+
+    return $rc
 }
 
 device_state () { # get radio type state -- $1: rftype; retval $devc, $devs: 0=off/1=on
@@ -108,34 +130,38 @@ device_on () { # enable radio type -- $1: rftype
     # quit if no device
     [ -z "$devc" ] && return 0
 
+    # get device state
     get_devs $1
-    [ "$devs" = "1" ] && return 0 # quit if device is already on
 
-    if [ "$1" = "wifi" ] && cmd_exists $NMCLI ; then
-        # use nmcli to switch wifi on
-        $NMCLI nm wifi on > /dev/null 2>&1
-        echo_debug "rf" "device_on($1).nmcli"
-
-        get_devs $1
-        [ "$devs" = "1" ] && return 0 # quit if device is now on
-    fi
-
-    if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
-        if test_rfkill_perms ; then
-            echo_debug "rf" "device_on($1).rfkill"
-            $RFKILL unblock $1 > /dev/null 2>&1
+    if [ "$devs" = "0" ]; then
+        # device is currently off --> turn rfkill device state on
+        if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
+            if test_rfkill_perms ; then
+                echo_debug "rf" "device_on($1).rfkill"
+                $RFKILL unblock $1 > /dev/null 2>&1
+                get_devs $1
+            else
+                err_no_root_priv "device_on($1).rfkill"
+            fi
         else
-            err_no_root_priv "device_on($1).rfkill"
-        fi
-    else
-        if test_root ; then
-            echo_debug "rf" "device_on($1).devc"
-            echo -n $devon > $devc
-        else
-            err_no_root_priv "device_on($1).devc"
+            if test_root ; then
+                echo_debug "rf" "device_on($1).devc"
+                echo -n $devon > $devc
+                get_devs $1
+            else
+                err_no_root_priv "device_on($1).devc"
+            fi
         fi
     fi
 
+    # use nmcli to notify NM that device is now on
+    case "$1" in
+        wifi|wwan)
+            invoke_nmcli $1 on
+            ;;
+    esac
+
+    # get/record final device state
     get_devs $1
 
     return 0
@@ -149,34 +175,38 @@ device_off () { # disable radio type -- $1: rftype
     # quit if no device
     [ -z "$devc" ] && return 0
 
+    # get device state
     get_devs $1
-    [ "$devs" = "0" ] && return 0 # quit if device is already off
 
-    if [ "$1" = "wifi" ] && cmd_exists $NMCLI ; then
-        # use nmcli to switch wifi off
-        $NMCLI nm wifi off > /dev/null 2>&1
-        echo_debug "rf" "device_off($1).nmcli"
-
-        get_devs $1
-        [ "$devs" = "0" ] && return 0 # quit if device is now off
-    fi
-
-    if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
-        if test_rfkill_perms ; then
-            echo_debug "rf" "device_off($1).rfkill"
-            $RFKILL block $1 > /dev/null 2>&1
+    if [ "$devs" = "1" ]; then
+        # device is currently on --> turn rfkill device state off
+        if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
+            if test_rfkill_perms ; then
+                echo_debug "rf" "device_off($1).rfkill"
+                $RFKILL block $1 > /dev/null 2>&1
+                get_devs $1
+            else
+                err_no_root_priv "device_off($1).rfkill"
+            fi
         else
-            err_no_root_priv "device_off($1).rfkill"
-        fi
-    else
-        if test_root ; then
-            echo_debug "rf" "device_off($1).devc"
-            echo -n $devoff > $devc
-        else
-            err_no_root_priv "device_off($1).devc"
+            if test_root ; then
+                echo_debug "rf" "device_off($1).devc"
+                echo -n $devoff > $devc
+                get_devs $1
+            else
+                err_no_root_priv "device_off($1).devc"
+            fi
         fi
     fi
 
+    # use nmcli to notify NM that device is now off
+    case "$1" in
+        wifi|wwan)
+            invoke_nmcli $1 off
+            ;;
+    esac
+
+    # get/record final device state
     get_devs $1
 
     return 0
@@ -190,23 +220,10 @@ device_toggle () { # toggle radio type state -- $1: rftype
     # quit if no device
     [ -z "$devc" ] && return 0
 
+    # get device state
     get_devs $1
 
-    if [ "$1" = "wifi" ] && cmd_exists $NMCLI ; then
-        # use nmcli to toggle wifi
-        local olds=$devs
-
-        case $devs in
-            0) $NMCLI nm wifi on  > /dev/null 2>&1 ;;
-            1) $NMCLI nm wifi off > /dev/null 2>&1 ;;
-            *) ;;
-        esac
-        echo_debug "rf" "device_toggle($1).nmcli"
-
-        get_devs $1
-        [ "$devs" != "$olds" ] && return 0 # quit if device is now toggled
-    fi
-
+    # toggle rfkill device state
     if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
         if test_rfkill_perms ; then
             echo_debug "rf" "device_toggle($1).rfkill"
@@ -215,6 +232,7 @@ device_toggle () { # toggle radio type state -- $1: rftype
                 1) $RFKILL block $1   > /dev/null 2>&1 ;;
                 *) ;;
             esac
+            get_devs $1
         else
             err_no_root_priv "device_toogle($1).rfkill"
         fi
@@ -226,11 +244,24 @@ device_toggle () { # toggle radio type state -- $1: rftype
                 1) echo -n $devoff > $devc ;;
                 *) ;;
             esac
+            get_devs $1
         else
             err_no_root_priv "device_toogle($1).devc"
         fi
     fi
 
+    # use nmcli to notify NM of new device state
+    case "$1" in
+        wifi|wwan)
+            case $devs in
+                1) invoke_nmcli $1 on  ;;
+                0) invoke_nmcli $1 off ;;
+                *) ;;
+            esac
+            ;;
+    esac
+
+    # get/record final device state
     get_devs $1
 
     return 0
@@ -247,23 +278,10 @@ device_set_state () { # set radio type state -- $1: rftype, $2: state 0=off/1=on
     # quit if state not 0 nor 1
     [ "$2" = "0" ] || [ "$2" = "1" ] || return 0
 
+    # get device state
     get_devs $1
 
-    if [ "$1" = "wifi" ] && cmd_exists $NMCLI ; then
-        # use nmcli to set wifi state
-        local olds=$devs
-
-        case $2 in
-            0) $NMCLI nm wifi off > /dev/null 2>&1 ;;
-            1) $NMCLI nm wifi on  > /dev/null 2>&1 ;;
-            *) ;;
-        esac
-        echo_debug "rf" "device_set_state($1).nmcli"
-
-        get_devs $1
-        [ "$devs" != "$olds" ] && return 0 # quit if device state is now set
-    fi
-
+    # set rfkill device state
     if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
         if test_rfkill_perms ; then
             echo_debug "rf" "device_set_state($1, $2).rfkill"
@@ -271,6 +289,7 @@ device_set_state () { # set radio type state -- $1: rftype, $2: state 0=off/1=on
                 0) $RFKILL block $1   > /dev/null 2>&1 ;;
                 1) $RFKILL unblock $1 > /dev/null 2>&1 ;;
             esac
+            get_devs $1
         else
             err_no_root_priv "device_set_state($1).rfkill"
         fi
@@ -281,11 +300,24 @@ device_set_state () { # set radio type state -- $1: rftype, $2: state 0=off/1=on
                 0) echo -n $devoff > $devc ;;
                 1) echo -n $devon > $devc ;;
             esac
+            get_devs $1
         else
             err_no_root_priv "device_set_state($1, $2).devc"
         fi
     fi
 
+    # use nmcli to notify NM of new device state
+    case "$1" in
+        wifi|wwan)
+            case $devs in
+                1) invoke_nmcli $1 on  ;;
+                0) invoke_nmcli $1 off ;;
+                *) ;;
+            esac
+            ;;
+    esac
+
+    # get/record final device state
     get_devs $1
 
     return 0
@@ -371,11 +403,11 @@ restore_device_states () { # restore radio type states
     fi
 }
 
-init_radio_devices () { # initialize all radio type states
-    # $1: start/stop/radiosw
-    # called from init scripts
-
+set_radio_device_states () { # set/initialize all radio states
+    # $1: start/stop/1/0/radiosw
+    # called from init scripts or upon change of power source
     local dev devs2disable devs2enable restore
+    local quiet=0
 
     # save/restore mode is disabled by default
     if [ "$1" != "radiosw" ]; then
@@ -384,10 +416,9 @@ init_radio_devices () { # initialize all radio type states
         restore=0
     fi
 
-    echo_debug "rf" "init_radio_devices($1): restore=$restore"
-
     if [ "$restore" = "1" ]; then
         # "save/restore" mode
+        echo_debug "rf" "set_radio_device_states($1).restore"
         case $1 in
             start)
                 restore_device_states
@@ -404,14 +435,14 @@ init_radio_devices () { # initialize all radio type states
                 ;;
         esac
     else
-        # "disable/enable on startup/shutdown" or "radiosw" mode
+        # "disable/enable on startup/shutdown or bat/ac" or "radiosw" mode
         case $1 in
-            start)
+            start) # system startup
                 devs2disable="$DEVICES_TO_DISABLE_ON_STARTUP"
                 devs2enable="$DEVICES_TO_ENABLE_ON_STARTUP"
                 ;;
 
-            stop)
+            stop) # system shutdown
                 devs2disable="$DEVICES_TO_DISABLE_ON_SHUTDOWN"
                 devs2enable="$DEVICES_TO_ENABLE_ON_SHUTDOWN"
 
@@ -422,20 +453,46 @@ init_radio_devices () { # initialize all radio type states
                 fi
                 ;;
 
+            1) # battery power --> build disable list
+                quiet=1 # do not display progress
+                devs2enable=""
+                devs2disable="${DEVICES_TO_DISABLE_ON_BAT:-}"
+
+                # check configured list for connected devices
+                for dev in ${DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE:-}; do
+                    case $dev in
+                        bluetooth) any_bluetooth_in_use ;;
+                        wifi) any_wifi_in_use ;;
+                        wwan) any_wwan_in_use ;;
+                    esac
+                    # if device is not connected and not in list yet --> add to disable list
+                    [ $? = 0 ] || wordinlist $dev "$devs2disable" || devs2disable="$dev $devs2disable"
+                done
+                devs2disable="${devs2disable# }"
+                ;;
+
+            0) # AC power --> build enable list
+                quiet=1 # do not display progress
+                devs2enable="${DEVICES_TO_ENABLE_ON_AC:-}"
+                devs2disable=""
+                ;;
+
             radiosw)
                 devs2disable=""
                 devs2enable="$DEVICES_TO_ENABLE_ON_RADIOSW"
                 ;;
         esac
 
+        echo_debug "rf" "set_radio_device_states($1): enable=$devs2enable disable=$devs2disable"
+
         # Disable configured radios
         if [ -n "$devs2disable" ]; then
-            echo -n "Disabling radios:"
+            [ "$quiet" = "1" ] || echo -n "Disabling radios:"
             for dev in $devs2disable; do
-                echo -n " $dev"
+                [ "$quiet" = "1" ] || echo -n " $dev"
                 device_off $dev
             done
-            echo "."
+            [ "$quiet" = "1" ] || echo "."
         fi
 
         # Enable configured radios
@@ -449,12 +506,12 @@ init_radio_devices () { # initialize all radio type states
                 done
             else
                 # start mode: enable listed radios
-                echo -n "Enabling radios:"
+                [ "$quiet" = "1" ] || echo -n "Enabling radios:"
                 for dev in $devs2enable; do
-                    echo -n " $dev"
+                    [ "$quiet" = "1" ] || echo -n " $dev"
                     device_on $dev
                 done
-                echo "."
+                [ "$quiet" = "1" ] || echo "."
             fi
         fi
 
@@ -464,4 +521,3 @@ init_radio_devices () { # initialize all radio type states
 
     return 0
 }
-

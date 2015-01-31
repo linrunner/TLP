@@ -1,4 +1,4 @@
-.TH TLP 8 "2014-10-03" "Power Management" ""
+.TH TLP 8 "2015-01-03" "Power Management" ""
 
 .SH NAME
 tlp \- apply laptop power management settings
@@ -6,7 +6,8 @@ tlp \- apply laptop power management settings
 .B tlp \fIcommand\fR \fR[\fIparam\fR]
 
 .SH DESCRIPTION
-This command is mainly for debugging purposes. All necessary actions are called automatically upon system start and power source changes.
+This command allows one to invoke TLP's functions manually and provides extended
+battery functions for ThinkPads.
 
 .SH COMMANDS
 
@@ -37,8 +38,8 @@ Enable autosuspend for all usb devices, except blacklisted ones.
 
 .TP
 .B bayoff 
-Turn off optical drive in drive bay (or ThinkPad UltrayBay). 
-The drive may be reenabled by pulling the eject lever or pushing the media eject button on newer models.
+Turn off optical drive in UltraBay/MediaBay. 
+The drive may be re-enabled by pulling the eject lever or pushing the media eject button on newer models.
 
 .TP
 .B setcharge [START_CHARGE STOP_CHARGE] [BAT0|BAT1] \fR(ThinkPads only)

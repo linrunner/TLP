@@ -1,7 +1,7 @@
 #!/bin/sh
 # tlp - adjust power settings
 #
-# Copyright (c) 2014 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2015 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants
@@ -26,16 +26,18 @@ done
 # --- Subroutines
 apply_common_settings () { # apply settings common to all modes
                            # $1: 0=ac mode, 1=battery mode
-    load_tp_modules
+    load_modules
 
     set_laptopmode $1
     set_dirty_parms $1
     set_scaling_governor $1
     set_scaling_min_max_freq $1
+    set_cpu_perf_pct $1
     set_cpu_boost_all $1
     set_sched_powersave $1
     set_nmi_watchdog
     set_phc_controls $1
+    set_energy_perf_policy $1
     set_disk_apm_level $1
     set_disk_spindown_timeout $1
     set_disk_io_sched
@@ -84,6 +86,7 @@ else
     echo_debug "run" "power_source=ac"
 fi
 
+exitcode=0
 
 case "$mode" in
     init) # system initialization/shutdown: sysv, upstart, systemd, ...
@@ -91,26 +94,26 @@ case "$mode" in
 
         case $mode2 in
             start|restart|force-reload)
-                echo -n "Loading tp-smapi kernel module..."
-                load_tp_modules
+                echo -n "Loading kernel modules..."
+                load_modules
                 echo "done. "
 
-                init_radio_devices start
-
-                echo -n "Setting battery charge thresholds..."
-                set_charge_thresholds
-                echo "done."
-
                 # apply settings
+                set_radio_device_states start
+
                 echo -n "Applying power save settings..."
                 apply_common_settings $pwrmode
                 [ "$pwrmode" = "1" ] && poweroff_drivebay 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
+
+                echo -n "Setting battery charge thresholds..."
+                set_charge_thresholds
+                echo "done."
                 ;;
 
             stop)
-                init_radio_devices stop
+                set_radio_device_states stop
 
                 if [ "$USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN" = "1" ]; then
                     echo -n "Disabling usb autosuspend..."
@@ -134,15 +137,25 @@ case "$mode" in
         esac
         ;;
 
-    auto|start) # set start power mode depending on state
+    auto) # set mode depending on state (called by udev rule)
+        check_root
+        ( # run in a detached subshell to avoid blocking udev,
+          # close stdout/stderr
+            exec 1> /dev/null 2>/dev/null
+
+            apply_common_settings $pwrmode
+            [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+            set_radio_device_states $pwrmode
+        ) &
+        ;;
+
+    start) # set mode depending on state (interactive mode)
         check_root
         apply_common_settings $pwrmode
         [ "$pwrmode" = "1" ] && poweroff_drivebay 0
-
-        if [ "$mode" = "start" ]; then
-            set_usb_suspend 0 auto
-            set_charge_thresholds
-        fi
+        set_usb_suspend 0 auto
+        set_charge_thresholds
+        set_radio_device_states $pwrmode
 
         echo_started_mode $pwrmode
         ;;
@@ -150,9 +163,9 @@ case "$mode" in
     true|bat*) # set battery power mode
         check_root
         apply_common_settings 1
-
-        [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
         poweroff_drivebay 0
+        [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
+        set_radio_device_states 1
 
         echo_started_mode 1
         ;;
@@ -160,8 +173,8 @@ case "$mode" in
     false|ac) # set ac power mode
         check_root
         apply_common_settings 0
-
         [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
+        set_radio_device_states 0
 
         echo_started_mode 0
         ;;
@@ -198,34 +211,59 @@ case "$mode" in
 
     setcharge) # set charge thresholds (temporarily)
         check_root
-        load_tp_modules
+        load_modules
         setcharge_battery $2 $3 $4
+        exitcode=$?
         ;;
 
     fullcharge) # charge battery up to 100% (temporarily)
-        check_root
-        load_tp_modules
-        setcharge_battery 96 100 $2
+        if check_ac_power fullcharge; then
+            check_root
+            load_modules
+            setcharge_battery 96 100 $2
+            exitcode=$?
+        else
+            exitcode=2
+        fi
         ;;
 
     chargeonce) # charge battery to upper threshold once
-        check_root
-        load_tp_modules
-        chargeonce_battery $2
+        if check_ac_power chargeonce; then
+            check_root
+            load_modules
+            chargeonce_battery $2
+            exitcode=$?
+        else
+            exitcode=2
+        fi
         ;;
 
     discharge) # discharge battery completely (to recalibrate)
-        check_root
-        load_tp_modules
-        discharge_battery $2
+        if check_ac_power discharge; then
+            check_root
+            load_modules
+            discharge_battery $2
+            exitcode=$?
+        else
+            exitcode=2
+        fi
         ;;
 
     recalibrate) # recalibrate battery, i.e. discharge and charge to 100%
-        check_root
-        load_tp_modules
-        setcharge_battery 96 100 $2
-        sleep 1
-        discharge_battery $2
+        if check_ac_power recalibrate; then
+            check_root
+            load_modules
+            setcharge_battery 96 100 $2
+            sleep 1
+            discharge_battery $2
+            exitcode=$?
+            if [ $rc -eq 0 ]; then
+                echo "      The battery starts charging now. For a complete recalibration"
+                echo "      keep AC connected until the battery is fully charged."
+            fi
+        else
+            exitcode=2
+        fi
         ;;
 
     stat) # show status
@@ -245,9 +283,10 @@ case "$mode" in
     *)
         echo "Error: unknown command \"$mode\"."  1>&2
         echo "Usage: tlp start|true|bat|false|ac|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid" 1>&2
+        exitcode=3
         ;;
 esac
 
-exit 0
+exit $exitcode
 
 

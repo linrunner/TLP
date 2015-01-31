@@ -1,9 +1,8 @@
 #!/usr/bin/perl
 # tlp-usblist - list usb device info with autosuspend attributes
 #
-# Copyright (c) 2014 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2015 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
-
 
 package tlp_usblist;
 use strict;
@@ -12,38 +11,62 @@ use warnings;
 my %usbdevices;
 my $udev;
 
-# Get sysfs value, return empty string if nonexistent or not readable
+# Read content from a sysfile
+# $_[0]: input file
+# return: content / empty string if nonexistent or not readable
 sub catsysf {
     my $sysval = "";
-    if (open SYSF, "$_[0]") {
+    if (open (SYSF, "$_[0]")) {
         chomp ($sysval = <SYSF>);
-        close SYSF;
+        close (SYSF);
     }
     return $sysval;
 }
 
-# Get list of drivers for usb device
+# Read device driver from DEVICE/uevent
+# $_[0]: (sub)device base path
+# return: driver / empty string if uevent nonexistent or not readable
+sub getdriver {
+    my $driver = "";
+
+    if ( open (SYSF, "$_[0]/uevent") ) {
+        # read file line by line
+        while (<SYSF>) {
+            # match line content and return DRIVER= value
+            if ( s/^DRIVER=(.*)/$1/ ) {
+                chomp ($driver = $_);
+                last; # break loop
+            }
+        }
+        close (SYSF);
+    }
+    return $driver
+}
+
+# Get drivers associated with USB device by iterating subdevices
+# $_[0]: device base path
+# return:  driver list / "no driver" if none found
 sub usbdriverlist {
     my $driverlist = "";
     my $subdev;
 
-    # Iterate subdevices
+    # iterate subdevices
     foreach $subdev (glob "$_[0]/*:*") {
-        if (-l "$subdev/driver") {
-            ( my $driver = readlink ("$subdev/driver") ) =~ s{.*/}{};
-
+        # get subdevice driver
+        my $driver = getdriver ("$subdev");
+        if ( $driver ) {
             if (index ($driverlist, $driver) == -1) {
                 if ($driverlist) { $driverlist = $driverlist . ", " . $driver; }
                 else { $driverlist = $driver; }
             } # if index
-        } # if $subdev/driver
+        } # if $driver
     } # foreach $subdev
 
     if (! $driverlist) { $driverlist = "no driver"; }
     return $driverlist
 }
 
-# Read usb device tree attributes as arrays into %usbdevices hash, indexed by Bus_Device
+# Read USB device tree attributes as arrays into %usbdevices hash, indexed by Bus_Device
 foreach $udev (grep { ! /:/ } glob "/sys/bus/usb/devices/*") {
     my $asf = "autosuspend_delay_ms";
     my $asv = catsysf ("$udev/power/$asf");
@@ -75,7 +98,7 @@ foreach $udev (grep { ! /:/ } glob "/sys/bus/usb/devices/*") {
 }
 
 # Output device list with attributes and drivers
-foreach (`lsusb`) {
+foreach (`lsusb 2> /dev/null`) {
     my ($bus, $dev, $usbid, $desc) = /Bus (\S+) Device (\S+): ID (\S+)[ ]+(.*)/;
     my $usbk = $bus . "_" . $dev;
     $desc ||= "<unknown>";

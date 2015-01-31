@@ -1,3 +1,13 @@
+tlp (0.7-1) unstable; urgency=low
+
+  * debian/control:
+    - add Depends: hdparm, iw | wireless-tools, pciutils, rfkill, usbutils
+    - remove Depends: util-linux (essential package)
+    - add Recommends: linux-tools, linux-tools-common, linux-tools-generic
+  * debian/tlp.init: add option "status"
+
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 30 Jan 2015 18:42:21 +0100
+
 tlp (0.6-1) unstable; urgency=low
 
   * New upstream release

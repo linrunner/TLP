@@ -1,7 +1,7 @@
 #!/bin/sh
 # tlp - power management functions
 #
-# Copyright (c) 2014 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2015 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 #
 # Some concepts and descriptions were adapted from:
@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.6"
+readonly TLPVER="0.7"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -25,7 +25,13 @@ readonly LOGGER=logger
 readonly UDEVADM=udevadm
 readonly LAPMODE=laptop_mode
 readonly NMCLI=nmcli
+readonly NMD=NetworkManager
 readonly NMTOOL=nm-tool
+readonly ENERGYPERF=x86_energy_perf_policy
+readonly DBUSSEND=dbus-send
+readonly SYSTEMD=systemd
+readonly SYSTEMCTL=systemctl
+readonly INITCTL=initctl
 
 readonly TPACPIBAT=$libdir/tpacpi-bat # libdir is initialized by main program
 
@@ -33,21 +39,27 @@ readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
 readonly NETD=/sys/class/net
+readonly BLUETOOTHD=/sys/class/bluetooth
 readonly PCID=/sys/bus/pci/devices
+readonly PCIDRV=/sys/bus/pci/drivers
 readonly I915D=/sys/module/i915/parameters
 readonly RADD=/sys/module/radeon
 readonly DMID=/sys/class/dmi/id/
 readonly CPU_BOOST_ALL_CTRL=/sys/devices/system/cpu/cpufreq/boost
 readonly INTEL_PSTATED=/sys/devices/system/cpu/intel_pstate
+readonly CPU_MIN_PERF_PCT=$INTEL_PSTATED/min_perf_pct
+readonly CPU_MAX_PERF_PCT=$INTEL_PSTATED/max_perf_pct
 readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
 
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT=2
 readonly USB_TIMEOUT_MS=2000
-readonly USB_WWAN_VENDORS="0bdb 05c6 1199"
+readonly USB_WWAN_DRIVERS="cdc_acm cdc_wdm cdc_ether hso qcserial sierra"
 readonly USB_DONE=usb_done
 
-readonly TPMODULES="thinkpad_acpi tp_smapi coretemp acpi_call"
+readonly DOCKGLOB="/sys/devices/platform/dock.?"
+
+readonly MODULES="acpi_call coretemp msr thinkpad_acpi tp_smapi"
 
 readonly STATEDIR="/var/lib/tlp"
 readonly RFSTATEFILE=$STATEDIR/rfkill-saved
@@ -56,6 +68,8 @@ readonly BAYSTATEFILE=$STATEDIR/bay-saved
 readonly DISK_NOP_WORDS="_ keep"
 readonly DEFAULT_DISK_DEVICES="sda"
 readonly DEFAULT_DISK_IO_SCHEDULER="cfq"
+readonly DEFAULT_PM_DRIVER_BLACKLIST="radeon nouveau"
+readonly DEFAULT_USB_DRIVER_BLACKLIST="usbhid"
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -130,6 +144,22 @@ check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=
     fi
 }
 
+check_systemd () { # check if systemd is the active init system (PID 1) and systemctl is installed
+                   # rc: 0=yes, 1=no
+    [ -d /run/systemd/system ] && cmd_exists $SYSTEMCTL
+}
+
+check_upstart () { # check if upstart is active init system (PID 1)
+                   # rc: 0=yes, 1=no
+    cmd_exists $INITCTL && $INITCTL --version | grep -q upstart
+}
+
+check_openrc () { # check if openrc is the active init system (PID 1)
+                   # rc: 0=yes, 1=no
+    [ -e /run/openrc/softlevel ]
+}
+
+
 # --- PATH
 add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
                    # retval: $PATH, $oldpath, $addpath
@@ -163,7 +193,7 @@ add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
 
 read_defaults () { # read config file
     if [ -f $CONFFILE ]; then
-        . $CONFFILE --
+        . $CONFFILE
         return 0
     else
         return 1
@@ -172,7 +202,7 @@ read_defaults () { # read config file
 
 # --- Kernel Modules
 
-load_tp_modules () { # load ThinkPad specific kernel modules
+load_modules () { # load needed kernel modules
     local mod
 
     # verify module loading is allowed (else explicitly disabled)
@@ -180,7 +210,7 @@ load_tp_modules () { # load ThinkPad specific kernel modules
     [ "${TLP_LOAD_MODULES:-y}" = "y" ] && [ -e /proc/modules ] || return 0
 
     # load modules, ignore any errors
-    for mod in $TPMODULES; do
+    for mod in $MODULES; do
         $MODPRO $mod > /dev/null 2>&1
     done
     return 0
@@ -227,25 +257,44 @@ is_thinkpad () { # check for ThinkPad hardware
 
 # --- Power Source
 
-get_power_state () { # get current power source -- rc: 0=ac, 1=battery
+get_sys_power_supply () { # get current power source
+                          # rc: 0=ac, 1=battery, 2=unknown
+
     # Adapted from pm-utils' on_ac_power
     local psrc
-    local rc=1 # battery is default when no ac is available
+    local rc= # battery is default when no ac is available
 
     for psrc in /sys/class/power_supply/*; do
-        if [ -d "$psrc" ] && [ -r "$psrc/type" ] ; then
-            if [ "$(cat $psrc/type 2> /dev/null)" = "Mains" ]; then
-                if [ -r "$psrc/online" ]; then
+        #if [ -f $psrc/type ]; then  ## not necessary - cat 2>.. handles this
+        case "$(cat $psrc/type 2> /dev/null)" in
+            Mains)
                     if [ "$(cat $psrc/online 2> /dev/null)" = "1" ]; then
                         rc=0
                         break
                     fi
-                fi
-            fi
-        fi
+                # else AC not online => keep $rc as-is
+                ;;
+
+            Battery)
+                # set rc to battery, but don't stop looking for AC
+                rc=1
+                ;;
+
+            *)
+                echo_debug "pm" "unknown power supply: ${psrc##*/}"
+                ;;
+        esac
     done
 
+    # set rc to unknown if we haven't seen any AC/bat power source so far
+    : ${rc:=2}
+
     return $rc
+}
+
+get_power_state () { # get current power source -- rc: 0=ac, 1=battery
+    # similar to get_sys_power_supply(), but maps any non-zero value to battery
+    get_sys_power_supply || return 1
 }
 
 echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
@@ -368,9 +417,9 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
     local isec
 
     if [ "$1" = "1" ]; then
-        isec=${DISK_IDLE_SECS_ON_AC:-}
-    else
         isec=${DISK_IDLE_SECS_ON_BAT:-}
+    else
+        isec=${DISK_IDLE_SECS_ON_AC:-}
     fi
     # replace with empty string if non-numeric chars are contained
     isec=$(echo "$isec" | egrep '^[0-9]+$')
@@ -381,13 +430,8 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
         return 0
     fi
 
-    if [ "$1" = "1" ]; then
-        echo_debug "pm" "set_laptopmode($1): $DISK_IDLE_SECS_ON_BAT"
-        echo $DISK_IDLE_SECS_ON_BAT > /proc/sys/vm/laptop_mode
-    else
-        echo_debug "pm" "set_laptopmode($1): $DISK_IDLE_SECS_ON_AC"
-        echo $DISK_IDLE_SECS_ON_AC > /proc/sys/vm/laptop_mode
-    fi
+    echo_debug "pm" "set_laptopmode($1): $isec"
+    echo $isec > /proc/sys/vm/laptop_mode
 
     return 0
 }
@@ -481,6 +525,45 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
             [ -f $cpu ] && echo $maxfreq > $cpu 2> /dev/null
         done
+    fi
+
+    return 0
+}
+
+set_cpu_perf_pct () { # set Intel P-state performance
+                      # $1: 0=ac mode, 1=battery mode
+    local min max
+
+    check_intel_pstate
+    if [ "$intel_pstate" != "1" ]; then
+        echo_debug "pm" "set_cpu_perf_pct($1).no_intel_pstate"
+        return 0
+    fi
+
+    if [ "$1" = "1" ]; then
+        min="${CPU_MIN_PERF_ON_BAT:-}"
+        max="${CPU_MAX_PERF_ON_BAT:-}"
+    else
+        min="${CPU_MIN_PERF_ON_AC:-}"
+        max="${CPU_MAX_PERF_ON_AC:-}"
+    fi
+
+    if [ ! -f $CPU_MIN_PERF_PCT ]; then
+        echo_debug "pm" "set_cpu_perf_pct($1).min.not_supported"
+    elif [ -n "$min" ]; then
+        { echo "$min" > $CPU_MIN_PERF_PCT; } 2> /dev/null
+        echo_debug "pm" "set_cpu_perf_pct($1).min: $min"
+    else
+        echo_debug "pm" "set_cpu_perf_pct($1).min.not_configured"
+    fi
+
+    if [ ! -f $CPU_MAX_PERF_PCT ]; then
+        echo_debug "pm" "set_cpu_perf_pct($1).max.not_supported"
+    elif [ -n "$max" ]; then
+        { echo "$max" > $CPU_MAX_PERF_PCT; } 2> /dev/null
+        echo_debug "pm" "set_cpu_perf_pct($1).max: $max"
+    else
+        echo_debug "pm" "set_cpu_perf_pct($1).max.not_configured"
     fi
 
     return 0
@@ -617,12 +700,43 @@ set_phc_controls () { # set core voltages
     return 0
 }
 
+set_energy_perf_policy () { # set performance versus energy savings policy
+    # $1: 0=ac mode, 1=battery mode
+
+    local perf rc
+
+    if [ "$1" = "1" ]; then
+        perf=${ENERGY_PERF_POLICY_ON_BAT:-}
+    else
+        perf=${ENERGY_PERF_POLICY_ON_AC:-}
+    fi
+
+    if [ -z "$perf" ]; then
+        echo_debug "pm" "set_energy_perf_policy($1).not_configured"
+    elif ! cmd_exists $ENERGYPERF; then
+        echo_debug "pm" "set_energy_perf_policy($1).not_available"
+    else
+        $ENERGYPERF $perf > /dev/null 2>&1
+        rc=$?
+        case $rc in
+            0) echo_debug "pm" "set_energy_perf_policy($1): $perf" ;;
+            1) echo_debug "pm" "set_energy_perf_policy($1): $perf -- unsupported cpu" ;;
+            2) echo_debug "pm" "set_energy_perf_policy($1): $perf -- kernel specific x86_energy_perf_policy missing" ;;
+            *) echo_debug "pm" "set_energy_perf_policy($1): $perf -- unknown rc=$rc " ;;
+        esac
+        return $rc
+    fi
+
+    return 0
+}
+
 # --- Storage Devices
 
 check_disk_hdparm_cap () { # check if relevant disk device
     # $1: dev; rc: 0=yes/1=no
 
-    if [ -z "$($HDPARM -I /dev/$1 2>&1 | egrep 'Invalid argument|Invalid exchange|missing sense data')" ]; then
+    if [ -z "$($HDPARM -I /dev/$1 2>&1 | \
+               egrep 'Invalid argument|Invalid exchange|missing sense data|No such device')" ]; then
         return 0
     else
         return 1
@@ -657,7 +771,7 @@ get_disk_state () { # get disk power state -- $1: dev; retval: $disk_state
 }
 
 spindown_disk () { # stop spindle motor -- $1: dev
-    $HDPARM -y /dev/$1 2>&1 > /dev/null
+    $HDPARM -y /dev/$1 > /dev/null 2>&1
 
     return 0
 }
@@ -914,9 +1028,13 @@ set_radeon_profile () { # set radeon power profile
     # $1: 0=ac mode, 1=battery mode
 
     local card level pwr rc1 rc2
-    local sdone=0
+    local sdone=0 # 1=radeon present
 
-    [ -d $RADD ] || return 0 # exit if card not present
+    if [ ! -d $RADD ]; then
+        # No card present --> exit
+        echo_debug "pm" "set_radeon_profile($1).no_card"
+        return 0
+    fi
 
     for card in /sys/class/drm/card[0-9]/device ; do
         if [ -f $card/power_dpm_state ] && [ -f $card/power_dpm_force_performance_level ]; then
@@ -1038,7 +1156,7 @@ get_pci_class_descr () { # get long descr of pci device class
 set_runtime_pm () { # set runtime power management
     # $1: 0=ac mode, 1=battery mode
 
-    local address class ccontrol control device doall type
+    local address class ccontrol control device doall driver drv_bl pci_bl type
 
     if [ "$1" = "1" ]; then
         ccontrol=${RUNTIME_PM_ON_BAT:-}
@@ -1052,18 +1170,41 @@ set_runtime_pm () { # set runtime power management
         return 0
     fi
 
+    # enable for all devices
     doall=${RUNTIME_PM_ALL:-1}
 
+    # driver specific blacklist
+    drv_bl=${RUNTIME_PM_DRIVER_BLACKLIST:-$DEFAULT_PM_DRIVER_BLACKLIST}
+
+    # pci id blacklist
+    pci_bl=${RUNTIME_PM_BLACKLIST:-}
+
+    # add devices assigned to blacklisted drivers to the pci id blacklist
+    for driver in $drv_bl; do # iterate list
+        if [ -n "$driver" ] && [ -d $PCIDRV/$driver ]; then
+            # driver is active --> iterate over assigned devices
+            for device in $PCIDRV/$driver/0000:*; do
+                # get short device address
+                address=${device##/*/0000:}
+
+                # add to list when not already contained
+                if ! wordinlist "$address" "$pci_bl"; then
+                    pci_bl="$pci_bl $address"
+                fi
+            done
+        fi
+    done
+
+    # iterate pci(e) devices
     for type in $PCID; do
         for device in $type/*; do
-
-            class="none"; lclass=""
+            class="none"
+            lclass=""
 
             # get short device address
-            address=${device##/*/}
-            address=${address#0000:}
+            address=${device##/*/0000:}
 
-            if wordinlist "$address" "$RUNTIME_PM_BLACKLIST"; then
+            if wordinlist "$address" "$pci_bl"; then
                 # device is in blacklist
                 control="black"
 
@@ -1095,12 +1236,12 @@ set_runtime_pm () { # set runtime power management
 # --- Wifi Power Management
 
 get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
-    local wi wip
+    local wi wiu
     wifaces=""
 
-    for wip in /sys/class/net/*/phy80211; do
-        if [ -d $wip ]; then
-            wi=${wip%/phy80211}; wi=${wi##*/}
+    for wiu in $NETD/*/uevent; do
+        if grep -q -s "DEVTYPE=wlan" $wiu ; then
+            wi=${wiu%/uevent}; wi=${wi##*/}
             wifaces="$wifaces $wi"
         fi
     done
@@ -1109,7 +1250,8 @@ get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
     return 0
 }
 
-get_wifi_driver () { # get driver associated with interface -- $1: iface; retval: $wifidrv
+get_wifi_driver () { # get driver associated with interface
+                     # $1: iface; retval: $wifidrv
     local drvl
 
     wifidrv=""
@@ -1173,13 +1315,135 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
     return 0
 }
 
+wireless_in_use () { # check if wifi or wwan device is in use -- $1: iface
+    if [ -f $NETD/$1/carrier ]; then
+        if [ "$(cat $NETD/$1/carrier 2>/dev/null)" = "1" ]; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+any_wifi_in_use () { # check if any wifi device is in use
+    local iface
+
+    get_wifi_ifaces
+    for iface in $wifaces; do
+        wireless_in_use $iface && return 0
+    done
+
+    return 1
+}
+
+# --- WWAN Power Management
+
+get_wwan_ifaces () { # get all wwan devices -- retval: $wanifaces
+    local wi wiu
+    wanifaces=""
+
+    for wiu in $NETD/*/uevent; do
+        if grep -q -s "DEVTYPE=wwan" $wiu ; then
+            wi=${wiu%/uevent}; wi=${wi##*/}
+            wanifaces="$wanifaces $wi"
+        fi
+    done
+
+    wanifaces="${wanifaces# }"
+    return 0
+}
+
+any_wwan_in_use () { # check if any wwan device is in use
+    local iface
+
+    get_wwan_ifaces
+    for iface in $wanifaces; do
+        wireless_in_use $iface && return 0
+    done
+
+    return 1
+}
+
+get_wwan_driver () { # get driver associated with interface
+                     # $1: iface; retval: $wwandrv
+    local drvl
+
+    wwandrv=""
+    if [ -d $NETD/$1 ]; then
+        drvl=$(readlink $NETD/$1/device/driver)
+        [ -n "$drvl" ] && wwandrv=${drvl##*/}
+    fi
+
+    return 0
+}
+
+# --- Bluetooth Power Management
+
+get_bluetooth_ifaces () { # get all bluetooth devices -- retval: $bifaces
+    bifaces="$(ls $BLUETOOTHD 2> /dev/null | grep -v ':')"
+    return 0
+}
+
+get_bluetooth_driver () { # get driver associated with interface -- $1: iface; retval: $bluetoothdrv
+    local drvl
+
+    bluetoothdrv=""
+    if [ -d $BLUETOOTHD/$1 ]; then
+        drvl=$(readlink $BLUETOOTHD/$1/device/driver)
+        [ -n "$drvl" ] && bluetoothdrv=${drvl##*/}
+    fi
+
+    return 0
+}
+
+dbus_call () { # call method via system dbus -- $1: dest; $2: $path; $3: interface, $4: $method
+    $DBUSSEND --system --type=method_call --print-reply --dest="$1" "$2" "$3.$4" 2> /dev/null
+}
+
+bluez_call () { # call bluez method via dbus -- $1: path; $2: interface; $3: $method
+    dbus_call "org.bluez" "$1" "org.bluez.$2" "$3"
+}
+
+bluez_bluetooth_in_use () { # check if bluetooth device (specified as dbus path) is in use $1: dbus path
+    local devices device connected
+
+    devices=$(bluez_call $1 Adapter ListDevices | sed -n 's/\s*object path "\(.*\)"\s*/\1/p')
+    for device in $devices; do
+        connected="$(bluez_call $device Device GetProperties | grep -A 1 Connected | sed -n 's/.*boolean //p')"
+        test "$connected" = "true" && return 0
+    done
+
+    return 1
+}
+
+bluetooth_in_use () { # check if bluetooth device is in use -- $1: iface
+    local paths path
+
+    paths="$(bluez_call / Manager ListAdapters | sed -n 's/\s*object path "\(.*\)"\s*/\1/p' | grep /$1\$)"
+    for path in $paths; do
+        bluez_bluetooth_in_use "$path" && return 0
+    done
+
+    return 1
+}
+
+any_bluetooth_in_use () { # check if some bluetooth device is in use
+    local paths path
+
+    paths="$(bluez_call / Manager ListAdapters | sed -n 's/\s*object path "\(.*\)"\s*/\1/p')"
+    for path in $paths; do
+        bluez_bluetooth_in_use "$path" && return 0
+    done
+
+    return 1
+}
+
 # --- LAN
 
 get_eth_ifaces () { # get all eth devices -- retval: $ethifaces
     local ei eic
-    ethifaces=''
+    ethifaces=""
 
-    for eic in /sys/class/net/*/device/class; do
+    for eic in $NETD/*/device/class; do
         if [ -f $eic ] \
             && [ "$(cat $eic)" = "0x020000" ] \
             && [ ! -d "${eic%/class}/ieee80211" ]; then
@@ -1215,14 +1479,28 @@ disable_wake_on_lan () {  # disable WOL
 set_usb_suspend () { # activate usb autosuspend for all devices except input and blacklisted
     # $1: 0=silent/1=report result; $2: on/auto
 
-    local devices usbdev subdev control exc usbid busdev vendor
+    local busdev control devices drv drv_bl exc usbdev usbid subdev
     local ctrlf="control"
     local autof="autosuspend_delay_ms"
 
     check_sysfs "set_usb_suspend" "$USBD"
 
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
-        devices=$(ls $USBD | grep -v ':')
+        # autosuspend is configured
+
+        # initialize driver blacklist from settings
+        drv_bl=${USB_DRIVER_BLACKLIST:-$DEFAULT_USB_DRIVER_BLACKLIST}
+
+        # add wwan driver blacklist if enabled
+        USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
+
+        if [ $USB_BLACKLIST_WWAN = "1" ]; then
+            drv_bl="$drv_bl $USB_WWAN_DRIVERS"
+        fi
+
+        # iterate devices
+        devices=$(ls $USBD 2> /dev/null | grep -v ':')
+
         for usbdev in $devices; do
             if [ -f $USBD/$usbdev/power/autosuspend ] || [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
                 usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
@@ -1232,30 +1510,28 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                 exc=""
 
                 if [ "$control" != "on" ]; then
-                    if wordinlist "$usbid" "$USB_BLACKLIST"; then
+                    if wordinlist "$usbid" "$USB_WHITELIST"; then
+                        # device is in whitelist -- whitelist always wins
+                        control="auto"
+                        exc="_dev_white"
+                    elif wordinlist "$usbid" "$USB_BLACKLIST"; then
                         # device is in blacklist
                         control="on"
-                        exc="_bl"
+                        exc="_dev_black"
                     else
-                        # check for hid subdevices
+                        # check subdevices for blacklisted drivers
                         for subdev in $USBD/$usbdev/*:*; do
-                            if [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
+                            # get driver name from subdev uevent file
+                            drv=$(sed -rn 's/^DRIVER=(.*)/\1/p' $subdev/uevent)
+
+                            # check against driver blacklist
+                            if wordinlist "$drv" "$drv_bl"; then
+                                # driver is blacklisted
                                 control="on"
-                                exc="_hid"
+                                exc="_drv_black"
                                 break
                             fi
                         done
-
-                        # check for wwan vendor ids
-                        USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default: exclude wwan
-
-                        if [ $USB_BLACKLIST_WWAN = "1" ] && [ -z "$exc" ]; then
-                            vendor="$(cat $USBD/$usbdev/idVendor)"
-                            if wordinlist "$vendor" "$USB_WWAN_VENDORS"; then
-                                control="on"
-                                exc="_wwan"
-                            fi
-                        fi
                     fi
                 fi
 
@@ -1267,25 +1543,25 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                     ctrlf="level"
                 fi
 
-                if [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
-                    echo $USB_TIMEOUT_MS > $USBD/$usbdev/power/autosuspend_delay_ms 2> /dev/null
-                    if [ $? != 0 ]; then
-                        # openSUSE 11.4/2.6.37: writing to autosuspend_delay_ms fails -> fallback to autosuspend
-                        echo_debug "usb" "set_usb_suspend.autosuspend_delay_ms_not_writable: $busdev ID $usbid $USBD/$usbdev"
+                if [ "$X_TLP_USB_SET_AUTOSUSPEND_DELAY" = "1" ]; then
+                    # set autosuspend_delay
+                    if [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
+                        echo $USB_TIMEOUT_MS > $USBD/$usbdev/power/autosuspend_delay_ms
+                    else
+                        # autosuspend is deprecated
                         echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
                         autof="autosuspend"
                     fi
+                    echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $USBD/$usbdev [$ctrlf $autof]"
                 else
-                    # autosuspend is deprecated
-                    echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
-                    autof="autosuspend"
+                   # default: do not change autosuspend_delay, i.e. keep kernel default setting
+                    echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $USBD/$usbdev [$ctrlf]"
                 fi
-                echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $USBD/$usbdev [$ctrlf $autof]"
             fi
         done
-        [ "$1" = "1" ] && echo "usb autosuspend settings applied."
+        [ "$1" = "1" ] && echo "USB autosuspend settings applied."
     else
-        [ "$1" = "1" ] && echo "Error: usb autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $DEFAULT_FILE." 1>&2
+        [ "$1" = "1" ] && echo "Error: USB autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $DEFAULT_FILE." 1>&2
     fi
 
     # set "startup completion" flag for tlp-usb-udev
@@ -1630,22 +1906,25 @@ cancel_force_discharge () { # called from trap -- global param: $bat_str
     exit 0
 }
 
+check_ac_power () { # check if ac power connected -- $1: function
+
+    if ! get_power_state ; then
+        echo_debug "bat" "check_ac_power($1).no_ac_power"
+        echo "Error: $1 is possible on AC power only." 1>&2
+        return 1
+    fi
+
+    return 0
+}
+
 setcharge_battery () { # write charge thresholds (called from cmd line)
     # $1: start charge threshold, $2: stop charge threshold, $3: battery
     # global param: $tpacpi, $tpsmapi
     # rc: 0=ok/1=error
 
     local bat rc st sp
-    local act=0
     local use_cfg=0
     # $bat_str is global for cancel_force_discharge() trap
-
-    # check prerequisites: must be on ac power
-    if ! get_power_state ; then
-        echo_debug "bat" "setcharge_battery.no_ac_power"
-        echo "Error: setting charge thresholds is possible on ac power only." 1>&2
-        return 1
-    fi
 
     # check params
     case $# in
@@ -1711,7 +1990,6 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
         echo_debug "bat" "setcharge_battery.stop($bat_str): $stop_thresh; rc=$rc"
         if [ $rc -eq 0 ]; then
             echo "  stop  = $stop_thresh"
-            act=1
         else
             echo "  stop  => Error: cannot set threshold. Aborting." 1>&2
             return 1
@@ -1727,7 +2005,6 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
         echo_debug "bat" "setcharge_battery.start($bat_str): $start_thresh; rc=$rc"
         if [ $rc -eq 0 ]; then
             echo "  start = $start_thresh"
-            act=1
         else
             echo "  start => Warning: cannot set threshold." 1>&2
             return 1
@@ -1737,33 +2014,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
         echo "  start = not configured"
     fi
 
-    # activate new thresholds (= trigger charging) via force_discharge - tp-smapi only
-    rc=0
-    if [ $act -eq 1 ]; then
-        if [ $tpacpi -eq 0 ]; then
-            # tpacpi-bat: no activation necessary
-            echo "Done."
-        else
-            # tp-smapi
-            trap cancel_force_discharge INT # enable ^C hook
-
-            do_force_discharge $bat_str 1; rc=$?
-            if [ $rc -eq 0 ]; then
-                echo -n "Activating..."
-                sleep 1
-                do_force_discharge $bat_str 0
-                echo_debug "bat" "setcharge_battery.initiated($bat_str)"
-                echo "done."
-            else
-                echo_debug "bat" "setcharge_battery.force_discharge_not_available($bat_str): rc=$rc"
-                echo "Cannot activate immediately on this ThinkPad model. Please power off."
-            fi
-
-            trap - INT  # remove ^C hook
-        fi
-    fi
-
-    return $rc
+    return 0
 }
 
 get_sysval () { # $1: file; rc: sysfile value
@@ -1881,13 +2132,6 @@ discharge_battery () { # discharge battery
     local bat bdir ef pn rc
     # $bat_str is global for cancel_force_discharge() trap
 
-    # check prerequisites: must be on ac power
-    if ! get_power_state ; then
-        echo_debug "bat" "discharge_battery.no_ac_power"
-        echo "Error: discharge is possible on ac power only." 1>&2
-        return 1
-    fi
-
     # check params
     bat=$1
     bat=${bat:=DEF}
@@ -1934,7 +2178,7 @@ discharge_battery () { # discharge battery
         if [ $tpsmapi -eq 0 ]; then # use tp_smapi
             bdir=$SMAPIDIR/$bat_str
 
-            printf "voltage            = %6s [mv]\n"  $(cat $bdir/voltage)
+            printf "voltage            = %6s [mV]\n"  $(cat $bdir/voltage)
             printf "remaining capacity = %6s [mWh]\n" $(cat $bdir/remaining_capacity)
             printf "remaining percent  = %6s [%%]\n"  $(cat $bdir/remaining_percent)
             printf "remaining time     = %6s [min]\n" $(cat $bdir/remaining_running_time_now)
@@ -1981,13 +2225,31 @@ discharge_battery () { # discharge battery
 
 get_drivebay_device () { # Find generic dock interface for drive bay
                          # rc: 0; retval: $dock
-	dock=$(grep -l ata_bay /sys/devices/platform/dock.?/type)
+	dock=$(grep -l ata_bay $DOCKGLOB/type 2> /dev/null)
 	dock=${dock%%/type}
 	if [ ! -d "$dock" ]; then
 		dock=""
 	fi
 
     return 0
+}
+
+check_is_docked() { # check if $dock is docked;
+                    # rc: 0 if docked, else 1
+
+   local dock_status dock_info_file
+
+   # return 0 if any sysfs file indicates "docked"
+   for dock_info_file in docked firmware_node/status; do
+        if [ -f $dock/$dock_info_file ] && \
+            read -r dock_status < $dock/$dock_info_file 2>/dev/null; then
+            # catch empty $dock_status (safety check, unlikely case)
+            [ "${dock_status:-0}" != "0" ] && return 0
+        fi
+   done
+
+   # otherwise assume "not docked"
+   return 1
 }
 
 suspend_drivebay () { # Save power state of drive bay before suspend
@@ -1998,16 +2260,14 @@ suspend_drivebay () { # Save power state of drive bay before suspend
         get_drivebay_device
 
         if [ -n "$dock" ]; then
-            if [ -e $dock/docked ]; then
-                mkdir -p $STATEDIR 2> /dev/null 1>&2
+            mkdir -p $STATEDIR 2> /dev/null 1>&2
 
-                if [ "$(cat $dock/docked)" = "0" ]; then
-                    echo "off" > $BAYSTATEFILE
-                    echo_debug "pm" "suspend_drivebay: bay=off"
-                else
-                    echo "on" > $BAYSTATEFILE
-                    echo_debug "pm" "suspend_drivebay: bay=on"
-                fi
+            if ! check_is_docked; then
+                echo "off" > $BAYSTATEFILE
+                echo_debug "pm" "suspend_drivebay: bay=off"
+            else
+                echo "on" > $BAYSTATEFILE
+                echo_debug "pm" "suspend_drivebay: bay=on"
             fi
         fi
     else
@@ -2027,9 +2287,9 @@ resume_drivebay () { # Restore power state of drive bay after resume
     if [ "$(cat $BAYSTATEFILE)" = "off" ]; then
         get_drivebay_device
 
-        if [ "$(cat $dock/docked)" = "1" ]; then
-            # device active -> deactivate
-            if [ -n "$dock" ]; then
+        if [ -n "$dock" ]; then
+            if check_is_docked; then
+                # device active -> deactivate
                 if [ -e $dock/undock ]; then
                     cnt=5
                     rc=1
@@ -2041,9 +2301,9 @@ resume_drivebay () { # Restore power state of drive bay after resume
                     done
                     echo_debug "pm" "resume_drivebay.bay_off: rc=$rc"
                 fi
+            else
+                echo_debug "pm" "resume_drivebay.already_off"
             fi
-        else
-            echo_debug "pm" "resume_drivebay.already_off"
         fi
     fi
 
@@ -2070,7 +2330,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
     echo_debug "pm" "poweroff_drivebay: dock=$dock"
 
     # Check if bay is occupied
-    if [ $(cat $dock/docked) = "0" ]; then
+    if ! check_is_docked; then
         echo_debug "pm" "poweroff_drivebay.drive_already_off"
         [ "$1" = "1" ] && echo "No drive in bay (or power already off)."
     else
@@ -2083,12 +2343,18 @@ poweroff_drivebay () { # power off optical drive in drive bay
         else
             echo_debug "pm" "poweroff_drivebay: optdrv=$optdrv"
 
+            echo -n "Powering off drive bay..."
+
             # Unmount media
             umount -l $optdrv > /dev/null 2>&1
 
+            # Sync drive
+            sync
+            sleep 1
+
             # Power off drive
             $HDPARM -Y $optdrv > /dev/null 2>&1
-            sleep 1
+            sleep 5
 
             # Unregister scsi device
             if syspath="$($UDEVADM info --query=path --name=$optdrv)"; then
@@ -2106,7 +2372,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
 
             # Turn power off
             echo 1 > $dock/undock
-            [ "$1" = "1" ] && echo "Bay is powered off now."
+            [ "$1" = "1" ] && echo "done."
             echo_debug "pm" "poweroff_drivebay.bay_powered_off"
         fi
     fi
