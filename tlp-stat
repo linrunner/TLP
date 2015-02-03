@@ -462,16 +462,19 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                          s/0x000000000000000f/powersave/;
                          s/://' | \
                     awk '{ printf "x86_energy_perf_policy.%-31s = %s\n", $1, $2; }'
+                echo
                 ;;
 
-            1) echo "x86_energy_perf_policy: unsupported CPU." ;;
-            2) echo "x86_energy_perf_policy: program for your kernel not installed." ;;
-            *) echo "x86_energy_perf_policy: not available." ;;
+            1)  echo "x86_energy_perf_policy: unsupported CPU."
+                echo
+                ;;
+
+            2) # no x86_energy_perf_policy matching kernel
+               : ;;
+
+            *) # unknown exit code
+               : ;;
         esac
-        echo
-    else
-        echo "x86_energy_perf_policy: program not installed."
-        echo
     fi
 
     # --- show nmi watchdog

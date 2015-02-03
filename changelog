@@ -1,11 +1,11 @@
-+++ 0.8 --- 01.02.2015 +++
++++ 0.8 --- 03.02.2015 +++
 
   *** Development Release ***
 
   * Features
 
   * Bugfixes
-
+    - tlp-stat: remove message about missing/non-matching x86_energy_perf_policy
 
 +++ 0.7 --- 29.01.2015 +++
 
