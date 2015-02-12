@@ -50,6 +50,8 @@ show_trace=0
 show_usb=0
 show_warn=0
 
+no_runtimepm=0
+
 # --- Functions
 
 printparm () { # formatted output of sysfile - general
@@ -859,6 +861,7 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
 
     if cmd_exists $TLPPCI; then
         $TLPPCI
+        [ $? -eq 4 ] && no_runtimepm=1
     else
         echo "Error: missing subcommand $TLPPCI." 1>&2
     fi
@@ -885,6 +888,7 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
 
     if cmd_exists $TLPUSB; then
         $TLPUSB
+        [ $? -eq 4 ] && no_runtimepm=1
     else
         echo "Error: missing subcommand $TLPUSB." 1>&2
     fi
@@ -1027,6 +1031,10 @@ if [ "$show_all" = "1" ]; then
     # -- show suggestions
     suout=""
 
+    if [ "$no_runtimepm" = "1" ]; then
+        suout="${suout}Reconfigure your Linux kernel with PM_RUNTIME=y to reduce your laptop's power consumption.\n"
+    fi
+
     if is_thinkpad; then
         # Add ThinkPad specific suggestions
         model="$( read_dmi product_version )"
@@ -1065,7 +1073,6 @@ fi # show_all
 
 if [ "$show_warn" = "1" ]; then
     # --- show warnings
-
     # ata errors (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
     ecnt=$( check_ata_errors )
     if [ $ecnt -ne 0 ]; then

@@ -48,16 +48,17 @@ foreach (`lspci -m`) {
     my $devp = "/sys/bus/pci/devices/0000:$dev";
     # control file for Runtime PM
     my $devc = "$devp/power/control";
+    # get device class
+    my $class = catsysf ("$devp/class");
+    # get device driver
+    my $driver = getdriver ("$devp") || "no driver";
 
     if (-f $devc) { # control file exists
         # get Runtime PM mode
         my $pmode = catsysf ("$devc");
-        # get device class
-        my $class = catsysf ("$devp/class");
-        # get device driver
-        my $driver = getdriver ("$devp") || "no driver";
-
-        # output device data
+        # output pm mode and device data
         printf "%s/power/control = %-4s (%s, %s, %s)\n", $devp, $pmode, $class, $classdesc, $driver;
+    } else { # control file missing --> output device data only
+        printf "%s/power/control = (not available) (%s, %s, %s)\n", $devp, $class, $classdesc, $driver;
     }
 }
