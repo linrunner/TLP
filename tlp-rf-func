@@ -102,6 +102,8 @@ invoke_nmcli () { # call nmcli with radio option according to the program versio
                   # $1: rftype, $2: on/off, $3: caller; rc: last nmcli rc
     local rc
 
+    [ "$X_NO_NMCLI" = "1" ] && return 0 # return if nmcli disabled
+
     check_nm || return 0 # return if NetworkManager not running
 
     $NMCLI nm $1 $2 > /dev/null 2>&1; rc=$?
