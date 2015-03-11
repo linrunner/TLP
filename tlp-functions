@@ -299,7 +299,7 @@ get_power_state () { # get current power source -- rc: 0=ac, 1=battery
 
 echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
     if [ "$1" = "0" ]; then
-        echo "TLP started in ac mode."
+        echo "TLP started in AC mode."
     else
         echo "TLP started in battery mode."
     fi

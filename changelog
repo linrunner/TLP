@@ -1,11 +1,14 @@
-+++ 0.8 --- 01.02.2015 +++
++++ 0.8 --- 11.03.2015 +++
 
   *** Development Release ***
 
   * Features
+    tlp-stat:
+      - Explain battery status "Unknown" as "threshold effective"
 
   * Bugfixes
-
+    - Issue #123: tlp-stat: detect kernel config with PM_RUNTIME=N
+    - Issue #124: tlp recalibrate: fix exitcode check
 
 +++ 0.7 --- 29.01.2015 +++
 
