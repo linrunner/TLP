@@ -134,9 +134,9 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
     return 0
 }
 
-print_batstate () { # print battery charging state with an explanation when
+print_tp_batstate () { # print battery charging state with an explanation when
     # a threshold inhibits charging
-    # $1: sysfile
+    # $1: sysfile; $2: 1=ThinkPad battery/0=other
     local sysf val
 
     # Check if bat state sysfile exists
@@ -155,10 +155,12 @@ print_batstate () { # print battery charging state with an explanation when
             # Explain content if necessary
             case $val in
                 Unknown) # "Unknown" means a threshold forbids charging
-                    echo " (threshold effective)\n"
+                    printf " (threshold effective)\n"
                     ;;
 
-                *) ;;
+                *) # Nothing to do
+                    printf "\n"
+                    ;;
             esac
         else
             # sysfile was not readable
@@ -983,7 +985,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6s## [min]" $batd/remaining_charging_time
                     printparm "%-59s = ##%6d## [mW]" $batd/power_now
                     printparm "%-59s = ##%6d## [mW]" $batd/power_avg
-                    print_batstate $batd/state
+                    print_tp_batstate $batd/state
                     echo
 
                     if [ $tpacpi -eq 0 ]; then
@@ -1004,8 +1006,12 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
         for batd in $ACPIBATDIR/*; do
             batt=${batd##/*/}
+            tpbat=0
 
-            if check_tp_battery $batt; then # battery is present
+            if check_tp_battery $batt; then
+                # ThinkPad battery is present
+                tpbat=1
+
                 if [ $tpacpi -eq 0 ]; then
                     # it's a ThinkPad with tpacpi-bat only
                     case $bat_idx in
@@ -1048,7 +1054,11 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mAh]" $batd/charge_now "" 000
                     printparm "%-59s = ##%6d## [mA]" $batd/current_now "" 000
                 fi
-                print_batstate $batd/status
+                if [ $tpbat -eq 1 ]; then
+                    print_tp_batstate $batd/status
+                else
+                    printparm "%-59s = ##%s##" $batd/status
+                fi
                 echo
 
                 if [ $tpacpi -eq 0 ]; then
