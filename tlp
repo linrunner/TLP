@@ -257,7 +257,7 @@ case "$mode" in
             sleep 1
             discharge_battery $2
             exitcode=$?
-            if [ $rc -eq 0 ]; then
+            if [ $exitcode -eq 0 ]; then
                 echo "      The battery starts charging now. For a complete recalibration"
                 echo "      keep AC connected until the battery is fully charged."
             fi
