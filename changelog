@@ -1,4 +1,4 @@
-+++ 0.8 --- 11.03.2015 +++
++++ 0.8 --- 23.03.2015 +++
 
   *** Development Release ***
 
@@ -9,6 +9,7 @@
   * Bugfixes
     - Issue #123: tlp-stat: detect kernel config with PM_RUNTIME=N
     - Issue #124: tlp recalibrate: fix exitcode check
+    - Issue #133: USB autosuspend: write power/control if actually changing only
 
 +++ 0.7 --- 29.01.2015 +++
 

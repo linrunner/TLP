@@ -1508,6 +1508,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
 
                 control="${2:-auto}"
                 exc=""
+                chg=0
 
                 if [ "$control" != "on" ]; then
                     if wordinlist "$usbid" "$USB_WHITELIST"; then
@@ -1536,10 +1537,18 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                 fi
 
                 if [ -f $USBD/$usbdev/power/control ]; then
-                    echo "$control" > $USBD/$usbdev/power/control
+                    if [ "$(cat $USBD/$usbdev/power/control)" != "$control" ]; then
+                        # Write actual changes only
+                        echo "$control" > $USBD/$usbdev/power/control
+                        chg=1
+                    fi
                 else
                     # level is deprecated
-                    echo "$control" > $USBD/$usbdev/power/level
+                    if [ "$(cat $USBD/$usbdev/power/level)" != "$control" ]; then
+                        # Write actual changes only
+                        echo "$control" > $USBD/$usbdev/power/level
+                        chg=1
+                    fi
                     ctrlf="level"
                 fi
 
@@ -1553,10 +1562,14 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                         autof="autosuspend"
                     fi
                     echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $USBD/$usbdev [$ctrlf $autof]"
-                else
-                   # default: do not change autosuspend_delay, i.e. keep kernel default setting
+                elif [ $chg -eq 1 ]; then
+                    # default: change control but not autosuspend_delay, i.e. keep kernel default setting
                     echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $USBD/$usbdev [$ctrlf]"
+                else
+                    # we didn't change anything actually
+                    echo_debug "usb" "udev_usb_suspend.$control$exc: $busdev ID $usbid $USBD/$usbdev"
                 fi
+
             fi
         done
         [ "$1" = "1" ] && echo "USB autosuspend settings applied."
