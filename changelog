@@ -1,10 +1,11 @@
-+++ 0.8 --- 23.03.2015 +++
++++ 0.8 --- 31.03.2015 +++
 
   *** Development Release ***
 
   * Features
     tlp-stat:
       - Explain battery status "Unknown" as "threshold effective"
+      - Show warnings for ata errors by default
 
   * Bugfixes
     - Issue #123: tlp-stat: detect kernel config with PM_RUNTIME=N

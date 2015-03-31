@@ -1073,6 +1073,26 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
 fi # show_bat
 
+if [ "$show_warn" = "1" ] || [ "$show_all" = "1" ]; then
+    # --- show warnings
+    # ata errors (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
+    ecnt=$( check_ata_errors )
+    if [ $ecnt -ne 0 ]; then
+        echo "+++ Warnings"
+        printf "* Kernel log shows ata errors (%d) possibly caused by the configuration\n" $ecnt
+        printf "  SATA_LINKPWR_ON_AC/BAT=min_power or medium_power.\n"
+        printf "  Consider using medium_power or max_performance instead.\n"
+        printf "  See the FAQ: http://linrunner.de/en/tlp/docs/tlp-faq.html#warnings\n"
+        printf "  Details:\n"
+        dmesg | egrep -A 5 "ata[0-9]+: SError: { .*CommWake }"
+        echo
+    elif [ "$show_warn" = "1" ]; then
+        echo "No warnings detected."
+        echo ""
+    fi
+
+fi # show_warn
+
 if [ "$show_all" = "1" ]; then
     # -- show suggestions
     suout=""
@@ -1116,25 +1136,6 @@ if [ "$show_all" = "1" ]; then
     fi
 
 fi # show_all
-
-if [ "$show_warn" = "1" ]; then
-    # --- show warnings
-    # ata errors (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
-    ecnt=$( check_ata_errors )
-    if [ $ecnt -ne 0 ]; then
-        echo "+++ Warnings"
-        printf "* Kernel log shows ata errors (%d) possibly caused by the configuration: " $ecnt
-        printf "SATA_LINKPWR_ON_AC/BAT=min_power or medium_power\n" 
-        printf "  Consider using medium_power or max_performance instead.\n"
-        printf "  Details:\n"
-        dmesg | egrep -A 5 "ata[0-9]+: SError: { .*CommWake }"
-        echo
-    else
-        echo "No warnings detected."
-        echo ""
-    fi
-
-fi # show_warn
 
 if [ "$show_trace" = "1" ]; then
     # --- show debug log
