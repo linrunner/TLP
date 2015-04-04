@@ -39,14 +39,8 @@ use warnings;
 use File::Basename;
 
 my $acpiCallDev = '/proc/acpi/call';
-my @aslBases = (
-  '\_SB.PCI0.LPC.EC.HKEY',
-  '\_SB.PCI0.LPC0.EC0.HKEY',
-  '\_SB.PCI0.LPCB.EC.HKEY',
-  '\_SB.PCI0.LPCB.EC0.HKEY',
-  '\_SB.PCI0.LPCB.H_EC.HKEY',
-  '\_SB.PCI0.LPC0.EC.HKEY',
-);
+
+my $acDevicePath = "/sys/class/power_supply/AC/device/path";
 
 sub getMethod($$);
 sub setMethod($$@);
@@ -63,7 +57,6 @@ sub writeStartChargeThreshold($);
 sub writeStopChargeThreshold($);
 sub writeForceDischarge($);
 
-sub getASLBase();
 sub acpiCall($);
 sub runAcpiCall($$);
 sub acpiCallGet($$);
@@ -394,20 +387,22 @@ sub acpiCall($){
   if(not -e $acpiCallDev){
     die "Could not find $acpiCallDev. Is module acpi_call loaded?\n";
   }
-
-  my $val;
-  for my $aslBase(@aslBases) {
-    $val = runAcpiCall $call, $aslBase;
-    if($val !~ /Error: AE_NOT_FOUND/){
-      print "Call    : $aslBase.$call\n" if $verbose;
-      print "Response: $val\n" if $verbose;
-      last;
-    }else{
-      $val = undef;
-    }
+  if(not -e $acDevicePath){
+    die "no AC device path to read ASL base from: $acDevicePath\n";
   }
 
-  die "Error: no ASL base found\n" if not defined $val;
+  my $aslBase = `cat $acDevicePath`;
+  chomp $aslBase;
+
+  $aslBase =~ s/_+(\.|$)/$1/g; #trim trailing _s from components
+  $aslBase =~ s/AC$/HKEY/g;
+
+  my $val = runAcpiCall $call, $aslBase;
+  if($val =~ /Error: AE_NOT_FOUND/){
+    die "Error: AE_NOT_FOUND for ASL base: $aslBase\n$val";
+  }
+  print "Call    : $aslBase.$call\n" if $verbose;
+  print "Response: $val\n" if $verbose;
 
   return $val;
 }
@@ -465,9 +460,7 @@ sub parseStatusHexToBitArray($){
       $msg .= ''
         . "ASL base not found for this machine\n"
         . "  {perhaps it does not have the ThinkPad ACPI interface}\n"
-        . "ASL bases checked:\n  "
-        . (join "\n  ", @aslBases)
-        . "\n"
+        . "ASL base parsed using: $acDevicePath\n"
         ;
     }
     die $msg;
