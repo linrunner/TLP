@@ -1073,7 +1073,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
 fi # show_bat
 
-if [ "$show_warn" = "1" ] || [ "$show_all" = "1" ]; then
+if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show warnings
     # ata errors (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
     ecnt=$( check_ata_errors )
