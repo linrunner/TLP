@@ -181,7 +181,7 @@ case "$mode" in
 
     suspend) # handle suspend/hibernate
         check_root
-        save_device_states "wwan"
+        save_device_states
 
         get_power_state
         pwrmode=$?
