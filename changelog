@@ -1,10 +1,10 @@
-+++ 0.8 --- 20.04.2015 +++
++++ 0.8 --- 26.04.2015 +++
 
   *** Development Release ***
 
   * Features
     Radio devices:
-      - Resume: restore state of all radio devices (derball2008)
+      - Resume: restore state bluetooth (derball2008)
     ThinkPad Battery:
       - tpacpi-bat: new upstream version 2.2: get ASL path from
         /sys/class/power_supply/*/device/path; avoids unnecessary
