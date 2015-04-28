@@ -935,6 +935,7 @@ fi # show_usb
 
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show battery info & charge thresholds
+    bcnt=0
 
     # --- show availability of ThinkPad battery functions
     if is_thinkpad; then
@@ -998,6 +999,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                         printparm "%-59s = ##%6d##" $batd/force_discharge
                     fi
                     echo
+
+                    bcnt=$(($bcnt+1))
                 fi
             fi
         done
@@ -1066,10 +1069,17 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     print_tpacpi_thresholds $batt $bat_idx
                     echo
                 fi # if $tpcacpi
+
+                bcnt=$(($bcnt+1))
             fi # if $batt
         done # $batd
 
     fi # if /sys/class/power_supply
+
+    if [ $bcnt -eq 0 ]; then
+        printf "+++ Battery Status\n"
+        printf "No batteries detected.\n\n"
+    fi
 
 fi # show_bat
 

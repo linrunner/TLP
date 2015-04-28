@@ -11,6 +11,7 @@
         "AE_NOT_FOUND" kernel messages
     tlp-stat:
       - Explain battery status "Unknown" as "threshold effective"
+      - Show "No batteries detected."
       - Show warnings for ata errors by default
 
   * Bugfixes
