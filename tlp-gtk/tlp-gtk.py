@@ -3,17 +3,17 @@ from gi.repository import Gtk, GLib, GObject
 import signal
 import threading
 import time
-import os
-import sys
+import dbus
+import dbus.service
+from dbus.mainloop.glib import DBusGMainLoop
 
-ownPid = os.getpid()
-for s in os.popen('ps -ax').readlines()[::-1]:
-    try:
-        pid = int(s.split()[0])
-    except: pass
-    if s.find('tlp-gtk.py') > -1 and pid != ownPid:
-        os.kill(pid, signal.SIGUSR1)
-        sys.exit(0)
+DBusGMainLoop(set_as_default=True)
+
+bus = dbus.SessionBus()
+if bus.name_has_owner("org.tlp.thinkvantage"):
+    proxy = bus.get_object('org.tlp.thinkvantage', '/org/tlp/thinkvantage')
+    proxy.get_dbus_method('bringWindowToFocus', 'org.tlp.thinkvantage')()
+    sys.exit(0)
 
 def f_g_c(filename):
     with open(filename) as f:
@@ -21,7 +21,7 @@ def f_g_c(filename):
 
 class MainWindow(Gtk.Window):
     def __init__(self):
-        Gtk.Window.__init__(self, title='Thinkpad Dashboard')
+        Gtk.Window.__init__(self, title='ThinkVantage Dashboard')
 
         box = Gtk.Box()
         self.add(box)
@@ -88,6 +88,8 @@ class MainWindow(Gtk.Window):
                 '/sys/devices/platform/smapi/BAT0/remaining_charging_time',
                 frmt='%s minutes'
             )
+        elif stateVal == 'idle':
+            pass
         else:
             self.addToListbox('Remainging running time',
                 '/sys/devices/platform/smapi/BAT0/remaining_running_time_now',
@@ -134,10 +136,17 @@ thread = threading.Thread(target=updateUI)
 thread.daemon = True
 thread.start()
 
-def bringWindowToFront(signum, frame):
-    m.present()
+class MyDBUSService(dbus.service.Object):
+    def __init__(self):
+        bus_name = dbus.service.BusName('org.tlp.thinkvantage', bus=dbus.SessionBus())
+        dbus.service.Object.__init__(self, bus_name, '/org/tlp/thinkvantage')
 
-signal.signal(signal.SIGUSR1, bringWindowToFront)
+    @dbus.service.method('org.tlp.thinkvantage')
+    def bringWindowToFocus(self):
+        print('bringWindowToFocus received')
+        m.present()
+myservice = MyDBUSService()
+
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 Gtk.main()
 
