@@ -127,3 +127,4 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 Gtk.main()
 
 # And so on, and so forth. A split view like gtk-tweak-tool would be nice.
+# If you want to be really fancy-shmancy, link it to the ThinkVantage button.
