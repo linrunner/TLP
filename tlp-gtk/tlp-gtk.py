@@ -3,6 +3,17 @@ from gi.repository import Gtk, GLib, GObject
 import signal
 import threading
 import time
+import os
+import sys
+
+ownPid = os.getpid()
+for s in os.popen('ps -ax').readlines()[::-1]:
+    try:
+        pid = int(s.split()[0])
+    except: pass
+    if s.find('tlp-gtk.py') > -1 and pid != ownPid:
+        os.kill(pid, signal.SIGUSR1)
+        sys.exit(0)
 
 def f_g_c(filename):
     with open(filename) as f:
@@ -117,14 +128,22 @@ m.show_all()
 def updateUI():
     while True:
         GLib.idle_add(m.updateBattery)
-        time.sleep(2)
+        time.sleep(5)
 
 thread = threading.Thread(target=updateUI)
 thread.daemon = True
 thread.start()
 
+def bringWindowToFront(signum, frame):
+    m.present()
+
+signal.signal(signal.SIGUSR1, bringWindowToFront)
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 Gtk.main()
 
 # And so on, and so forth. A split view like gtk-tweak-tool would be nice.
-# If you want to be really fancy-shmancy, link it to the ThinkVantage button.
+
+# If you want to be really fancy-shmancy, link it to the ThinkVantage button:
+# gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name 'ThinkVantage'
+# gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ binding 'Launch1'
+# gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command "python3 /path/to/tlp-gtk.py"
