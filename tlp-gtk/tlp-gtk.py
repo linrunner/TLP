@@ -18,7 +18,7 @@ class MainWindow(Gtk.Window):
         self.resize(250,500)
         self.activity_mode = False
 
-        self.update()
+        self.updateBattery()
 
     def prepareListboxRow(self, title):
         row = Gtk.ListBoxRow()
@@ -57,7 +57,7 @@ class MainWindow(Gtk.Window):
 
         self.listbox.add(row)
 
-    def update(self):
+    def updateBattery(self):
         self.addToListbox('Cycle Count', '/sys/devices/platform/smapi/BAT0/cycle_count')
 
         designCapacityVal = f_g_c('/sys/devices/platform/smapi/BAT0/design_capacity')
@@ -71,7 +71,7 @@ class MainWindow(Gtk.Window):
         remainingCapacityVal = f_g_c('/sys/devices/platform/smapi/BAT0/remaining_capacity')
         remainingPercentVal = f_g_c('/sys/devices/platform/smapi/BAT0/remaining_percent')
 
-        self.addPercentageToListbox('Remaining Capacity',
+        self.addPercentageToListbox('Remaining Charge',
             float(remainingPercentVal)/100.0,
             "%s of %s mW" % (remainingCapacityVal, lastFullCapacityVal)
         )
@@ -82,3 +82,5 @@ m.connect("delete-event", Gtk.main_quit)
 m.show_all()
 
 Gtk.main()
+
+# And so on, and so forth. A split view with Gtk.Paned like gtk-tweak-tool would be nice.
