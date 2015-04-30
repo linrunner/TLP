@@ -11,7 +11,8 @@ import webbrowser
 
 class SystemOverview():
     def __init__(self):
-        self.autoupdate=False
+        self.autoupdate = False
+        self.BIOSChecked = False
 
     def getHeader(self):
         return 'System Overview'
@@ -46,7 +47,7 @@ class SystemOverview():
             for u in files:
                 if not 'BIOS Update' in u[1]:
                     continue
-
+                    
                 if StrictVersion(u[2].strip()) > StrictVersion(version):
                     self.dialog = Gtk.MessageDialog(
                         None, 0, Gtk.MessageType.INFO,
@@ -61,6 +62,7 @@ class SystemOverview():
                     GLib.idle_add(self.runBIOSDialog)
         except: pass
 
+        self.BIOSChecked = True
         GLib.idle_add(self.bios_spinner.destroy)
 
 
@@ -75,15 +77,16 @@ class SystemOverview():
         box.add(label1)
         box.set_margin_start(9)
 
-        self.bios_spinner = Gtk.Spinner()
-        self.bios_spinner.start()
-        box.add(self.bios_spinner)
+        if not self.BIOSChecked:
+            self.bios_spinner = Gtk.Spinner()
+            self.bios_spinner.start()
+            box.add(self.bios_spinner)
+
+            self.thread = threading.Thread(target=self._checkBIOS)
+            self.thread.daemon = True
+            self.thread.start()
 
         grid.attach(box,8,13,0,1)
-
-        self.thread = threading.Thread(target=self._checkBIOS)
-        self.thread.daemon = True
-        self.thread.start()
 
         return bios_row
 
