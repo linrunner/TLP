@@ -97,7 +97,7 @@ class MainWindow(Gtk.Window):
 GObject.threads_init()
 m = MainWindow()
 m.connect("delete-event", Gtk.main_quit)
-m.show_all()
+#m.show_all()
 
 class MyDBUSService(dbus.service.Object):
     def __init__(self):
@@ -107,6 +107,7 @@ class MyDBUSService(dbus.service.Object):
     @dbus.service.method('org.tlp.thinkvantage')
     def bringWindowToFocus(self):
         print('bringWindowToFocus received')
+        m.show()
         m.present()
 myservice = MyDBUSService()
 
