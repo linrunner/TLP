@@ -7,6 +7,9 @@ import sys
 import os
 import dbus
 import dbus.service
+import json
+import subprocess
+
 from dbus.mainloop.glib import DBusGMainLoop
 
 from plugins.Batteries import Battery
@@ -27,6 +30,25 @@ if bus.name_has_owner("org.tlp.thinkvantage"):
     sys.exit(0)
 
 class MainWindow(Gtk.Window):
+    def _checkButton(self):
+        hasThinkVantageButton = False
+        settings = subprocess.check_output(
+        'gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings', shell=True).decode('utf-8')
+        settings = json.loads(settings[settings.index('['):].replace('\'', '"'))
+
+        for setting in settings:
+            cmd = subprocess.check_output('gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:'+setting+' binding', shell=True).decode('utf-8').strip()
+            if cmd == "'Launch1'":
+                hasThinkVantageButton = True
+                break
+
+        if not hasThinkVantageButton:
+            settings.append('/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/ThinkVantage/')
+            subprocess.check_output('gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings \'%s\'' % json.dumps(settings), shell=True)
+            subprocess.check_output('gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/ThinkVantage/ name "ThinkVantage"', shell=True)
+            subprocess.check_output('gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/ThinkVantage/ binding "Launch1"', shell=True)
+            subprocess.check_output('gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/ThinkVantage/ command "python3 %s"' % os.path.realpath(__file__), shell=True)
+
     def __init__(self):
         Gtk.Window.__init__(self, title='ThinkVantage Dashboard')
         self.set_wmclass ("ThinkVantage", "ThinkVantage")
@@ -69,6 +91,9 @@ class MainWindow(Gtk.Window):
 
         self.updateListbox()
 
+        updateButtonThread = threading.Thread(target=self._checkButton)
+        updateButtonThread.start()
+
     def updateUI(self):
         while True:
             if self.plugin.autoupdate:
@@ -86,10 +111,10 @@ class MainWindow(Gtk.Window):
 
         for row in self.plugin.getListboxRows():
             self.listbox.add(row)
-            row = self.listbox.get_children()[-1]
+
+        for row in self.listbox.get_children():
             row.set_selectable(False)
             row.set_activatable(False)
-
 
         self.show_all()
 
@@ -113,8 +138,3 @@ myservice = MyDBUSService()
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 Gtk.main()
-
-# If you want to be real fancy-shmancy, link it to the ThinkVantage button:
-# gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name 'ThinkVantage'
-# gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ binding 'Launch1'
-# gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command "python3 /path/to/tlp-gtk.py"

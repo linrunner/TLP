@@ -1,6 +1,10 @@
 This build of TLP comes with tlp-gtk aka ThinkVantage Dashboard, a graphical
 interface for tlp-stat.
 
+If the ThinkVantage button is unused, it will automatically use it as a hotkey.
+
+
+
 tlp-gtk can be extended via plugins which are pythonic classes.
 
 ```python
@@ -20,11 +24,11 @@ class MyPlugin():
     def getListboxRows(self):
         # Return a list of GtkWidgets for the main area
         rows = []
-        # Displays the title ('Nothing') on the left, and the content of the
+        # Displays a title ('Nothing') on the left, a the content of the
         # file ('/dev/null') on the right
         rows.append(addToListbox('Nothing', '/dev/null'))
 
-        # Adds a the title on the left, and a progressbar with subtitle
+        # Adds a title on the left, and a progressbar with subtitle
         # on the right
         rows.append(addPercentageToListbox('How full is the glass?',
                 50.0,
@@ -41,11 +45,4 @@ class MyPlugin():
 
 # Add an instance of the plugin for auto-discovery with priority 99
 PLUGINS.append((99, MyPlugin()))
-```
-
-Linking to the ThinkVantage button:
-```bash
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name 'ThinkVantage'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ binding 'Launch1'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command "python3 /path/to/tlp-gtk.py"
 ```
