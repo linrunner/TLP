@@ -9,7 +9,7 @@ import dbus
 import dbus.service
 import json
 import subprocess
-
+from time import time
 from dbus.mainloop.glib import DBusGMainLoop
 
 from plugins.Batteries import Battery
@@ -54,6 +54,9 @@ class MainWindow(Gtk.Window):
             Gtk.main_quit()
 
     def __init__(self):
+        self.dbusService = self.ButtonDBUSService()
+        self.dbusService.window = self
+
         Gtk.Window.__init__(self, title='ThinkVantage Dashboard')
         self.set_wmclass ("ThinkVantage", "ThinkVantage")
 
@@ -123,24 +126,22 @@ class MainWindow(Gtk.Window):
 
         self.show_all()
 
+    class ButtonDBUSService(dbus.service.Object):
+        def __init__(self):
+            bus_name = dbus.service.BusName('org.tlp.thinkvantage', bus=dbus.SessionBus())
+            dbus.service.Object.__init__(self, bus_name, '/org/tlp/thinkvantage')
+
+        @dbus.service.method('org.tlp.thinkvantage')
+        def bringWindowToFocus(self):
+            print('bringWindowToFocus received')
+            self.window.present_with_time(int(time()))
+            self.window.present()
+            self.window.grab_focus()
 
 GObject.threads_init()
 m = MainWindow()
 m.connect("delete-event", Gtk.main_quit)
 m.show_all()
-
-class MyDBUSService(dbus.service.Object):
-    def __init__(self):
-        bus_name = dbus.service.BusName('org.tlp.thinkvantage', bus=dbus.SessionBus())
-        dbus.service.Object.__init__(self, bus_name, '/org/tlp/thinkvantage')
-
-    @dbus.service.method('org.tlp.thinkvantage')
-    def bringWindowToFocus(self):
-        print('bringWindowToFocus received')
-        m.grab_focus()
-        m.show()
-        m.present()
-myservice = MyDBUSService()
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 Gtk.main()
