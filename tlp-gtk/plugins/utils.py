@@ -39,9 +39,6 @@ def addToListbox(title, f, camelCase=False, frmt='%s', run=False):
     box = Gtk.Box()
     box.add(label1)
     box.set_margin_start(9)
-    #spinner = Gtk.Spinner()
-    #spinner.start()
-    #box.add(spinner)
 
     grid.attach(box,8,13,0,1)
 
