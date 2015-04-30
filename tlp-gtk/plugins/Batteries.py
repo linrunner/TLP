@@ -37,6 +37,9 @@ class Battery():
 
         rows.append(addToListbox('Cycle Count', '/sys/devices/platform/smapi/BAT%s/cycle_count' % self.bat))
 
+        temperatureVal = f_g_c('/sys/devices/platform/smapi/BAT%s/temperature' % self.bat)
+        row = rows.append(addToListbox('Temperature', int(temperatureVal)/1000, frmt='%d°C', plain=True))
+
         designCapacityVal = f_g_c('/sys/devices/platform/smapi/BAT%s/design_capacity' % self.bat)
         lastFullCapacityVal = f_g_c('/sys/devices/platform/smapi/BAT%s/last_full_capacity' % self.bat)
 
@@ -51,6 +54,12 @@ class Battery():
         rows.append(addPercentageToListbox('Remaining Charge',
             float(remainingPercentVal)/100.0,
             "%s of %s mWh" % (remainingCapacityVal, lastFullCapacityVal)
+        ))
+
+        voltageVal = int(f_g_c('/sys/devices/platform/smapi/BAT%s/voltage' % self.bat))
+        rows.append(addPercentageToListbox('Battery Voltage',
+            float(voltageVal-10200)/2400.0,
+            "%s mV" % voltageVal
         ))
 
         for i in range(4):

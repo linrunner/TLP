@@ -26,12 +26,14 @@ def prepareListboxRow(title):
 
     return (row, grid)
 
-def addToListbox(title, f, camelCase=False, frmt='%s', run=False):
+def addToListbox(title, f, camelCase=False, frmt='%s', run=False, plain=False):
     row, grid = prepareListboxRow(title)
 
     if run:
         labelText = subprocess.check_output(f) if not camelCase else subprocess.check_output(f).title()
         labelText = labelText.decode('utf-8').strip()[1:-1]
+    elif plain:
+        labelText = frmt % f if not camelCase else f.title()
     else:
         labelText = frmt % f_g_c(f) if not camelCase else f_g_c(f).title()
 

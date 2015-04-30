@@ -49,6 +49,10 @@ class MainWindow(Gtk.Window):
             subprocess.check_output('gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/ThinkVantage/ binding "Launch1"', shell=True)
             subprocess.check_output('gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/ThinkVantage/ command "python3 %s"' % os.path.realpath(__file__), shell=True)
 
+    def _keyPress(self, widget, event):
+        if Gdk.keyval_name(event.keyval) == 'Escape':
+            Gtk.main_quit()
+
     def __init__(self):
         Gtk.Window.__init__(self, title='ThinkVantage Dashboard')
         self.set_wmclass ("ThinkVantage", "ThinkVantage")
@@ -64,6 +68,7 @@ class MainWindow(Gtk.Window):
         divisionBox = Gtk.ListBox()
         divisionBox.set_activate_on_single_click(True)
         divisionBox.connect('row-activated', self.rowClicked)
+        self.connect('key-press-event', self._keyPress)
         paned.add1(divisionBox)
 
         for plugin in PLUGINS:
@@ -122,7 +127,7 @@ class MainWindow(Gtk.Window):
 GObject.threads_init()
 m = MainWindow()
 m.connect("delete-event", Gtk.main_quit)
-#m.show_all()
+m.show_all()
 
 class MyDBUSService(dbus.service.Object):
     def __init__(self):
@@ -132,6 +137,7 @@ class MyDBUSService(dbus.service.Object):
     @dbus.service.method('org.tlp.thinkvantage')
     def bringWindowToFocus(self):
         print('bringWindowToFocus received')
+        m.grab_focus()
         m.show()
         m.present()
 myservice = MyDBUSService()
