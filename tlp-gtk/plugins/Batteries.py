@@ -20,6 +20,11 @@ class Battery():
         rows.append(addToListbox('Manufacturer', '/sys/devices/platform/smapi/BAT%s/manufacturer' % self.bat, True))
         rows.append(addToListbox('Model', '/sys/devices/platform/smapi/BAT%s/model' % self.bat))
 
+        rows.append(addToListbox('Cycle Count', '/sys/devices/platform/smapi/BAT%s/cycle_count' % self.bat))
+
+        temperatureVal = f_g_c('/sys/devices/platform/smapi/BAT%s/temperature' % self.bat)
+        row = rows.append(addToListbox('Temperature', int(temperatureVal)/1000, frmt='%d°C', plain=True))
+
         rows.append(addToListbox('Current state', '/sys/devices/platform/smapi/BAT%s/state' % self.bat, True))
         stateVal = f_g_c('/sys/devices/platform/smapi/BAT%s/state' % self.bat)
         if stateVal == 'charging':
@@ -35,21 +40,15 @@ class Battery():
                 frmt='%s minutes'
             ))
 
-        rows.append(addToListbox('Cycle Count', '/sys/devices/platform/smapi/BAT%s/cycle_count' % self.bat))
-
-        temperatureVal = f_g_c('/sys/devices/platform/smapi/BAT%s/temperature' % self.bat)
-        row = rows.append(addToListbox('Temperature', int(temperatureVal)/1000, frmt='%d°C', plain=True))
-
         designCapacityVal = f_g_c('/sys/devices/platform/smapi/BAT%s/design_capacity' % self.bat)
         lastFullCapacityVal = f_g_c('/sys/devices/platform/smapi/BAT%s/last_full_capacity' % self.bat)
+        remainingCapacityVal = f_g_c('/sys/devices/platform/smapi/BAT%s/remaining_capacity' % self.bat)
+        remainingPercentVal = f_g_c('/sys/devices/platform/smapi/BAT%s/remaining_percent' % self.bat)
 
-        rows.append(addPercentageToListbox('Battery Capacity',
+        rows.append(addPercentageToListbox('Battery Health',
             float(lastFullCapacityVal)/float(designCapacityVal),
             "%s of %s mWh" % (lastFullCapacityVal, designCapacityVal)
         ))
-
-        remainingCapacityVal = f_g_c('/sys/devices/platform/smapi/BAT%s/remaining_capacity' % self.bat)
-        remainingPercentVal = f_g_c('/sys/devices/platform/smapi/BAT%s/remaining_percent' % self.bat)
 
         rows.append(addPercentageToListbox('Remaining Charge',
             float(remainingPercentVal)/100.0,
