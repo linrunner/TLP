@@ -3,10 +3,7 @@ interface for tlp-stat.
 
 ![Image of System Overview](http://i.imgur.com/QBbEaVz.png)
 
-
-If the ThinkVantage button is unused, it will automatically use it as a hotkey.
-
-
+If the ThinkVantage button is usele... err, unused, it will automatically use it as a hotkey.
 
 tlp-gtk can be extended via plugins which are pythonic classes.
 
