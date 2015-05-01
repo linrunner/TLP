@@ -11,7 +11,7 @@ import webbrowser
 
 class SystemOverview():
     def __init__(self):
-        self.autoupdate = False
+        self.autoupdate = -1
         self.BIOSChecked = False
 
     def getHeader(self):
@@ -47,7 +47,7 @@ class SystemOverview():
             for u in files:
                 if not 'BIOS Update' in u[1]:
                     continue
-                    
+
                 if StrictVersion(u[2].strip()) > StrictVersion(version):
                     self.dialog = Gtk.MessageDialog(
                         None, 0, Gtk.MessageType.INFO,
@@ -86,7 +86,7 @@ class SystemOverview():
             self.thread.daemon = True
             self.thread.start()
 
-        grid.attach(box,8,13,0,1)
+        grid.attach(box,7,12,0,1)
 
         return bios_row
 

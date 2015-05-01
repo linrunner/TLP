@@ -9,25 +9,32 @@ import dbus
 import dbus.service
 import json
 import subprocess
-from time import time
+
 from dbus.mainloop.glib import DBusGMainLoop
 
 from plugins.Batteries import Battery
 from plugins.SystemOverview import SystemOverview
+from plugins.Processor import Processor
 
 PLUGINS = [
     SystemOverview(),
+    Processor(),
     Battery(0),
     Battery(1)
 ]
 
-DBusGMainLoop(set_as_default=True)
+loadPlugin = 0
 
+DBusGMainLoop(set_as_default=True)
 bus = dbus.SessionBus()
 if bus.name_has_owner("org.tlp.thinkvantage"):
     proxy = bus.get_object('org.tlp.thinkvantage', '/org/tlp/thinkvantage')
-    proxy.get_dbus_method('bringWindowToFocus', 'org.tlp.thinkvantage')()
-    sys.exit(0)
+    bringWindowToFocus = proxy.get_dbus_method('bringWindowToFocus', 'org.tlp.thinkvantage')
+    loadPlugin= bringWindowToFocus()
+    #sys.exit(0)
+
+
+
 
 class MainWindow(Gtk.Window):
     def _checkButton(self):
@@ -53,7 +60,7 @@ class MainWindow(Gtk.Window):
         if Gdk.keyval_name(event.keyval) == 'Escape':
             Gtk.main_quit()
 
-    def __init__(self):
+    def __init__(self, loadPlugin=0):
         self.dbusService = self.ButtonDBUSService()
         self.dbusService.window = self
 
@@ -84,7 +91,9 @@ class MainWindow(Gtk.Window):
             row.add(label)
             divisionBox.add(row)
 
-        self.plugin = PLUGINS[0]
+        self.plugin = PLUGINS[loadPlugin]
+        divisionBox.select_row(divisionBox.get_row_at_index(loadPlugin))
+
         self.thread = threading.Thread(target=self.updateUI)
         self.thread.daemon = True
         self.thread.start()
@@ -94,7 +103,7 @@ class MainWindow(Gtk.Window):
         self.listbox = Gtk.ListBox()
         box.pack_start(self.listbox, True, True, 0)
 
-        self.resize(900,450)
+        self.resize(850,450)
         self.activity_mode = False
 
         self.updateListbox()
@@ -104,9 +113,9 @@ class MainWindow(Gtk.Window):
 
     def updateUI(self):
         while True:
-            if self.plugin.autoupdate:
+            if int(self.plugin.autoupdate) > 0:
                 GLib.idle_add(self.updateListbox)
-            time.sleep(5)
+            time.sleep(self.plugin.autoupdate if self.plugin.autoupdate > 0 and self.plugin.autoupdate < 10 else 5)
 
     def rowClicked(self, listbox, row):
         self.plugin = PLUGINS[row.get_index()]
@@ -126,6 +135,11 @@ class MainWindow(Gtk.Window):
 
         self.show_all()
 
+    def bringWindowToFocus(self):
+        def inner():
+            self.present_with_time(int(time.time()))
+        GLib.idle_add(inner)
+
     class ButtonDBUSService(dbus.service.Object):
         def __init__(self):
             bus_name = dbus.service.BusName('org.tlp.thinkvantage', bus=dbus.SessionBus())
@@ -133,13 +147,11 @@ class MainWindow(Gtk.Window):
 
         @dbus.service.method('org.tlp.thinkvantage')
         def bringWindowToFocus(self):
-            print('bringWindowToFocus received')
-            self.window.present_with_time(int(time()))
-            self.window.present()
-            self.window.grab_focus()
+            Gtk.main_quit()
+            return PLUGINS.index(self.window.plugin)
 
-GObject.threads_init()
-m = MainWindow()
+#GObject.threads_init()
+m = MainWindow(loadPlugin)
 m.connect("delete-event", Gtk.main_quit)
 m.show_all()
 

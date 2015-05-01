@@ -21,7 +21,7 @@ def prepareListboxRow(title):
     box.add(label1)
     box.set_margin_end(9)
 
-    grid.attach(box,3,8,0,1)
+    grid.attach(box,2,7,0,1)
     row.add(grid)
 
     return (row, grid)
@@ -42,7 +42,7 @@ def addToListbox(title, f, camelCase=False, frmt='%s', run=False, plain=False):
     box.add(label1)
     box.set_margin_start(9)
 
-    grid.attach(box,8,13,0,1)
+    grid.attach(box,7,12,0,1)
 
     return row
 
@@ -52,7 +52,7 @@ def addPercentageToListbox(title, percent, subtitle):
     vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
     vbox.set_margin_start(9)
 
-    grid.attach(vbox,8,13,0,1)
+    grid.attach(vbox,7,12,0,1)
 
     label1 = Gtk.Label(subtitle)
     progressBar = Gtk.ProgressBar()

@@ -11,7 +11,7 @@ tlp-gtk can be extended via plugins which are pythonic classes.
 class MyPlugin():
     def __init__(self):
         # Perform basic initialization
-        self.autoupdate = False # Reloads data via getListboxRows every 5 seconds
+        self.autoupdate = -1 # Reloads data via getListboxRows every self.autoupdate seconds
 
     def getHeader(self):
         # Return a title as shown in the sidebar

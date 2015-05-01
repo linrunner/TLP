@@ -5,7 +5,7 @@ from plugins.utils import addToListbox, addPercentageToListbox, f_g_c
 class Battery():
     def __init__(self, battery):
         self.bat = battery
-        self.autoupdate = True
+        self.autoupdate = 5
 
     def getHeader(self):
         if self.bat != 1: return 'Main Battery'
