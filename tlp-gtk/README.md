@@ -1,6 +1,9 @@
 This build of TLP comes with tlp-gtk aka ThinkVantage Dashboard, a graphical
 interface for tlp-stat.
 
+![Image of System Overview](http://i.imgur.com/QBbEaVz.png)
+
+
 If the ThinkVantage button is unused, it will automatically use it as a hotkey.
 
 
