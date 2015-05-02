@@ -49,6 +49,7 @@ show_temp=0
 show_trace=0
 show_usb=0
 show_warn=0
+show_verbose=0
 
 # --- Functions
 
@@ -176,7 +177,7 @@ check_ata_errors () { # check kernel log for ata errors
         # count matching error lines
         echo $( dmesg | egrep -c "ata[0-9]+: SError: {.*CommWake.*}" 2> /dev/null )
     else
-        # no values in question configured 
+        # no values in question configured
         echo "0"
     fi
 
@@ -270,13 +271,17 @@ read_args () { # read command line arguments
                 needs_root_priv=1
                 ;;
 
+            "-v"|"--verbose")
+                show_verbose=1
+                ;;
+
             *)
-                echo "Usage: tlp-stat [ -b |--battery    | -c |--config  |"
-                echo "                  -d | --disk      | -e |--pcie    |"
-                echo "                  -p | --processor | -r | --rfkill |"
-                echo "                  -s | --system    | -t | --temp   |"
-                echo "                  -u | --usb       | -w | --warn   |"
-                echo "                  -T | --trace                       ]"
+                echo "Usage: tlp-stat [ -b | --battery   | -c | --config  |"
+                echo "                  -d | --disk      | -e | --pcie    |"
+                echo "                  -p | --processor | -r | --rfkill  |"
+                echo "                  -s | --system    | -t | --temp    |"
+                echo "                  -u | --usb       | -w | --warn    |"
+                echo "                  -T | --trace     | -v | --verbose ]"
                 exit 3
                 ;;
         esac
@@ -748,7 +753,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
             # get wifi driver
             get_wifi_driver $iface
-            printf "%-20s: " "$iface($wifidrv)" 
+            printf "%-20s: " "$iface($wifidrv)"
             if wireless_in_use $iface; then
                 printf "connected, "
             else
@@ -939,6 +944,12 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [%%]" $batd/remaining_percent
                     printparm "%-59s = ##%6s## [min]" $batd/remaining_running_time_now
                     printparm "%-59s = ##%6s## [min]" $batd/remaining_charging_time
+                    if [ $show_verbose -eq 1 ]; then
+                      printparm "%-59s = ##%6s## [mV]" $batd/group0_voltage
+                      printparm "%-59s = ##%6s## [mV]" $batd/group1_voltage
+                      printparm "%-59s = ##%6s## [mV]" $batd/group2_voltage
+                      printparm "%-59s = ##%6s## [mV]" $batd/group3_voltage
+                    fi
                     printparm "%-59s = ##%6d## [mW]" $batd/power_now
                     printparm "%-59s = ##%6d## [mW]" $batd/power_avg
                     echo
@@ -971,7 +982,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                         0) echo "+++ ThinkPad Battery Status: $batt" ;;
                     esac
                 else
-                   # it's a ThinkPad with neither tp-smapi nor tpacpi-bat 
+                   # it's a ThinkPad with neither tp-smapi nor tpacpi-bat
                     echo "+++ Battery Status"
                 fi
             elif [ -d $batd ] \
@@ -1068,7 +1079,7 @@ if [ "$show_warn" = "1" ]; then
     if [ $ecnt -ne 0 ]; then
         echo "+++ Warnings"
         printf "* Kernel log shows ata errors (%d) possibly caused by the configuration: " $ecnt
-        printf "SATA_LINKPWR_ON_AC/BAT=min_power or medium_power\n" 
+        printf "SATA_LINKPWR_ON_AC/BAT=min_power or medium_power\n"
         printf "  Consider using medium_power or max_performance instead.\n"
         printf "  Details:\n"
         dmesg | egrep -A 5 "ata[0-9]+: SError: { .*CommWake }"
