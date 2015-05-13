@@ -440,7 +440,7 @@ set_dirty_parms () { # set filesystem buffer params
     # $1: 0=ac mode, 1=battery mode
     # concept from laptop-mode-tools
 
-    local age cage
+    local age cage df
 
     check_sysfs "set_dirty_parms" "/proc/sys/vm"
 
@@ -461,14 +461,15 @@ set_dirty_parms () { # set filesystem buffer params
 
     echo_debug "pm" "set_dirty_parms($1): $cage"
 
-    echo $cage > /proc/sys/vm/dirty_writeback_centisecs
-    echo $cage > /proc/sys/vm/dirty_expire_centisecs
+    for df in /proc/sys/vm/dirty_writeback_centisecs \
+             /proc/sys/vm/dirty_expire_centisecs \
+             /proc/sys/fs/xfs/age_buffer_centisecs \
+             /proc/sys/fs/xfs/xfssyncd_centisecs; do
+        [ -w $df ] && echo $cage > $df
+    done
 
-    if [ -d /proc/sys/fs/xfs ]; then
-        echo $cage > /proc/sys/fs/xfs/age_buffer_centisecs
-        echo $cage > /proc/sys/fs/xfs/xfssyncd_centisecs
-        echo 3000 > /proc/sys/fs/xfs/xfsbufd_centisecs
-    fi
+    [ -w /proc/sys/fs/xfs/xfsbufd_centisecs ] \
+        && echo 3000 > /proc/sys/fs/xfs/xfsbufd_centisecs
 
     return 0
 }

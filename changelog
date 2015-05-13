@@ -1,4 +1,4 @@
-+++ 0.8 --- 26.04.2015 +++
++++ 0.8 --- 13.05.2015 +++
 
   *** Development Release ***
 
@@ -18,6 +18,7 @@
     - Issue #123: tlp-stat: detect kernel config with PM_RUNTIME=N
     - Issue #124: tlp recalibrate: fix exitcode check
     - Issue #133: USB autosuspend: write power/control if actually changing only
+    - Ignore missing files in /proc/sys/fs/xfs (Gijs Hillenius)
 
 +++ 0.7 --- 29.01.2015 +++
 
