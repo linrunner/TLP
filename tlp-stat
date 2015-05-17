@@ -427,9 +427,9 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # --- show power source
     get_sys_power_supply
     case $? in
-        0) echo "power source   = ac" ;;
+        0) echo "power source   = AC" ;;
         1) echo "power source   = battery" ;;
-        *) echo "power source   = unknown (using battery settings)" ;;
+        *) echo "power source   = unknown (using ${TLP_DEFAULT_MODE:-AC} settings)" ;;
     esac
     echo
 fi # show_system

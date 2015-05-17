@@ -3,7 +3,10 @@
   *** Development Release ***
 
   * Features
-    Radio devices:
+    General:
+      - TLP_DEFAULT_MODE: change default operation mode to AC when no power supply
+        can be detected (concerns some desktop and embedded hardware only)
+    Radio Devices:
       - Resume: restore state bluetooth (derball2008)
     ThinkPad Battery:
       - tpacpi-bat: new upstream version 2.2: get ASL path from

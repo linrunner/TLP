@@ -7,6 +7,10 @@
 # Set to 0 to disable, 1 to enable TLP.
 TLP_ENABLE=1
 
+# Operation mode when no power supply can be detected: AC, BAT
+# Concerns some desktop and embedded hardware only.
+TLP_DEFAULT_MODE=AC
+
 # Seconds laptop mode has to wait after the disk goes idle before doing a sync.
 # Non-zero value enables, zero disables laptop mode.
 DISK_IDLE_SECS_ON_AC=0

@@ -260,18 +260,18 @@ is_thinkpad () { # check for ThinkPad hardware
 get_sys_power_supply () { # get current power source
                           # rc: 0=ac, 1=battery, 2=unknown
 
-    # Adapted from pm-utils' on_ac_power
     local psrc
-    local rc= # battery is default when no ac is available
+    local rc=
 
     for psrc in /sys/class/power_supply/*; do
-        #if [ -f $psrc/type ]; then  ## not necessary - cat 2>.. handles this
+        # -f $psrc/type not necessary - cat 2>.. handles this
         case "$(cat $psrc/type 2> /dev/null)" in
             Mains)
-                    if [ "$(cat $psrc/online 2> /dev/null)" = "1" ]; then
-                        rc=0
-                        break
-                    fi
+                # AC detected, check if online
+                if [ "$(cat $psrc/online 2> /dev/null)" = "1" ]; then
+                    rc=0
+                    break
+                fi
                 # else AC not online => keep $rc as-is
                 ;;
 
@@ -286,15 +286,30 @@ get_sys_power_supply () { # get current power source
         esac
     done
 
-    # set rc to unknown if we haven't seen any AC/bat power source so far
+    # set rc to unknown if we haven't seen any AC/battery power source so far
     : ${rc:=2}
 
     return $rc
 }
 
 get_power_state () { # get current power source -- rc: 0=ac, 1=battery
-    # similar to get_sys_power_supply(), but maps any non-zero value to battery
-    get_sys_power_supply || return 1
+    # similar to get_sys_power_supply(),
+    # but maps any non-zero value to TLP_DEFAULT_MODE
+    local psrc
+
+    get_sys_power_supply
+    psrc=$?
+
+    if [ $psrc -eq 2 ]; then
+        # unknown power supply, apply default mode
+        case "$TLP_DEFAULT_MODE" in
+            ac|AC)   psrc=0 ;;
+            bat|BAT) psrc=1 ;;
+            *)       psrc=0 ;; # use AC if no default mode configured
+        esac
+    fi
+
+    return $psrc
 }
 
 echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
