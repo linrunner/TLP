@@ -13,6 +13,7 @@
       - Explain battery status "Unknown" as "threshold effective"
       - Show "No batteries detected."
       - Show warnings for ata errors by default
+      - Show ThinkPad battery cell group voltages (verbose mode, tp-smapi only)
 
   * Bugfixes
     - Issue #123: tlp-stat: detect kernel config with PM_RUNTIME=N

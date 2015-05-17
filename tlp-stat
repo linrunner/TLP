@@ -48,6 +48,7 @@ show_system=0
 show_temp=0
 show_trace=0
 show_usb=0
+show_verbose=0
 show_warn=0
 
 no_runtimepm=0
@@ -300,6 +301,10 @@ read_args () { # read command line arguments
                 : ${needs_root_priv:=0}
                 ;;
 
+            "-v"|"--verbose")
+                show_verbose=1
+                ;;
+
             "-w"|"--warn")
                 show_all=0
                 show_warn=1
@@ -313,12 +318,12 @@ read_args () { # read command line arguments
                 ;;
 
             *)
-                echo "Usage: tlp-stat [ -b |--battery    | -c |--config  |"
-                echo "                  -d | --disk      | -e |--pcie    |"
+                echo "Usage: tlp-stat [ -b | --battery   | -c | --config |"
+                echo "                  -d | --disk      | -e | --pcie   |"
                 echo "                  -p | --processor | -r | --rfkill |"
                 echo "                  -s | --system    | -t | --temp   |"
                 echo "                  -u | --usb       | -w | --warn   |"
-                echo "                  -T | --trace                       ]"
+                echo "                  -T | --trace     | -v | --verbose ]"
                 exit 3
                 ;;
         esac
@@ -790,7 +795,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
             # get wifi driver
             get_wifi_driver $iface
-            printf "%-20s: " "$iface($wifidrv)" 
+            printf "%-20s: " "$iface($wifidrv)"
             if wireless_in_use $iface; then
                 printf "connected, "
             else
@@ -988,6 +993,13 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mW]" $batd/power_avg
                     print_tp_batstate $batd/state
                     echo
+                    if [ $show_verbose -eq 1 ]; then
+                        printparm "%-59s = ##%6s## [mV]" $batd/group0_voltage
+                        printparm "%-59s = ##%6s## [mV]" $batd/group1_voltage
+                        printparm "%-59s = ##%6s## [mV]" $batd/group2_voltage
+                        printparm "%-59s = ##%6s## [mV]" $batd/group3_voltage
+                        echo
+                    fi
 
                     if [ $tpacpi -eq 0 ]; then
                         # --- show ThinkPad charge thresholds via tpacpi-bat
@@ -1023,7 +1035,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                         0) echo "+++ ThinkPad Battery Status: $batt" ;;
                     esac
                 else
-                   # it's a ThinkPad with neither tp-smapi nor tpacpi-bat 
+                   # it's a ThinkPad with neither tp-smapi nor tpacpi-bat
                     echo "+++ Battery Status"
                 fi
             elif [ -d $batd ] \
