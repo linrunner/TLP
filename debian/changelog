@@ -1,3 +1,13 @@
+tlp (0.7-2) unstable; urgency=low
+
+  [ Thomas Koch ]
+  * Add patch (from upstream):
+    - 0001-Issue-124-tlp-recalibrate-fix-exitcode-check.patch
+  * debian/control:
+    - Remove depends: linux-tools-common, linux-tools-generic
+
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 21 May 2015 22:53:42 +0200
+
 tlp (0.7-1) unstable; urgency=low
 
   * debian/control:

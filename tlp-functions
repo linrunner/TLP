@@ -12,7 +12,6 @@
 # Constants
 
 readonly TLPVER="0.7"
-
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
 
