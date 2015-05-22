@@ -1,8 +1,10 @@
 tlp (0.7.900-1) unstable; urgency=low
 
   *** Development Package ***
+  * debian/control:
+    - Remove depends: linux-tools-common, linux-tools-generic
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 01 Feb 2015 15:19:45 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 22 May 2015 21:42:09 +0200
 
 tlp (0.7-1) unstable; urgency=low
 

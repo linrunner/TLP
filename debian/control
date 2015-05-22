@@ -18,8 +18,6 @@ Depends: ${misc:Depends},
 Recommends: tlp-rdw,
             ethtool,
             linux-tools,
-            linux-tools-common,
-            linux-tools-generic,
             smartmontools
 Suggests: tp-smapi-dkms,
           acpi-call-dkms
