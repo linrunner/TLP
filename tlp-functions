@@ -294,7 +294,7 @@ get_sys_power_supply () { # get current power source
 
 get_power_state () { # get current power source -- rc: 0=ac, 1=battery
     # similar to get_sys_power_supply(),
-    # but maps any non-zero value to TLP_DEFAULT_MODE
+    # but maps unknown power source to TLP_DEFAULT_MODE
     local psrc
 
     get_sys_power_supply
@@ -1937,7 +1937,7 @@ cancel_force_discharge () { # called from trap -- global param: $bat_str
 
 check_ac_power () { # check if ac power connected -- $1: function
 
-    if ! get_power_state ; then
+    if ! get_sys_power_supply ; then
         echo_debug "bat" "check_ac_power($1).no_ac_power"
         echo "Error: $1 is possible on AC power only." 1>&2
         return 1
