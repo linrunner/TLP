@@ -1395,7 +1395,8 @@ get_wwan_driver () { # get driver associated with interface
 # --- Bluetooth Power Management
 
 get_bluetooth_ifaces () { # get all bluetooth devices -- retval: $bifaces
-    bifaces="$(ls $BLUETOOTHD 2> /dev/null | grep -v ':')"
+    # enumerate symlinks only
+    bifaces="$(for i in $BLUETOOTHD/*; do [ -h $i ] && echo ${i##/*/}; done | grep -v ':')"
     return 0
 }
 
