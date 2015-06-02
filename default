@@ -1,5 +1,6 @@
 # ------------------------------------------------------------------------------
 # tlp - Parameters for power save
+# See full explanation: http://linrunner.de/en/tlp/docs/tlp-configuration.html
 
 # Hint: some features are disabled by default, remove the leading # to enable
 # them.
