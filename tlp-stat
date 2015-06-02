@@ -1130,11 +1130,11 @@ if [ "$show_all" = "1" ]; then
         model=${model#Edge }
 
         case $model in
-            X240*|T?40*|W540|L?40|E?4?|S?40|X230*|T?3?*|W530|L?30|E?3?*|S?3?*)
+            "X1 Carbon*"|X2[345]0*|T[45][345][01]*|W5[345][01]*|L[45][345]0|E[1345][05]|S[245][345][01]*)
                 [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
                 ;;
 
-            X220*|T420*|T520|W520)
+            X1|X220*|T420*|T520|W520)
                 [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
                 [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
                 ;;
