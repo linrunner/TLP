@@ -1,4 +1,4 @@
-+++ 0.8 --- 02.06.2015 +++
++++ 0.8 --- 03.06.2015 +++
 
   *** Development Release ***
 
@@ -14,12 +14,13 @@
       - tpacpi-bat: new upstream version 2.2: get ASL path from
         /sys/class/power_supply/*/device/path; avoids unnecessary
         "AE_NOT_FOUND" kernel messages
+      - tlp-stat:
+        - Show "No batteries detected."
+        - Explain battery status "Unknown" as "threshold effective"
+        - Show battery cell group voltages (verbose mode, tp-smapi only)
+        - Show acpi-call suggestion for ThinkPad *40, *50, X1 models
     tlp-stat:
-      - Explain battery status "Unknown" as "threshold effective"
-      - Show "No batteries detected."
       - Show warnings for ata errors by default
-      - Show ThinkPad battery cell group voltages (verbose mode, tp-smapi only)
-      - Show acpi-call suggestion for ThinkPad *40, *50, X1 models
 
   * Bugfixes
     - Issue #123: tlp-stat: detect kernel config with PM_RUNTIME=N
