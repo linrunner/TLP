@@ -20,5 +20,8 @@ ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}
 # ThinkPad Basic Dock
 # *** TODO: yet unknown ***
 
-# ThinkPad OneLink Dock
+# ThinkPad OneLink Dock Pro
 ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/304b/*", RUN+="/lib/udev/tlp-rdw-udev %p usb_dock"
+
+# ThinkPad OneLink Dock Basic
+ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/3049/*", RUN+="/lib/udev/tlp-rdw-udev %p usb_dock"

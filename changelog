@@ -1,4 +1,4 @@
-+++ 0.8 --- 03.06.2015 +++
++++ 0.8 --- 10.06.2015 +++
 
   *** Development Release ***
 
@@ -9,7 +9,7 @@
     Radio Devices:
       - Resume: restore bluetooth state (derball2008)
     Radio Device Wizard (tlp-rdw):
-      - Support ThinkPad OneLink Dock for dock/undock events
+      - Support ThinkPad OneLink Dock Basic/Pro for dock/undock events
     ThinkPad Battery:
       - tpacpi-bat: new upstream version 2.2: get ASL path from
         /sys/class/power_supply/*/device/path; avoids unnecessary
