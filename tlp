@@ -62,7 +62,8 @@ check_laptop_mode_tools
 # get cmd line args
 mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
 mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
-mode3=$(echo $3 | tr "[:upper:]" "[:lower:]")
+
+[ "$mode" = "stat" ] && nodebug=1 # inhibit debug output for tlp stat
 
 # get current power state
 get_power_state
