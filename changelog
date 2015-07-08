@@ -1,4 +1,4 @@
-+++ 0.8 --- 10.06.2015 +++
++++ 0.8 --- 09.07.2015 +++
 
   *** Development Release ***
 
@@ -27,6 +27,7 @@
     - Issue #124: tlp recalibrate: fix exitcode check
     - Issue #133: USB autosuspend: write power/control if actually changing only
     - Ignore missing files in /proc/sys/fs/xfs (Gijs Hillenius)
+    - Issues #147, #149: fix udev event processing for AC/BAT switching
 
 +++ 0.7 --- 29.01.2015 +++
 

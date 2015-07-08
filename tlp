@@ -140,14 +140,9 @@ case "$mode" in
 
     auto) # set mode depending on state (called by udev rule)
         check_root
-        ( # run in a detached subshell to avoid blocking udev,
-          # close stdout/stderr
-            exec 1> /dev/null 2>/dev/null
-
-            apply_common_settings $pwrmode
-            [ "$pwrmode" = "1" ] && poweroff_drivebay 0
-            set_radio_device_states $pwrmode
-        ) &
+        apply_common_settings $pwrmode
+        [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+        set_radio_device_states $pwrmode
         ;;
 
     start) # set mode depending on state (interactive mode)
