@@ -1,4 +1,4 @@
-+++ 0.8 --- 09.07.2015 +++
++++ 0.8 --- 13.07.2015 +++
 
   *** Development Release ***
 
@@ -19,6 +19,8 @@
         - Explain battery status "Unknown" as "threshold effective"
         - Show battery cell group voltages (verbose mode, tp-smapi only)
         - Show acpi-call suggestion for ThinkPad *40, *50, X1 models
+    USB:
+      - Remove USB_DRIVER_BLACKLIST (because of issues #147, #149, see below)
     tlp-stat:
       - Show warnings for ata errors by default
 
@@ -28,6 +30,7 @@
     - Issue #133: USB autosuspend: write power/control if actually changing only
     - Ignore missing files in /proc/sys/fs/xfs (Gijs Hillenius)
     - Issues #147, #149: fix udev event processing for AC/BAT switching
+      and USB hotplugging (required for udevd v221 and higher)
 
 +++ 0.7 --- 29.01.2015 +++
 

@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.7.900"
+readonly TLPVER="0.7.901"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -54,7 +54,7 @@ readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT=2
 readonly USB_TIMEOUT_MS=2000
-readonly USB_WWAN_DRIVERS="cdc_acm cdc_wdm cdc_ether hso qcserial sierra"
+readonly USB_WWAN_VENDORS="0bdb 05c6 1199"
 readonly USB_DONE=usb_done
 
 readonly DOCKGLOB="/sys/devices/platform/dock.?"
@@ -1505,16 +1505,6 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
         # autosuspend is configured
 
-        # initialize driver blacklist from settings
-        drv_bl=${USB_DRIVER_BLACKLIST:-$DEFAULT_USB_DRIVER_BLACKLIST}
-
-        # add wwan driver blacklist if enabled
-        USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
-
-        if [ $USB_BLACKLIST_WWAN = "1" ]; then
-            drv_bl="$drv_bl $USB_WWAN_DRIVERS"
-        fi
-
         # iterate devices
         devices=$(ls $USBD 2> /dev/null | grep -v ':')
 
@@ -1537,19 +1527,27 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                         control="on"
                         exc="_dev_black"
                     else
-                        # check subdevices for blacklisted drivers
+                        # check for hid subdevices
                         for subdev in $USBD/$usbdev/*:*; do
-                            # get driver name from subdev uevent file
-                            drv=$(sed -rn 's/^DRIVER=(.*)/\1/p' $subdev/uevent)
-
-                            # check against driver blacklist
-                            if wordinlist "$drv" "$drv_bl"; then
-                                # driver is blacklisted
+                            if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
                                 control="on"
-                                exc="_drv_black"
+                                exc="_hid_black"
                                 break
                             fi
                         done
+
+                        if [ -z "$exc" ]; then
+                            # check for wwan vendor ids
+                            USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
+
+                            if [ $USB_BLACKLIST_WWAN = "1" ]; then
+                                vendor="$(cat $USBD/$usbdev/idVendor)"
+                                if wordinlist "$vendor" "$USB_WWAN_VENDORS"; then
+                                    control="on"
+                                    exc="_wwan_black"
+                                fi
+                            fi
+                        fi
                     fi
                 fi
 
