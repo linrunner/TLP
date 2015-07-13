@@ -71,22 +71,9 @@ usbdev=/sys$1
 if [ -f $usbdev/power/autosuspend ] || [ -f $usbdev/power/autosuspend_delay_ms ]; then
     # device is autosuspendable
 
-    ( # run remainder in a detached subshell to avoid blocking udev,
-      # close stdout/stderr
-        exec 1> /dev/null 2>/dev/null
-
-        # initialize driver blacklist from settings
-        drv_bl=${USB_DRIVER_BLACKLIST:-$DEFAULT_USB_DRIVER_BLACKLIST}
-
-        # add wwan driver blacklist if enabled
-        USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
-
-        if [ $USB_BLACKLIST_WWAN = "1" ]; then
-            drv_bl="$drv_bl $USB_WWAN_DRIVERS"
-        fi
-
-        # wait for subdevices to populate via parallel udev events (not handled here)
-        sleep 2.0
+    (   # run remainder in a detached subshell to allow udev to populate
+        # subdevices in parallel; do *not* close stdin/stdout to avoid
+        # being "sanitized" (killed) by udev post-processing
 
         # apply autosuspend
         ctrlf="control"
@@ -105,19 +92,36 @@ if [ -f $usbdev/power/autosuspend ] || [ -f $usbdev/power/autosuspend_delay_ms ]
             control="on"
             exc="_dev_black"
         else
-            # check subdevices for blacklisted drivers
-            for subdev in $usbdev/*:*; do
-                # get driver name from subdev uevent file
-                drv=$(sed -rn 's/^DRIVER=(.*)/\1/p' $subdev/uevent)
+            # initialize driver blacklist from settings
+            drv_bl=${USB_DRIVER_BLACKLIST:-$DEFAULT_USB_DRIVER_BLACKLIST}
 
-                # check against driver blacklist
-                if wordinlist "$drv" "$drv_bl"; then
-                    # driver is blacklisted
-                    control="on"
-                    exc="_drv_black"
-                    break
-                fi
-            done
+            # add wwan driver blacklist if enabled
+            USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
+            if [ $USB_BLACKLIST_WWAN = "1" ]; then
+                drv_bl="$drv_bl $USB_WWAN_DRIVERS"
+            fi
+
+            if [ -n "$drv_bl" ]; then
+                # proceed only when driver blacklist is not empty
+
+                # wait for subdevices to populate via parallel udev events
+                # (not handled here)
+                sleep 0.5
+
+                # check subdevices for blacklisted drivers
+                for subdev in $usbdev/*:*; do
+                    # get driver name from subdev uevent file
+                    drv=$(sed -rn 's/^DRIVER=(.*)/\1/p' $subdev/uevent)
+
+                    # check against driver blacklist
+                    if wordinlist "$drv" "$drv_bl"; then
+                        # driver is blacklisted
+                        control="on"
+                        exc="_drv_black"
+                        break
+                    fi
+                done
+            fi
         fi
 
         if [ -f $usbdev/power/control ]; then
