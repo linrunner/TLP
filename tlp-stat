@@ -872,9 +872,8 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
     fi
     echo "device whitelist   = ${USB_WHITELIST:=(not configured)}"
     echo "device blacklist   = ${USB_BLACKLIST:=(not configured)}"
-    echo "driver blacklist   = ${USB_DRIVER_BLACKLIST:=(not configured)}"
     if [ "$USB_BLACKLIST_WWAN" = "1" ]; then
-        echo "wwan blacklist     = enabled ($USB_WWAN_DRIVERS)"
+        echo "wwan blacklist     = enabled"
     else
         echo "wwan blacklist     = disabled"
     fi
