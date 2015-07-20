@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.7.901"
+readonly TLPVER="0.7.902"
 
 readonly CONFFILE=/etc/default/tlp
 readonly RUNDIR=/var/run/tlp
@@ -70,6 +70,10 @@ readonly DEFAULT_DISK_DEVICES="sda"
 readonly DEFAULT_DISK_IO_SCHEDULER="cfq"
 readonly DEFAULT_PM_DRIVER_BLACKLIST="radeon nouveau"
 readonly DEFAULT_USB_DRIVER_BLACKLIST="usbhid"
+
+# ----------------------------------------------------------------------------
+# Control
+nodebug=0
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -1496,7 +1500,7 @@ disable_wake_on_lan () {  # disable WOL
 set_usb_suspend () { # activate usb autosuspend for all devices except input and blacklisted
     # $1: 0=silent/1=report result; $2: on/auto
 
-    local busdev control devices drv drv_bl exc usbdev usbid subdev
+    local busdev control devices exc usbdev usbid subdev
     local ctrlf="control"
     local autof="autosuspend_delay_ms"
 

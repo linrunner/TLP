@@ -362,7 +362,7 @@ echo_device_state () { # print radio type state -- $1: rftype, $2: state
             ;;
 
         *)
-            echo "$devstr = unknown state \"$state\""
+            echo "$devstr = unknown state \"$2\""
     esac
 
     return 0

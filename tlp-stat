@@ -33,9 +33,6 @@ readonly DEBUGLOG=/var/log/debug
 readonly SYSTEMD_SERVICES="tlp.service tlp-sleep.service"
 
 # --- Variables
-
-nodebug=1
-
 needs_root_priv=
 show_all=1
 show_bat=0
@@ -58,7 +55,8 @@ no_runtimepm=0
 printparm () { # formatted output of sysfile - general
     # $1: format, $2: sysfile, $3: namsg, $4: cutoff
     local format="$1"
-    local sysf="$2"    local namsg="$3"
+    local sysf="$2"
+    local namsg="$3"
     local cutoff="$4"
     local val=""
 
@@ -347,11 +345,13 @@ for lib in $LIBS; do
 done
 
 # --- MAIN
-
 add_sbin2path
 
 read_args $*
 : ${needs_root_priv:=1}
+
+# inhibit trace output
+nodebug=1
 
 # check for and read conffile
 read_defaults

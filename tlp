@@ -63,7 +63,8 @@ check_laptop_mode_tools
 mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
 mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
 
-[ "$mode" = "stat" ] && nodebug=1 # inhibit debug output for tlp stat
+# inhibit trace output for tlp stat
+[ "$mode" = "stat" ] && nodebug=1
 
 # get current power state
 get_power_state
@@ -71,8 +72,6 @@ pwrmode=$?
 
 modedebug=$mode
 [ -n "$mode2" ] && modedebug="$modedebug $mode2"
-[ -n "$mode3" ] && modedebug="$modedebug $mode3"
-
 echo_debug "run" "+++ mode=$modedebug ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
 
 if [ -n "$addpath" ]; then
@@ -265,6 +264,7 @@ case "$mode" in
     stat) # show status
         shift
         tlp-stat $*
+        exitcode=$?
         ;;
 
     diskid) # show disk-by-id
