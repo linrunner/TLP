@@ -925,6 +925,9 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
     else
         echo "wwan blacklist     = disabled"
     fi
+    if [ -n "$USB_DRIVER_BLACKLIST" ] && [ "$USB_DRIVER_BLACKLIST" != "usbhid" ]; then
+        echo "***Warning: USB_DRIVER_BLACKLIST is no longer supported, use USB_BLACKLIST."
+    fi
     echo
 
     if cmd_exists $TLPUSB; then
