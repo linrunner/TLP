@@ -1,4 +1,4 @@
-tlp (0.7.903-1) unstable; urgency=low
+tlp (0.7.904-1) unstable; urgency=low
 
   *** Development Package ***
   * New upstream release
@@ -8,7 +8,7 @@ tlp (0.7.903-1) unstable; urgency=low
     - add rm_conffile /etc/bash_completion.d/tlp
       (upstream moved file to /usr/share/bash-completion/completions/)
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 23 Jul 2015 21:24:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 26 Jul 2015 20:42:11 +0200
 
 tlp (0.7-1) unstable; urgency=low
 
