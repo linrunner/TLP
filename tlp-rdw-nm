@@ -74,19 +74,19 @@ case $action in
         case $itype in
             *ethernet)
                 for dev in $DEVICES_TO_DISABLE_ON_LAN_CONNECT; do
-                    [ -n "$dev" ] && device_off $dev
+                    [ -n "$dev" ] && device_switch $dev off
                 done
                 ;;
 
             *wireless|wifi)
                 for dev in $DEVICES_TO_DISABLE_ON_WIFI_CONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_off $dev
+                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_switch $dev off
                 done
                 ;;
 
             gsm|wwan)
                 for dev in $DEVICES_TO_DISABLE_ON_WWAN_CONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_off $dev
+                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_switch $dev off
                 done
                 ;;
         esac
@@ -96,19 +96,19 @@ case $action in
         case $itype in
             *ethernet)
                 for dev in $DEVICES_TO_ENABLE_ON_LAN_DISCONNECT; do
-                    [ -n "$dev" ] && device_on $dev
+                    [ -n "$dev" ] && device_switch $dev on
                 done
                 ;;
 
             *wireless|wifi)
                 for dev in $DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_on $dev
+                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_switch $dev on
                 done
                 ;;
 
             gsm)
                 for dev in $DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_on $dev
+                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_switch $dev on
                 done
                 ;;
         esac

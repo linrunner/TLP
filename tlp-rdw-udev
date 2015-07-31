@@ -70,12 +70,12 @@ case $action in
 
         # enable configured radios
         for dev in $DEVICES_TO_ENABLE_ON_DOCK; do
-            [ -n "$dev" ] && device_on $dev
+            [ -n "$dev" ] && device_switch $dev on
         done
 
         # disable configured radios
         for dev in $DEVICES_TO_DISABLE_ON_DOCK; do
-            [ -n "$dev" ] && device_off $dev
+            [ -n "$dev" ] && device_switch $dev off
         done
         ;;
 
@@ -86,12 +86,12 @@ case $action in
 
         # enable configured radios
         for dev in $DEVICES_TO_ENABLE_ON_UNDOCK; do
-            [ -n "$dev" ] && device_on $dev
+            [ -n "$dev" ] && device_switch $dev on
         done
 
         # disable configured radios
         for dev in $DEVICES_TO_DISABLE_ON_UNDOCK; do
-            [ -n "$dev" ] && device_off $dev
+            [ -n "$dev" ] && device_switch $dev off
         done
         ;;
 
