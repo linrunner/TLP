@@ -19,6 +19,7 @@ done
 
 # --- MAIN
 read_defaults
+add_sbin2path
 self=${0##*/}
 
 case $self in
