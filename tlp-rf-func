@@ -166,12 +166,6 @@ device_switch () { # switch radio type state
         0) devn=$devoff ;;
     esac
 
-    # quit if desired state already matches current state
-    if [ "$curst" = "$newst" ]; then
-        echo_debug "rf" "device_switch($1, $2).no_change_needed"
-        return 0
-    fi
-
     # wifi, wwan: before rfkill -- notify NM of desired state
     if [ "$X_NO_NMCLI" != "1" ] && [ "$X_NMCLI_FIRST" = "1" ] \
         && [ "$1" != "bluetooth" ]; then
@@ -186,30 +180,33 @@ device_switch () { # switch radio type state
     # wifi, wwan: quit if rfkill disabled
     [ "$X_NMCLI_ONLY" = "1" ] && [ "$1" != "bluetooth" ] return 0
 
+    # if current state does not match desired state:
     # switch rfkill device state
-    if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
-        if test_rfkill_perms ; then
-            echo_debug "rf" "device_switch($1, $2).rfkill"
-            case $newst in
-                1) $RFKILL unblock $1 > /dev/null 2>&1 ;;
-                0) $RFKILL block $1   > /dev/null 2>&1 ;;
-                *) ;;
-            esac
-            # record device state after rfkill
-            get_devs $1
+    if [ "$curst" != "$newst" ]; then
+        if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
+            if test_rfkill_perms ; then
+                echo_debug "rf" "device_switch($1, $2).rfkill"
+                case $newst in
+                    1) $RFKILL unblock $1 > /dev/null 2>&1 ;;
+                    0) $RFKILL block $1   > /dev/null 2>&1 ;;
+                    *) ;;
+                esac
+                # record device state after rfkill
+                get_devs $1
+            else
+                err_no_root_priv "device_switch($1, $2).rfkill"
+            fi
         else
-            err_no_root_priv "device_switch($1, $2).rfkill"
+            if test_root ; then
+                echo_debug "rf" "device_switch($1, $2).devc"
+                echo -n $devn > $devc
+                # record device state after direct write
+                get_devs $1
+            else
+                err_no_root_priv "device_switch($1, $2).devc"
+            fi
         fi
-    else
-        if test_root ; then
-            echo_debug "rf" "device_switch($1, $2).devc"
-            echo -n $devn > $devc
-            # record device state after direct write
-            get_devs $1
-        else
-            err_no_root_priv "device_switch($1, $2).devc"
-        fi
-    fi
+    fi # if state does not match
 
     # wifi, wwan: after rfill -- notify NM of desired state
     if [ "$X_NO_NMCLI" != "1" ] && [ "$X_NMCLI_FIRST" != "1" ] \
