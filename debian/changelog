@@ -1,6 +1,5 @@
-tlp (0.7.905-1) unstable; urgency=low
+tlp (0.8-1) unstable; urgency=low
 
-  *** Development Package ***
   * New upstream release
   * debian/control:
     - Remove depends: linux-tools-common, linux-tools-generic
@@ -8,7 +7,7 @@ tlp (0.7.905-1) unstable; urgency=low
     - add rm_conffile /etc/bash_completion.d/tlp
       (upstream moved file to /usr/share/bash-completion/completions/)
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 30 Jul 2015 22:14:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 05 Aug 2015 20:56:42 +0200
 
 tlp (0.7-1) unstable; urgency=low
 

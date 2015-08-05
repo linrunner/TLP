@@ -1,4 +1,4 @@
-TLP README - 05.01.2015
+TLP README - 05.08.2015
 
 TLP brings you the benefits of advanced power management for Linux without the need
 to understand every technical detail. TLP comes with a default configuration already
@@ -27,12 +27,12 @@ Separate settings profiles depending on the power source AC/battery:
 Additional functions:
 - I/O scheduler (per disk)
 - X86 energy perf policy
-- USB autosuspend with driver and device blacklist (input devices excluded automatically)
+- USB autosuspend with device blacklist/whitelist (input devices excluded automatically)
 - Enable or disable integrated radio devices upon system startup and shutdown
 - Restore radio device state on system startup (from previous shutdown)
 - Radio device wizard: switch radios upon network connect/disconnect and dock/undock
 - Disable Wake On LAN
-- Integrated wwan state is restored after suspend/hibernate
+- Integrated WWAN and bluetooth state is restored after suspend/hibernate
 - Untervolting of Intel processors - requires kernel with PHC-Patch
 - Battery charge thresholds - ThinkPads only
 - Recalibrate battery - ThinkPads only
