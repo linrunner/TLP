@@ -1,11 +1,16 @@
 # ------------------------------------------------------------------------------
 # tlp - Parameters for power save
+# See full explanation: http://linrunner.de/en/tlp/docs/tlp-configuration.html
 
 # Hint: some features are disabled by default, remove the leading # to enable
 # them.
 
 # Set to 0 to disable, 1 to enable TLP.
 TLP_ENABLE=1
+
+# Operation mode when no power supply can be detected: AC, BAT
+# Concerns some desktop and embedded hardware only.
+TLP_DEFAULT_MODE=AC
 
 # Seconds laptop mode has to wait after the disk goes idle before doing a sync.
 # Non-zero value enables, zero disables laptop mode.

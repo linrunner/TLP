@@ -15,6 +15,7 @@ TLP_ACPI   ?= /etc/acpi
 TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
 TLP_CONF   ?= /etc/default/tlp
 TLP_SYSD   ?= /lib/systemd/system
+TLP_SHCPL  ?= /usr/share/bash-completion/completions
 
 # Catenate DESTDIR to paths
 _SBIN  = $(DESTDIR)$(TLP_SBIN)
@@ -26,6 +27,7 @@ _ACPI  = $(DESTDIR)$(TLP_ACPI)
 _NMDSP = $(DESTDIR)$(TLP_NMDSP)
 _CONF  = $(DESTDIR)$(TLP_CONF)
 _SYSD  = $(DESTDIR)$(TLP_SYSD)
+_SHCPL = $(DESTDIR)$(TLP_SHCPL)
 
 # Make targets
 all:
@@ -67,7 +69,7 @@ endif
 	install -D -m 644 thinkpad-radiosw $(_ACPI)/events/thinkpad-radiosw
 	install -m 755 thinkpad-radiosw.sh $(_ACPI)/
 ifneq ($(TLP_NO_BASHCOMP),1)
-	install -D -m 644 tlp.bash_completion $(DESTDIR)/etc/bash_completion.d/tlp
+	install -D -m 644 tlp.bash_completion $(_SHCPL)/tlp
 endif
 
 install-rdw:
@@ -102,7 +104,7 @@ uninstall-tlp:
 	rm -f $(_PLIB)/sleep.d/49tlp
 	rm $(_ACPI)/events/thinkpad-radiosw
 	rm $(_ACPI)/thinkpad-radiosw.sh
-	rm -f $(DESTDIR)/etc/bash_completion.d/tlp
+	rm -f $(_SHCPL)/tlp
 
 uninstall-rdw:
 	# Package tlp-rdw

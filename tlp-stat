@@ -33,9 +33,6 @@ readonly DEBUGLOG=/var/log/debug
 readonly SYSTEMD_SERVICES="tlp.service tlp-sleep.service"
 
 # --- Variables
-
-nodebug=1
-
 needs_root_priv=
 show_all=1
 show_bat=0
@@ -48,14 +45,18 @@ show_system=0
 show_temp=0
 show_trace=0
 show_usb=0
+show_verbose=0
 show_warn=0
+
+no_runtimepm=0
 
 # --- Functions
 
 printparm () { # formatted output of sysfile - general
     # $1: format, $2: sysfile, $3: namsg, $4: cutoff
     local format="$1"
-    local sysf="$2"    local namsg="$3"
+    local sysf="$2"
+    local namsg="$3"
     local cutoff="$4"
     local val=""
 
@@ -89,7 +90,7 @@ printparm () { # formatted output of sysfile - general
 
 printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
     # $1: sysfile, $2: alternative
-    local sysf val b
+    local sysf val
 
     # Check if sysfile or alternative exist
     if [ -f $1 ]; then
@@ -127,6 +128,46 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
     else
         # Neither sysfile nor alternative exists
         printf "%-44s = (not available)\n" $1
+    fi
+
+    return 0
+}
+
+print_tp_batstate () { # print battery charging state with an explanation when
+    # a threshold inhibits charging
+    # $1: sysfile; $2: 1=ThinkPad battery/0=other
+    local sysf val
+
+    # Check if bat state sysfile exists
+    if [ -f $1 ]; then
+        sysf=$1
+    else
+        sysf=""
+    fi
+
+    if [ -n "$sysf" ]; then
+        # bat state sysfile exists, get content
+        val=$(cat $sysf 2> /dev/null)
+        if [ $? = 0 ]; then
+            # sysfile was readable, output content
+            printf "%-59s = %s" $sysf $val
+            # Explain content if necessary
+            case $val in
+                Unknown) # "Unknown" means a threshold forbids charging
+                    printf " (threshold effective)\n"
+                    ;;
+
+                *) # Nothing to do
+                    printf "\n"
+                    ;;
+            esac
+        else
+            # sysfile was not readable
+            printf "%-59s = (not available)\n" $sysf
+        fi
+    else
+        # sysfile nonexistent
+        printf "%-59s = (not available)\n" $1
     fi
 
     return 0
@@ -258,6 +299,10 @@ read_args () { # read command line arguments
                 : ${needs_root_priv:=0}
                 ;;
 
+            "-v"|"--verbose")
+                show_verbose=1
+                ;;
+
             "-w"|"--warn")
                 show_all=0
                 show_warn=1
@@ -271,12 +316,12 @@ read_args () { # read command line arguments
                 ;;
 
             *)
-                echo "Usage: tlp-stat [ -b |--battery    | -c |--config  |"
-                echo "                  -d | --disk      | -e |--pcie    |"
+                echo "Usage: tlp-stat [ -b | --battery   | -c | --config |"
+                echo "                  -d | --disk      | -e | --pcie   |"
                 echo "                  -p | --processor | -r | --rfkill |"
                 echo "                  -s | --system    | -t | --temp   |"
                 echo "                  -u | --usb       | -w | --warn   |"
-                echo "                  -T | --trace                       ]"
+                echo "                  -T | --trace     | -v | --verbose ]"
                 exit 3
                 ;;
         esac
@@ -300,11 +345,13 @@ for lib in $LIBS; do
 done
 
 # --- MAIN
-
 add_sbin2path
 
 read_args $*
 : ${needs_root_priv:=1}
+
+# inhibit trace output
+nodebug=1
 
 # check for and read conffile
 read_defaults
@@ -342,7 +389,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
 
     # --- show release & kernel info
     cmd_exists $LSBREL && echo "Release        = $($LSBREL -d -s)"
-    echo "Kernel         = $(uname -r -m)"
+    echo "Kernel         = $(uname -r -m -v)"
     printparm "%-14s = %s" /proc/cmdline
 
     # --- show init system info
@@ -380,9 +427,9 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # --- show power source
     get_sys_power_supply
     case $? in
-        0) echo "power source   = ac" ;;
+        0) echo "power source   = AC" ;;
         1) echo "power source   = battery" ;;
-        *) echo "power source   = unknown (using battery settings)" ;;
+        *) echo "power source   = unknown (using ${TLP_DEFAULT_MODE:-AC} settings)" ;;
     esac
     echo
 fi # show_system
@@ -748,7 +795,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
             # get wifi driver
             get_wifi_driver $iface
-            printf "%-20s: " "$iface($wifidrv)" 
+            printf "%-20s: " "$iface($wifidrv)"
             if wireless_in_use $iface; then
                 printf "connected, "
             else
@@ -856,6 +903,7 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
 
     if cmd_exists $TLPPCI; then
         $TLPPCI
+        [ $? -eq 4 ] && no_runtimepm=1
     else
         echo "Error: missing subcommand $TLPPCI." 1>&2
     fi
@@ -877,10 +925,14 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
     else
         echo "wwan blacklist     = disabled"
     fi
+    if [ -n "$USB_DRIVER_BLACKLIST" ] && [ "$USB_DRIVER_BLACKLIST" != "usbhid" ]; then
+        echo "***Warning: USB_DRIVER_BLACKLIST is no longer supported, use USB_BLACKLIST."
+    fi
     echo
 
     if cmd_exists $TLPUSB; then
         $TLPUSB
+        [ $? -eq 4 ] && no_runtimepm=1
     else
         echo "Error: missing subcommand $TLPUSB." 1>&2
     fi
@@ -890,6 +942,7 @@ fi # show_usb
 
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show battery info & charge thresholds
+    bcnt=0
 
     # --- show availability of ThinkPad battery functions
     if is_thinkpad; then
@@ -940,7 +993,15 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6s## [min]" $batd/remaining_charging_time
                     printparm "%-59s = ##%6d## [mW]" $batd/power_now
                     printparm "%-59s = ##%6d## [mW]" $batd/power_avg
+                    print_tp_batstate $batd/state
                     echo
+                    if [ $show_verbose -eq 1 ]; then
+                        printparm "%-59s = ##%6s## [mV]" $batd/group0_voltage
+                        printparm "%-59s = ##%6s## [mV]" $batd/group1_voltage
+                        printparm "%-59s = ##%6s## [mV]" $batd/group2_voltage
+                        printparm "%-59s = ##%6s## [mV]" $batd/group3_voltage
+                        echo
+                    fi
 
                     if [ $tpacpi -eq 0 ]; then
                         # --- show ThinkPad charge thresholds via tpacpi-bat
@@ -952,6 +1013,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                         printparm "%-59s = ##%6d##" $batd/force_discharge
                     fi
                     echo
+
+                    bcnt=$(($bcnt+1))
                 fi
             fi
         done
@@ -960,8 +1023,12 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
         for batd in $ACPIBATDIR/*; do
             batt=${batd##/*/}
+            tpbat=0
 
-            if check_tp_battery $batt; then # battery is present
+            if check_tp_battery $batt; then
+                # ThinkPad battery is present
+                tpbat=1
+
                 if [ $tpacpi -eq 0 ]; then
                     # it's a ThinkPad with tpacpi-bat only
                     case $bat_idx in
@@ -970,7 +1037,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                         0) echo "+++ ThinkPad Battery Status: $batt" ;;
                     esac
                 else
-                   # it's a ThinkPad with neither tp-smapi nor tpacpi-bat 
+                   # it's a ThinkPad with neither tp-smapi nor tpacpi-bat
                     echo "+++ Battery Status"
                 fi
             elif [ -d $batd ] \
@@ -1004,7 +1071,11 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mAh]" $batd/charge_now "" 000
                     printparm "%-59s = ##%6d## [mA]" $batd/current_now "" 000
                 fi
-                printparm "%-59s = ##%s##" $batd/status
+                if [ $tpbat -eq 1 ]; then
+                    print_tp_batstate $batd/status
+                else
+                    printparm "%-59s = ##%s##" $batd/status
+                fi
                 echo
 
                 if [ $tpacpi -eq 0 ]; then
@@ -1012,16 +1083,47 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     print_tpacpi_thresholds $batt $bat_idx
                     echo
                 fi # if $tpcacpi
+
+                bcnt=$(($bcnt+1))
             fi # if $batt
         done # $batd
 
     fi # if /sys/class/power_supply
 
+    if [ $bcnt -eq 0 ]; then
+        printf "+++ Battery Status\n"
+        printf "No batteries detected.\n\n"
+    fi
+
 fi # show_bat
+
+if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
+    # --- show warnings
+    # ata errors (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
+    ecnt=$( check_ata_errors )
+    if [ $ecnt -ne 0 ]; then
+        echo "+++ Warnings"
+        printf "* Kernel log shows ata errors (%d) possibly caused by the configuration\n" $ecnt
+        printf "  SATA_LINKPWR_ON_AC/BAT=min_power or medium_power.\n"
+        printf "  Consider using medium_power or max_performance instead.\n"
+        printf "  See the FAQ: http://linrunner.de/en/tlp/docs/tlp-faq.html#warnings\n"
+        printf "  Details:\n"
+        dmesg | egrep -A 5 "ata[0-9]+: SError: { .*CommWake }"
+        echo
+    elif [ "$show_warn" = "1" ]; then
+        echo "No warnings detected."
+        echo ""
+    fi
+
+fi # show_warn
 
 if [ "$show_all" = "1" ]; then
     # -- show suggestions
     suout=""
+
+    if [ "$no_runtimepm" = "1" ]; then
+        suout="${suout}Reconfigure your Linux kernel with PM_RUNTIME=y to reduce your laptop's power consumption.\n"
+    fi
 
     if is_thinkpad; then
         # Add ThinkPad specific suggestions
@@ -1030,11 +1132,11 @@ if [ "$show_all" = "1" ]; then
         model=${model#Edge }
 
         case $model in
-            X240*|T?40*|W540|L?40|E?4?|S?40|X230*|T?3?*|W530|L?30|E?3?*|S?3?*)
+            "X1 Carbon*"|X2[345]0*|T[45][345][01]*|W5[345][01]*|L[45][345]0|E[1345][05]|S[245][345][01]*)
                 [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
                 ;;
 
-            X220*|T420*|T520|W520)
+            X1|X220*|T420*|T520|W520)
                 [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
                 [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
                 ;;
@@ -1058,26 +1160,6 @@ if [ "$show_all" = "1" ]; then
     fi
 
 fi # show_all
-
-if [ "$show_warn" = "1" ]; then
-    # --- show warnings
-
-    # ata errors (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
-    ecnt=$( check_ata_errors )
-    if [ $ecnt -ne 0 ]; then
-        echo "+++ Warnings"
-        printf "* Kernel log shows ata errors (%d) possibly caused by the configuration: " $ecnt
-        printf "SATA_LINKPWR_ON_AC/BAT=min_power or medium_power\n" 
-        printf "  Consider using medium_power or max_performance instead.\n"
-        printf "  Details:\n"
-        dmesg | egrep -A 5 "ata[0-9]+: SError: { .*CommWake }"
-        echo
-    else
-        echo "No warnings detected."
-        echo ""
-    fi
-
-fi # show_warn
 
 if [ "$show_trace" = "1" ]; then
     # --- show debug log

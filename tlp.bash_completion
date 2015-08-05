@@ -75,7 +75,7 @@ _tlp_stat() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     opts="--battery --config --disk --pcie
           --processor --rfkill --system --temp
-          --usb --warn --trace"
+          --usb --warn --trace --verbose"
 
     if [ $COMP_CWORD -eq 1 ]; then
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )

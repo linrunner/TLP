@@ -46,56 +46,24 @@ check_timed_lock $RDW_NM_LOCK && exit 0
 
 # Determine interface type
 if cmd_exists $NMCLI ; then
-    # nmcli is available
+    # nmcli is available --> check if nmcli dev output matches interface
     itype="$($NMCLI dev | awk '$1 ~ /'$iface'/ { print $2; }')"
 
     if [ -z "$itype" ]; then
-        itype="unknown"
-
-        case $iface in
-            ppp*|wwan*) # iface != device -> maybe 3g card or usb stick?
-
-                # get connection state for devices != hso|usb|wwan
-                nmstate=$($NMCLI dev | grep 'gsm' | egrep -v 'hso|usb|wwan' | awk '{ print $3; }')
-
-                # when action matches state, then it is probably type 3g/gsm
-                case $action in
-                    up) [ "$nmstate" = "connected" ] && itype="gsm" ;;
-                    down) [ "$nmstate" = "disconnected" ] && itype="gsm" ;;
-                esac
-                ;;
-        esac
+        # iface is not found in nmcli dev output: many WWAN devices have
+        # different devices for control and the actual network connection
+        # --> check if interface matches a WWAN device
+        get_wwan_ifaces
+        if wordinlist "$iface" "$wanifaces"; then
+            itype="wwan"
+        else
+            itype="unknown"
+        fi
     fi
-
     echo_debug "nm" "rdw_nm($iface).$action: type=$itype [nmcli]"
 else
-    # nmcli is not available, fallback to nm-tool
-    case $iface in
-        ppp*) # iface != device -> maybe 3g usb stick?
-
-            # get connection state for devices != hso|usb|wwan
-            nmstate=$($NMTOOL | egrep -v 'Device:.*(hso|usb|wwan)' | grep -A3 'Device:' \
-                              | grep -A2 'Mobile Broadband (GSM)'  | grep 'State:' \
-                              | awk '{ print $2; }')
-
-            # when action matches state, then it is probably type 3g/gsm
-            case $action in
-                up) [ "$nmstate" = "connected" ] && itype="gsm" ;;
-                down) [ "$nmstate" = "disconnected" ] && itype="gsm" ;;
-            esac
-            ;;
-
-        *) # iface = dev -> all other devices, including 3g with specific driver
-            nmtype=$($NMTOOL | grep -A1 $iface | grep 'Type:' | cut -c22-)
-            case $nmtype in
-                "Wired") itype="802-3-ethernet" ;;
-                "802.11 WiFi") itype="802-11-wireless" ;;
-                "Mobile Broadband (GSM)") itype="gsm" ;;
-            esac
-            ;;
-    esac
-
-    echo_debug "nm" "rdw_nm($iface).$action: type=$itype [nm-tool]"
+    # nmcli is not available
+    echo_debug "nm" "rdw_nm($iface)$action.nmcli_not_available"
 fi
 
 case $action in
@@ -106,19 +74,19 @@ case $action in
         case $itype in
             *ethernet)
                 for dev in $DEVICES_TO_DISABLE_ON_LAN_CONNECT; do
-                    [ -n "$dev" ] && device_off $dev
+                    [ -n "$dev" ] && device_switch $dev off
                 done
                 ;;
 
             *wireless|wifi)
                 for dev in $DEVICES_TO_DISABLE_ON_WIFI_CONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_off $dev
+                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_switch $dev off
                 done
                 ;;
 
-            gsm)
+            gsm|wwan)
                 for dev in $DEVICES_TO_DISABLE_ON_WWAN_CONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_off $dev
+                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_switch $dev off
                 done
                 ;;
         esac
@@ -128,19 +96,19 @@ case $action in
         case $itype in
             *ethernet)
                 for dev in $DEVICES_TO_ENABLE_ON_LAN_DISCONNECT; do
-                    [ -n "$dev" ] && device_on $dev
+                    [ -n "$dev" ] && device_switch $dev on
                 done
                 ;;
 
             *wireless|wifi)
                 for dev in $DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_on $dev
+                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_switch $dev on
                 done
                 ;;
 
             gsm)
                 for dev in $DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_on $dev
+                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_switch $dev on
                 done
                 ;;
         esac

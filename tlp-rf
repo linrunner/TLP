@@ -19,23 +19,24 @@ done
 
 # --- MAIN
 read_defaults
+add_sbin2path
 self=${0##*/}
 
 case $self in
     bluetooth|wifi|wwan)
         case $1 in
             on)
-                device_on $self
+                device_switch $self on
                 echo_device_state $self $devs
                 ;;
 
             off)
-                device_off $self
+                device_switch $self off
                 echo_device_state $self $devs
                 ;;
 
             toggle)
-                device_toggle $self
+                device_switch $self toggle
                 echo_device_state $self $devs
                 ;;
 

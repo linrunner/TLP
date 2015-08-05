@@ -62,7 +62,9 @@ check_laptop_mode_tools
 # get cmd line args
 mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
 mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
-mode3=$(echo $3 | tr "[:upper:]" "[:lower:]")
+
+# inhibit trace output for tlp stat
+[ "$mode" = "stat" ] && nodebug=1
 
 # get current power state
 get_power_state
@@ -70,8 +72,6 @@ pwrmode=$?
 
 modedebug=$mode
 [ -n "$mode2" ] && modedebug="$modedebug $mode2"
-[ -n "$mode3" ] && modedebug="$modedebug $mode3"
-
 echo_debug "run" "+++ mode=$modedebug ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
 
 if [ -n "$addpath" ]; then
@@ -176,7 +176,7 @@ case "$mode" in
 
     suspend) # handle suspend/hibernate
         check_root
-        save_device_states "wwan"
+        save_device_states "bluetooth wwan"
 
         get_power_state
         pwrmode=$?
@@ -252,7 +252,7 @@ case "$mode" in
             sleep 1
             discharge_battery $2
             exitcode=$?
-            if [ $rc -eq 0 ]; then
+            if [ $exitcode -eq 0 ]; then
                 echo "      The battery starts charging now. For a complete recalibration"
                 echo "      keep AC connected until the battery is fully charged."
             fi
@@ -264,6 +264,7 @@ case "$mode" in
     stat) # show status
         shift
         tlp-stat $*
+        exitcode=$?
         ;;
 
     diskid) # show disk-by-id
