@@ -12,6 +12,7 @@ TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
 TLP_CONF   ?= /etc/default/tlp
 TLP_SYSD   ?= /lib/systemd/system
 TLP_SHCPL  ?= /usr/share/bash-completion/completions
+TLP_MAN    ?= /usr/share/man
 
 # Catenate DESTDIR to paths
 _SBIN  = $(DESTDIR)$(TLP_SBIN)
@@ -24,6 +25,7 @@ _NMDSP = $(DESTDIR)$(TLP_NMDSP)
 _CONF  = $(DESTDIR)$(TLP_CONF)
 _SYSD  = $(DESTDIR)$(TLP_SYSD)
 _SHCPL = $(DESTDIR)$(TLP_SHCPL)
+_MAN   = $(DESTDIR)$(TLP_MAN)
 
 SED = sed \
 	-e "s|@TLP_SBIN@|$(TLP_SBIN)|g" \
@@ -100,6 +102,13 @@ install-rdw:
 	install -D -m 755 tlp-rdw-udev $(_ULIB)/tlp-rdw-udev
 	install -D -m 755 tlp-rdw-nm $(_NMDSP)/99tlp-rdw-nm
 
+install-man:
+	# Package manpages
+	install -d -m 755 $(_MAN)/man1
+	install -m 644 {bluetooth,run-on-ac,run-on-bat,wifi,wwan}.1 $(_MAN)/man1/
+	install -d -m 755 $(_MAN)/man8
+	install -m 644 {tlp,tlp-stat}.8 $(_MAN)/man8/
+
 install: install-tlp install-rdw
 
 uninstall-tlp:
@@ -133,6 +142,11 @@ uninstall-rdw:
 	rm $(_ULIB)/rules.d/85-tlp-rdw.rules
 	rm $(_ULIB)/tlp-rdw-udev
 	rm $(_NMDSP)/99tlp-rdw-nm
+
+uninstall-man:
+	# Package manpages
+	rm $(_MAN)/man1/{bluetooth,run-on-ac,run-on-bat,wifi,wwan}.1
+	rm $(_MAN)/man8/{tlp,tlp-stat}.8
 
 uninstall: uninstall-tlp uninstall-rdw
 
