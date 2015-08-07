@@ -13,7 +13,7 @@
 
 readonly TLPVER="0.8"
 
-readonly CONFFILE=/etc/default/tlp
+readonly CONFFILE=@TLP_CONF@
 readonly RUNDIR=/var/run/tlp
 
 readonly ETHTOOL=ethtool

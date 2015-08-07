@@ -11,8 +11,8 @@ StopWhenUnneeded=yes
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/sbin/tlp suspend
-ExecStop=/usr/sbin/tlp resume
+ExecStart=@TLP_SBIN@/tlp suspend
+ExecStop=@TLP_SBIN@/tlp resume
 
 [Install]
 WantedBy=sleep.target

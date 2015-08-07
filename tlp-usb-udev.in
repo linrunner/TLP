@@ -18,7 +18,7 @@ readonly USB_WWAN_VENDORS="0bdb 05c6 1199"
 readonly RUNDIR=/var/run/tlp
 readonly USB_DONE=usb_done
 
-readonly CONFFILE=/etc/default/tlp
+readonly CONFFILE=@TLP_CONF@
 
 # --- Subroutines
 wordinlist () { # test if word in list

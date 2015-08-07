@@ -1,9 +1,5 @@
 # Makefile for TLP
 
-# Important: solely changing destination paths via parameter will
-#   render the installation unusable. You have to change several
-#   definitions and absolute paths in scripts too!
-
 # Evaluate parameters
 TLP_LIBDIR ?= /usr/lib
 TLP_SBIN   ?= /usr/sbin
@@ -29,12 +25,38 @@ _CONF  = $(DESTDIR)$(TLP_CONF)
 _SYSD  = $(DESTDIR)$(TLP_SYSD)
 _SHCPL = $(DESTDIR)$(TLP_SHCPL)
 
+SED = sed \
+	-e "s|@TLP_SBIN@|$(TLP_SBIN)|g" \
+	-e "s|@TLP_TLIB@|$(TLP_TLIB)|g" \
+	-e "s|@TLP_PLIB@|$(TLP_PLIB)|g" \
+	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
+	-e "s|@TLP_ACPI@|$(TLP_ACPI)|g" \
+	-e "s|@TLP_CONF@|$(TLP_CONF)|g"
+
+INFILES = \
+	thinkpad-radiosw \
+	thinkpad-radiosw.sh \
+	tlp \
+	tlp-functions \
+	tlp-nop \
+	tlp-rdw-nm \
+	tlp-rdw-udev \
+	tlp-rf \
+	tlp-run-on \
+	tlp-stat \
+	tlp-usb-udev \
+	tlp.service \
+	tlp-sleep.service \
+	tlp.upstart
+
 # Make targets
 all:
-	@true
+	for f in $(INFILES); do \
+		$(SED) $$f.in > $$f; \
+	done
 
 clean:
-	@true
+	rm $(INFILES)
 
 install-tlp:
 	# Package tlp

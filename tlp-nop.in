@@ -2,7 +2,7 @@
 # tlp - if tlp is enabled, override corresponding script
 #       in /usr/lib*/pm-utils/power.d/
 
-CONFFILE=/etc/default/tlp
+CONFFILE=@TLP_CONF@
 LIBDIRS='/usr/lib /usr/lib64'
 
 for d in ${LIBDIRS}; do

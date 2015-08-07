@@ -12,8 +12,8 @@ Before=shutdown.target
 [Service]
 Type=simple
 RemainAfterExit=yes
-ExecStart=/usr/sbin/tlp init start
-ExecStop=/usr/sbin/tlp init stop
+ExecStart=@TLP_SBIN@/tlp init start
+ExecStop=@TLP_SBIN@/tlp init stop
 
 [Install]
 WantedBy=multi-user.target

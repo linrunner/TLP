@@ -6,7 +6,7 @@
 
 # --- Constants
 
-readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
+readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm @TLP_TLIB@"
 readonly LIBS="tlp-functions tlp-rf-func"
 
 readonly TLPUSB=tlp-usblist
