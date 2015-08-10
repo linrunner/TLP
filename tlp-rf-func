@@ -178,7 +178,7 @@ device_switch () { # switch radio type state
     fi
 
     # wifi, wwan: quit if rfkill disabled
-    [ "$X_NMCLI_ONLY" = "1" ] && [ "$1" != "bluetooth" ] return 0
+    [ "$X_NMCLI_ONLY" = "1" ] && [ "$1" != "bluetooth" ] && return 0
 
     # if current state does not match desired state:
     # switch rfkill device state
