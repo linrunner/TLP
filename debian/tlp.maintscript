@@ -1,1 +1,1 @@
-rm_conffile /etc/bash_completion.d/tlp -- "$@"
+rm_conffile /etc/bash_completion.d/tlp
