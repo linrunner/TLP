@@ -5,7 +5,7 @@
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants
-readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
+readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm @TLP_TLIB@"
 readonly LIBS="tlp-functions tlp-rf-func"
 
 # --- Locate and source libraries

@@ -8,7 +8,7 @@ description "tlp"
 start on ( virtual-filesystems and runlevel [2345] )
 stop on runlevel [!2345]
 
-env TLP=/usr/sbin/tlp
+env TLP=@TLP_SBIN@/tlp
 
 pre-start script
     [ -x $TLP ] || exit 4

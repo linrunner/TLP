@@ -2,12 +2,12 @@
 # tlp - if tlp is enabled, override corresponding script
 #       in /usr/lib*/pm-utils/power.d/
 
-CONFFILE=/etc/default/tlp
-LIBDIRS='/usr/lib /usr/lib64'
+CONFFILE=@TLP_CONF@
+LIBDIRS='/usr/lib/pm-utils /usr/lib64/pm-utils @TLP_PLIB@'
 
 for d in ${LIBDIRS}; do
-    if [ -d "${d}/pm-utils/power.d" ]; then
-        blocked="${d}/pm-utils/power.d/${0##*/}"
+    if [ -d "${d}/power.d" ]; then
+        blocked="${d}/power.d/${0##*/}"
         break
     fi
 done
