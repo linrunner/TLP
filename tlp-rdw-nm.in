@@ -57,7 +57,22 @@ if cmd_exists $NMCLI ; then
         if wordinlist "$iface" "$wanifaces"; then
             itype="wwan"
         else
-            itype="unknown"
+            # if interface type detetion with nmcli failed, then try to
+            # deduct it using interface name: it can happen if e.g.
+            # usb network card is unplugged
+            case "$iface" in
+                en* | eth*)
+                    itype="ethernet"
+                    ;;
+
+                wl* | wlan*)
+                    itype="wifi"
+                    ;;
+
+                *)
+                    itype="unknown"
+                    ;;
+            esac
         fi
     fi
     echo_debug "nm" "rdw_nm($iface).$action: type=$itype [nmcli]"
