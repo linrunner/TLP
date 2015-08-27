@@ -61,7 +61,7 @@ all:
 	done
 
 clean:
-	rm $(INFILES)
+	rm -f $(INFILES)
 
 install-tlp: all
 	# Package tlp
