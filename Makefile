@@ -42,14 +42,17 @@ INFILES = \
 	tlp-functions \
 	tlp-nop \
 	tlp-rdw-nm \
+	tlp-rdw.rules \
 	tlp-rdw-udev \
 	tlp-rf \
+	tlp.rules \
 	tlp-run-on \
-	tlp-stat \
-	tlp-usb-udev \
 	tlp.service \
 	tlp-sleep.service \
-	tlp.upstart
+	tlp-stat \
+	tlp-usb-udev \
+	tlp.upstart \
+	tlp-usb-udev
 
 # Make targets
 all:
@@ -60,7 +63,7 @@ all:
 clean:
 	rm $(INFILES)
 
-install-tlp:
+install-tlp: all
 	# Package tlp
 	install -D -m 755 tlp $(_SBIN)/tlp
 	install -D -m 755 tlp-rf $(_BIN)/bluetooth
@@ -96,7 +99,7 @@ ifneq ($(TLP_NO_BASHCOMP),1)
 	install -D -m 644 tlp.bash_completion $(_SHCPL)/tlp
 endif
 
-install-rdw:
+install-rdw: all
 	# Package tlp-rdw
 	install -D -m 644 tlp-rdw.rules $(_ULIB)/rules.d/85-tlp-rdw.rules
 	install -D -m 755 tlp-rdw-udev $(_ULIB)/tlp-rdw-udev
