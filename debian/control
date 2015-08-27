@@ -1,9 +1,12 @@
 Source: tlp
-Maintainer: Thomas Koch <linrunner@gmx.net>
+Maintainer: Raphaël Halimi <raphael.halimi@gmail.com>
 Section: utils
 Priority: optional
-Build-Depends: debhelper (>= 9)
+Build-Depends: debhelper (>= 9),
+               dh-systemd
 Standards-Version: 3.9.6
+Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/tlp.git
+Vcs-Git: git://anonscm.debian.org/collab-maint/tlp.git
 Homepage: http://linrunner.de/tlp
 
 Package: tlp
@@ -12,7 +15,6 @@ Depends: ${misc:Depends},
          hdparm,
          iw | wireless-tools,
          pciutils,
-         pm-utils,
          rfkill,
          usbutils
 Recommends: tlp-rdw,

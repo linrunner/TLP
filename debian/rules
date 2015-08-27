@@ -33,11 +33,13 @@ tlp:
 	dh_prep
 
 	# install into debian/tlp.
-	$(MAKE) DESTDIR=$(CURDIR)/debian/$@ install-tlp
+	$(MAKE) TLP_WITH_SYSTEMD=1 TLP_NO_PMUTILS=0 TLP_NO_INIT=1 DESTDIR=$(CURDIR)/debian/$@ install-tlp
 
 	dh_installchangelogs -p$@
 	dh_installdocs -p$@
+	dh_systemd_enable -p$@ tlp.service tlp-sleep.service
 	dh_installinit -p$@ --no-start -- defaults 98 01
+	dh_systemd_start -p$@ --no-start
 	dh_installman -p$@
 	dh_link -p$@
 	dh_strip -p$@

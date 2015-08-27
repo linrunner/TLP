@@ -1,33 +1,51 @@
 tlp (0.8-1) unstable; urgency=low
 
+  [ Thomas Koch ]
   * New upstream release
   * debian/control:
-    - Remove depends: linux-tools-common, linux-tools-generic
+    - Add Recommends: linux-tools
+    - New Maintainer (Raphaël Halimi)
   * debian/tlp.maintscript (new):
     - add rm_conffile /etc/bash_completion.d/tlp
       (upstream moved file to /usr/share/bash-completion/completions/)
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 05 Aug 2015 20:56:42 +0200
+  [ Raphaël Halimi ]
+  * Remove debian/patches
+
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Tue, 11 Aug 2015 19:53:19 +0200
 
 tlp (0.7-1) unstable; urgency=low
 
+  [ Thomas Koch ]
+  * New upstream release
+  * Add patch (from upstream):
+    - 0001-Issue-124-tlp-recalibrate-fix-exitcode-check.patch
+  * debian/rules: support for non-systemd installs w/ pm-utils
   * debian/control:
-    - add Depends: hdparm, iw | wireless-tools, pciutils, rfkill, usbutils
-    - remove Depends: util-linux (essential package)
-    - add Recommends: linux-tools, linux-tools-common, linux-tools-generic
+    - Add depends: pciutils, usbutils
+    - Remove depends: util-linux (essential package)
+    - Long description updated
   * debian/tlp.init: add option "status"
+  * debian/tlp.postinst: consider pm-utils dirs not present
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 30 Jan 2015 18:42:21 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 26 Feb 2015 18:51:42 +0100
 
 tlp (0.6-1) unstable; urgency=low
 
+  [ Thomas Koch ]
   * New upstream release
-  * debian/changelog: upstream changelog removed (moved to ./changelog)
+  * debian/rules: systemd support
   * debian/control:
-    - add depends: util-linux
-    - add suggests: acpi-call-dkms
+    - Remove depends: pm-utils
+    - Add depends: hdparm, iw | wireless-tools, rfkill, util-linux
+    - Add suggests: acpi-call-dkms
+  * debian/tlp.postinst/postrm: mask/unmask systemd-rfkill@.service
+  * debian/patches/* removed (changes are in upstream now)
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 06 Oct 2014 21:07:42 +0200
+  [ Andreas Tille ]
+  * Add Build-Depends: dh-systemd
+
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 11 Oct 2014 22:42:24 +0200
 
 tlp (0.5-1) unstable; urgency=low
 
