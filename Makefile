@@ -6,7 +6,6 @@ TLP_BIN    ?= /usr/bin
 TLP_TLIB   ?= /usr/share/tlp-pm
 TLP_PLIB   ?= /usr/lib/pm-utils
 TLP_ULIB   ?= /lib/udev
-TLP_ACPI   ?= /etc/acpi
 TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
 TLP_CONF   ?= /etc/default/tlp
 TLP_SYSD   ?= /lib/systemd/system
@@ -19,7 +18,6 @@ _BIN   = $(DESTDIR)$(TLP_BIN)
 _TLIB  = $(DESTDIR)$(TLP_TLIB)
 _PLIB  = $(DESTDIR)$(TLP_PLIB)
 _ULIB  = $(DESTDIR)$(TLP_ULIB)
-_ACPI  = $(DESTDIR)$(TLP_ACPI)
 _NMDSP = $(DESTDIR)$(TLP_NMDSP)
 _CONF  = $(DESTDIR)$(TLP_CONF)
 _SYSD  = $(DESTDIR)$(TLP_SYSD)
@@ -31,12 +29,9 @@ SED = sed \
 	-e "s|@TLP_TLIB@|$(TLP_TLIB)|g" \
 	-e "s|@TLP_PLIB@|$(TLP_PLIB)|g" \
 	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
-	-e "s|@TLP_ACPI@|$(TLP_ACPI)|g" \
 	-e "s|@TLP_CONF@|$(TLP_CONF)|g"
 
 INFILES = \
-	thinkpad-radiosw \
-	thinkpad-radiosw.sh \
 	tlp \
 	tlp-functions \
 	tlp-nop \
@@ -92,8 +87,6 @@ endif
 ifneq ($(TLP_NO_PMUTILS),1)
 	install -D -m 755 49tlp $(_PLIB)/sleep.d/49tlp
 endif
-	install -D -m 644 thinkpad-radiosw $(_ACPI)/events/thinkpad-radiosw
-	install -m 755 thinkpad-radiosw.sh $(_ACPI)/
 ifneq ($(TLP_NO_BASHCOMP),1)
 	install -D -m 644 tlp.bash_completion $(_SHCPL)/tlp
 endif
@@ -135,8 +128,6 @@ uninstall-tlp:
 	rm -f $(_SYSD)/tlp.service
 	rm -f $(_SYSD)/tlp-sleep.service
 	rm -f $(_PLIB)/sleep.d/49tlp
-	rm $(_ACPI)/events/thinkpad-radiosw
-	rm $(_ACPI)/thinkpad-radiosw.sh
 	rm -f $(_SHCPL)/tlp
 
 uninstall-rdw:

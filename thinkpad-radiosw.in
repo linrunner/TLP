@@ -1,4 +1,0 @@
-# handle ThinkPad hardware radio switch
-event=ibm/hotkey HKEY 00000080 00007000
-action=@TLP_ACPI@/thinkpad-radiosw.sh
-

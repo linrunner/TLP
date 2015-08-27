@@ -1,8 +1,11 @@
 tlp (0.8.900-1) unstable; urgency=low
 
   * Development package
+  * debian/tlp.maintscript:
+    - add rm_conffile /etc/acpi/events/thinkpad-radiosw,
+      /etc/acpi/thinkpad-radiosw.sh (upstream removed feature)
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 25 Aug 2015 19:41:15 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 27 Aug 2015 19:41:15 +0200
 
 tlp (0.8-1) unstable; urgency=low
 
