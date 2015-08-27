@@ -1,11 +1,10 @@
 # Makefile for TLP
 
 # Evaluate parameters
-TLP_LIBDIR ?= /usr/lib
 TLP_SBIN   ?= /usr/sbin
 TLP_BIN    ?= /usr/bin
-TLP_TLIB    = $(TLP_LIBDIR)/tlp-pm
-TLP_PLIB    = $(TLP_LIBDIR)/pm-utils
+TLP_TLIB   ?= /usr/share/tlp-pm
+TLP_PLIB   ?= /usr/lib/pm-utils
 TLP_ULIB   ?= /lib/udev
 TLP_ACPI   ?= /etc/acpi
 TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
@@ -106,7 +105,7 @@ install-rdw: all
 	install -D -m 755 tlp-rdw-nm $(_NMDSP)/99tlp-rdw-nm
 
 install-man:
-	# Package manpages
+	# manpages
 	install -d -m 755 $(_MAN)/man1
 	install -m 644 {bluetooth,run-on-ac,run-on-bat,wifi,wwan}.1 $(_MAN)/man1/
 	install -d -m 755 $(_MAN)/man8
@@ -147,7 +146,7 @@ uninstall-rdw:
 	rm $(_NMDSP)/99tlp-rdw-nm
 
 uninstall-man:
-	# Package manpages
+	# manpages
 	rm $(_MAN)/man1/{bluetooth,run-on-ac,run-on-bat,wifi,wwan}.1
 	rm $(_MAN)/man8/{tlp,tlp-stat}.8
 

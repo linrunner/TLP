@@ -5,19 +5,19 @@
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants
-readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm @TLP_TLIB@"
+readonly LIBDIR="@TLP_TLIB@"
 readonly LIBS="tlp-functions tlp-rf-func"
 
 readonly RDW_DOCK_LOCK="rdw_dock_lock"
 readonly RDW_DOCK_LOCKTIME=2
 
-# --- Locate and source libraries
-for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
-[ -d $libdir ] || exit 0
-
+# --- Source libraries
 for lib in $LIBS; do
-    [ -f $libdir/$lib ] || exit 0
-    . $libdir/$lib
+    if [ ! -f $LIBDIR/$lib ]; then
+        echo "Error: missing function library \'$LIBDIR/$lib\'." 1>&2
+        exit 1
+    fi
+    . $LIBDIR/$lib
 done
 
 # --- MAIN
