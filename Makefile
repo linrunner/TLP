@@ -73,7 +73,6 @@ ifneq ($(TLP_NO_TPACPI),1)
 endif
 	install -D -m 755 tlp-functions $(_TLIB)/tlp-functions
 	install -m 755 tlp-rf-func $(_TLIB)/
-	install -m 755 tlp-nop $(_TLIB)/
 	install -D -m 755 tlp-usb-udev $(_ULIB)/tlp-usb-udev
 	install -D -m 644 tlp.rules $(_ULIB)/rules.d/85-tlp.rules
 	[ -f $(_CONF) ] || install -D -m 644 default $(_CONF)
@@ -85,6 +84,7 @@ ifeq ($(TLP_WITH_SYSTEMD),1)
 	install -m 644 tlp-sleep.service $(_SYSD)/
 endif
 ifneq ($(TLP_NO_PMUTILS),1)
+	install -m 755 tlp-nop $(_TLIB)/
 	install -D -m 755 49tlp $(_PLIB)/sleep.d/49tlp
 endif
 ifneq ($(TLP_NO_BASHCOMP),1)
