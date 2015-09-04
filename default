@@ -37,7 +37,7 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 
 # Set the min/max frequency available for the scaling governor.
 # Possible values strongly depend on your CPU. For available frequencies see
-# tlp-stat output, Section "+++ Processor".
+# the output of tlp-stat -p.
 #CPU_SCALING_MIN_FREQ_ON_AC=0
 #CPU_SCALING_MAX_FREQ_ON_AC=0
 #CPU_SCALING_MIN_FREQ_ON_BAT=0

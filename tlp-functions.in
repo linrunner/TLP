@@ -33,7 +33,7 @@ readonly SYSTEMD=systemd
 readonly SYSTEMCTL=systemctl
 readonly INITCTL=initctl
 
-readonly TPACPIBAT=$libdir/tpacpi-bat # libdir is initialized by main program
+readonly TPACPIBAT=$LIBDIR/tpacpi-bat # LIBDIR is initialized by main program
 
 readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIDIR=/sys/devices/platform/smapi
