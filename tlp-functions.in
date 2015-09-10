@@ -159,7 +159,7 @@ check_upstart () { # check if upstart is active init system (PID 1)
 }
 
 check_openrc () { # check if openrc is the active init system (PID 1)
-                   # rc: 0=yes, 1=no
+                  # rc: 0=yes, 1=no
     [ -e /run/openrc/softlevel ]
 }
 
@@ -222,7 +222,7 @@ load_modules () { # load needed kernel modules
 
 # --- DMI
 
-read_dmi () { # read dmi data -- $*: keywords; stdout: dmi strings
+read_dmi () { # read DMI data -- $*: keywords; stdout: dmi strings
     local ds key outr
 
     outr=""
@@ -242,20 +242,27 @@ read_dmi () { # read dmi data -- $*: keywords; stdout: dmi strings
 
 # --- ThinkPad
 
-is_thinkpad () { # check for ThinkPad hardware
+is_thinkpad () { # check for ThinkPad hardware and save model string
                  # rc: 0=ThinkPad, 1=other hardware
+                 # retval: $tpmodel
 
     if [ -d $TPACPIDIR ]; then
-        # Kernel module thinkpad_acpi is loaded
+        # kernel module thinkpad_acpi is loaded
 
-        # Check dmi product string for occurence of "ThinkPad"
-        if read_dmi product_version | grep -q "ThinkPad"; then
-            # It's a real ThinkPad
+        # get DMI product string
+        tpmodel="$( read_dmi product_version )"
+
+        # check DMI product string for occurence of "ThinkPad"
+        if echo $tpmodel | grep -q "ThinkPad"; then
+            # it's a real ThinkPad --> save model substring
+            tpmodel=${tpmodel#ThinkPad }
+            tpmodel=${tpmodel#Edge }
             return 0
         fi
     fi
 
-    # No ThinkPad detected
+    # no ThinkPad detected
+    tpmodel=""
     return 1
 }
 

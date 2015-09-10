@@ -1,4 +1,4 @@
-+++ 0.9 --- 27.08.2015 +++
++++ 0.9 --- 10.09.2015 +++
 
   * Development Release
 
@@ -6,6 +6,9 @@
     Radio Devices:
       - Finally remove deprecated DEVICES_TO_ENABLE_ON_RADIOSW code
         (works with Ubuntu 12.04/Kernel 3.2 only)
+    ThinkPad Battery:
+      - tlp-stat:
+        - Distinguish tp-smapi incompatible hardware from load errors (Issue #160)
 
 +++ 0.8 --- 05.08.2015 +++
 

@@ -942,8 +942,18 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         echo "+++ ThinkPad Extended Battery Functions"
         echo -n "tp-smapi   = "
         case $tpsmapi in
-            0)   echo "active" ;;
-            2)   echo "inactive (kernel module 'tp_smapi' load error)" ;;
+            0) echo "active" ;;
+            2)  # distingush by model string if incompatible or load error
+                # $tpmodel preset by is_thinkpad()
+                case $tpmodel in
+                    "X1 Carbon*"|X2[345]0*|T[45][345][01]*|W5[345][01]*|L[45][345]0|E[1345][05]|S[245][345][01]*)
+                        echo "inactive (incompatible hardware)"
+                        ;;
+
+                    *)  echo "inactive (kernel module 'tp_smapi' load error)" ;;
+                esac
+                ;;
+
             127) echo "inactive (kernel module 'tp_smapi' not installed)" ;;
             *)   echo "unknown status"
         esac
@@ -1120,11 +1130,8 @@ if [ "$show_all" = "1" ]; then
 
     if is_thinkpad; then
         # Add ThinkPad specific suggestions
-        model="$( read_dmi product_version )"
-        model=${model#ThinkPad }
-        model=${model#Edge }
-
-        case $model in
+        # $tpmodel preset by is_thinkpad()
+        case $tpmodel in
             "X1 Carbon*"|X2[345]0*|T[45][345][01]*|W5[345][01]*|L[45][345]0|E[1345][05]|S[245][345][01]*)
                 [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
                 ;;
