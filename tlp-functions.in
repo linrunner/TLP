@@ -1637,7 +1637,7 @@ check_tpacpi () { # check if tpacpi-bat is supported
     #     127=acpi_call not installed/255=not supported
     # retval: $tpacpi
 
-    if [ -z "$(modinfo acpi_call 2> /dev/null)" ]; then
+    if [ ! -e /proc/acpi/call ] && [ -z "$(modinfo acpi_call 2> /dev/null)" ]; then
         # module not installed
         tpacpi=127
     else
