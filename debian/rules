@@ -23,7 +23,7 @@ clean:
 	dh_testdir
 	dh_testroot
 	# add here commands to clean up after the build process.
-	# $(MAKE) clean
+	$(MAKE) clean
 	dh_clean
 
 # Install tlp
