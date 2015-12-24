@@ -1911,7 +1911,7 @@ do_force_discharge () { # write force discharge state
 
 get_force_discharge () { # $1: BAT0/BAT1,
     # global param: $bat_idx, $tpacpi, $tpsmapi
-    # rc: 0=done/1=read error/2=discharge not present/255=no thresh api
+    # rc: 0=off/1=on/2=discharge not present/255=no thresh api
 
     local bsys rc=0
 
@@ -1943,6 +1943,31 @@ cancel_force_discharge () { # called from trap -- global param: $bat_str
     echo " Cancelled."
 
     exit 0
+}
+
+bat_discharging () { # check if battery is discharging -- $1: BAT0/BAT1,
+    # global param: $bat_idx, $bat_str, $tpacpi, $tpsmapi
+    # rc: 0=discharging/1=not discharging/255=no battery api
+
+    local bsys rc=255
+
+    # determine battery api
+    if [ $tpsmapi -eq 0 ]; then # use tp-smapi
+        bsys=$SMAPIDIR/$bat_str/state
+    elif [ $tpacpi -eq 0 ]; then # use tpacpi-bat
+        bsys=$ACPIBATDIR/$bat_str/status
+    fi
+
+    # get battery state
+    if [ -f $bsys ]; then
+        case "$(cat $bsys 2> /dev/null)" in
+            [Dd]ischarging) rc=0 ;;
+            *) rc=1 ;;
+        esac
+    fi
+
+    echo_debug "bat" "bat_discharging($1): rc=$rc"
+    return $rc
 }
 
 check_ac_power () { # check if ac power connected -- $1: function
@@ -2168,7 +2193,7 @@ discharge_battery () { # discharge battery
     # global param: $tpacpi, $tpsmapi
     # rc: 0=ok/1=error
 
-    local bat bdir ef pn rc
+    local bat bdir en ef pn rc
     # $bat_str is global for cancel_force_discharge() trap
 
     # check params
@@ -2204,12 +2229,12 @@ discharge_battery () { # discharge battery
 
     trap cancel_force_discharge INT # enable ^C hook
 
-    # wait for start
-    while get_force_discharge $bat_str; do :; done
+    # wait for start == while status not "discharging"
+    while ! bat_discharging $bat_str; do :; done
     echo_debug "bat" "discharge_battery.running($bat_str)"
 
-    # wait for completion
-    while ! get_force_discharge $bat_str; do
+    # wait for completion == while status "discharging"
+    while bat_discharging $bat_str; do
         clear
         echo "Currently discharging battery $bat_str:"
 
@@ -2227,12 +2252,14 @@ discharge_battery () { # discharge battery
 
             if [ -d $bdir ]; then
                 printf "voltage            = %6s [mV]\n"  $(cat $bdir/voltage_now | sed 's/\(.*\).../\1/')
-                printf "remaining capacity = %6s [mWh]\n" $(cat $bdir/energy_now | sed 's/\(.*\).../\1/')
+
+                en=$(cat $bdir/energy_now)
+                printf "remaining capacity = %6s [mWh]\n" $(echo $en | sed 's/\(.*\).../\1/')
 
                 ef=$(cat $bdir/energy_full)
                 if [ "$ef" != "0" ]; then
                     printf "remaining percent  = %6s [%%]\n" \
-                        $(( 100 * $(cat $bdir/energy_now) / $(cat $bdir/energy_full) ))
+                        $(( 100 * $en / $ef ))
                 else
                     printf "remaining percent  = not available [%]\n"
                 fi
@@ -2240,7 +2267,7 @@ discharge_battery () { # discharge battery
                 pn=$(cat $bdir/power_now)
                 if [ "$pn" != "0" ]; then
                     printf "remaining time     = %6s [min]\n" \
-                        $(( 60 * $(cat $bdir/energy_now) / $(cat $bdir/power_now) ))
+                        $(( 60 * $en / $pn ))
                     printf "power              = %6s [mW]\n" $(( $pn / 1000 ))
                 else
                     printf "remaining time     = not discharging [min]\n"
@@ -2253,6 +2280,9 @@ discharge_battery () { # discharge battery
     done
 
     trap - INT # remove ^C hook
+
+    # crappy ThinkPad E-series firmware may keep force_discharge active --> cancel it
+    ! get_force_discharge $bat_str && do_force_discharge $bat_str 0
 
     echo
     echo "Done: battery $bat_str was completely discharged."
