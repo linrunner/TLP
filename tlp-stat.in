@@ -1017,6 +1017,23 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     fi
                     echo
 
+                    # store values for charge / capacity calculation below
+                    ed=$(cat $batd/design_capacity)
+                    ef=$(cat $batd/last_full_capacity)
+                    en=$(cat $batd/remaining_capacity)
+
+                    # show charge + capacity
+                    lcnt=0
+                    if [ $ef -ne 0 ]; then
+                        printf "%-59s = %6d [%%]\n" "Charge"   $((100 * $en / $ef))
+                        lcnt=$(($lcnt+1))
+                    fi
+                    if [ $ed -ne 0 ]; then
+                        printf "%-59s = %6d [%%]\n" "Capacity" $((100 * $ef / $ed))
+                        lcnt=$(($lcnt+1))
+                    fi
+                    [ $lcnt -gt 0 ] && echo
+
                     bcnt=$(($bcnt+1))
                 fi
             fi
@@ -1068,11 +1085,22 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mWh]" $batd/energy_full "" 000
                     printparm "%-59s = ##%6d## [mWh]" $batd/energy_now "" 000
                     printparm "%-59s = ##%6d## [mW]" $batd/power_now "" 000
+
+                    # store values for charge / capacity calculation below
+                    ed=$(cat $batd/energy_full_design)
+                    ef=$(cat $batd/energy_full)
+                    en=$(cat $batd/energy_now)
+
                 elif [ -f $batd/charge_full ]; then
                     printparm "%-59s = ##%6d## [mAh]" $batd/charge_full_design "" 000
                     printparm "%-59s = ##%6d## [mAh]" $batd/charge_full "" 000
                     printparm "%-59s = ##%6d## [mAh]" $batd/charge_now "" 000
                     printparm "%-59s = ##%6d## [mA]" $batd/current_now "" 000
+
+                    # store values for charge / capacity calculation below
+                    ed=$(cat $batd/charge_full_design)
+                    ef=$(cat $batd/charge_full)
+                    en=$(cat $batd/charge_now)
                 fi
                 if [ $tpbat -eq 1 ]; then
                     print_tp_batstate $batd/status
@@ -1086,6 +1114,18 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     print_tpacpi_thresholds $batt $bat_idx
                     echo
                 fi # if $tpcacpi
+
+                # show charge + capacity
+                lcnt=0
+                if [ $ef -ne 0 ]; then
+                    printf "%-59s = %6d [%%]\n" "Charge"   $((100 * $en / $ef))
+                    lcnt=$(($lcnt+1))
+                fi
+                if [ $ed -ne 0 ]; then
+                    printf "%-59s = %6d [%%]\n" "Capacity" $((100 * $ef / $ed))
+                    lcnt=$(($lcnt+1))
+                fi
+                [ $lcnt -gt 0 ] && echo
 
                 bcnt=$(($bcnt+1))
             fi # if $batt
