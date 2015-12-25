@@ -39,6 +39,7 @@ show_bat=0
 show_conf=0
 show_disk=0
 show_pcie=0
+show_pev=0
 show_proc=0
 show_rfkill=0
 show_system=0
@@ -309,6 +310,12 @@ read_args () { # read command line arguments
                 : ${needs_root_priv:=0}
                 ;;
 
+            "-P"|"--pev")
+                show_all=0
+                show_pev=1
+                needs_root_priv=1
+                ;;
+
             "-T"|"--trace")
                 show_all=0
                 show_trace=1
@@ -321,7 +328,8 @@ read_args () { # read command line arguments
                 echo "                  -p | --processor | -r | --rfkill |"
                 echo "                  -s | --system    | -t | --temp   |"
                 echo "                  -u | --usb       | -w | --warn   |"
-                echo "                  -T | --trace     | -v | --verbose ]"
+                echo "                  -P | --pev       | -T | --trace  |"
+                echo "                  -v | --verbose ]"
                 exit 3
                 ;;
         esac
@@ -1200,6 +1208,17 @@ if [ "$show_all" = "1" ]; then
     fi
 
 fi # show_all
+
+if [ "$show_pev" = "1" ]; then
+    # --- show udev power_supply events
+
+    # check for udevadm
+    if cmd_exists $UDEVADM; then
+        echo "+++ Monitor power supply events -- cancel with ^C"
+        echo
+        $UDEVADM monitor --udev --property --subsystem-match=power_supply
+    fi
+fi # show_pev
 
 if [ "$show_trace" = "1" ]; then
     # --- show debug log
