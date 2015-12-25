@@ -16,6 +16,7 @@
   * Bugfixes
     - Issue #163: handle kernel with built-in acpi_call module properly
     - Issue #170: battery discharge does not terminate on ThinkPad E-series
+    - Issue #172: TLP does not notice power source change
 
 +++ 0.8 --- 05.08.2015 +++
 
