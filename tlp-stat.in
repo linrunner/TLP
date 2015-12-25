@@ -563,7 +563,7 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
             fi
         done
         if [ $cmax -gt 0 ]; then
-            printf "CPU temp               = %5d [°C]\n" $(( $cmax / 1000 ))
+            perl -e 'printf ("CPU temp               = %5d [°C]\n", '$cmax' / 1000.0);'
         fi
 
     fi
@@ -1033,11 +1033,11 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     # show charge + capacity
                     lcnt=0
                     if [ $ef -ne 0 ]; then
-                        printf "%-59s = %6d [%%]\n" "Charge"   $((100 * $en / $ef))
+                        perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'
                         lcnt=$(($lcnt+1))
                     fi
                     if [ $ed -ne 0 ]; then
-                        printf "%-59s = %6d [%%]\n" "Capacity" $((100 * $ef / $ed))
+                        perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '$ef' / '$ed');'
                         lcnt=$(($lcnt+1))
                     fi
                     [ $lcnt -gt 0 ] && echo
@@ -1126,11 +1126,11 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 # show charge + capacity
                 lcnt=0
                 if [ $ef -ne 0 ]; then
-                    printf "%-59s = %6d [%%]\n" "Charge"   $((100 * $en / $ef))
+                    perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'
                     lcnt=$(($lcnt+1))
                 fi
                 if [ $ed -ne 0 ]; then
-                    printf "%-59s = %6d [%%]\n" "Capacity" $((100 * $ef / $ed))
+                    perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '$ef' / '$ed');'
                     lcnt=$(($lcnt+1))
                 fi
                 [ $lcnt -gt 0 ] && echo

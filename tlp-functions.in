@@ -2251,24 +2251,22 @@ discharge_battery () { # discharge battery
             bdir=$ACPIBATDIR/$bat_str
 
             if [ -d $bdir ]; then
-                printf "voltage            = %6s [mV]\n"  $(cat $bdir/voltage_now | sed 's/\(.*\).../\1/')
+                perl -e 'printf ("voltage            = %6d [mV]\n", '$(cat $bdir/voltage_now)' / 1000.0);'
 
                 en=$(cat $bdir/energy_now)
-                printf "remaining capacity = %6s [mWh]\n" $(echo $en | sed 's/\(.*\).../\1/')
+                perl -e 'printf ("remaining capacity = %6d [mWh]\n", '$en' / 1000.0);'
 
                 ef=$(cat $bdir/energy_full)
                 if [ "$ef" != "0" ]; then
-                    printf "remaining percent  = %6s [%%]\n" \
-                        $(( 100 * $en / $ef ))
+                    perl -e 'printf ("remaining percent  = %6d [%%]\n", 100.0 * '$en' / '$ef' );'
                 else
                     printf "remaining percent  = not available [%]\n"
                 fi
 
                 pn=$(cat $bdir/power_now)
                 if [ "$pn" != "0" ]; then
-                    printf "remaining time     = %6s [min]\n" \
-                        $(( 60 * $en / $pn ))
-                    printf "power              = %6s [mW]\n" $(( $pn / 1000 ))
+                    perl -e 'printf ("remaining time     = %6d [min]\n", 60.0 * '$en' / '$pn');'
+                    perl -e 'printf ("power              = %6d [mW]\n", '$pn' / 1000.0);'
                 else
                     printf "remaining time     = not discharging [min]\n"
                 fi
