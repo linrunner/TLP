@@ -395,7 +395,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
 
     # --- show init system info
     if check_systemd; then
-        echo "Init system    = systemd"
+        echo "Init system    = systemd $(systemd --version 2> /dev/null | sed -rn 's/systemd ([0-9]+)/v\1/p')"
     elif check_upstart; then
         echo "Init system    = upstart"
     elif check_openrc; then
