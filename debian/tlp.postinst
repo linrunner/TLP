@@ -46,14 +46,9 @@ case "$1" in
         done
 
         # Mask conflicting systemd services
-        if [ -d ${SYD} ] && [ -d ${ESY} ]; then
-            for i in systemd-rfkill@.service; do
-                if [ -f ${SYD}/${i} ] && [ ! -f ${ESY}/${i} ]; then
-                    # Service is not masked yet --> mask service
-                    ln -sf ${NUL} ${ESY}/${i}
-                fi
-            done
-        fi
+        for i in systemd-rfkill.service systemd-rfkill@.service; do
+            deb-systemd-helper mask $i 2> /dev/null || true
+        done
         ;;
 
 esac

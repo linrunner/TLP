@@ -27,11 +27,8 @@ case "$1" in
         done
 
         # Unmask conflicting systemd services
-        for i in systemd-rfkill@.service; do
-            if [ "$( readlink ${ESY}/${i} )" = "$NUL" ]; then
-                # Service is masked --> unmask service
-                rm ${ESY}/${i}
-            fi
+        for i in systemd-rfkill.service systemd-rfkill@.service; do
+            deb-systemd-helper unmask $i 2> /dev/null || true
         done
         ;;
 
