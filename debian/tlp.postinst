@@ -9,6 +9,7 @@ NOP="/usr/share/tlp-pm/tlp-nop"
 SYD="/lib/systemd/system"
 ESY="/etc/systemd/system"
 NUL="/dev/null"
+SRV="systemd-rfkill"
 
 case "$1" in
     configure)
@@ -46,8 +47,8 @@ case "$1" in
         done
 
         # Mask conflicting systemd services
-        for i in systemd-rfkill.service systemd-rfkill@.service; do
-            deb-systemd-helper mask $i 2> /dev/null || true
+        for i in $(ls ${SYD} 2> ${NUL} | egrep "${SRV}"); do
+            deb-systemd-helper mask $i 2> ${NUL} || true
         done
         ;;
 
