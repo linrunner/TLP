@@ -653,7 +653,9 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
                     echo
                     echo "        SMART info:"
                     $SMARTCTL -A /dev/$disk_dev | grep -v '<==' | \
-                      awk -F ' ' '$2 ~ /Start_Stop_Count|Load_Cycle_Count|Reallocated_Sector_Ct|Used_Rsvd_Blk_Cnt_Chip|Used_Rsvd_Blk_Cnt_Tot/ \
+                      awk -F ' ' '$2 ~ /Power_Cycle_Count|Start_Stop_Count|Load_Cycle_Count|Reallocated_Sector_Ct/ \
+                                        { printf "          %3d %-25s = %8d \n", $1, $2, $10 } ; \
+                                  $2 ~ /Used_Rsvd_Blk_Cnt_Chip|Used_Rsvd_Blk_Cnt_Tot|Unused_Rsvd_Blk_Cnt_Tot/ \
                                         { printf "          %3d %-25s = %8d \n", $1, $2, $10 } ; \
                                   $2 ~ /Power_On_Hours/ \
                                         { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[h]" } ; \
@@ -665,6 +667,8 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
                                         { printf "          %3d %-25s = %8.3f %s\n", $1, $2, $10 / 32768.0, "[TB]" } ; \
                                   $2 ~ /Total_LBAs_Written/ \
                                         { printf "          %3d %-25s = %8.3f %s\n", $1, $2, $10 / 2147483648.0, "[TB]" } ; \
+                                  $2 ~ /NAND_Writes_1GiB/ \
+                                        { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[GB]" } ; \
                                   $2 ~ /Available_Reservd_Space|Media_Wearout_Indicator|Wear_Leveling_Count/ \
                                         { printf "          %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
                 fi
