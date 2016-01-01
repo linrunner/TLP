@@ -61,6 +61,8 @@ readonly DOCKGLOB="/sys/devices/platform/dock.?"
 
 readonly MODULES="acpi_call coretemp msr thinkpad_acpi tp_smapi"
 
+readonly PWRRUNFILE=$RUNDIR/last-pwr
+
 readonly STATEDIR="/var/lib/tlp"
 readonly RFSTATEFILE=$STATEDIR/rfkill-saved
 readonly BAYSTATEFILE=$STATEDIR/bay-saved
@@ -321,6 +323,36 @@ get_power_state () { # get current power source -- rc: 0=ac, 1=battery
     fi
 
     return $psrc
+}
+
+compare_and_save_power_state() { # compare $1 to last saved power state,
+    # save $1 afterwards when different
+    # $1: new state 0=ac, 1=battery
+    # rc: 0=different, 1=equal
+    local lp
+
+    # read saved state
+    lp=$(cat $PWRRUNFILE 2> /dev/null)
+
+    # compare
+    if [ -z "$lp" ] || [ "$lp" != "$1" ]; then
+        # saved state is nonexistent/empty or is different --> save new state
+        mkdir -p $RUNDIR 2> /dev/null 1>&2
+        echo "$1" > $PWRRUNFILE 2> /dev/null
+
+        echo_debug "pm" "compare_and_save_power_state($1).different: old=$lp"
+        return 0
+    else
+        echo_debug "pm" "compare_and_save_power_state($1).equal"
+        return 1
+    fi
+}
+
+clear_saved_power_state() { # remove last saved power state
+
+    rm -f $PWRRUNFILE 2> /dev/null
+
+    return 0
 }
 
 echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
