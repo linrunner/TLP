@@ -11,6 +11,7 @@ readonly LIBS="tlp-functions tlp-rf-func"
 
 readonly RDW_NM_LOCK="rdw_nm"
 readonly RDW_NM_LOCKTIME=2
+readonly RDW_NM_LOCKTRIES=3
 
 # --- Source libraries
 for lib in $LIBS; do
@@ -42,7 +43,12 @@ else
 fi
 
 # Quit if timed lock in progress
-check_timed_lock $RDW_NM_LOCK && exit 0
+_i=0
+while check_timed_lock $RDW_NM_LOCK ; do
+    [ "$_i" -eq "$RDW_NM_LOCKTRIES" ] && exit 0
+    sleep $RDW_NM_LOCKTIME
+    _i=`expr $_i + 1`
+done
 
 # Determine interface type
 if cmd_exists $NMCLI ; then
