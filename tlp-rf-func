@@ -130,6 +130,8 @@ device_state () { # get radio type state -- $1: rftype; retval $devc, $devs: 0=o
 
 device_switch () { # switch radio type state
                    # $1: rftype, $2: on/off/toggle;
+                   # rc: 0=switched/1=invalid device or operation/
+                   #     2=hard blocked/4=no change
                    # retval $devc, $devs: 0=off/1=on
 
     local curst newst devn
@@ -139,11 +141,11 @@ device_switch () { # switch radio type state
     get_devc $1
 
     # quit if no device
-    [ -z "$devc" ] && return 0
+    [ -z "$devc" ] && return 1
 
     # quit if invalid operation
     if ! wordinlist $2 "on 1 off 0 toggle"; then
-        return 0
+        return 1
     fi
 
     # get current device state
@@ -151,75 +153,88 @@ device_switch () { # switch radio type state
     curst=$devs
 
     # quit if device is hard blocked
-    [ "$curst" = "2" ] && return 0
+    [ "$curst" = "2" ] && return 2
 
-    # determine new device state
+    # determine desired device state
     case $2 in
         1|on)     newst=1 ;;
         0|off)    newst=0 ;;
         toggle) newst=$(($curst ^ 1)) ;;
     esac
 
-    # determine value for direct write
-    case $newst in
-        1) devn=$devon  ;;
-        0) devn=$devoff ;;
-    esac
+    # compare current and desired device state
+    if [ "$curst" = "$newst" ]; then
+        # desired matches current state --> do nothing
+        return 4
+    else
+        # desired does not match current state --> do switch
 
-    # wifi, wwan: before rfkill -- notify NM of desired state
-    if [ "$X_NO_NMCLI" != "1" ] && [ "$X_NMCLI_FIRST" = "1" ] \
-        && [ "$1" != "bluetooth" ]; then
+        # determine value for direct write
         case $newst in
-            1) invoke_nmcli $1 on  ;;
-            0) invoke_nmcli $1 off ;;
+            1) devn=$devon  ;;
+            0) devn=$devoff ;;
         esac
-        # record device state after nmcli
-        get_devs $1
-    fi
 
-    # wifi, wwan: quit if rfkill disabled
-    [ "$X_NMCLI_ONLY" = "1" ] && [ "$1" != "bluetooth" ] && return 0
-
-    # if current state does not match desired state:
-    # switch rfkill device state
-    if [ "$curst" != "$newst" ]; then
-        if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
-            if test_rfkill_perms ; then
-                echo_debug "rf" "device_switch($1, $2).rfkill"
-                case $newst in
-                    1) $RFKILL unblock $1 > /dev/null 2>&1 ;;
-                    0) $RFKILL block $1   > /dev/null 2>&1 ;;
-                    *) ;;
-                esac
-                # record device state after rfkill
-                get_devs $1
-            else
-                err_no_root_priv "device_switch($1, $2).rfkill"
-            fi
-        else
-            if test_root ; then
-                echo_debug "rf" "device_switch($1, $2).devc"
-                echo -n $devn > $devc
-                # record device state after direct write
-                get_devs $1
-            else
-                err_no_root_priv "device_switch($1, $2).devc"
-            fi
+        # wifi, wwan: before rfkill -- notify NM of desired state
+        if [ "$X_USE_NMCLI" = "1" ] && [ "$1" != "bluetooth" ]; then
+            case $newst in
+                1) invoke_nmcli $1 on  ;;
+                0) invoke_nmcli $1 off ;;
+            esac
+            # record device state after nmcli
+            get_devs $1
         fi
-    fi # if state does not match
 
-    # wifi, wwan: after rfill -- notify NM of desired state
-    if [ "$X_NO_NMCLI" != "1" ] && [ "$X_NMCLI_FIRST" != "1" ] \
-        && [ "$1" != "bluetooth" ]; then
-        case $newst in
-            1) invoke_nmcli $1 on  ;;
-            0) invoke_nmcli $1 off ;;
-        esac
-        # record final device state
-        get_devs $1
+        # switch device state when either rfkill isn't disabled
+        # or it's a bluetooth device
+        if [ "$X_USE_RFKILL" != "0" ] || [ "$1" != "bluetooth" ]; then
+            if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
+                if test_rfkill_perms ; then
+                    # use rfkill
+                    echo_debug "rf" "device_switch($1, $2).rfkill"
+                    case $newst in
+                        1) $RFKILL unblock $1 > /dev/null 2>&1 ;;
+                        0) $RFKILL block $1   > /dev/null 2>&1 ;;
+                        *) ;;
+                    esac
+                    # record device state after rfkill
+                    get_devs $1
+                else
+                    # missing permission to rfkill
+                    err_no_root_priv "device_switch($1, $2).rfkill"
+                fi
+            else
+                # use direct write
+                if test_root ; then
+                    echo_debug "rf" "device_switch($1, $2).devc"
+                    echo -n $devn > $devc
+                    # record device state after direct write
+                    get_devs $1
+                else
+                    err_no_root_priv "device_switch($1, $2).devc"
+                fi
+            fi
+
+            # wifi, wwan: after rfill -- notify NM of desired state
+            if [ "$X_USE_NMCLI" != "0" ] && [ "$X_USE_NMCLI" != "1" ] \
+               && [ "$1" != "bluetooth" ]; then
+                case $newst in
+                    1) invoke_nmcli $1 on  ;;
+                    0) invoke_nmcli $1 off ;;
+                esac
+                # record final device state
+                get_devs $1
+            fi
+        fi # rfkill not disabled or bluetooth
+    fi # states did not match
+
+    # compare old and new device state
+    if [ "$curst" = "$devs" ]; then
+        # state did not change
+        return 4
+    else
+        return 0
     fi
-
-    return 0
 }
 
 echo_device_state () { # print radio type state -- $1: rftype, $2: state
