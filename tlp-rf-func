@@ -165,6 +165,7 @@ device_switch () { # switch radio type state
     # compare current and desired device state
     if [ "$curst" = "$newst" ]; then
         # desired matches current state --> do nothing
+        echo_debug "rf" "device_switch($1, $2).states_match"
         return 4
     else
         # desired does not match current state --> do switch
