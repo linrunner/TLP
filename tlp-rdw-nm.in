@@ -34,7 +34,7 @@ itype="unknown"
 # Quit for invalid interfaces
 [ -n "$iface" ] && [ "$iface" != "none" ] || exit 0
 
-echo_debug "nm" "rdw_nm($iface).$action"
+echo_debug "nm" "+++ rdw_nm($iface).$action"
 if [ -n "$addpath" ]; then
     echo_debug "path" "PATH=$oldpath[$addpath]"
 else
