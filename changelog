@@ -6,6 +6,10 @@
     Radio Devices:
       - Finally remove deprecated DEVICES_TO_ENABLE_ON_RADIOSW code
         (works with Ubuntu 12.04/Kernel 3.2 only)
+      - Add the ALWAYS_ENABLE_WIFI_ON_SHUTDOWN option, that defaults to enabled.
+        It reflects behavior from previous versions, that works around some
+        issues with NetworkManager not starting up Wi-fi after a reboot, but now
+        can be disabled if desired.
     (ThinkPad) Battery:
       - tlp-stat:
         - Distinguish tp-smapi incompatible hardware from load errors (Issue #160)

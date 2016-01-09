@@ -374,8 +374,10 @@ set_radio_device_states () { # set/initialize all radio states
 
                 # NM workaround: when not explicitly configured,
                 # re-enable wifi on shutdown to prepare for startup
-                if ! wordinlist "wifi" "$devs2disable $devs2enable"; then
-                    devs2enable="wifi $devs2enable"
+                if [ "$ALWAYS_ENABLE_WIFI_ON_SHUTDOWN" = 1 ]; then
+                    if ! wordinlist "wifi" "$devs2disable $devs2enable"; then
+                        devs2enable="wifi $devs2enable"
+                    fi
                 fi
                 ;;
 

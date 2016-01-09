@@ -196,6 +196,10 @@ USB_BLACKLIST_WWAN=1
 #   are ignored when this is enabled!
 RESTORE_DEVICE_STATE_ON_STARTUP=0
 
+# Always enable the Wi-fi radio on shutdown. Works around some issues
+# with NetworkManager, so disable with care.
+ALWAYS_ENABLE_WIFI_ON_SHUTDOWN=1
+
 # Radio devices to disable on startup: bluetooth, wifi, wwan.
 # Separate multiple devices with spaces.
 #DEVICES_TO_DISABLE_ON_STARTUP="bluetooth wifi wwan"
