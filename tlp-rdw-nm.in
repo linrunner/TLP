@@ -12,6 +12,29 @@ readonly LIBS="tlp-functions tlp-rf-func"
 readonly RDW_NM_LOCK="rdw_nm"
 readonly RDW_NM_LOCKTIME=2
 
+# --- Functions
+
+check_switch_lock() { # switch listed radio devices
+    # and time-lock them afterwards if actually switched
+    # $1: device where the event originated -- do nothing if its time-locked
+    # $2: list of device types to switch
+    # $3: on/off
+    local dev
+
+    # quit if the originating *radio* device is time-locked (not LAN)
+    [ "$1" != "LAN" ] && check_timed_lock "${RDW_NM_LOCK}_$1" && return 1
+
+    for dev in $2; do
+        if [ -n "$dev" ] && [ "$dev" != "$1" ]; then
+            # device type is valid and not the originating one
+            # --> do switch with state change lock
+            device_switch $dev $3 "${RDW_NM_LOCK}_${dev}" $RDW_NM_LOCKTIME
+        fi
+    done
+
+    return 0
+}
+
 # --- Source libraries
 for lib in $LIBS; do
     if [ ! -f $LIBDIR/$lib ]; then
@@ -40,9 +63,6 @@ if [ -n "$addpath" ]; then
 else
     echo_debug "path" "PATH=$oldpath"
 fi
-
-# Quit if timed lock in progress
-check_timed_lock $RDW_NM_LOCK && exit 0
 
 # Determine interface type
 if cmd_exists $NMCLI ; then
@@ -89,25 +109,17 @@ fi
 case $action in
     up) # interface up, disable configured interfaces
 
-        set_timed_lock $RDW_NM_LOCK $RDW_NM_LOCKTIME # lock rdw events
-
         case $itype in
             *ethernet)
-                for dev in $DEVICES_TO_DISABLE_ON_LAN_CONNECT; do
-                    [ -n "$dev" ] && device_switch $dev off
-                done
+                check_switch_lock LAN "$DEVICES_TO_DISABLE_ON_LAN_CONNECT" off
                 ;;
 
             *wireless|wifi)
-                for dev in $DEVICES_TO_DISABLE_ON_WIFI_CONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_switch $dev off
-                done
+                check_switch_lock wifi "$DEVICES_TO_DISABLE_ON_WIFI_CONNECT" off
                 ;;
 
             gsm|wwan)
-                for dev in $DEVICES_TO_DISABLE_ON_WWAN_CONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_switch $dev off
-                done
+                check_switch_lock wwan "$DEVICES_TO_DISABLE_ON_WWAN_CONNECT" off
                 ;;
         esac
         ;; # up
@@ -115,21 +127,15 @@ case $action in
     down) # interface down, enable configured interfaces
         case $itype in
             *ethernet)
-                for dev in $DEVICES_TO_ENABLE_ON_LAN_DISCONNECT; do
-                    [ -n "$dev" ] && device_switch $dev on
-                done
+                check_switch_lock LAN "$DEVICES_TO_ENABLE_ON_LAN_DISCONNECT" on
                 ;;
 
             *wireless|wifi)
-                for dev in $DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wifi ] && device_switch $dev on
-                done
+                check_switch_lock wifi "$DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT" on
                 ;;
 
-            gsm)
-                for dev in $DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT; do
-                    [ -n "$dev" ] && [ "$dev" != wwan ] && device_switch $dev on
-                done
+            gsm|wwan)
+                check_switch_lock wwan "$DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT" on
                 ;;
         esac
         ;; # down

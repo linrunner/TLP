@@ -1,4 +1,4 @@
-+++ 0.9 --- 09.01.2016 +++
++++ 0.9 --- 10.01.2016 +++
 
   * Development Release
 
@@ -20,6 +20,7 @@
     - Issue #170: battery discharge does not terminate on ThinkPad E-series
     - Issue #172: TLP does not notice power source change
     - Issue #175: do not touch wifi on shutdown when unconfigured
+    - Issue #176: optimize rdw locking heuristics
 
 +++ 0.8 --- 05.08.2015 +++
 
