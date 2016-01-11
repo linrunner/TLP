@@ -12,9 +12,10 @@
         - Show battery charge and capacity values in %
     tlp-stat:
       - --pev: monitor power supply udev events (Issue #172)
-      - ŚMART attributes Power_Cycle_Count, Unused_Rsvd_Blk_Cnt_Tot,
+      - Storage Devices: SMART attributes Power_Cycle_Count, Unused_Rsvd_Blk_Cnt_Tot,
         NAND_Writes_1GiB
-      - Show type in radio interface list
+      - System Info: issue warning when systemd-rfkill[@].service is not masked
+      - Wireless: show type in interface list
 
   * Bugfixes
     - Issue #163: handle kernel with built-in acpi_call module properly
