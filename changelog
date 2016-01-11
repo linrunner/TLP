@@ -1,4 +1,4 @@
-+++ 0.9 --- 10.01.2016 +++
++++ 0.9 --- 11.01.2016 +++
 
   * Development Release
 
@@ -14,6 +14,7 @@
       - --pev: monitor power supply udev events (Issue #172)
       - ŚMART attributes Power_Cycle_Count, Unused_Rsvd_Blk_Cnt_Tot,
         NAND_Writes_1GiB
+      - Show type in radio interface list
 
   * Bugfixes
     - Issue #163: handle kernel with built-in acpi_call module properly

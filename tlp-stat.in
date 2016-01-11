@@ -766,7 +766,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
             # get bluetooth driver
             get_bluetooth_driver $iface
-            printf "%-20s: " "$iface($bluetoothdrv)"
+            printf "%-30s: bluetooth, " "$iface($bluetoothdrv)"
             if bluetooth_in_use $iface; then
                 echo "connected"
             else
@@ -800,7 +800,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
             # get wifi driver
             get_wifi_driver $iface
-            printf "%-20s: " "$iface($wifidrv)"
+            printf "%-30s: wifi, " "$iface($wifidrv)"
             if wireless_in_use $iface; then
                 printf "connected, "
             else
@@ -824,7 +824,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
             # get wwan driver
             get_wwan_driver $iface
 
-            printf "%-20s: " "$iface($wwandrv)"
+            printf "%-30s: wwan, " "$iface($wwandrv)"
             if wireless_in_use $iface; then
                 printf "connected"
             else
