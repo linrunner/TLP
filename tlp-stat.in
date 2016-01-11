@@ -33,6 +33,8 @@ readonly DEBUGLOG=/var/log/debug
 readonly SYSTEMD_SERVICES="tlp.service tlp-sleep.service"
 readonly RFKILL_SERVICES="systemd-rfkill@.service systemd-rfkill.service"
 
+readonly EFID=/sys/firmware/efi
+
 # --- Variables
 needs_root_priv=
 show_all=1
@@ -403,6 +405,11 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         echo "Init system    = openrc"
     else
         echo "Init system    = sysvinit"
+    fi
+    if [ -d $EFID ]; then
+        echo "Boot mode      = UEFI"
+    else
+        echo "Boot mode      = BIOS (CSM, Legacy)"
     fi
     echo
 
