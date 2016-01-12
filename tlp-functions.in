@@ -41,7 +41,7 @@ readonly ACPIBATDIR=/sys/class/power_supply
 
 readonly RE_TPACPI_ONLY='^(E[1345][23456][05]|L[45][3456]0|P[75]0|S[245][345][01].*|T[45][3456][01].*|W5[345][01]|X1 .*|X2[3456]0.*)$'
 readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220.*|T420.*|T520|W520)$'
-readonly RE_NONE='^SL[345]00$'
+readonly RE_TP_NONE='^SL[345]00$'
 
 readonly NETD=/sys/class/net
 readonly BLUETOOTHD=/sys/class/bluetooth
@@ -1649,7 +1649,9 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
 # --- ThinkPad Battery Functions
 
 check_tpsmapi () {  # check if tp_smapi is supported and loaded
-    # rc: 0=supported/2=module tp_smapi not loaded/127=not installed
+    # rc: 0=supported/2=module tp_smapi not loaded/
+    #     127=not installed//255=not supported
+    # # global param: $tpmodel
     # retval: $tpsmapi
 
     if [ -d $SMAPIDIR ]; then
@@ -1658,7 +1660,13 @@ check_tpsmapi () {  # check if tp_smapi is supported and loaded
     else
         if [ -n "$(modinfo tp_smapi 2> /dev/null)" ]; then
             # module installed but not loaded
-            tpsmapi=2
+            if echo "$tpmodel" | egrep -q "${RE_TPACPI_ONLY}" || \
+               echo "$tpmodel" | egrep -q "${RE_TP_NONE}" ; then
+                # not tp-smapi capable models
+                tpsmapi=255
+            else
+                tpsmapi=2
+            fi
         else
             # module not installed
             tpsmapi=127
