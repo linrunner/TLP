@@ -38,6 +38,11 @@ readonly TPACPIBAT=$LIBDIR/tpacpi-bat # LIBDIR is initialized by main program
 readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
+
+readonly RE_TPACPI_ONLY='^(E[1345][23456][05]|L[45][3456]0|P[75]0|S[245][345][01].*|T[45][3456][01].*|W5[345][01]|X1 .*|X2[3456]0.*)$'
+readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220.*|T420.*|T520|W520)$'
+readonly RE_NONE='^SL[345]00$'
+
 readonly NETD=/sys/class/net
 readonly BLUETOOTHD=/sys/class/bluetooth
 readonly PCID=/sys/bus/pci/devices
