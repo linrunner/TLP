@@ -976,7 +976,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
             0)   echo "active" ;;
             2)   echo "inactive (kernel module 'tp_smapi' load error)" ;;
             127) echo "inactive (kernel module 'tp_smapi' not installed)" ;;
-            255) echo "inactive (unsupported hardware)" ;;     
+            255) echo "inactive (unsupported hardware)" ;;
             *)   echo "unknown status"
         esac
 
