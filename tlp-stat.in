@@ -35,6 +35,8 @@ readonly RFKILL_SERVICES="systemd-rfkill@.service systemd-rfkill.service"
 
 readonly EFID=/sys/firmware/efi
 
+readonly RE_ATA_ERROR='ata[0-9]+: SError: {.*CommWake }'
+
 # --- Variables
 needs_root_priv=
 show_all=1
@@ -219,7 +221,7 @@ check_ata_errors () { # check kernel log for ata errors
         # config values != max_performance exist --> check kernel log
 
         # count matching error lines
-        echo $( dmesg | egrep -c "ata[0-9]+: SError: {.*CommWake.*}" 2> /dev/null )
+        echo $( dmesg | egrep -c "${RE_ATA_ERROR}" 2> /dev/null )
     else
         # no values in question configured 
         echo "0"
@@ -1173,7 +1175,7 @@ if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; th
         printf "  Consider using medium_power or max_performance instead.\n"
         printf "  See the FAQ: http://linrunner.de/en/tlp/docs/tlp-faq.html#warnings\n"
         printf "  Details:\n"
-        dmesg | egrep -A 5 "ata[0-9]+: SError: { .*CommWake }"
+        dmesg -T | egrep -A 5 "${RE_ATA_ERROR}"
         echo
     elif [ "$show_warn" = "1" ]; then
         echo "No warnings detected."
