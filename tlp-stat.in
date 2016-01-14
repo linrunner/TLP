@@ -382,7 +382,7 @@ if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
         egrep -v '^#|^\s*$' $CONFFILE
         echo
     else
-        echo "Warning: config file $CONFFILE not present." 1>&2
+        echo "Error: config file $CONFFILE not present." 1>&2
         echo
     fi
 fi # show_conf
@@ -441,14 +441,14 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         cnt=0
         for su in $SYSTEMD_SERVICES; do
             if ! $SYSTEMCTL is-enabled $su > /dev/null 2>&1 ; then
-                echo "Warning: $su is not enabled -- invoke \"systemctl enable $su\" to correct this!"
+                echo "Notice: $su is not enabled -- invoke \"systemctl enable $su\" to correct this!"
                 cnt=$((cnt+1))
             fi
         done
         for su in $RFKILL_SERVICES; do
             ise=$($SYSTEMCTL is-enabled $su 2> /dev/null)
             if [ -n "$ise" ] && [ "$ise" != "masked" ]; then
-                echo "Warning: $su is not masked -- invoke \"systemctl mask $su\" to correct this!"
+                echo "Notice: $su is not masked -- invoke \"systemctl mask $su\" to correct this!"
                 cnt=$((cnt+1))
             fi
         done
@@ -952,7 +952,7 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
         echo "wwan blacklist     = disabled"
     fi
     if [ -n "$USB_DRIVER_BLACKLIST" ] && [ "$USB_DRIVER_BLACKLIST" != "usbhid" ]; then
-        echo "***Warning: USB_DRIVER_BLACKLIST is no longer supported, use USB_BLACKLIST."
+        echo "Notice: USB_DRIVER_BLACKLIST is no longer supported, use USB_BLACKLIST."
     fi
     echo
 
