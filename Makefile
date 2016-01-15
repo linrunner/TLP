@@ -89,6 +89,10 @@ ifneq ($(TLP_NO_PMUTILS),1)
 endif
 ifneq ($(TLP_NO_BASHCOMP),1)
 	install -D -m 644 tlp.bash_completion $(_SHCPL)/tlp
+	ln -sf tlp $(_SHCPL)/tlp-stat
+	ln -sf tlp $(_SHCPL)/bluetooth
+	ln -sf tlp $(_SHCPL)/wifi
+	ln -sf tlp $(_SHCPL)/wwan
 endif
 
 install-rdw: all
@@ -128,6 +132,10 @@ uninstall-tlp:
 	rm -f $(_SYSD)/tlp.service
 	rm -f $(_SYSD)/tlp-sleep.service
 	rm -f $(_PLIB)/sleep.d/49tlp
+	rm -f $(_SHCPL)/tlp-stat
+	rm -f $(_SHCPL)/bluetooth
+	rm -f $(_SHCPL)/wifi
+	rm -f $(_SHCPL)/wwan
 	rm -f $(_SHCPL)/tlp
 
 uninstall-rdw:

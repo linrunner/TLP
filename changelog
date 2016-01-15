@@ -1,4 +1,4 @@
-+++ 0.9 --- 12.01.2016 +++
++++ 0.9 --- 15.01.2016 +++
 
   * Development Release
 
@@ -28,6 +28,7 @@
     - Issue #175: do not touch wifi on shutdown when unconfigured
     - Issue #176: optimize rdw locking heuristics
     - tlp-stat: fix ata error count (filter "DevExch" caused by bay inserts)
+    - Fix bash completion
 
 +++ 0.8 --- 05.08.2015 +++
 
