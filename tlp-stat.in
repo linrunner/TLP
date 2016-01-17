@@ -366,8 +366,8 @@ conf_present=$?
 # check prereqisites
 if [ "$needs_root_priv" = "1" ]; then
     check_root
-    is_thinkpad
     load_modules
+    is_thinkpad
     check_tpacpi
     check_tpsmapi
 fi
@@ -1201,6 +1201,10 @@ if [ "$show_all" = "1" ]; then
         elif echo "$tpmodel" | egrep -q "${RE_TPSMAPI_AND_TPACPI}"; then
             # tpacpi-bat and tp-smapi capable models
             [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
+            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
+
+        elif echo "$tpmodel" | egrep -q "${RE_TPSMAPI_ONLY}"; then
+            # tpacpi-bat and tp-smapi capable models
             [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
 
         elif echo "$tpmodel" | egrep -q "${RE_TP_NONE}"; then

@@ -39,9 +39,10 @@ readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
 
-readonly RE_TPACPI_ONLY='^(E[1345][23456][05]|L[45][3456]0|P[75]0|S[245][345][01].*|T[45][3456][01].*|W5[345][01]|X1 .*|X2[3456]0.*)$'
-readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220.*|T420.*|T520|W520)$'
-readonly RE_TP_NONE='^SL[345]00$'
+readonly RE_TPACPI_ONLY='^((Edge )?E[1345][23456][05][s]?|Helix.*|L[45][3456]0|P[75]0|(Edge )?S[245][345][01]*|T[45][3456][01][psu]?|W5[345][01][s]?|X1 Carbon.*|X2[3456]0[s]?( Tablet)?|.*Yoga)$'
+readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
+readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T23|T[346][0123][p]?|T[45][01]0[s]?|W[57]0[01]|X[346][012][s]?( Tablet)?|X1[02]0e|X[23]0[01][s]?( Tablet)?|Z6[01][mpt])$'
+readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
 
 readonly NETD=/sys/class/net
 readonly BLUETOOTHD=/sys/class/bluetooth
@@ -263,7 +264,6 @@ is_thinkpad () { # check for ThinkPad hardware and save model string
         if echo $tpmodel | grep -q "ThinkPad"; then
             # it's a real ThinkPad --> save model substring
             tpmodel=${tpmodel#ThinkPad }
-            tpmodel=${tpmodel#Edge }
             return 0
         fi
     fi
@@ -1682,7 +1682,11 @@ check_tpacpi () { # check if tpacpi-bat is supported
     #     127=acpi_call not installed/255=not supported
     # retval: $tpacpi
 
-    if [ ! -e /proc/acpi/call ] && [ -z "$(modinfo acpi_call 2> /dev/null)" ]; then
+    if echo "$tpmodel" | egrep -q "${RE_TPSMAPI_ONLY}" || \
+       echo "$tpmodel" | egrep -q "${RE_TP_NONE}" ; then
+         # not tpacpi-bat capable models
+         tpacpi=255
+    elif [ ! -e /proc/acpi/call ] && [ -z "$(modinfo acpi_call 2> /dev/null)" ]; then
         # module not installed
         tpacpi=127
     else

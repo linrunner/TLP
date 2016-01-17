@@ -1,4 +1,4 @@
-+++ 0.9 --- 15.01.2016 +++
++++ 0.9 --- 17.01.2016 +++
 
   * Development Release
 
@@ -10,6 +10,7 @@
       - tlp-stat:
         - Distinguish tp-smapi incompatible hardware from load errors (Issue #160)
         - Show battery charge and capacity values in %
+        - More selective suggestions for tp-smapi/acpi-call kernel modules
     tlp-stat:
       - --pev: monitor power supply udev events (Issue #172)
       - Storage Devices: SMART attributes Power_Cycle_Count, Unused_Rsvd_Blk_Cnt_Tot,
