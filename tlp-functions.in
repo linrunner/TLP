@@ -65,7 +65,8 @@ readonly USB_DONE=usb_done
 
 readonly DOCKGLOB="/sys/devices/platform/dock.?"
 
-readonly MODULES="acpi_call coretemp msr thinkpad_acpi tp_smapi"
+readonly MODULES="acpi_call coretemp msr thinkpad_acpi"
+readonly MOD_TPSMAPI="tp-smapi"
 
 readonly PWRRUNFILE=$RUNDIR/last-pwr
 
@@ -225,6 +226,14 @@ load_modules () { # load needed kernel modules
     for mod in $MODULES; do
         $MODPRO $mod > /dev/null 2>&1
     done
+
+    # load tp-smapi
+    if is_thinkpad && \
+       ! echo "$tpmodel" | egrep -q "${RE_TPACPI_ONLY}" && \
+       ! echo "$tpmodel" | egrep -q "${RE_TP_NONE}"; then
+            $MODPRO $MOD_TPSMAPI > /dev/null 2>&1
+    fi
+
     return 0
 }
 
@@ -1684,12 +1693,13 @@ check_tpacpi () { # check if tpacpi-bat is supported
 
     if echo "$tpmodel" | egrep -q "${RE_TPSMAPI_ONLY}" || \
        echo "$tpmodel" | egrep -q "${RE_TP_NONE}" ; then
-         # not tpacpi-bat capable models
-         tpacpi=255
+        # not tpacpi-bat capable models
+        tpacpi=255
     elif [ ! -e /proc/acpi/call ] && [ -z "$(modinfo acpi_call 2> /dev/null)" ]; then
         # module not installed
         tpacpi=127
     else
+        # module loaded --> try tpacpi-bat
         $TPACPIBAT -g FD 1 > /dev/null 2>&1
         tpacpi=$?
 

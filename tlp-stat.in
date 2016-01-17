@@ -367,7 +367,6 @@ conf_present=$?
 if [ "$needs_root_priv" = "1" ]; then
     check_root
     load_modules
-    is_thinkpad
     check_tpacpi
     check_tpsmapi
 fi
