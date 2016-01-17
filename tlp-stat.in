@@ -1174,7 +1174,7 @@ if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; th
         printf "  Consider using medium_power or max_performance instead.\n"
         printf "  See the FAQ: http://linrunner.de/en/tlp/docs/tlp-faq.html#warnings\n"
         printf "  Details:\n"
-        dmesg -T | egrep -A 5 "${RE_ATA_ERROR}"
+        dmesg | egrep -A 5 "${RE_ATA_ERROR}"
         echo
     elif [ "$show_warn" = "1" ]; then
         echo "No warnings detected."

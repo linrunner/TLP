@@ -19,7 +19,6 @@
         - Show boot mode UEFI / BIOS
         - Issue warning when systemd-rfkill[@].service is not masked
         - Add *60 models for tp-smapi/acpi-call suggestions
-      - Warnings: show dmesg timestamps in human readable format
       - Wireless: show type in interface list
 
   * Bugfixes
