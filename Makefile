@@ -44,7 +44,6 @@ INFILES = \
 	tlp.service \
 	tlp-sleep.service \
 	tlp-stat \
-	tlp-usb-udev \
 	tlp.upstart \
 	tlp-usb-udev
 
