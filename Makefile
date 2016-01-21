@@ -48,10 +48,10 @@ INFILES = \
 	tlp-usb-udev
 
 # Make targets
-all:
-	for f in $(INFILES); do \
-		$(SED) $$f.in > $$f; \
-	done
+all: $(INFILES)
+
+$(INFILES): %: %.in
+	$(SED) $< > $@
 
 clean:
 	rm -f $(INFILES)
