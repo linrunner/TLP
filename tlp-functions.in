@@ -32,6 +32,7 @@ readonly DBUSSEND=dbus-send
 readonly SYSTEMD=systemd
 readonly SYSTEMCTL=systemctl
 readonly INITCTL=initctl
+readonly FLOCK=flock
 
 readonly TPACPIBAT=$LIBDIR/tpacpi-bat # LIBDIR is initialized by main program
 
@@ -69,6 +70,8 @@ readonly MODULES="acpi_call coretemp msr thinkpad_acpi"
 readonly MOD_TPSMAPI="tp-smapi"
 
 readonly PWRRUNFILE=$RUNDIR/last-pwr
+readonly LOCKFILE=$RUNDIR/lock
+readonly LOCKTIMEOUT=2
 
 readonly STATEDIR="/var/lib/tlp"
 readonly RFSTATEFILE=$STATEDIR/rfkill-saved
@@ -200,6 +203,10 @@ add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
     fi
 
     return 0
+}
+
+create_rundir () { # make sure $RUNDIR exists
+    [ -d $RUNDIR ] || mkdir -p $RUNDIR 2> /dev/null 1>&2
 }
 
 # --- Configuration
@@ -345,13 +352,14 @@ compare_and_save_power_state() { # compare $1 to last saved power state,
     # rc: 0=different, 1=equal
     local lp
 
+
     # read saved state
     lp=$(cat $PWRRUNFILE 2> /dev/null)
 
     # compare
     if [ -z "$lp" ] || [ "$lp" != "$1" ]; then
         # saved state is nonexistent/empty or is different --> save new state
-        mkdir -p $RUNDIR 2> /dev/null 1>&2
+        create_rundir
         echo "$1" > $PWRRUNFILE 2> /dev/null
 
         echo_debug "pm" "compare_and_save_power_state($1).different: old=$lp"
@@ -385,16 +393,11 @@ set_run_flag () { # set flag -- $1: flag name
                   # rc: 0=success/1,2=failed
     local rc
 
-    if mkdir -p $RUNDIR 2> /dev/null 1>&2 ; then
-        touch $RUNDIR/$1; rc=$?
-        echo_debug "lock" "set_run_flag.touch: $1; rc=$rc"
+    create_rundir
+    touch $RUNDIR/$1; rc=$?
+    echo_debug "lock" "set_run_flag.touch: $1; rc=$rc"
 
-        return $rc
-    else
-        # mkdir failed
-        echo_debug "lock" "set_run_flag.mkdir_failed"
-        return 2
-    fi
+    return $rc
 }
 
 reset_run_flag () { # reset flag -- $1: flag name
@@ -417,25 +420,55 @@ check_run_flag () { # check flag -- $1: flag name
     return $rc
 }
 
-check_and_set_semaphore () { # check and set semaphore -- $1: semaphore name
-                             # rc: 0=success/1=failed
-    local rc
+lock_tlp () { # get exclusive lock: blocking with timeout
+              # $1: lock id (default: tlp)
+              # rc: 0=success/1=failed
 
-    { mkdir -p $RUNDIR && mkdir $RUNDIR/$1 ; } 2> /dev/null 1>&2
-    rc=$?
-    echo_debug "lock" "check_and_set_semaphore($1): rc=$rc"
-
-    return $rc
+    create_rundir
+    # open file for writing and attach fd 9
+    exec 9> ${LOCKFILE}_${1:-tlp}
+    # lock fd 9 exclusive and blocking, wait $LOCKTIME secs to obtain the lock
+    if $FLOCK -x -w $LOCKTIMEOUT 9 ; then
+        echo_debug "lock" "lock_tlp.locked"
+        return 0
+    else
+        echo_debug "lock" "lock_tlp.failed"
+        return 1
+    fi
 }
 
-unset_semaphore () { # unset semaphore -- $1: semaphore name
-    local rc
+lock_tlp_nb () { # get exclusive lock: non-blocking
+                 # $1: lock id (default: tlp)
+                 # rc: 0=success/1=failed
 
-    rmdir $RUNDIR/$1 2> /dev/null 1>&2
-    rc=$?
-    echo_debug "lock" "unset_semaphore($1): rc=$rc"
+    create_rundir
+    # open file for writing and attach fd 9
+    exec 9> ${LOCKFILE}_${1:-tlp}
+    # lock fd 9 exclusive and non-blocking
+    if $FLOCK -x -n 9 ; then
+        echo_debug "lock" "lock_tlp_nb.locked"
+        return 0
+    else
+        echo_debug "lock" "lock_tlp_nb.failed"
+        return 1
+    fi
+}
 
-    return $rc
+unlock_tlp () { # free exclusive lock
+
+    # defer unlock for $X_DEFER_UNLOCK seconds -- debugging only
+    [ -n "$X_DEFER_UNLOCK" ] && sleep $X_DEFER_UNLOCK
+
+    # free fd 9
+    exec 9>&-
+    echo_debug "lock" "unlock_tlp"
+
+    return 0
+}
+
+echo_tlp_locked () { # print "locked" message
+    echo "TLP is locked by another operation."
+    return 0
 }
 
 set_timed_lock () { # create timestamp n seconds in the future

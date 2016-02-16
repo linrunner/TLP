@@ -1,8 +1,10 @@
-+++ 0.9 --- 17.01.2016 +++
++++ 0.9 --- 16.02.2016 +++
 
   * Development Release
 
   * Features
+    General:
+      - Block concurrent invocation of tlp
     Radio Devices:
       - Finally remove deprecated DEVICES_TO_ENABLE_ON_RADIOSW code
         (works with Ubuntu 12.04/Kernel 3.2 only)

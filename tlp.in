@@ -85,119 +85,147 @@ exitcode=0
 case "$mode" in
     init) # system initialization/shutdown: sysv, upstart, systemd, ...
         check_root
+        if lock_tlp_nb; then
+            case $mode2 in
+                start|restart|force-reload)
+                    echo -n "Loading kernel modules..."
+                    load_modules
+                    echo "done. "
 
-        case $mode2 in
-            start|restart|force-reload)
-                echo -n "Loading kernel modules..."
-                load_modules
-                echo "done. "
+                    # apply radio states
+                    set_radio_device_states start
 
-                # apply radio states
-                set_radio_device_states start
+                    # apply power save settings -- but only if not previously run
+                    # (by the udev rule) for the same power state
+                    if compare_and_save_power_state $pwrmode; then
+                        echo -n "Applying power save settings..."
+                        apply_common_settings $pwrmode
+                        [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+                        [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
+                        echo "done."
+                    fi
 
-                # apply power save settings -- but only if not previously run
-                # (by the udev rule) for the same power state
-                if compare_and_save_power_state $pwrmode; then
+                    # apply battery settings
+                    echo -n "Setting battery charge thresholds..."
+                    set_charge_thresholds
+                    echo "done."
+                    ;;
+
+                stop)
+                    set_radio_device_states stop
+
+                    if [ "$USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN" = "1" ]; then
+                        echo -n "Disabling usb autosuspend..."
+                        set_usb_suspend 0 on
+                        echo "done."
+                    fi
+
+                    # remove usb startup flag
+                    [ -f $USB_DONE ] && rm $USB_DONE
+
+                    # clear saved power state
+                    clear_saved_power_state
+
+                    # apply ac settings for faster shutdown
                     echo -n "Applying power save settings..."
-                    apply_common_settings $pwrmode
-                    [ "$pwrmode" = "1" ] && poweroff_drivebay 0
-                    [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
+                    apply_common_settings 0
                     echo "done."
-                fi
+                    ;;
 
-                # apply battery settings
-                echo -n "Setting battery charge thresholds..."
-                set_charge_thresholds
-                echo "done."
-                ;;
-
-            stop)
-                set_radio_device_states stop
-
-                if [ "$USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN" = "1" ]; then
-                    echo -n "Disabling usb autosuspend..."
-                    set_usb_suspend 0 on
-                    echo "done."
-                fi
-
-                # remove usb startup flag
-                [ -f $USB_DONE ] && rm $USB_DONE
-
-                # clear saved power state
-                clear_saved_power_state
-
-                # apply ac settings for faster shutdown
-                echo -n "Applying power save settings..."
-                apply_common_settings 0
-                echo "done."
-                ;;
-
-            *)
-                echo "Usage: tlp init {start|stop|restart|force-reload}" >&2
-                exit 3
-                ;;
-        esac
+                *)
+                    echo "Usage: tlp init {start|stop|restart|force-reload}" >&2
+                    exit 3
+                    ;;
+            esac
+            unlock_tlp
+        else
+            echo_tlp_locked
+        fi
         ;;
 
     auto) # set mode depending on state (called by udev rule)
           # -- but only if not previously run for the same power state
           # rationale: filter out duplicate power_supply udev events
         check_root
-        if compare_and_save_power_state $pwrmode; then
-            apply_common_settings $pwrmode
-            [ "$pwrmode" = "1" ] && poweroff_drivebay 0
-            set_radio_device_states $pwrmode
+        if lock_tlp_nb; then
+            if compare_and_save_power_state $pwrmode; then
+                apply_common_settings $pwrmode
+                [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+                set_radio_device_states $pwrmode
+            fi
+            unlock_tlp
         fi
         ;;
 
     start) # set mode depending on state (interactive mode)
         check_root
-        apply_common_settings $pwrmode
-        [ "$pwrmode" = "1" ] && poweroff_drivebay 0
-        set_usb_suspend 0 auto
-        set_charge_thresholds
-        set_radio_device_states $pwrmode
+        if lock_tlp; then
+            apply_common_settings $pwrmode
+            [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+            set_usb_suspend 0 auto
+            set_charge_thresholds
+            set_radio_device_states $pwrmode
+            unlock_tlp
 
-        echo_started_mode $pwrmode
+            echo_started_mode $pwrmode
+        else
+            echo_tlp_locked
+        fi
         ;;
 
     true|bat*) # set battery power mode
         check_root
-        apply_common_settings 1
-        poweroff_drivebay 0
-        [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
-        set_radio_device_states 1
+        if lock_tlp; then
+            apply_common_settings 1
+            poweroff_drivebay 0
+            [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
+            set_radio_device_states 1
+            unlock_tlp
 
-        echo_started_mode 1
+            echo_started_mode 1
+        else
+            echo_tlp_locked
+        fi
         ;;
 
     false|ac) # set ac power mode
         check_root
-        apply_common_settings 0
-        [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
-        set_radio_device_states 0
+        if lock_tlp; then
+            apply_common_settings 0
+            [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
+            set_radio_device_states 0
+            unlock_tlp
 
-        echo_started_mode 0
+            echo_started_mode 0
+        else
+            echo_tlp_locked
+        fi
         ;;
 
     suspend) # handle suspend/hibernate
         check_root
-        save_device_states "bluetooth wwan"
+        if lock_tlp; then
+            save_device_states "bluetooth wwan"
 
-        get_power_state
-        pwrmode=$?
-        apply_common_settings 0
-        suspend_drivebay $pwrmode
+            get_power_state
+            pwrmode=$?
+            apply_common_settings 0
+            suspend_drivebay $pwrmode
+            unlock_tlp
+        fi
         ;;
 
     resume) # handle resume
         check_root
-        restore_device_states
+        if lock_tlp; then
+            restore_device_states
 
-        get_power_state
-        pwrmode=$?
-        apply_common_settings $pwrmode
-        resume_drivebay
+            get_power_state
+            pwrmode=$?
+            apply_common_settings $pwrmode
+            resume_drivebay
+            unlock_tlp
+        fi
         ;;
 
     usb) # Enable usb autosuspend
