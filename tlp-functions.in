@@ -71,7 +71,7 @@ readonly MOD_TEMP="coretemp"
 readonly MOD_TPSMAPI="tp_smapi"
 readonly MOD_TPACPI="acpi_call"
 
-readonly PWRRUNFILE=$RUNDIR/last-pwr
+readonly PWRRUNFILE=$RUNDIR/last_pwr
 readonly LOCKFILE=$RUNDIR/lock
 readonly LOCKTIMEOUT=2
 
@@ -368,7 +368,6 @@ compare_and_save_power_state() { # compare $1 to last saved power state,
     # $1: new state 0=ac, 1=battery
     # rc: 0=different, 1=equal
     local lp
-
 
     # read saved state
     lp=$(cat $PWRRUNFILE 2> /dev/null)

@@ -1,4 +1,4 @@
-+++ 0.9 --- 16.02.2016 +++
++++ 0.9 --- 06.03.2016 +++
 
   * Development Release
 
@@ -17,10 +17,11 @@
       - --pev: monitor power supply udev events (Issue #172)
       - Storage Devices: SMART attributes Power_Cycle_Count, Unused_Rsvd_Blk_Cnt_Tot,
         NAND_Writes_1GiB
-      - System Info:
-        - Show boot mode UEFI / BIOS
+      - Suggestions: add *60 models for tp-smapi/acpi-call
+      - System Info: show boot mode UEFI / BIOS
+      - TLP Status:
+        - Show time and mode of tlp's last invocation
         - Issue warning when systemd-rfkill[@].service is not masked
-        - Add *60 models for tp-smapi/acpi-call suggestions
       - Wireless: show type in interface list
 
   * Bugfixes

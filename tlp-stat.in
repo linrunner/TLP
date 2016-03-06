@@ -212,6 +212,29 @@ print_tpacpi_thresholds () { # formatted output of ThinkPad charging thresholds
     return 0
 }
 
+print_file_modtime_and_age () { # show a file's last modification time
+    #  and age in secs -- $1: file
+    local mtime age
+
+    if [ -f $1 ]; then
+        mtime=$(date +%X -r $1)
+        age=$(( $(date +%s) - $(date +%s -r $1) ))
+        printf '%s, %6d sec(s) ago' $mtime $age
+    else
+        printf "unknown"
+    fi
+}
+
+print_saved_powerstate () { # read and print saved state
+    case "$(cat $PWRRUNFILE 2> /dev/null)" in
+        0) echo "AC" ;;
+        1) echo "battery" ;;
+        *) echo "unknown" ;;
+    esac
+
+    return 0
+}
+
 check_ata_errors () { # check kernel log for ata errors
     # (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
     # stdout: error count
@@ -417,22 +440,25 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     echo
 
     # --- show TLP status
-    echo "+++ System Status"
+    echo "+++ TLP Status"
     if [ "$TLP_ENABLE" = "1" ]; then
-        echo "TLP power save = enabled"
+        printf "State          = enabled\n"
     else
-        echo "TLP power save = not enabled"
+        printf "State          = disabled\n"
     fi
 
-    # -- show warning if l-m-t detected
-    check_laptop_mode_tools
+    # --- show last invocation time
+    printf "Last run       = %s\n" "$(print_file_modtime_and_age ${LOCKFILE}_tlp)"
 
-    # --- show power source
+    # --- show actual power mode
+    printf "Mode           = %s\n" "$(print_saved_powerstate)"
+
+    # ---- show actual power source
     get_sys_power_supply
     case $? in
-        0) echo "power source   = AC" ;;
-        1) echo "power source   = battery" ;;
-        *) echo "power source   = unknown (using ${TLP_DEFAULT_MODE:-AC} settings)" ;;
+        0) printf "Power source   = AC\n" ;;
+        1) printf "Power source   = battery\n" ;;
+        *) printf "Power source   = unknown\n" ;;
     esac
     echo
 
@@ -454,12 +480,16 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         done
         [ $cnt -gt 0 ] && echo
     fi
+
+    # -- show warning if l-m-t detected
+    check_laptop_mode_tools
+
 fi # show_system
 
 if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show cpu info
     echo "+++ Processor"
-    sed -rn 's/model name[ \t]+: (.+)/CPU Model      = \1/p' /proc/cpuinfo | head -1
+    sed -rn 's/model name[ \t]+: (.+)/CPU model      = \1/p' /proc/cpuinfo | head -1
     echo
 
     # -- show scaling gov and freq info

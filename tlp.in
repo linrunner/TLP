@@ -154,6 +154,7 @@ case "$mode" in
     start) # set mode depending on state (interactive mode)
         check_root
         if lock_tlp; then
+            compare_and_save_power_state $pwrmode
             apply_common_settings $pwrmode
             [ "$pwrmode" = "1" ] && poweroff_drivebay 0
             set_usb_suspend 0 auto
@@ -170,6 +171,7 @@ case "$mode" in
     true|bat*) # set battery power mode
         check_root
         if lock_tlp; then
+            compare_and_save_power_state 1
             apply_common_settings 1
             poweroff_drivebay 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
@@ -185,6 +187,7 @@ case "$mode" in
     false|ac) # set ac power mode
         check_root
         if lock_tlp; then
+            compare_and_save_power_state 0
             apply_common_settings 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
             set_radio_device_states 0
@@ -201,8 +204,6 @@ case "$mode" in
         if lock_tlp; then
             save_device_states "bluetooth wwan"
 
-            get_power_state
-            pwrmode=$?
             apply_common_settings 0
             suspend_drivebay $pwrmode
             unlock_tlp
@@ -214,8 +215,7 @@ case "$mode" in
         if lock_tlp; then
             restore_device_states
 
-            get_power_state
-            pwrmode=$?
+            compare_and_save_power_state $pwrmode
             apply_common_settings $pwrmode
             resume_drivebay
             unlock_tlp
