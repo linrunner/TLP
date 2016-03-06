@@ -722,7 +722,7 @@ if [ "$show_all" = "1" ]; then
     echo "+++ PCIe Active State Power Management"
     if [ -f $ASPM ]; then
         pol=$(cat $ASPM | sed -r 's/.*\[(.*)\].*/\1/')
-        echo "$pol" > $ASPM 2> /dev/null
+        printf '%s' "$pol" > $ASPM 2> /dev/null
         if [ $? = 0 ]; then
             echo "$ASPM = $pol"
         else

@@ -255,7 +255,7 @@ read_dmi () { # read DMI data -- $*: keywords; stdout: dmi strings
         fi
     done
 
-    echo $outr
+    printf '%s' "$outr"
     return 0
 }
 
@@ -544,7 +544,7 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
         isec=${DISK_IDLE_SECS_ON_AC:-}
     fi
     # replace with empty string if non-numeric chars are contained
-    isec=$(echo "$isec" | egrep '^[0-9]+$')
+    isec=$(printf '%s' "$isec" | egrep '^[0-9]+$')
 
     if [ -z "$isec" ]; then
         # do nothing if unconfigured or non numeric value
@@ -553,7 +553,7 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
     fi
 
     echo_debug "pm" "set_laptopmode($1): $isec"
-    echo $isec > /proc/sys/vm/laptop_mode
+    printf '%s\n' "$isec" > /proc/sys/vm/laptop_mode
 
     return 0
 }
@@ -618,7 +618,7 @@ set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mod
     if [ -n "$gov" ]; then
         echo_debug "pm" "set_scaling_governor($1): $gov"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-            [ -f $cpu ] && echo $gov > $cpu 2> /dev/null
+            [ -f $cpu ] && printf '%s\n' "$gov" > $cpu 2> /dev/null
         done
     fi
 
@@ -639,14 +639,14 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
     if [ -n "$minfreq" ]; then
         echo_debug "pm" "set_scaling_min_max_freq($1).min: $minfreq"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
-            [ -f $cpu ] && echo $minfreq > $cpu 2> /dev/null
+            [ -f $cpu ] && printf '%s\n' "$minfreq" > $cpu 2> /dev/null
         done
     fi
 
     if [ -n "$maxfreq" ]; then
         echo_debug "pm" "set_scaling_min_max_freq($1).max: $maxfreq"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
-            [ -f $cpu ] && echo $maxfreq > $cpu 2> /dev/null
+            [ -f $cpu ] && printf '%s\n' "$maxfreq" > $cpu 2> /dev/null
         done
     fi
 
@@ -674,7 +674,7 @@ set_cpu_perf_pct () { # set Intel P-state performance
     if [ ! -f $CPU_MIN_PERF_PCT ]; then
         echo_debug "pm" "set_cpu_perf_pct($1).min.not_supported"
     elif [ -n "$min" ]; then
-        { echo "$min" > $CPU_MIN_PERF_PCT; } 2> /dev/null
+        { printf '%s\n' "$min" > $CPU_MIN_PERF_PCT; } 2> /dev/null
         echo_debug "pm" "set_cpu_perf_pct($1).min: $min"
     else
         echo_debug "pm" "set_cpu_perf_pct($1).min.not_configured"
@@ -683,7 +683,7 @@ set_cpu_perf_pct () { # set Intel P-state performance
     if [ ! -f $CPU_MAX_PERF_PCT ]; then
         echo_debug "pm" "set_cpu_perf_pct($1).max.not_supported"
     elif [ -n "$max" ]; then
-        { echo "$max" > $CPU_MAX_PERF_PCT; } 2> /dev/null
+        { printf '%s\n' "$max" > $CPU_MAX_PERF_PCT; } 2> /dev/null
         echo_debug "pm" "set_cpu_perf_pct($1).max: $max"
     else
         echo_debug "pm" "set_cpu_perf_pct($1).max.not_configured"
@@ -722,7 +722,7 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
         # use intel_pstate sysfiles
         if [ -f $CPU_TURBO_PSTATE ]; then
             ival=$(($val ^ 1))
-            echo "$ival" > $CPU_TURBO_PSTATE 2> /dev/null
+            printf '%s\n' "$ival" > $CPU_TURBO_PSTATE 2> /dev/null
             echo_debug "pm" "set_cpu_boost_all($1).intel_pstate: $val"
         else
             echo_debug "pm" "set_cpu_boost_all($1).intel_pstate.cpu_not_supported"
@@ -730,7 +730,7 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
     elif [ -f $CPU_BOOST_ALL_CTRL ]; then
         # use acpi_cpufreq sysfiles
         # simple test for attribute "w" doesn't work, so actually write
-        if ( echo "$val" > $CPU_BOOST_ALL_CTRL ) 2> /dev/null; then
+        if ( printf '%s\n' "$val" > $CPU_BOOST_ALL_CTRL ) 2> /dev/null; then
             echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq: $val"
         else
             echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq.cpu_not_supported"
@@ -760,12 +760,11 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
         return 0
     fi
 
-
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
         if [ -f $sdev ]; then
             echo_debug "pm" "set_sched_powersave($1): ${sdev##/*/} $pwr"
-            echo $pwr > "$sdev"
+            printf '%s\n' "$pwr" > "$sdev"
             avail=1
         fi
     done
@@ -785,7 +784,7 @@ set_nmi_watchdog () { # enable/disable nmi watchdog
     fi
 
     if [ -f /proc/sys/kernel/nmi_watchdog ]; then
-        echo "$nmiwd" > /proc/sys/kernel/nmi_watchdog 2> /dev/null
+        printf '%s\n' "$nmiwd" > /proc/sys/kernel/nmi_watchdog 2> /dev/null
         if [ $? = 0 ]; then
             echo_debug "pm" "set_nmi_watchdog: $nmiwd"
         else
@@ -813,7 +812,7 @@ set_phc_controls () { # set core voltages
     for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do
         if [ -f $control ]; then
             echo_debug "pm" "set_phc_controls: $control $phc_controls"
-            echo $phc_controls > $control
+            printf '%s\n' "$phc_controls" > $control
             ctrl_avail="1"
         fi
     done
@@ -874,7 +873,7 @@ echo_disk_model () { # print disk model -- $1: dev
 
     model=$($HDPARM -I /dev/$1 2>&1 | grep 'Model Number' | \
       cut -f2 -d: | sed -r 's/^ *//' )
-    echo "$model"
+    printf '%s\n' "$model"
 
     return 0
 }
@@ -884,7 +883,7 @@ echo_disk_firmware () { # print firmware version --- $1: dev
 
     firmware=$($HDPARM -I /dev/$1 2>&1 | grep 'Firmware Revision' | \
       cut -f2 -d: | sed -r 's/^ *//' )
-    echo "$firmware"
+    printf '%s\n' "$firmware"
 
     return 0
 }
@@ -939,7 +938,7 @@ get_disk_dev () { # translate disk id to device (sdX)
     if [ -h /dev/disk/by-id/$1 ]; then
         # $1 is disk id
         disk_id=$1
-        disk_dev=$(echo $disk_id | sed -r 's/-part[1-9][0-9]*$//')
+        disk_dev=$(printf '%s' "$disk_id" | sed -r 's/-part[1-9][0-9]*$//')
         disk_dev=$(readlink /dev/disk/by-id/$disk_dev)
         disk_dev=${disk_dev##*/}
     else
@@ -948,7 +947,7 @@ get_disk_dev () { # translate disk id to device (sdX)
         disk_id=""
     fi
     # strip partition number
-    disk_dev=$(echo $disk_dev | sed -r 's/[1-9][0-9]*$//')
+    disk_dev=$(printf '%s' "$disk_dev" | sed -r 's/[1-9][0-9]*$//')
 }
 
 set_disk_apm_level () { # set disk apm level
@@ -1058,7 +1057,6 @@ set_disk_io_sched () { # set disk io scheduler
     # pairwise iteration DISK_DEVICES[1,n], schedlist[1,m]; m > 0
     #  for j in [1,min(n,m)]   : disk_dev[j], schedlistj]
     #  for j in [min(n,m)+1,n] : disk_dev[j], %DEFAULT_DISK_IO_SCHEDULER
-    #
     for dev in $DISK_DEVICES; do
         get_disk_dev $dev
 
@@ -1075,7 +1073,7 @@ set_disk_io_sched () { # set disk io scheduler
             echo_debug "disk" "${log_message} -- keep as is"
         else
             echo_debug "disk" "${log_message}"
-            echo -n $sched > $schedctrl
+            printf '%s' "$sched" > $schedctrl
         fi
 
         # using %DEFAULT_DISK_IO_SCHEDULER when argv is empty
@@ -1110,7 +1108,7 @@ set_sata_link_power () { # set sata link power management
 
     for i in /sys/class/scsi_host/host*/link_power_management_policy ; do
         if [ -f $i ]; then
-            echo "$pwr" > $i
+            printf '%s\n' "$pwr" > $i
             ctrl_avail="1"
         fi
     done
@@ -1137,7 +1135,7 @@ set_pcie_aspm () { # set pcie active state power management
     fi
 
     if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
-        echo "$pwr" > /sys/module/pcie_aspm/parameters/policy 2> /dev/null
+        printf '%s\n' "$pwr" > /sys/module/pcie_aspm/parameters/policy 2> /dev/null
         if [ $? = 0 ]; then
             echo_debug "pm" "set_pcie_aspm($1): $pwr"
         else
@@ -1180,8 +1178,8 @@ set_radeon_profile () { # set radeon power profile
             fi
 
             if [ -n "$pwr" ]; then
-                echo "$pwr" > $card/power_dpm_state 2> /dev/null; rc1=$?
-                echo "$level" > $card/power_dpm_force_performance_level 2> /dev/null; rc2=$?
+                printf '%s\n' "$pwr" > $card/power_dpm_state 2> /dev/null; rc1=$?
+                printf '%s\n' "$level" > $card/power_dpm_force_performance_level 2> /dev/null; rc2=$?
                 echo_debug "pm" "set_radeon_profile($1): $card state=$pwr [rc=$rc1] perf=$level [rc=$rc2]"
             fi
 
@@ -1203,8 +1201,8 @@ set_radeon_profile () { # set radeon power profile
 
             if [ -n "$pwr" ]; then
                 echo_debug "pm" "set_radeon_profile($1): $card profile=$pwr"
-                echo "profile" > $card/power_method 2> /dev/null
-                echo "$pwr" > $card/power_profile 2> /dev/null
+                printf '%s\n' "profile" > $card/power_method 2> /dev/null
+                printf '%s\n' "$pwr" > $card/power_profile 2> /dev/null
             fi
 
             sdone=1
@@ -1245,18 +1243,18 @@ set_sound_power_mode () { # set sound chip power modes
 
     if [ -d /sys/module/snd_hda_intel ]; then
         echo_debug "pm" "set_sound_power_mode($1).hda: $pwr controller=$cpwr"
-        echo "$pwr" > /sys/module/snd_hda_intel/parameters/power_save
+        printf '%s\n' "$pwr" > /sys/module/snd_hda_intel/parameters/power_save
 
         if [ "$pwr" = "0" ]; then
             echo "N" >  /sys/module/snd_hda_intel/parameters/power_save_controller
         else
-            echo "$cpwr" > /sys/module/snd_hda_intel/parameters/power_save_controller
+            printf '%s\n' "$cpwr" > /sys/module/snd_hda_intel/parameters/power_save_controller
         fi
     fi
 
     if [ -d /sys/module/snd_ac97_codec ]; then
         echo_debug "pm" "set_sound_power_mode($1).ac97: $pwr"
-        echo "$pwr"  > /sys/module/snd_ac97_codec/parameters/power_save
+        printf '%s\n' "$pwr"  > /sys/module/snd_ac97_codec/parameters/power_save
     fi
 
     return 0
@@ -2146,7 +2144,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     esac
 
     # convert bat to uppercase
-    bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
+    bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
 
     # check bat presence and/or get default(1st) battery
     check_tp_battery $bat
@@ -2219,7 +2217,7 @@ get_sysval () { # $1: file; rc: sysfile value
     [ -f $sysf ] && val=$(cat $sysf 2> /dev/null)
 
     # replace with 0 if empty string or non-numeric chars are contained
-    [ -z "$(echo "$val" | egrep '^[0-9]+$')" ] && val=0
+    [ -z "$(printf '%s' "$val" | egrep '^[0-9]+$')" ] && val=0
 
     return $val
 }
@@ -2242,7 +2240,7 @@ chargeonce_battery () { # charge battery to upper threshold once
 
         # get battery arg
         bat=${1:-DEF}
-        bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
+        bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
     else
         # no parameters given, use default(1st) battery
         bat=DEF
@@ -2329,7 +2327,7 @@ discharge_battery () { # discharge battery
     # check params
     bat=$1
     bat=${bat:=DEF}
-    bat=$(echo $bat | tr "[:lower:]" "[:upper:]")
+    bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
 
     # check if selected battery is present
     check_tp_battery $bat
