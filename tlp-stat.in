@@ -363,10 +363,11 @@ nodebug=1
 read_defaults
 conf_present=$?
 
-# check prereqisites
+# check prerequisites
 if [ "$needs_root_priv" = "1" ]; then
     check_root
-    load_modules
+    load_modules $MOD_MSR $MOD_TEMP
+    check_thinkpad
     check_tpacpi
     check_tpsmapi
 fi
@@ -1192,22 +1193,22 @@ if [ "$show_all" = "1" ]; then
     fi
 
     if is_thinkpad; then
-        # Add ThinkPad specific suggestions -- $tpmodel preset by is_thinkpad()
-        if echo "$tpmodel" | egrep -q "${RE_TPACPI_ONLY}"; then
+        # add ThinkPad specific suggestions -- $tpmodel preset by check_thinkpad()
+        if supports_tpsmapi_only; then
+            # tp-smapi only capable models
+            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
+
+        elif supports_tpacpi_only; then
             # tpacpi-bat only capable models
             [ $tpacpi -eq 127 ] && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
 
-        elif echo "$tpmodel" | egrep -q "${RE_TPSMAPI_AND_TPACPI}"; then
-            # tpacpi-bat and tp-smapi capable models
+        elif supports_tpsmapi_and_tpacpi; then
+            # tp-smapi and tpacpi-bat capable models
+            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
             [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
-            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
 
-        elif echo "$tpmodel" | egrep -q "${RE_TPSMAPI_ONLY}"; then
-            # tpacpi-bat and tp-smapi capable models
-            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
-
-        elif echo "$tpmodel" | egrep -q "${RE_TP_NONE}"; then
-            : # models that are neither tpacpi-bat nor tp-smapi capable
+        elif supports_no_tp_bat_funcs; then
+            : # models that are neither tp_smapi nor tpacpi-bat capable
 
         else
             # all others assumed tp-smapi capable ...
@@ -1216,7 +1217,7 @@ if [ "$show_all" = "1" ]; then
         fi
     fi # if ThinkPad
 
-    # Add other suggestions
+    # add other suggestions
     cmd_exists ethtool || suout="${suout}Install ethtool to disable Wake On LAN (WOL)\n"
     cmd_exists smartctl || suout="${suout}Install smartmontools for disk drive health info\n"
 
