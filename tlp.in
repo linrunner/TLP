@@ -134,6 +134,7 @@ case "$mode" in
             unlock_tlp
         else
             echo_tlp_locked
+            exitcode=4
         fi
         ;;
 
@@ -148,6 +149,8 @@ case "$mode" in
                 set_radio_device_states $pwrmode
             fi
             unlock_tlp
+        else
+            exitcode=4
         fi
         ;;
 
@@ -165,6 +168,7 @@ case "$mode" in
             echo_started_mode $pwrmode
         else
             echo_tlp_locked
+            exitcode=4
         fi
         ;;
 
@@ -181,6 +185,7 @@ case "$mode" in
             echo_started_mode 1
         else
             echo_tlp_locked
+            exitcode=4
         fi
         ;;
 
@@ -196,6 +201,7 @@ case "$mode" in
             echo_started_mode 0
         else
             echo_tlp_locked
+            exitcode=4
         fi
         ;;
 
@@ -207,6 +213,8 @@ case "$mode" in
             apply_common_settings 0
             suspend_drivebay $pwrmode
             unlock_tlp
+        else
+            exitcode=4
         fi
         ;;
 
@@ -219,6 +227,8 @@ case "$mode" in
             apply_common_settings $pwrmode
             resume_drivebay
             unlock_tlp
+        else
+            exitcode=4
         fi
         ;;
 
