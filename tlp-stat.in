@@ -219,7 +219,7 @@ print_file_modtime_and_age () { # show a file's last modification time
     if [ -f $1 ]; then
         mtime=$(date +%X -r $1)
         age=$(( $(date +%s) - $(date +%s -r $1) ))
-        printf '%s, %6d sec(s) ago' $mtime $age
+        printf '%s, %6d sec(s) ago' "$mtime" "$age"
     else
         printf "unknown"
     fi
