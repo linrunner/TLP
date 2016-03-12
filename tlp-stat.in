@@ -949,12 +949,12 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
 
     echo "+++ Runtime Power Management"
     if [ "$doall" = "1" ]; then
-        echo "device classes   = all"
+        echo "Device classes   = all"
     else
-        echo "device classes   = Ethernet, Wireless, Audio, Host Bridge, [SD] Card Reader, Firewire"
+        echo "Device classes   = Ethernet, Wireless, Audio, Host Bridge, [SD] Card Reader, Firewire"
     fi
-    echo "device blacklist = ${RUNTIME_PM_BLACKLIST:=(not configured)}"
-    echo "driver blacklist = ${RUNTIME_PM_DRIVER_BLACKLIST:=(not configured)}"
+    echo "Device blacklist = ${RUNTIME_PM_BLACKLIST:=(not configured)}"
+    echo "Driver blacklist = ${RUNTIME_PM_DRIVER_BLACKLIST:=(not configured)}"
     echo
 
     if cmd_exists $TLPPCI; then
@@ -970,16 +970,16 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show usb autosuspend
     echo "+++ USB"
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
-        echo "autosuspend        = enabled"
+        echo "Autosuspend        = enabled"
     else
-        echo "autosuspend        = disabled"
+        echo "Autosuspend        = disabled"
     fi
-    echo "device whitelist   = ${USB_WHITELIST:=(not configured)}"
-    echo "device blacklist   = ${USB_BLACKLIST:=(not configured)}"
+    echo "Device whitelist   = ${USB_WHITELIST:=(not configured)}"
+    echo "Device blacklist   = ${USB_BLACKLIST:=(not configured)}"
     if [ "$USB_BLACKLIST_WWAN" = "1" ]; then
-        echo "wwan blacklist     = enabled"
+        echo "WWAN blacklist     = enabled"
     else
-        echo "wwan blacklist     = disabled"
+        echo "WWAN blacklist     = disabled"
     fi
     if [ -n "$USB_DRIVER_BLACKLIST" ] && [ "$USB_DRIVER_BLACKLIST" != "usbhid" ]; then
         echo "Notice: USB_DRIVER_BLACKLIST is no longer supported, use USB_BLACKLIST."
