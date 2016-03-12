@@ -112,7 +112,7 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
         val=$(cat $sysf 2> /dev/null)
         if [ $? = 0 ]; then
             # sysfile was readable, output content
-            printf "%-44s = %2d " $sysf $val
+            printf "%-44s = %2d " "$sysf" "$val"
             # Explain content
             if [ "$val" = "-1" ]; then
                 echo "(use per-chip default)"
@@ -129,11 +129,11 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
             fi
         else
             # sysfile was not readable
-            printf "%-44s = (not available)\n" $sysf
+            printf "%-44s = (not available)\n" "$sysf"
         fi
     else
         # Neither sysfile nor alternative exists
-        printf "%-44s = (not available)\n" $1
+        printf "%-44s = (not available)\n" "$1"
     fi
 
     return 0
@@ -156,7 +156,7 @@ print_tp_batstate () { # print battery charging state with an explanation when
         val=$(cat $sysf 2> /dev/null)
         if [ $? = 0 ]; then
             # sysfile was readable, output content
-            printf "%-59s = %s" $sysf $val
+            printf "%-59s = %s" "$sysf" "$val"
             # Explain content if necessary
             case $val in
                 Unknown) # "Unknown" means a threshold forbids charging
@@ -169,11 +169,11 @@ print_tp_batstate () { # print battery charging state with an explanation when
             esac
         else
             # sysfile was not readable
-            printf "%-59s = (not available)\n" $sysf
+            printf "%-59s = (not available)\n" "$sysf"
         fi
     else
         # sysfile nonexistent
-        printf "%-59s = (not available)\n" $1
+        printf "%-59s = (not available)\n" "$1"
     fi
 
     return 0
@@ -188,7 +188,7 @@ print_tpacpi_thresholds () { # formatted output of ThinkPad charging thresholds
     start_thresh=$?
     if [ $start_thresh -ne 255 ]; then
         [ $start_thresh -eq 0 ] && start_thresh=96
-        printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.startThreshold" $start_thresh
+        printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.startThreshold" "$start_thresh"
     else
         printf "%-59s = (not available)\n" "tpacpi-bat.${1}.startThreshold"
     fi
@@ -197,7 +197,7 @@ print_tpacpi_thresholds () { # formatted output of ThinkPad charging thresholds
     stop_thresh=$?
     if [ $stop_thresh -ne 255 ]; then
         [ $stop_thresh -eq  0 ] && stop_thresh=100
-        printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.stopThreshold" $stop_thresh
+        printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.stopThreshold" "$stop_thresh"
     else
         printf "%-59s = (not available)\n" "tpacpi-bat.${1}.stopThreshold"
     fi
@@ -499,17 +499,17 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
             printparm "%-54s = ##%s##" $cpuf/scaling_governor
 
             if [ -f $cpuf/scaling_min_freq ]; then
-                printf "%-54s = %8d [kHz]\n" $cpuf/scaling_min_freq $(cat $cpuf/scaling_min_freq)
+                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(cat $cpuf/scaling_min_freq)"
             fi
 
             if [ -f $cpuf/scaling_max_freq ]; then
-                printf "%-54s = %8d [kHz]\n" $cpuf/scaling_max_freq $(cat $cpuf/scaling_max_freq)
+                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(cat $cpuf/scaling_max_freq)"
             fi
 
             if [ -f $cpuf/scaling_available_frequencies ]; then
-                printf "%s = " $cpuf/scaling_available_frequencies
+                printf "%s = " "$cpuf/scaling_available_frequencies"
                 for freq in $(cat $cpuf/scaling_available_frequencies); do
-                    printf "%s " $freq
+                    printf "%s " "$freq"
                 done
                 printf "[kHz]\n"
             fi
@@ -632,7 +632,7 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
                 have_any_fan=y
 
                 printf "Fan speed (%s)       = %5d [/min]\n" \
-                    ${fan_name} ${fan_speed}
+                    "${fan_name}" "${fan_speed}"
             fi
         done
         if [ -z "${have_any_fan}" ]; then
@@ -1129,9 +1129,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
                 cc=$(cat $batd/cycle_count 2> /dev/null)
                 if [ $? -eq 0 ] && [ -n "$cc" ] && [ $cc -gt 0 ]; then
-                    printf "%-59s = %6d\n" $batd/cycle_count $cc
+                    printf "%-59s = %6d\n" "$batd/cycle_count" "$cc"
                 else
-                    printf "%-59s = (not supported)\n" $batd/cycle_count
+                    printf "%-59s = (not supported)\n" "$batd/cycle_count"
                 fi
 
                 if [ -f $batd/energy_full ]; then

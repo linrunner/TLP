@@ -2369,11 +2369,11 @@ discharge_battery () { # discharge battery
         if [ $tpsmapi -eq 0 ]; then # use tp_smapi
             bdir=$SMAPIDIR/$bat_str
 
-            printf "voltage            = %6s [mV]\n"  $(cat $bdir/voltage)
-            printf "remaining capacity = %6s [mWh]\n" $(cat $bdir/remaining_capacity)
-            printf "remaining percent  = %6s [%%]\n"  $(cat $bdir/remaining_percent)
-            printf "remaining time     = %6s [min]\n" $(cat $bdir/remaining_running_time_now)
-            printf "power              = %6s [mW]\n"  $(cat $bdir/power_avg)
+            printf "voltage            = %6s [mV]\n"  "$(cat $bdir/voltage)"
+            printf "remaining capacity = %6s [mWh]\n" "$(cat $bdir/remaining_capacity)"
+            printf "remaining percent  = %6s [%%]\n"  "$(cat $bdir/remaining_percent)"
+            printf "remaining time     = %6s [min]\n" "$(cat $bdir/remaining_running_time_now)"
+            printf "power              = %6s [mW]\n"  "$(cat $bdir/power_avg)"
         else # use acpi
             bdir=$ACPIBATDIR/$bat_str
 
