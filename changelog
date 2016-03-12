@@ -1,4 +1,4 @@
-+++ 0.9 --- 06.03.2016 +++
++++ 0.9 --- 12.03.2016 +++
 
   * Development Release
 
@@ -15,7 +15,9 @@
         - More selective suggestions for tp-smapi/acpi-call kernel modules
     tlp-stat:
       - --pev: monitor power supply udev events (Issue #172)
-      - Storage Devices: SMART attributes Power_Cycle_Count, Unused_Rsvd_Blk_Cnt_Tot,
+      - Storage Devices:
+        - Recognize blk-mq I/O scheduler
+        - SMART attributes Power_Cycle_Count, Unused_Rsvd_Blk_Cnt_Tot,
         NAND_Writes_1GiB
       - Suggestions: add *60 models for tp-smapi/acpi-call
       - System Info: show boot mode UEFI / BIOS

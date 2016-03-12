@@ -696,8 +696,13 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
                     1) echo "          TRIM      = supported" ;;
                 esac
 
-                [ -f /sys/block/$disk_dev/queue/scheduler ] && \
-                    echo "          Scheduler = $(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
+                if [ -f /sys/block/$disk_dev/queue/scheduler ]; then
+                    sched="$(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
+                    if [ "$sched" = "none" ] && [ -d /sys/block/$disk_dev/mq ]; then
+                        sched="blk-mq"
+                    fi
+                    printf "          Scheduler = %s\n" "$sched"
+                fi
 
                 if cmd_exists $SMARTCTL ; then
                     # --- show SMART data
