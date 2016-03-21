@@ -394,7 +394,7 @@
     - #28: further mitigate race with gdm when disabling radios
            in init script (blackbox)
     - #29: tlp-stat: remove smartctl garbage output (SirVival)
-    - #30: supress dmidecode error output (kristatos)
+    - #30: suppress dmidecode error output (kristatos)
     - iterate over all sched_powersave instances
     - i915: rc6/fbc features removed
     - Start upowerd in init script
