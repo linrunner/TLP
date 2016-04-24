@@ -127,9 +127,9 @@ RADEON_DPM_STATE_ON_BAT=battery
 RADEON_DPM_PERF_LEVEL_ON_AC=auto
 RADEON_DPM_PERF_LEVEL_ON_BAT=auto
 
-# WiFi power saving mode: 1=disable, 5=enable; not supported by all adapters.
-WIFI_PWR_ON_AC=1
-WIFI_PWR_ON_BAT=5
+# WiFi power saving mode: on=enable, off=disable; not supported by all adapters.
+WIFI_PWR_ON_AC=off
+WIFI_PWR_ON_BAT=on
 
 # Disable wake on LAN: Y/N
 WOL_DISABLE=Y

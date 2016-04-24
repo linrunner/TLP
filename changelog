@@ -1,4 +1,4 @@
-+++ 0.9 --- 12.03.2016 +++
++++ 0.9 --- 24.04.2016 +++
 
   * Development Release
 
@@ -8,6 +8,8 @@
     Radio Devices:
       - Finally remove deprecated DEVICES_TO_ENABLE_ON_RADIOSW code
         (works with Ubuntu 12.04/Kernel 3.2 only)
+      - Change WIFI_PWR_ON_AC/BAT default config values to off/on for better
+        usability (1/5 is still supported for backwards compatibility)
     (ThinkPad) Battery:
       - tlp-stat:
         - Distinguish incompatible hardware from load errors (Issue #160)

@@ -1397,16 +1397,19 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
         pwr=${WIFI_PWR_ON_AC:-}
     fi
 
+    # check values, translate obsolete syntax
+    case "$pwr" in
+        off|on)      ;;
+        0|1|N)       pwr="off" ;;
+        2|3|4|5|6|Y) pwr="on"  ;;
+        *)           pwr=""    ;; # invalid input --> unconfigured
+    esac
+
     if [ -z "$pwr" ]; then
         # do nothing if unconfigured
         echo_debug "pm" "set_wifi_power_mode($1).not_configured"
         return 0
     fi
-
-    case $pwr in
-        0|1|N)          pwr="off" ;;
-        2|3|4|5|6|Y)    pwr="on"  ;;
-    esac
 
     get_wifi_ifaces
 
@@ -1417,7 +1420,7 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
                 $IW dev $iface set power_save $pwr > /dev/null 2>&1
                 rc=$?
                 echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr; rc=$rc"
-                cmdx=1
+                cmdx=1 # set flag: iw found and called
             fi
             if cmd_exists $IWC; then
                 if [ $rc -ne 0 ] || [ $cmdx -eq 0 ]; then
@@ -1425,11 +1428,11 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
                     $IWC $iface power $pwr > /dev/null 2>&1
                     rc=$?
                     echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig: $pwr; rc=$rc"
-                    cmdx=1
+                    cmdx=1 # set flag: iwconfig found and called
                 fi
             fi
             if [ $cmdx -eq 0 ]; then
-                # neither iw nor iwconfig installed -> no way
+                # flag not set: neither iw nor iwconfig installed --> no way
                 echo_debug "pm" "set_wifi_power_mode($1, $iface).no_tool"
             fi
         fi
