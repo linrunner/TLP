@@ -18,6 +18,7 @@
         - Show battery charge and capacity values in %
         - More selective suggestions for tp-smapi/acpi-call kernel modules
     tlp-stat:
+      - Intel graphics: include i915 parameters enable_dc, enable_psr
       - --pev: monitor power supply udev events (Issue #172)
       - Storage Devices:
         - Recognize blk-mq I/O scheduler
