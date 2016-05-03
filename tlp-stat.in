@@ -139,6 +139,17 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
     return 0
 }
 
+printsysf () { # output a sysfile
+    # $1: format; $2: sysfile
+
+    if [ -f $2 ]; then
+        # sysfile exists
+        printf "$1" $(cat $2 2> /dev/null)
+    fi
+
+    return 0
+}
+
 print_tp_batstate () { # print battery charging state with an explanation when
     # a threshold inhibits charging
     # $1: sysfile; $2: 1=ThinkPad battery/0=other
@@ -670,30 +681,30 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
                 echo "/dev/$disk_dev:"
 
                 if [ -n "$disk_id" ]; then
-                    echo "          Disk ID   = $disk_id"
+                    echo "  Disk ID   = $disk_id"
                 fi
 
-                echo -n "          Model     = "
+                echo -n "  Model     = "
                 echo_disk_model $disk_dev
 
-                echo -n "          Firmware  = "
+                echo -n "  Firmware  = "
                 echo_disk_firmware $disk_dev
 
                 get_disk_apm_level $disk_dev
                 apm=$?
-                echo -n "          APM Level = "
+                echo -n "  APM Level = "
                 case $apm in
                     0|255) echo "none/disabled" ;;
                     *)     echo $apm ;;
                 esac
 
-                echo "          Status    = $disk_state"
+                echo "  Status    = $disk_state"
 
                 get_disk_trim_capability $disk_dev
                 trim=$?
                 case $trim in
-                    0) echo "          TRIM      = not supported" ;;
-                    1) echo "          TRIM      = supported" ;;
+                    0) echo "  TRIM      = not supported" ;;
+                    1) echo "  TRIM      = supported" ;;
                 esac
 
                 if [ -f /sys/block/$disk_dev/queue/scheduler ]; then
@@ -701,32 +712,39 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
                     if [ "$sched" = "none" ] && [ -d /sys/block/$disk_dev/mq ]; then
                         sched="blk-mq"
                     fi
-                    printf "          Scheduler = %s\n" "$sched"
+                    printf "  Scheduler = %s\n" "$sched"
+                fi
+
+                ddev=/sys/block/$disk_dev/device/power
+                if [ -f $ddev/control ]; then
+                    echo
+                    printsysf "  Runtime PM: control = %s, " $ddev/control
+                    printsysf "autosuspend_delay = %4s\n"     $ddev/autosuspend_delay_ms
                 fi
 
                 if cmd_exists $SMARTCTL ; then
                     # --- show SMART data
                     echo
-                    echo "        SMART info:"
+                    echo "  SMART info:"
                     $SMARTCTL -A /dev/$disk_dev | grep -v '<==' | \
                       awk -F ' ' '$2 ~ /Power_Cycle_Count|Start_Stop_Count|Load_Cycle_Count|Reallocated_Sector_Ct/ \
-                                        { printf "          %3d %-25s = %8d \n", $1, $2, $10 } ; \
+                                        { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
                                   $2 ~ /Used_Rsvd_Blk_Cnt_Chip|Used_Rsvd_Blk_Cnt_Tot|Unused_Rsvd_Blk_Cnt_Tot/ \
-                                        { printf "          %3d %-25s = %8d \n", $1, $2, $10 } ; \
+                                        { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
                                   $2 ~ /Power_On_Hours/ \
-                                        { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[h]" } ; \
+                                        { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[h]" } ; \
                                   $2 ~ /Temperature_Celsius/ \
-                                        { printf "          %3d %-25s = %8d %s %s %s %s\n", $1, $2, $10, $11, $12, $13, "[°C]" } ; \
+                                        { printf "    %3d %-25s = %8d %s %s %s %s\n", $1, $2, $10, $11, $12, $13, "[°C]" } ; \
                                   $2 ~ /Airflow_Temperature_Cel/ \
-                                        { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[°C]" } ; \
+                                        { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[°C]" } ; \
                                   $2 ~ /Host_Writes/ \
-                                        { printf "          %3d %-25s = %8.3f %s\n", $1, $2, $10 / 32768.0, "[TB]" } ; \
+                                        { printf "    %3d %-25s = %8.3f %s\n", $1, $2, $10 / 32768.0, "[TB]" } ; \
                                   $2 ~ /Total_LBAs_Written/ \
-                                        { printf "          %3d %-25s = %8.3f %s\n", $1, $2, $10 / 2147483648.0, "[TB]" } ; \
+                                        { printf "    %3d %-25s = %8.3f %s\n", $1, $2, $10 / 2147483648.0, "[TB]" } ; \
                                   $2 ~ /NAND_Writes_1GiB/ \
-                                        { printf "          %3d %-25s = %8d %s\n", $1, $2, $10, "[GB]" } ; \
+                                        { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[GB]" } ; \
                                   $2 ~ /Available_Reservd_Space|Media_Wearout_Indicator|Wear_Leveling_Count/ \
-                                        { printf "          %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
+                                        { printf "    %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
                 fi
                 echo
 
@@ -739,17 +757,27 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show sata alpm mode
     echo "+++ SATA Aggressive Link Power Management"
-    cnt=0
-    for i in /sys/class/scsi_host/host* ; do
-        if [ -f $i/link_power_management_policy ]; then
-            printparm "%-56s = ##%s##" $i/link_power_management_policy
-            cnt=$((cnt+1))
-        fi
-    done
-    if [ $cnt = 0 ]; then
+    if stat -t /sys/class/scsi_host/host*/link_power_management_policy > /dev/null 2>&1; then
+        for i in /sys/class/scsi_host/host* ; do
+            if [ -f $i/link_power_management_policy ]; then
+                printparm "%-56s = ##%s##" $i/link_power_management_policy
+                cnt=$((cnt+1))
+            fi
+        done
+    else
         echo "No AHCI-enabled host controller detected."
     fi
     echo
+
+    # --- show ahci runtime pm
+    if stat -t ${AHCID}/power > /dev/null 2>&1; then
+        echo "+++ AHCI Host Controller Runtime Power Management"
+        for dev in ${AHCID}/power ; do
+            printparm "%-40s = ##%s##" $dev/control
+        done
+        echo
+    fi
+
 fi # show_disk
 
 if [ "$show_all" = "1" ]; then
@@ -969,6 +997,7 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
         echo "Error: missing subcommand $TLPPCI." 1>&2
     fi
     echo
+
 fi # show_pcie
 
 if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then

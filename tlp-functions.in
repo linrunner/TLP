@@ -57,6 +57,8 @@ readonly INTEL_PSTATED=/sys/devices/system/cpu/intel_pstate
 readonly CPU_MIN_PERF_PCT=$INTEL_PSTATED/min_perf_pct
 readonly CPU_MAX_PERF_PCT=$INTEL_PSTATED/max_perf_pct
 readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
+readonly AHCID=$PCID'/*/ata*'
+readonly BLOCKD='/sys/block/sd*'
 
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT=2
@@ -1351,6 +1353,55 @@ set_runtime_pm () { # set runtime power management
             [ -n "$lclass" ] && lclass=" $lclass"
             echo_debug "pm" "set_runtime_pm($1).$control: $device [$class$lclass]"
         done
+    done
+
+    return 0
+}
+
+set_ahci_runtime_pm () { # set ahci runtime power management
+    # $1: 0=ac mode, 1=battery mode
+
+    local control device timeout
+
+    if [ "$1" = "1" ]; then
+        control=${AHCI_RUNTIME_PM_ON_BAT:-}
+    else
+        control=${AHCI_RUNTIME_PM_ON_AC:-}
+    fi
+
+    # calc timeout in millisecs, default to 15000
+    timeout=$((${AHCI_RUNTIME_PM_TIMEOUT:-15} * 1000))
+    [ "$timeout" != "0" ] || timeout=15000
+
+    # check values
+    case "$control" in
+        on|auto)       ;;
+        *) control="" ;; # invalid input --> unconfigured
+    esac
+
+    if [ -z "$control" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_ahci_runtime_pm($1).not_configured"
+        return 0
+    fi
+
+    # iterate ahci devices
+    for device in $AHCID; do
+        if [ -f ${device}/power/control ]; then
+            echo $control > ${device}/power/control
+            echo_debug "pm" "set_ahci_runtime_pm($1).$control: host=$device"
+        fi
+    done
+
+    # iterate block devices
+    for device in $BLOCKD; do
+        if [ -f ${device}/device/power/control ]; then
+            # write timeout first because writing "auto" with the default
+            # timeout -1 still active will lockup the machine!
+            echo $timeout > ${device}/device/power/autosuspend_delay_ms 2> /dev/null
+            echo $control > ${device}/device/power/control 2> /dev/null
+            echo_debug "pm" "set_ahci_runtime_pm($1).$control: disk=$device timeout=$timeout"
+        fi
     done
 
     return 0
