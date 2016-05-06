@@ -95,7 +95,7 @@ case "$mode" in
 
         # do init business ...
         case $mode2 in
-            start|restart|force-reload)
+            start)
                 # apply radio states
                 set_radio_device_states start
 
@@ -108,6 +108,21 @@ case "$mode" in
                     [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                     echo "done."
                 fi
+
+                # apply battery settings
+                echo -n "Setting battery charge thresholds..."
+                set_charge_thresholds
+                echo "done."
+                ;;
+
+            restart|force-reload)
+                # apply power save settings
+                compare_and_save_power_state $pwrmode
+                echo -n "Applying power save settings..."
+                apply_common_settings $pwrmode
+                [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+                [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
+                echo "done."
 
                 # apply battery settings
                 echo -n "Setting battery charge thresholds..."
