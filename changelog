@@ -1,4 +1,4 @@
-+++ 0.9 --- 03.05.2016 +++
++++ 0.9 --- 06.05.2016 +++
 
   * Development Release
 
@@ -12,6 +12,8 @@
         (works with Ubuntu 12.04/Kernel 3.2 only)
       - Change WIFI_PWR_ON_AC/BAT default config values to off/on for better
         usability (1/5 is still supported for backwards compatibility)
+    Radio Device Wizard (tlp-rdw):
+      - Add another ThinkPad OneLink Pro Dock USB LAN (17ef:304)
     (ThinkPad) Battery:
       - tlp-stat:
         - Distinguish incompatible hardware from load errors (Issue #160)
