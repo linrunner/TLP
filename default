@@ -107,6 +107,10 @@ DISK_APM_LEVEL_ON_BAT="128 128"
 SATA_LINKPWR_ON_AC=max_performance
 SATA_LINKPWR_ON_BAT=min_power
 
+# Exclude SATA host devices from power management.
+# Separate multiple hosts with spaces.
+#SATA_LINKPWR_BLACKLIST="host1"
+
 # PCI Express Active State Power Management (PCIe ASPM):
 #   default, performance, powersave
 PCIE_ASPM_ON_AC=performance
