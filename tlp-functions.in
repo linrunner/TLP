@@ -1089,7 +1089,7 @@ set_disk_io_sched () { # set disk io scheduler
 set_sata_link_power () { # set sata link power management
     # $1: 0=ac mode, 1=battery mode
 
-    local i link_bl hostid
+    local host host_bl hostid linkpol
     local pwr=""
     local ctrl_avail="0"
 
@@ -1105,16 +1105,22 @@ set_sata_link_power () { # set sata link power management
         return 0
     fi
 
-    echo_debug "pm" "set_sata_link_power($1): $pwr"
-
     # ALPM blacklist
-    link_bl=${SATA_LINKPWR_BLACKLIST:-}
+    host_bl=${SATA_LINKPWR_BLACKLIST:-}
 
-    for i in /sys/class/scsi_host/host*/link_power_management_policy ; do
-        hostid=$(basename $(dirname "$i"))
-        if [ -f $i ]; then
-            if ! wordinlist "$hostid" "$link_bl"; then
-                printf '%s\n' "$pwr" > $i
+    # iterate SATA hosts
+    for host in /sys/class/scsi_host/host* ; do
+        linkpol=$host/link_power_management_policy
+        if [ -f $linkpol ]; then
+            hostid=${host##*/}
+            if wordinlist "$hostid" "$host_bl"; then
+                # host blacklisted
+                echo_debug "pm" "set_sata_link_power($1).black: $host"
+                ctrl_avail="1"
+            else
+                # host not blacklisted
+                printf '%s\n' "$pwr" > $linkpol
+                echo_debug "pm" "set_sata_link_power($1).$pwr: $host"
                 ctrl_avail="1"
             fi
         fi

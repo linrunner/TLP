@@ -1,4 +1,4 @@
-+++ 0.9 --- 06.05.2016 +++
++++ 0.9 --- 17.05.2016 +++
 
   * Development Release
 
@@ -7,6 +7,7 @@
       - Block concurrent invocation of tlp
     Disks:
       - AHCI runtime power management for host controllers and attached disks
+      - SATA_LINKPWR_BLACKLIST: exclude SATA host devices from power management
     Radio Devices:
       - Finally remove deprecated DEVICES_TO_ENABLE_ON_RADIOSW code
         (works with Ubuntu 12.04/Kernel 3.2 only)
