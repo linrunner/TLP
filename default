@@ -111,6 +111,15 @@ SATA_LINKPWR_ON_BAT=min_power
 # Separate multiple hosts with spaces.
 #SATA_LINKPWR_BLACKLIST="host1"
 
+# Runtime Power Management for AHCI controllers and disks:
+#   on=disable, auto=enable
+# EXPERIMENTAL ** WARNING: auto will most likely cause system lockups/data loss
+#AHCI_RUNTIME_PM_ON_AC=on
+#AHCI_RUNTIME_PM_ON_BAT=auto
+
+# Seconds of inactivity before disk is suspended
+AHCI_RUNTIME_PM_TIMEOUT=15
+
 # PCI Express Active State Power Management (PCIe ASPM):
 #   default, performance, powersave
 PCIE_ASPM_ON_AC=performance
@@ -172,15 +181,6 @@ RUNTIME_PM_ALL=1
 # Default is "radeon nouveau"; use "" to disable the feature completely.
 # Separate multiple drivers with spaces.
 RUNTIME_PM_DRIVER_BLACKLIST="radeon nouveau"
-
-# Runtime Power Management for AHCI controllers and disks:
-#   on=disable, auto=enable
-# EXPERIMENTAL ** WARNING: auto will most likely cause system lockups/data loss
-#AHCI_RUNTIME_PM_ON_AC=on
-#AHCI_RUNTIME_PM_ON_BAT=auto
-
-# Seconds of inactivity before disk is suspended
-AHCI_RUNTIME_PM_TIMEOUT=15
 
 # Set to 0 to disable, 1 to enable USB autosuspend feature.
 USB_AUTOSUSPEND=1
