@@ -115,7 +115,7 @@ SATA_LINKPWR_ON_BAT=min_power
 #   on=disable, auto=enable
 # EXPERIMENTAL ** WARNING: auto will most likely cause system lockups/data loss
 #AHCI_RUNTIME_PM_ON_AC=on
-#AHCI_RUNTIME_PM_ON_BAT=auto
+#AHCI_RUNTIME_PM_ON_BAT=on
 
 # Seconds of inactivity before disk is suspended
 AHCI_RUNTIME_PM_TIMEOUT=15
