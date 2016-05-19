@@ -1,4 +1,4 @@
-+++ 0.9 --- 17.05.2016 +++
++++ 0.9 --- 19.05.2016 +++
 
   * Development Release
 
@@ -23,6 +23,7 @@
     tlp-stat:
       - Intel graphics: include i915 parameters enable_dc, enable_psr
       - --pev: monitor power supply udev events (Issue #172)
+      - Processor: show available scaling governors
       - Storage Devices:
         - Recognize blk-mq I/O scheduler
         - SMART attributes Power_Cycle_Count, Unused_Rsvd_Blk_Cnt_Tot,

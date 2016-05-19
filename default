@@ -29,7 +29,8 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #   powersave(*), performance
 # Older hardware with acpi-cpufreq driver:
 #   ondemand(*), powersave, performance, conservative
-# (*) is recommended. Use tlp-stat -p to show the active driver.
+# (*) is recommended.
+# Hint: use tlp-stat -p to show the active driver and available governors.
 # Important:
 #   You *must* disable your distribution's governor settings or conflicts will
 #   occur. ondemand is sufficient for *almost all* workloads, you should know

@@ -509,6 +509,10 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
             printparm "%-54s = ##%s##" $cpuf/scaling_driver
             printparm "%-54s = ##%s##" $cpuf/scaling_governor
 
+            if [ -f $cpuf/scaling_available_governors ]; then
+                printparm "%s = ##%s##" $cpuf/scaling_available_governors
+            fi
+
             if [ -f $cpuf/scaling_min_freq ]; then
                 printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(cat $cpuf/scaling_min_freq)"
             fi
