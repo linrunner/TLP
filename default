@@ -24,16 +24,18 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 # Hint: CPU parameters below are disabled by default, remove the leading #
 # to enable them, otherwise kernel default values are used.
 
-# Select a CPU frequency scaling governor:
-#   ondemand, powersave, performance, conservative
+# Select a CPU frequency scaling governor.
 # Intel Core i processor with intel_pstate driver:
-#   powersave, performance
+#   powersave(*), performance
+# Older hardware with acpi-cpufreq driver:
+#   ondemand(*), powersave, performance, conservative
+# (*) is recommended. Use tlp-stat -p to show the active driver.
 # Important:
 #   You *must* disable your distribution's governor settings or conflicts will
 #   occur. ondemand is sufficient for *almost all* workloads, you should know
 #   what you're doing!
-#CPU_SCALING_GOVERNOR_ON_AC=ondemand
-#CPU_SCALING_GOVERNOR_ON_BAT=ondemand
+#CPU_SCALING_GOVERNOR_ON_AC=powersave
+#CPU_SCALING_GOVERNOR_ON_BAT=powersave
 
 # Set the min/max frequency available for the scaling governor.
 # Possible values strongly depend on your CPU. For available frequencies see
