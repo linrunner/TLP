@@ -539,6 +539,8 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         printparm "%-54s = ##%d##" $CPU_MIN_PERF_PCT
         printparm "%-54s = ##%d##" $CPU_MAX_PERF_PCT
         printparm "%-54s = ##%d##" $CPU_TURBO_PSTATE
+        printparm "%-54s = ##%d##" $INTEL_PSTATED/turbo_pct
+        printparm "%-54s = ##%d##" $INTEL_PSTATED/num_pstates
 
     elif [ -f $CPU_BOOST_ALL_CTRL ]; then
         # show turbo boost info

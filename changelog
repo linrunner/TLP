@@ -1,4 +1,4 @@
-+++ 0.9 --- 19.05.2016 +++
++++ 0.9 --- 20.05.2016 +++
 
   * Development Release
 
@@ -18,22 +18,24 @@
     (ThinkPad) Battery:
       - tlp-stat:
         - Distinguish incompatible hardware from load errors (Issue #160)
-        - Show battery charge and capacity values in %
+        - Display battery charge and capacity values in %
         - More selective suggestions for tp-smapi/acpi-call kernel modules
     tlp-stat:
       - Intel graphics: include i915 parameters enable_dc, enable_psr
       - --pev: monitor power supply udev events (Issue #172)
-      - Processor: show available scaling governors
+      - Processor:
+        - Display available scaling governors
+        - intel_pstate: display turbo_pct, num_pstates
       - Storage Devices:
         - Recognize blk-mq I/O scheduler
         - SMART attributes Power_Cycle_Count, Unused_Rsvd_Blk_Cnt_Tot,
         NAND_Writes_1GiB
       - Suggestions: add *60 models for tp-smapi/acpi-call
-      - System Info: show boot mode UEFI / BIOS
+      - System Info: display boot mode UEFI / BIOS
       - TLP Status:
-        - Show time and mode of tlp's last invocation
+        - Display time and mode of tlp's last invocation
         - Issue warning when systemd-rfkill[@].service is not masked
-      - Wireless: show type in interface list
+      - Wireless: display type in interface list
 
   * Bugfixes
     - Issue #163: handle kernel with built-in acpi_call module properly
