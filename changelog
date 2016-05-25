@@ -1,4 +1,4 @@
-+++ 0.9 --- 20.05.2016 +++
++++ 0.9 --- 25.05.2016 +++
 
   * Development Release
 
@@ -21,7 +21,7 @@
         - Display battery charge and capacity values in %
         - More selective suggestions for tp-smapi/acpi-call kernel modules
     tlp-stat:
-      - Intel graphics: include i915 parameters enable_dc, enable_psr
+      - Intel graphics: include i915 parameters enable_dc, enable_psr, modeset
       - --pev: monitor power supply udev events (Issue #172)
       - Processor:
         - Display available scaling governors
