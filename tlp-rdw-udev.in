@@ -8,9 +8,6 @@
 readonly LIBDIR="@TLP_TLIB@"
 readonly LIBS="tlp-functions tlp-rf-func"
 
-readonly RDW_DOCK_LOCK="rdw_dock_lock"
-readonly RDW_DOCK_LOCKTIME=2
-
 # --- Source libraries
 for lib in $LIBS; do
     if [ ! -f $LIBDIR/$lib ]; then
@@ -66,32 +63,32 @@ case $action in
     dock) # laptop was docked
 
         # lock for 2 seconds in case dock has multiple devices
-        set_timed_lock $RDW_DOCK_LOCK $RDW_DOCK_LOCKTIME
+        set_timed_lock $RDW_DOCK_LOCK $RDW_LOCKTIME 
 
-        # enable configured radios
+        # enable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_ENABLE_ON_DOCK; do
-            [ -n "$dev" ] && device_switch $dev on
+            [ -n "$dev" ] && device_switch $dev on "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
         done
 
-        # disable configured radios
+        # disable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_DISABLE_ON_DOCK; do
-            [ -n "$dev" ] && device_switch $dev off
+            [ -n "$dev" ] && device_switch $dev off "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
         done
         ;;
 
     undock) # laptop was undocked
 
         # lock for 2 seconds in case dock has multiple devices
-        set_timed_lock $RDW_DOCK_LOCK $RDW_DOCK_LOCKTIME
+        set_timed_lock $RDW_DOCK_LOCK $RDW_LOCKTIME
 
-        # enable configured radios
+        # enable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_ENABLE_ON_UNDOCK; do
-            [ -n "$dev" ] && device_switch $dev on
+            [ -n "$dev" ] && device_switch $dev on "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
         done
 
-        # disable configured radios
+        # disable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_DISABLE_ON_UNDOCK; do
-            [ -n "$dev" ] && device_switch $dev off
+            [ -n "$dev" ] && device_switch $dev off "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
         done
         ;;
 

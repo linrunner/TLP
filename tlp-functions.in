@@ -77,6 +77,11 @@ readonly PWRRUNFILE=$RUNDIR/last_pwr
 readonly LOCKFILE=$RUNDIR/lock
 readonly LOCKTIMEOUT=2
 
+readonly RDW_NM_LOCK="rdw_nm"
+readonly RDW_DOCK_LOCK="rdw_dock"
+readonly RDW_LOCKTIME=2
+
+
 readonly STATEDIR="/var/lib/tlp"
 readonly RFSTATEFILE=$STATEDIR/rfkill-saved
 readonly BAYSTATEFILE=$STATEDIR/bay-saved

@@ -9,9 +9,6 @@
 readonly LIBDIR="@TLP_TLIB@"
 readonly LIBS="tlp-functions tlp-rf-func"
 
-readonly RDW_NM_LOCK="rdw_nm"
-readonly RDW_NM_LOCKTIME=2
-
 # --- Functions
 
 check_switch_lock() { # switch listed radio devices
@@ -28,7 +25,7 @@ check_switch_lock() { # switch listed radio devices
         if [ -n "$dev" ] && [ "$dev" != "$1" ]; then
             # device type is valid and not the originating one
             # --> do switch with state change lock
-            device_switch $dev $3 "${RDW_NM_LOCK}_${dev}" $RDW_NM_LOCKTIME
+            device_switch $dev $3 "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
         fi
     done
 
