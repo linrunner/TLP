@@ -67,12 +67,14 @@ case $action in
 
         # enable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_ENABLE_ON_DOCK; do
-            [ -n "$dev" ] && device_switch $dev on "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
+            [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
+                && device_switch $dev on "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
         done
 
         # disable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_DISABLE_ON_DOCK; do
-            [ -n "$dev" ] && device_switch $dev off "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
+            [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
+                && device_switch $dev off "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
         done
         ;;
 
@@ -83,12 +85,14 @@ case $action in
 
         # enable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_ENABLE_ON_UNDOCK; do
-            [ -n "$dev" ] && device_switch $dev on "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
+            [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
+                && device_switch $dev on "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
         done
 
         # disable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_DISABLE_ON_UNDOCK; do
-            [ -n "$dev" ] && device_switch $dev off "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
+            [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
+                && device_switch $dev off "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
         done
         ;;
 
