@@ -17,6 +17,7 @@ readonly LSBREL=lsb_release
 
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
+readonly WQPE=/sys/module/workqueue/parameters/power_efficient
 
 readonly IBMTHERMAL=/proc/acpi/ibm/thermal
 readonly CORETEMP_DIRS="
@@ -257,7 +258,7 @@ check_ata_errors () { # check kernel log for ata errors
         # count matching error lines
         echo $( dmesg | egrep -c "${RE_ATA_ERROR}" 2> /dev/null )
     else
-        # no values in question configured 
+        # no values in question configured
         echo "0"
     fi
 
@@ -592,6 +593,10 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show nmi watchdog
     printparm "%-54s = ##%d##" $NMIWD
+    echo
+
+    # --- show workqueue power efficient status
+    printparm "%-54s = ##%s##" $WQPE
     echo
 
     # --- show voltages
