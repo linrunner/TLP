@@ -64,7 +64,7 @@ fi
 # Determine interface type
 if cmd_exists $NMCLI ; then
     # nmcli is available --> check if nmcli dev output matches interface
-    itype="$($NMCLI dev | awk '$1 ~ /'$iface'/ { print $2; }')"
+    itype="$($NMCLI dev | awk '$1 ~ /^'$iface'$/ { print $2; }')"
 
     if [ -z "$itype" ]; then
         # iface is not found in nmcli dev output: many WWAN devices have
