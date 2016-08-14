@@ -4,7 +4,7 @@ Section: utils
 Priority: optional
 Build-Depends: debhelper (>= 9),
                dh-systemd
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/tlp.git
 Vcs-Git: https://anonscm.debian.org/git/collab-maint/tlp.git
 Homepage: http://linrunner.de/tlp
