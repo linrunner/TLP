@@ -10,8 +10,9 @@ tlp (0.8.902-1) unstable; urgency=low
   * debian/tlp.postinst,postrm:
     - upstream moved tlp-nop to /usr/share/tlp-pm/
     - use deb-systemd-helper to mask/unmask systemd-rfkill.service
+  * debian/control: point Vcs-git to https://...
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 25 Dec 2015 21:02:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 14 Aug 2016 22:31:05 +0200
 
 tlp (0.8-1) unstable; urgency=low
 
