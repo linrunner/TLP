@@ -24,20 +24,23 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 # Hint: CPU parameters below are disabled by default, remove the leading #
 # to enable them, otherwise kernel default values are used.
 
-# Select a CPU frequency scaling governor:
-#   ondemand, powersave, performance, conservative
+# Select a CPU frequency scaling governor.
 # Intel Core i processor with intel_pstate driver:
-#   powersave, performance
+#   powersave(*), performance
+# Older hardware with acpi-cpufreq driver:
+#   ondemand(*), powersave, performance, conservative
+# (*) is recommended.
+# Hint: use tlp-stat -p to show the active driver and available governors.
 # Important:
 #   You *must* disable your distribution's governor settings or conflicts will
 #   occur. ondemand is sufficient for *almost all* workloads, you should know
 #   what you're doing!
-#CPU_SCALING_GOVERNOR_ON_AC=ondemand
-#CPU_SCALING_GOVERNOR_ON_BAT=ondemand
+#CPU_SCALING_GOVERNOR_ON_AC=powersave
+#CPU_SCALING_GOVERNOR_ON_BAT=powersave
 
 # Set the min/max frequency available for the scaling governor.
 # Possible values strongly depend on your CPU. For available frequencies see
-# tlp-stat output, Section "+++ Processor".
+# the output of tlp-stat -p.
 #CPU_SCALING_MIN_FREQ_ON_AC=0
 #CPU_SCALING_MAX_FREQ_ON_AC=0
 #CPU_SCALING_MIN_FREQ_ON_BAT=0
@@ -86,7 +89,8 @@ DISK_DEVICES="sda sdb"
 
 # Hard disk advanced power management level: 1..254, 255 (max saving, min, off)
 # Levels 1..127 may spin down the disk; 255 allowable on most drives.
-# Separate values for multiple devices with spaces.
+# Separate values for multiple disks with spaces. Use the special value 'keep'
+# to keep the hardware default for the particular disk.
 DISK_APM_LEVEL_ON_AC="254 254"
 DISK_APM_LEVEL_ON_BAT="128 128"
 
@@ -95,17 +99,33 @@ DISK_APM_LEVEL_ON_BAT="128 128"
 #   1..240:   timeouts from 5s to 20min (in units of 5s)
 #   241..251: timeouts from 30min to 5.5 hours (in units of 30min)
 # See 'man hdparm' for details.
+# Separate values for multiple disks with spaces. Use the special value 'keep'
+# to keep the hardware default for the particular disk.
 #DISK_SPINDOWN_TIMEOUT_ON_AC="0 0"
 #DISK_SPINDOWN_TIMEOUT_ON_BAT="0 0"
 
-# Select IO scheduler for the disk devices: noop, deadline, cfq (Default: cfq);
-# Separate values for multiple devices with spaces.
+# Select IO scheduler for the disk devices: cfq, deadline, noop (Default: cfq);
+# Separate values for multiple disks with spaces. Use the special value 'keep'
+# to keep the kernel default scheduler for the particular disk.
 #DISK_IOSCHED="cfq cfq"
 
 # SATA aggressive link power management (ALPM):
 #   min_power, medium_power, max_performance
 SATA_LINKPWR_ON_AC=max_performance
 SATA_LINKPWR_ON_BAT=min_power
+
+# Exclude SATA host devices from link power management.
+# Separate multiple hosts with spaces.
+#SATA_LINKPWR_BLACKLIST="host1"
+
+# Runtime Power Management for AHCI controllers and disks:
+#   on=disable, auto=enable
+# EXPERIMENTAL ** WARNING: auto will most likely cause system lockups/data loss
+#AHCI_RUNTIME_PM_ON_AC=on
+#AHCI_RUNTIME_PM_ON_BAT=on
+
+# Seconds of inactivity before disk is suspended
+AHCI_RUNTIME_PM_TIMEOUT=15
 
 # PCI Express Active State Power Management (PCIe ASPM):
 #   default, performance, powersave
@@ -127,9 +147,9 @@ RADEON_DPM_STATE_ON_BAT=battery
 RADEON_DPM_PERF_LEVEL_ON_AC=auto
 RADEON_DPM_PERF_LEVEL_ON_BAT=auto
 
-# WiFi power saving mode: 1=disable, 5=enable; not supported by all adapters.
-WIFI_PWR_ON_AC=1
-WIFI_PWR_ON_BAT=5
+# WiFi power saving mode: on=enable, off=disable; not supported by all adapters.
+WIFI_PWR_ON_AC=off
+WIFI_PWR_ON_BAT=on
 
 # Disable wake on LAN: Y/N
 WOL_DISABLE=Y
@@ -177,8 +197,7 @@ USB_AUTOSUSPEND=1
 # Note: input devices (usbhid) are excluded automatically (see below)
 #USB_BLACKLIST="1111:2222 3333:4444"
 
-# WWAN devices are excluded from USB autosuspend:
-# 0=do not exclude / 1=exclude
+# WWAN devices are excluded from USB autosuspend: 0=do not exclude / 1=exclude
 USB_BLACKLIST_WWAN=1
 
 # Include listed devices into USB autosuspend even if already excluded
@@ -224,7 +243,7 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 
 # Battery charge thresholds (ThinkPad only, tp-smapi or acpi-call kernel module
 # required). Charging starts when the remaining capacity falls below the
-# START_CHARGE_TRESH value and stops when exceeding the STOP_CHARGE_TRESH value.
+# START_CHARGE_THRESH value and stops when exceeding the STOP_CHARGE_THRESH value.
 # Main / Internal battery (values in %)
 #START_CHARGE_THRESH_BAT0=75
 #STOP_CHARGE_THRESH_BAT0=80

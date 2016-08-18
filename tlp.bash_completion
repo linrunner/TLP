@@ -1,13 +1,28 @@
 # bash completion for TLP
 
+_batteries() {
+    # show list of batteries
+    local bats b
+
+    bats=$( {
+        for b in /sys/class/power_supply/BAT*; do
+            if [ -f $b/present ] && [ $(cat $b/present) = "1" ]; then
+                echo "${b##/*/} "
+            fi
+        done } )
+
+    if [ -n "$bats" ]; then
+        COMPREPLY=( $(compgen -W "${bats}" -- ${cur}) )
+    fi
+}
+
 _tlp() {
-    local cur prev opts bats
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    local cur prev words cword opts bats
+    _init_completion || return
+
     opts="start ac bat usb bayoff discharge setcharge fullcharge chargeonce recalibrate stat diskid"
 
-    case $COMP_CWORD in
+    case $cword in
         1)
             # subcmds only
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
@@ -15,72 +30,49 @@ _tlp() {
             ;;
 
         2)
-            if [ "${prev}" = "fullcharge" -o "${prev}" = "chargeonce" -o "${prev}" = "discharge" -o "${prev}" = "recalibrate" ]; then
-                # show list of batteries
-                bats=$( { local b
-                    for b in /sys/devices/platform/smapi/BAT*; do
-                        if [ -f $b/installed ] && [ $(cat $b/installed) = "1" ]; then
-                            echo "${b##/*/} "
-                        fi
-                    done } )
-
-                if [ -n "$bats" ]; then
-                    COMPREPLY=( $(compgen -W "${bats}" -- ${cur}) )
+            case "${prev}" in
+                fullcharge|chargeonce|discharge|recalibrate)
+                    _batteries
                     return 0
-                fi
-            fi
+                    ;;
+            esac
             ;;
 
         4)
             if [ "${COMP_WORDS[1]}" = "setcharge" ]; then
-                # show list of batteries
-                bats=$( { local b
-                    for b in /sys/class/power_supply/BAT*; do
-                        if [ -f $b/present ] && [ $(cat $b/present) = "1" ]; then
-                            echo "${b##/*/} "
-                        fi
-                    done } )
-
-                if [ -n "$bats" ]; then
-                    COMPREPLY=( $(compgen -W "${bats}" -- ${cur}) )
-                    return 0
-                fi
+                _batteries
+                return 0
             fi
             ;;
-
-        *)
-            ;;
     esac
-}
+} &&
 complete -F _tlp tlp
 
 _tlp_rf() {
-    local cur opts
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
+    local cur prev words cword opts
+    _init_completion || return
+
     opts="on off toggle"
 
-    if [ $COMP_CWORD -eq 1 ]; then
+    if [ $cword -eq 1 ]; then
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
-}
+} &&
 complete -F _tlp_rf bluetooth
 complete -F _tlp_rf wwan
 complete -F _tlp_rf wifi
 
 _tlp_stat() {
-    local cur opts
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    opts="--battery --config --disk --pcie
-          --processor --rfkill --system --temp
-          --usb --warn --trace --verbose"
+    local cur prev words cword opts
+    _init_completion || return
 
-    if [ $COMP_CWORD -eq 1 ]; then
+    opts="--battery --config --disk --pcie --pev --processor --rfkill
+          --system --temp --usb --warn --trace --verbose"
+
+    if [ $cword -eq 1 ]; then
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
-}
+} &&
 complete -F _tlp_stat tlp-stat
-

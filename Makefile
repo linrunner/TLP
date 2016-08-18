@@ -44,15 +44,14 @@ INFILES = \
 	tlp.service \
 	tlp-sleep.service \
 	tlp-stat \
-	tlp-usb-udev \
 	tlp.upstart \
 	tlp-usb-udev
 
 # Make targets
-all:
-	for f in $(INFILES); do \
-		$(SED) $$f.in > $$f; \
-	done
+all: $(INFILES)
+
+$(INFILES): %: %.in
+	$(SED) $< > $@
 
 clean:
 	rm -f $(INFILES)
@@ -73,7 +72,6 @@ ifneq ($(TLP_NO_TPACPI),1)
 endif
 	install -D -m 755 tlp-functions $(_TLIB)/tlp-functions
 	install -m 755 tlp-rf-func $(_TLIB)/
-	install -m 755 tlp-nop $(_TLIB)/
 	install -D -m 755 tlp-usb-udev $(_ULIB)/tlp-usb-udev
 	install -D -m 644 tlp.rules $(_ULIB)/rules.d/85-tlp.rules
 	[ -f $(_CONF) ] || install -D -m 644 default $(_CONF)
@@ -85,10 +83,15 @@ ifeq ($(TLP_WITH_SYSTEMD),1)
 	install -m 644 tlp-sleep.service $(_SYSD)/
 endif
 ifneq ($(TLP_NO_PMUTILS),1)
+	install -m 755 tlp-nop $(_TLIB)/
 	install -D -m 755 49tlp $(_PLIB)/sleep.d/49tlp
 endif
 ifneq ($(TLP_NO_BASHCOMP),1)
 	install -D -m 644 tlp.bash_completion $(_SHCPL)/tlp
+	ln -sf tlp $(_SHCPL)/tlp-stat
+	ln -sf tlp $(_SHCPL)/bluetooth
+	ln -sf tlp $(_SHCPL)/wifi
+	ln -sf tlp $(_SHCPL)/wwan
 endif
 
 install-rdw: all
@@ -100,9 +103,9 @@ install-rdw: all
 install-man:
 	# manpages
 	install -d -m 755 $(_MAN)/man1
-	install -m 644 {bluetooth,run-on-ac,run-on-bat,wifi,wwan}.1 $(_MAN)/man1/
+	install -m 644 man/{bluetooth,run-on-ac,run-on-bat,wifi,wwan}.1 $(_MAN)/man1/
 	install -d -m 755 $(_MAN)/man8
-	install -m 644 {tlp,tlp-stat}.8 $(_MAN)/man8/
+	install -m 644 man/{tlp,tlp-stat}.8 $(_MAN)/man8/
 
 install: install-tlp install-rdw
 
@@ -128,6 +131,10 @@ uninstall-tlp:
 	rm -f $(_SYSD)/tlp.service
 	rm -f $(_SYSD)/tlp-sleep.service
 	rm -f $(_PLIB)/sleep.d/49tlp
+	rm -f $(_SHCPL)/tlp-stat
+	rm -f $(_SHCPL)/bluetooth
+	rm -f $(_SHCPL)/wifi
+	rm -f $(_SHCPL)/wwan
 	rm -f $(_SHCPL)/tlp
 
 uninstall-rdw:
