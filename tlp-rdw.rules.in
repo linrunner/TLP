@@ -1,0 +1,28 @@
+# tlp-rdw - udev rules
+#
+# Copyright (c) 2016 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2 or later.
+
+# --- Dock/undock events
+
+# ThinkPad Advanced Mini Dock (and all older models), ThinkPad UltraBase
+ACTION=="change", SUBSYSTEM=="platform", KERNEL=="dock.*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p dock"
+
+# ThinkPad Mini Dock (Plus) Series 3
+ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/100a/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
+
+# ThinkPad Ultra Dock
+ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/1010/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
+
+# ThinkPad Pro Dock
+ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/1012/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
+
+# ThinkPad Basic Dock
+# *** TODO: yet unknown ***
+
+# ThinkPad OneLink Pro Dock (USB3 Gigabit LAN interface)
+ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/304b/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock" 
+ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/304f/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
+
+# ThinkPad OneLink Dock
+ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/3049/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"

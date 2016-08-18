@@ -1,0 +1,145 @@
+#!/bin/sh
+# tlp-rdw - network manager dispatcher hook:
+#           enable/disable radios on ifup/ifdown
+#
+# Copyright (c) 2016 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2 or later.
+
+# --- Constants
+readonly LIBDIR="@TLP_TLIB@"
+readonly LIBS="tlp-functions tlp-rf-func"
+
+# --- Functions
+
+check_switch_lock() { # switch listed radio devices
+    # and time-lock them afterwards if actually switched
+    # $1: device where the event originated -- do nothing if its time-locked
+    # $2: list of device types to switch
+    # $3: on/off
+    local dev
+
+    # quit if the originating *radio* device is time-locked (not LAN)
+    [ "$1" != "LAN" ] && check_timed_lock "${RDW_NM_LOCK}_$1" && return 1
+
+    for dev in $2; do
+        if [ -n "$dev" ] && [ "$dev" != "$1" ]; then
+            # device type is valid and not the originating one
+            # --> do switch with state change lock
+            device_switch $dev $3 "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
+        fi
+    done
+
+    return 0
+}
+
+# --- Source libraries
+for lib in $LIBS; do
+    if [ ! -f $LIBDIR/$lib ]; then
+        echo "Error: missing function library \'$LIBDIR/$lib\'." 1>&2
+        exit 1
+    fi
+    . $LIBDIR/$lib
+done
+
+# --- MAIN
+read_defaults
+check_tlp_enabled || exit 0
+add_sbin2path
+
+# Get args
+iface="$1"
+action="$2"
+itype="unknown"
+
+# Quit for invalid interfaces
+[ -n "$iface" ] && [ "$iface" != "none" ] || exit 0
+
+# Quit for actions other than "up" and "down"
+[ "$action" = "up" ] || [ "$action" = "down" ] || exit 0
+
+echo_debug "nm" "+++ rdw_nm($iface).$action"
+if [ -n "$addpath" ]; then
+    echo_debug "path" "PATH=$oldpath[$addpath]"
+else
+    echo_debug "path" "PATH=$oldpath"
+fi
+
+# Determine interface type
+if cmd_exists $NMCLI ; then
+    # nmcli is available --> check if nmcli dev output matches interface
+    itype="$($NMCLI dev | awk '$1 ~ /^'$iface'$/ { print $2; }')"
+
+    if [ -z "$itype" ]; then
+        # iface is not found in nmcli dev output: many WWAN devices have
+        # different devices for control and the actual network connection
+        # --> check if interface matches a WWAN device
+        get_wwan_ifaces
+        if wordinlist "$iface" "$wanifaces"; then
+            itype="wwan"
+        else
+            # fallback:
+            # if interface type detection with nmcli failed, then try to
+            # deduct it using interface name: it can happen if e.g.
+            # usb network card is unplugged
+            case "$iface" in
+                en* | eth*)
+                    itype="ethernet"
+                    ;;
+
+                wl*)
+                    itype="wifi"
+                    ;;
+
+                ww*)
+                    itype="wwan"
+                    ;;
+
+                *)
+                    itype="unknown"
+                    ;;
+            esac
+        fi
+    fi
+    echo_debug "nm" "rdw_nm($iface).$action: type=$itype [nmcli]"
+else
+    # nmcli is not available
+    echo_debug "nm" "rdw_nm($iface)$action.nmcli_not_available"
+fi
+
+case $action in
+    up) # interface up, disable configured interfaces
+
+        case $itype in
+            *ethernet)
+                check_switch_lock LAN "$DEVICES_TO_DISABLE_ON_LAN_CONNECT" off
+                ;;
+
+            *wireless|wifi)
+                check_switch_lock wifi "$DEVICES_TO_DISABLE_ON_WIFI_CONNECT" off
+                ;;
+
+            gsm|wwan)
+                check_switch_lock wwan "$DEVICES_TO_DISABLE_ON_WWAN_CONNECT" off
+                ;;
+        esac
+        ;; # up
+
+    down) # interface down, enable configured interfaces
+        case $itype in
+            *ethernet)
+                check_switch_lock LAN "$DEVICES_TO_ENABLE_ON_LAN_DISCONNECT" on
+                ;;
+
+            *wireless|wifi)
+                check_switch_lock wifi "$DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT" on
+                ;;
+
+            gsm|wwan)
+                check_switch_lock wwan "$DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT" on
+                ;;
+        esac
+        ;; # down
+
+esac
+
+exit 0

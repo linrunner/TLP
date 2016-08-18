@@ -1,20 +1,20 @@
 #!/bin/sh
 # tlp - switch bluetooth/wifi/wwan on/off
 #
-# Copyright (c) 2015 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2016 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants
-readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
+readonly LIBDIR="@TLP_TLIB@"
 readonly LIBS="tlp-functions tlp-rf-func"
 
-# --- Locate and source libraries
-for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
-[ -d $libdir ] || exit 0
-
+# --- Source libraries
 for lib in $LIBS; do
-    [ -f $libdir/$lib ] || exit 0
-    . $libdir/$lib
+    if [ ! -f $LIBDIR/$lib ]; then
+        echo "Error: missing function library \'$LIBDIR/$lib\'." 1>&2
+        exit 1
+    fi
+    . $LIBDIR/$lib
 done
 
 # --- MAIN

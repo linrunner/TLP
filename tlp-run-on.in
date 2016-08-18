@@ -1,26 +1,20 @@
 #!/bin/sh
 # tlp - run commands depending on power source
 #
-# Copyright (c) 2015 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2016 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants
-readonly LIBDIRS="/usr/lib/tlp-pm /usr/lib64/tlp-pm"
+readonly LIBDIR="@TLP_TLIB@"
 readonly LIBS="tlp-functions"
 
-# --- Locate and source libraries
-for libdir in $LIBDIRS; do [ -d $libdir ] && break; done
-if [ ! -d $libdir ]; then
-    echo "Error: missing library directory ($LIBDIRS)." 1>&2
-    exit 1
-fi
-
+# --- Source libraries
 for lib in $LIBS; do
-    if [ ! -f $libdir/$lib ]; then
-        echo "Error: missing function library \'$libdir/$lib\'." 1>&2
+    if [ ! -f $LIBDIR/$lib ]; then
+        echo "Error: missing function library \'$LIBDIR/$lib\'." 1>&2
         exit 1
     fi
-    . $libdir/$lib
+    . $LIBDIR/$lib
 done
 
 # --- MAIN

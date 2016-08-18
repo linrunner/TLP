@@ -1,0 +1,23 @@
+#!/bin/sh
+# tlp - if tlp is enabled, override corresponding pm-utils script
+#       in /usr/lib/pm-utils/power.d/
+
+CONFFILE=@TLP_CONF@
+LIBDIR='@TLP_PLIB@'
+
+if [ -d "$LIBDIR/power.d" ]; then
+    # pm-utils script dir exists
+    blocked="$LIBDIR/power.d/${0##*/}"
+
+    if [ -x "$blocked" ]; then
+        # overridable pm-utils script exists --> check if TLP enabled
+        if [ -e "$CONFFILE" ] && . "$CONFFILE" && [ "$TLP_ENABLE" = '1' ]; then
+            # TLP is enabled --> disable $blocked
+            echo "Notice: '${blocked}' disabled by TLP."
+        else
+            exec "$blocked" $*
+        fi
+    fi # else: nothing to disable -> don't read $CONFFILE
+fi
+
+exit 0

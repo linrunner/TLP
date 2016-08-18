@@ -1,4 +1,4 @@
-TLP README - 05.08.2015
+TLP README - 18.08.2016
 
 TLP brings you the benefits of advanced power management for Linux without the need
 to understand every technical detail. TLP comes with a default configuration already
@@ -14,10 +14,11 @@ Separate settings profiles depending on the power source AC/battery:
 - Power aware process scheduler for multi-core/hyper-threading
 - Processor performance versus energy savings policy (x86_energy_perf_policy)
 - Hard disk advanced power magement level and spin down timeout (per disk)
-- SATA aggressive link power management (ALPM)
-- PCIe active state power management (PCIe ASPM) - Kernel 2.6.35 and above
-- Runtime power management for PCI(e) bus devices - Kernel 2.6.35 and above
-- Radeon graphics KMS power management - Kernel 2.6.35 and above, not fglrx
+- SATA aggressive link power management (APLM) with device blacklist
+- AHCI runtime power management for host controllers and disks *EXPERIMENTAL* 
+- PCIe active state power management (PCIe ASPM)
+- Runtime power management for PCI(e) bus devices
+- Radeon graphics KMS power management - not fglrx
 - Radeon graphics dynamic power management - Kernel 3.11 and above, not fglrx
 - Wifi power saving mode -  depending on kernel/driver
 - Enable/disable integrated radio devices (excluding connected devices)

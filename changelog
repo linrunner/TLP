@@ -1,3 +1,50 @@
++++ 0.9 --- 18.08.2016 +++
+
+  * Features
+    General:
+      - Block concurrent invocation of tlp
+    Disks:
+      - AHCI runtime power management for host controllers and attached disks
+      - SATA_LINKPWR_BLACKLIST: exclude SATA host devices from power management
+    Radio Devices:
+      - Finally remove deprecated DEVICES_TO_ENABLE_ON_RADIOSW code
+        (works with Ubuntu 12.04/Kernel 3.2 only)
+      - Change WIFI_PWR_ON_AC/BAT default config values to off/on for better
+        usability (1/5 is still supported for backwards compatibility)
+    Radio Device Wizard (tlp-rdw):
+      - Add another ThinkPad OneLink Pro Dock USB LAN (17ef:304)
+    (ThinkPad) Battery:
+      - tlp-stat:
+        - Distinguish incompatible hardware from load errors (Issue #160)
+        - Display battery charge and capacity values in %
+        - More selective suggestions for tp-smapi/acpi-call kernel modules
+    tlp-stat:
+      - Intel graphics: include i915 parameters enable_dc, enable_psr, modeset
+      - --pev: monitor power supply udev events (Issue #172)
+      - Processor:
+        - Display available scaling governors
+        - intel_pstate: display turbo_pct, num_pstates
+      - Storage Devices:
+        - Recognize blk-mq I/O scheduler
+        - SMART attributes Power_Cycle_Count, Unused_Rsvd_Blk_Cnt_Tot,
+        NAND_Writes_1GiB
+      - Suggestions: add *60 models for tp-smapi/acpi-call
+      - System Info: display boot mode UEFI / BIOS
+      - TLP Status:
+        - Display time and mode of tlp's last invocation
+        - Issue warning when systemd-rfkill[@].service is not masked
+      - Wireless: display type in interface list
+
+  * Bugfixes
+    - Issue #163: handle kernel with built-in acpi_call module properly
+    - Issue #170: battery discharge does not terminate on ThinkPad E-series
+    - Issue #172: TLP does not notice power source change
+    - Issue #175: do not touch wifi on shutdown when unconfigured
+    - Issue #176: optimize rdw locking heuristics
+    - tlp-stat: fix ata error count (filter "DevExch" caused by bay inserts)
+    - tp-smapi: do not load on unsupported ThinkPads
+    - Fix bash completion
+
 +++ 0.8 --- 05.08.2015 +++
 
   * Features
@@ -356,7 +403,7 @@
     - #28: further mitigate race with gdm when disabling radios
            in init script (blackbox)
     - #29: tlp-stat: remove smartctl garbage output (SirVival)
-    - #30: supress dmidecode error output (kristatos)
+    - #30: suppress dmidecode error output (kristatos)
     - iterate over all sched_powersave instances
     - i915: rc6/fbc features removed
     - Start upowerd in init script

@@ -1,18 +1,19 @@
 # tlp - systemd suspend/resume service
 #
-# Copyright (c) 2015 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2016 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 [Unit]
 Description=TLP suspend/resume
 Before=sleep.target
 StopWhenUnneeded=yes
+Documentation=http://linrunner.de/tlp
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/sbin/tlp suspend
-ExecStop=/usr/sbin/tlp resume
+ExecStart=@TLP_SBIN@/tlp suspend
+ExecStop=@TLP_SBIN@/tlp resume
 
 [Install]
 WantedBy=sleep.target

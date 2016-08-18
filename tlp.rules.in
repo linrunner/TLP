@@ -1,0 +1,10 @@
+# tlp - udev rules
+#
+# Copyright (c) 2016 Thomas Koch <linrunner at gmx.net>
+# This software is licensed under the GPL v2 or later.
+
+# handle change of power source ac/bat
+ACTION=="change", SUBSYSTEM=="power_supply", RUN+="@TLP_SBIN@/tlp auto"
+
+# handle added usb devices (exclude subdevices via DRIVER=="USB")
+ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ENV{DEVTYPE}=="usb_device", RUN+="@TLP_ULIB@/tlp-usb-udev %p"
