@@ -251,6 +251,9 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 #START_CHARGE_THRESH_BAT1=75
 #STOP_CHARGE_THRESH_BAT1=80
 
+# Restore the above charge thresholds on battery: 0=disable 1=enable
+#RESTORE_THRESHOLDS_ON_BAT=1
+
 # ------------------------------------------------------------------------------
 # tlp-rdw - Parameters for the radio device wizard
 # Possible devices: bluetooth, wifi, wwan

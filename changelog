@@ -4,6 +4,7 @@
 
   * Features
     ThinkPad Battery:
+      - RESTORE_THRESHOLDS_ON_BAT: restore charge thresholds on battery
       - Detect Thinkpad 13 as unsupported (Issue #227)
     tlp-stat:
       - Add workqueue power efficient status
