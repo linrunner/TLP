@@ -1,3 +1,14 @@
++++ 1.0 --- 10.09.2016 +++
+
+  *** Development version ***
+
+  * Features
+    ThinkPad Battery:
+      - Detect Thinkpad 13 as unsupported (Issue #227)
+
+  * Bugfixes
+
+
 +++ 0.9 --- 18.08.2016 +++
 
   * Features
