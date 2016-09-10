@@ -1,10 +1,12 @@
-+++ 1.0 --- 10.09.2016 +++
++++ 1.0 --- 11.09.2016 +++
 
   *** Development version ***
 
   * Features
     ThinkPad Battery:
       - Detect Thinkpad 13 as unsupported (Issue #227)
+    tlp-stat:
+      - Add workqueue power efficient status
 
   * Bugfixes
 

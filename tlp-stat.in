@@ -591,12 +591,11 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         echo
     fi
 
-    # --- show nmi watchdog
-    printparm "%-54s = ##%d##" $NMIWD
-    echo
-
     # --- show workqueue power efficient status
     printparm "%-54s = ##%s##" $WQPE
+
+    # --- show nmi watchdog
+    printparm "%-54s = ##%d##" $NMIWD
     echo
 
     # --- show voltages
