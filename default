@@ -28,7 +28,7 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 # Intel Core i processor with intel_pstate driver:
 #   powersave(*), performance
 # Older hardware with acpi-cpufreq driver:
-#   ondemand(*), powersave, performance, conservative
+#   ondemand(*), powersave, performance, conservative, schedutil
 # (*) is recommended.
 # Hint: use tlp-stat -p to show the active driver and available governors.
 # Important:
