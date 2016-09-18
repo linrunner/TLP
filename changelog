@@ -12,6 +12,7 @@
       - Add workqueue power efficient status
 
   * Bugfixes
+    - tlp-stat: show Intel graphics parameters for Ubuntu's i915_bpo module
 
 +++ 0.9 --- 18.08.2016 +++
 

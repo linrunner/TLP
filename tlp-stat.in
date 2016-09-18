@@ -807,18 +807,20 @@ if [ "$show_all" = "1" ]; then
     echo
 
     # --- show i915 power mgmt
-    if [ -d $I915D ]; then
-        echo "+++ Intel Graphics"
-        printparm_i915 $I915D/powersave
-        printparm_i915 $I915D/enable_rc6 $I915D/i915_enable_rc6
-        printparm_i915 $I915D/enable_dc
-        printparm_i915 $I915D/enable_fbc $I915D/i915_enable_fbc
-        printparm_i915 $I915D/enable_psr
-        printparm_i915 $I915D/lvds_downclock
-        printparm_i915 $I915D/modeset
-        printparm_i915 $I915D/semaphores
-        echo
-    fi
+    for card in $I915D; do
+        if [ -d $card ]; then
+            echo "+++ Intel Graphics"
+            printparm_i915 $card/powersave
+            printparm_i915 $card/enable_rc6 $card/i915_enable_rc6
+            printparm_i915 $card/enable_dc
+            printparm_i915 $card/enable_fbc $card/i915_enable_fbc
+            printparm_i915 $card/enable_psr
+            printparm_i915 $card/lvds_downclock
+            printparm_i915 $card/modeset
+            printparm_i915 $card/semaphores
+            echo
+        fi
+    done
 
     # --- show radeon power profile or dpm state
     if [ -d $RADD ]; then
