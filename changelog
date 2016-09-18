@@ -1,4 +1,4 @@
-+++ 1.0 --- 11.09.2016 +++
++++ 1.0 --- 18.09.2016 +++
 
   *** Development version ***
 
@@ -6,11 +6,12 @@
     ThinkPad Battery:
       - RESTORE_THRESHOLDS_ON_BAT: restore charge thresholds on battery
       - Detect Thinkpad 13 as unsupported (Issue #227)
+      - Change texts "ThinkPad (extended) battery functions" to
+        "ThinkPad battery features"
     tlp-stat:
       - Add workqueue power efficient status
 
   * Bugfixes
-
 
 +++ 0.9 --- 18.08.2016 +++
 

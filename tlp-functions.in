@@ -1784,7 +1784,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
     return 0
 }
 
-# --- ThinkPad Battery Functions
+# --- ThinkPad Battery Features
 
 supports_tpsmapi_only () {
     # rc: 0=ThinkPad supports tpsmapi only/1=false
@@ -1802,7 +1802,7 @@ supports_tpsmapi_and_tpacpi () {
 }
 
 supports_no_tp_bat_funcs () {
-    # rc: 0=ThinkPad doesn't support extended battery functions/1=false
+    # rc: 0=ThinkPad doesn't support battery features/1=false
     printf '%s' "$tpmodel" | egrep -q "${RE_TP_NONE}"
 }
 
@@ -2237,7 +2237,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
             ;;
 
         255) # no api
-            echo "Error: ThinkPad extended battery functions not available." 1>&2
+            echo "Error: ThinkPad battery features not available." 1>&2
             echo_debug "bat" "setcharge_battery.noapi"
             return 1
             ;;
@@ -2331,7 +2331,7 @@ chargeonce_battery () { # charge battery to upper threshold once
         0) ;; # battery present
 
         255) # no api
-            echo "Error: ThinkPad extended battery functions not available." 1>&2
+            echo "Error: ThinkPad battery features not available." 1>&2
             echo_debug "bat" "chargeonce_battery.noapi"
             return 1
             ;;
@@ -2414,7 +2414,7 @@ discharge_battery () { # discharge battery
         0) ;; # battery present
 
         255) # no api
-            echo "Error: ThinkPad extended battery functions not available." 1>&2
+            echo "Error: ThinkPad battery features not available." 1>&2
             echo_debug "bat" "discharge_battery.noapi"
             return 1
             ;;

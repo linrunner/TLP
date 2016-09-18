@@ -1047,9 +1047,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show battery info & charge thresholds
     bcnt=0
 
-    # --- show availability of ThinkPad battery functions
+    # --- show availability of ThinkPad battery features
     if is_thinkpad; then
-        echo "+++ ThinkPad Extended Battery Functions"
+        echo "+++ ThinkPad Battery Features"
         echo -n "tp-smapi   = "
         case $tpsmapi in
             0)   echo "active" ;;
@@ -1273,23 +1273,23 @@ if [ "$show_all" = "1" ]; then
         # add ThinkPad specific suggestions -- $tpmodel preset by check_thinkpad()
         if supports_tpsmapi_only; then
             # tp-smapi only capable models
-            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
+            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
 
         elif supports_tpacpi_only; then
             # tpacpi-bat only capable models
-            [ $tpacpi -eq 127 ] && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
+            [ $tpacpi -eq 127 ] && suout="${suout}Install acpi-call kernel module for ThinkPad battery features\n"
 
         elif supports_tpsmapi_and_tpacpi; then
             # tp-smapi and tpacpi-bat capable models
-            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
-            [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad advanced battery functions\n"
+            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
+            [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad battery features\n"
 
         elif supports_no_tp_bat_funcs; then
             : # models that are neither tp_smapi nor tpacpi-bat capable
 
         else
             # all others assumed tp-smapi capable ...
-            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad advanced battery functions\n"
+            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
 
         fi
     fi # if ThinkPad
