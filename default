@@ -185,7 +185,7 @@ RUNTIME_PM_ALL=1
 
 # Exclude PCI(e) devices assigned to the listed drivers from Runtime PM
 # (should prevent accidential power on of hybrid graphics' discrete part).
-# Default is "radeon nouveau"; use "" to disable the feature completely.
+# Default is "radeon nouveau amdgpu"; use "" to disable the feature completely.
 # Separate multiple drivers with spaces.
 RUNTIME_PM_DRIVER_BLACKLIST="radeon nouveau amdgpu"
 
