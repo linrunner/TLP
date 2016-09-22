@@ -187,7 +187,7 @@ RUNTIME_PM_ALL=1
 # (should prevent accidential power on of hybrid graphics' discrete part).
 # Default is "radeon nouveau"; use "" to disable the feature completely.
 # Separate multiple drivers with spaces.
-RUNTIME_PM_DRIVER_BLACKLIST="radeon nouveau"
+RUNTIME_PM_DRIVER_BLACKLIST="radeon nouveau amdgpu"
 
 # Set to 0 to disable, 1 to enable USB autosuspend feature.
 USB_AUTOSUSPEND=1
