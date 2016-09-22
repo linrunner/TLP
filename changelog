@@ -1,8 +1,11 @@
-+++ 1.0 --- 18.09.2016 +++
++++ 1.0 --- 22.09.2016 +++
 
   *** Development version ***
 
   * Features
+    Graphics:
+      - Add "amdgpu" to RUNTIME_PM_DRIVER_BLACKLIST; driver default "auto"
+        allows to turn the card off
     ThinkPad Battery:
       - RESTORE_THRESHOLDS_ON_BAT: restore charge thresholds on battery
       - Detect Thinkpad 13 as unsupported (Issue #227)
