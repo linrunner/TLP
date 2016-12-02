@@ -355,6 +355,15 @@ get_power_state () { # get current power source -- rc: 0=ac, 1=battery
     # but maps unknown power source to TLP_DEFAULT_MODE
     local psrc
 
+    if [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then
+        case "$TLP_DEFAULT_MODE" in
+            bat|BAT) psrc=1 ;;
+            *)       psrc=0 ;;
+        esac
+
+        return $psrc
+    fi
+
     get_sys_power_supply
     psrc=$?
 
