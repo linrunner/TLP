@@ -1489,6 +1489,10 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
     fi
 
     get_wifi_ifaces
+    if [ -z "$wifaces" ]; then
+        echo_debug "pm" "set_wifi_power_mode($1).no_ifaces"
+        return 0
+    fi
 
     for iface in $wifaces; do
         if [ -n "$iface" ]; then
