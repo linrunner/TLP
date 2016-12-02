@@ -315,11 +315,12 @@ is_thinkpad () { # check for ThinkPad by saved model string
 
 # --- Power Source
 
-get_sys_power_supply () { # get current power source
-                          # rc: 0=ac, 1=battery, 2=unknown
+get_sys_power_supply () { # get current power supply
+                          # retval/rc: $syspwr/0=ac, 1=battery, 2=unknown
 
     local psrc
-    local rc=
+
+    syspwr=
 
     for psrc in /sys/class/power_supply/*; do
         # -f $psrc/type not necessary - cat 2>.. handles this
@@ -327,15 +328,15 @@ get_sys_power_supply () { # get current power source
             Mains)
                 # AC detected, check if online
                 if [ "$(cat $psrc/online 2> /dev/null)" = "1" ]; then
-                    rc=0
+                    syspwr=0
                     break
                 fi
-                # else AC not online => keep $rc as-is
+                # else AC not online => keep $syspwr as-is
                 ;;
 
             Battery)
                 # set rc to battery, but don't stop looking for AC
-                rc=1
+                syspwr=1
                 ;;
 
             *)
@@ -344,39 +345,40 @@ get_sys_power_supply () { # get current power source
         esac
     done
 
-    # set rc to unknown if we haven't seen any AC/battery power source so far
-    : ${rc:=2}
+    # set pwrsrc to unknown if we haven't seen any AC/battery power source so far
+    : ${syspwr:=2}
 
-    return $rc
+    return $syspwr
 }
 
-get_power_state () { # get current power source -- rc: 0=ac, 1=battery
+get_power_state () { # get current power mode -- rc: 0=ac, 1=battery
     # similar to get_sys_power_supply(),
-    # but maps unknown power source to TLP_DEFAULT_MODE
-    local psrc
-
-    if [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then
-        case "$TLP_DEFAULT_MODE" in
-            bat|BAT) psrc=1 ;;
-            *)       psrc=0 ;;
-        esac
-
-        return $psrc
-    fi
+    # but maps unknown power source to TLP_DEFAULT_MODE;
+    # returns TLP_DEFAULT_MODE when TLP_PERSISTENT_DEFAULT=1
 
     get_sys_power_supply
-    psrc=$?
+    rc=$?
 
-    if [ $psrc -eq 2 ]; then
-        # unknown power supply, apply default mode
+    if [ -n "$TLP_DEFAULT_MODE" ] \
+        && [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then
+        # persistent mode, use configured default mode
         case "$TLP_DEFAULT_MODE" in
-            ac|AC)   psrc=0 ;;
-            bat|BAT) psrc=1 ;;
-            *)       psrc=0 ;; # use AC if no default mode configured
+            bat|BAT) rc=1 ;;
+            *)       rc=0 ;;
         esac
+    else
+        # non-persistent mode, use current power source
+        if [ $rc -eq 2 ]; then
+            # unknown power supply, use configured default mode
+            case "$TLP_DEFAULT_MODE" in
+                ac|AC)   rc=0 ;;
+                bat|BAT) rc=1 ;;
+                *)       rc=0 ;; # use AC if no default mode configured
+            esac
+        fi
     fi
 
-    return $psrc
+    return $rc
 }
 
 compare_and_save_power_state() { # compare $1 to last saved power state,

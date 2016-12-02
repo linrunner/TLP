@@ -1,8 +1,11 @@
-+++ 1.0 --- 22.09.2016 +++
++++ 1.0 --- 02.12.2016 +++
 
   *** Development version ***
 
   * Features
+    General:
+      - TLP_PERSISTENT_DEFAULT: use TLP_DEFAULT_MODE regardless of the actual
+        power source
     Graphics:
       - Add "amdgpu" to RUNTIME_PM_DRIVER_BLACKLIST; driver default "auto"
         allows to turn the card off

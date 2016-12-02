@@ -60,8 +60,12 @@ mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
 [ "$mode" = "stat" ] && nodebug=1
 
 # get current power state
-get_power_state
-pwrmode=$?
+get_power_state; pwrmode=$?
+
+case "$mode" in
+    true|bat) pwrmode=1 ;;
+    false|ac) pwrmode=0 ;;
+esac
 
 modedebug=$mode
 [ -n "$mode2" ] && modedebug="$modedebug $mode2"
@@ -74,10 +78,16 @@ else
 fi
 
 if [ $pwrmode -eq 1 ]; then
-    echo_debug "run" "power_source=bat"
+    echo_debug "run" "power_mode=bat"
 else
-    echo_debug "run" "power_source=ac"
+    echo_debug "run" "power_mode=ac"
 fi
+
+case "$syspwr" in
+    0) echo_debug "run" "power_source=ac" ;;
+    1) echo_debug "run" "power_source=bat" ;;
+    *) echo_debug "run" "power_source=unknown" ;;
+esac
 
 exitcode=0
 
@@ -198,7 +208,7 @@ case "$mode" in
         fi
         ;;
 
-    true|bat*) # set battery power mode
+    true|bat) # set battery power mode
         check_root
         if lock_tlp; then
             compare_and_save_power_state 1

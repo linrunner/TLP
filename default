@@ -12,7 +12,8 @@ TLP_ENABLE=1
 # Concerns some desktop and embedded hardware only.
 TLP_DEFAULT_MODE=AC
 
-# Always use TLP_DEFAULT_MODE regardless the power supply status.
+# Operation mode select: 0=depend on power source, 1=always use TLP_DEFAULT_MODE
+# Hint: use in conjunction with TLP_DEFAULT_MODE=BAT for BAT settings on AC
 TLP_PERSISTENT_DEFAULT=0
 
 # Seconds laptop mode has to wait after the disk goes idle before doing a sync.
