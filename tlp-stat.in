@@ -1091,6 +1091,11 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%s##" $batd/manufacture_date
                     printparm "%-59s = ##%s##" $batd/first_use_date
                     printparm "%-59s = ##%6d##" $batd/cycle_count
+
+                    if [ -f $batd/temperature ]; then
+                        perl -e 'printf ("%-59s = %6d [°C]\n", "'$batd/temperature'", '$(cat $batd/temperature)' / 1000.0);'
+                    fi
+
                     printparm "%-59s = ##%6d## [mWh]" $batd/design_capacity
                     printparm "%-59s = ##%6d## [mWh]" $batd/last_full_capacity
                     printparm "%-59s = ##%6d## [mWh]" $batd/remaining_capacity

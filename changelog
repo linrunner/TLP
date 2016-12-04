@@ -1,4 +1,4 @@
-+++ 1.0 --- 02.12.2016 +++
++++ 1.0 --- 04.12.2016 +++
 
   *** Development version ***
 
@@ -14,6 +14,8 @@
       - Detect Thinkpad 13 as unsupported (Issue #227)
       - Change texts "ThinkPad (extended) battery functions" to
         "ThinkPad battery features"
+      - tlp-stat:
+        - Show battery temperature (tp-smapi only)
     tlp-stat:
       - Add workqueue power efficient status
 
