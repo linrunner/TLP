@@ -44,6 +44,7 @@ apply_common_settings () { # apply settings common to all modes
     set_sata_link_power $1
     set_pcie_aspm $1
     set_radeon_profile $1
+    set_screen_brightness $1
     set_wifi_power_mode $1
     disable_wake_on_lan
     set_sound_power_mode $1

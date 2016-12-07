@@ -127,6 +127,10 @@ RADEON_DPM_STATE_ON_BAT=battery
 RADEON_DPM_PERF_LEVEL_ON_AC=auto
 RADEON_DPM_PERF_LEVEL_ON_BAT=auto
 
+# Screen backlight brightness: 0=low/9=max (>=5 recommended)
+#SCREEN_BRIGHTNESS_ON_AC=9
+#SCREEN_BRIGHTNESS_ON_BAT=5
+
 # WiFi power saving mode: 1=disable, 5=enable; not supported by all adapters.
 WIFI_PWR_ON_AC=1
 WIFI_PWR_ON_BAT=5
