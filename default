@@ -198,7 +198,7 @@ USB_AUTOSUSPEND=1
 
 # Exclude listed devices from USB autosuspend (separate with spaces).
 # Use lsusb to get the ids.
-# Note: input devices (usbhid) are excluded automatically (see below)
+# Note: input devices (usbhid) are excluded automatically
 #USB_BLACKLIST="1111:2222 3333:4444"
 
 # Bluetooth devices are excluded from USB autosuspend:
@@ -214,7 +214,7 @@ USB_BLACKLIST_PHONE=0
 USB_BLACKLIST_WWAN=1
 
 # Include listed devices into USB autosuspend even if already excluded
-# by the driver or WWAN blacklists above (separate with spaces).
+# by the blacklists above (separate with spaces).
 # Use lsusb to get the ids.
 #USB_WHITELIST="1111:2222 3333:4444"
 
