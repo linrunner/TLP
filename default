@@ -201,7 +201,16 @@ USB_AUTOSUSPEND=1
 # Note: input devices (usbhid) are excluded automatically (see below)
 #USB_BLACKLIST="1111:2222 3333:4444"
 
-# WWAN devices are excluded from USB autosuspend: 0=do not exclude / 1=exclude
+# Bluetooth devices are excluded from USB autosuspend:
+#   0=do not exclude / 1=exclude
+USB_BLACKLIST_BTUSB=0
+
+# Phone devices are excluded from USB autosuspend:
+#   0=do not exclude / 1=exclude (enable charging)
+USB_BLACKLIST_PHONE=0
+
+# WWAN devices are excluded from USB autosuspend:
+#   0=do not exclude / 1=exclude
 USB_BLACKLIST_WWAN=1
 
 # Include listed devices into USB autosuspend even if already excluded

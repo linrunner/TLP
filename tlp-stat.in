@@ -1019,16 +1019,26 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show usb autosuspend
     echo "+++ USB"
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
-        echo "Autosuspend        = enabled"
+        echo "Autosuspend         = enabled"
     else
-        echo "Autosuspend        = disabled"
+        echo "Autosuspend         = disabled"
     fi
-    echo "Device whitelist   = ${USB_WHITELIST:=(not configured)}"
-    echo "Device blacklist   = ${USB_BLACKLIST:=(not configured)}"
-    if [ "$USB_BLACKLIST_WWAN" = "1" ]; then
-        echo "WWAN blacklist     = enabled"
+    echo "Device whitelist    = ${USB_WHITELIST:=(not configured)}"
+    echo "Device blacklist    = ${USB_BLACKLIST:=(not configured)}"
+    if [ "${USB_BLACKLIST_BTUSB:-0}" = "1" ]; then
+        echo "Bluetooth blacklist = enabled"
     else
-        echo "WWAN blacklist     = disabled"
+        echo "Bluetooth blacklist = disabled"
+    fi
+    if [ "${USB_BLACKLIST_PHONE:-0}" = "1" ]; then
+        echo "Phone blacklist     = enabled"
+    else
+        echo "Phone blacklist     = disabled"
+    fi
+    if [ "${USB_BLACKLIST_WWAN:-1}" = "1" ]; then
+        echo "WWAN blacklist      = enabled"
+    else
+        echo "WWAN blacklist      = disabled"
     fi
     if [ -n "$USB_DRIVER_BLACKLIST" ] && [ "$USB_DRIVER_BLACKLIST" != "usbhid" ]; then
         echo "Notice: USB_DRIVER_BLACKLIST is no longer supported, use USB_BLACKLIST."

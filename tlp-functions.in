@@ -1729,17 +1729,32 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                         control="on"
                         exc="_dev_black"
                     else
-                        # check for hid subdevices
-                        for subdev in $USBD/$usbdev/*:*; do
-                            if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
-                                control="on"
-                                exc="_hid_black"
-                                break
-                            fi
-                        done
+                        # check for bluetooth devices
+                        USB_BLACKLIST_BTUSB=${USB_BLACKLIST_BTUSB:-0} # default is include
+
+                        if [ $USB_BLACKLIST_BTUSB = "1" ] \
+                            && [ "$(cat $USBD/$usbdev/bDeviceClass)" = "e0" ] \
+                            && [ "$(cat $USBD/$usbdev/bDeviceSubClass)" = "01" ] \
+                            && [ "$(cat $USBD/$usbdev/bDeviceProtocol)" = "01" ]; then
+                            control="on"
+                            exc="_btusb_black"
+                        fi
 
                         if [ -z "$exc" ]; then
-                            # check for wwan vendor ids
+                            # check for phone devices
+                            USB_BLACKLIST_PHONE=${USB_BLACKLIST_PHONE:-0} # default is include
+
+                            if [ $USB_BLACKLIST_PHONE = "1" ] \
+                                && [ "$(cat $USBD/$usbdev/bDeviceClass)" = "00" ] \
+                                && [ "$(cat $USBD/$usbdev/bDeviceSubClass)" = "00" ] \
+                                && [ "$(cat $USBD/$usbdev/bDeviceProtocol)" = "00" ]; then
+                                control="on"
+                                exc="_phone_black"
+                            fi
+                        fi
+
+                        if [ -z "$exc" ]; then
+                            # check for wwan devices via vendor id
                             USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
 
                             if [ $USB_BLACKLIST_WWAN = "1" ]; then
@@ -1749,6 +1764,17 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                     exc="_wwan_black"
                                 fi
                             fi
+                        fi
+
+                        if [ -z "$exc" ]; then
+                            # check for hid subdevices
+                            for subdev in $USBD/$usbdev/*:*; do
+                                if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
+                                    control="on"
+                                    exc="_hid_black"
+                                    break
+                                fi
+                            done
                         fi
                     fi
                 fi
