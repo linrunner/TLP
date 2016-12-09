@@ -21,6 +21,7 @@
       - USB_BLACKLIST_PHONE: exclude bluetooth and phone devices from autosuspend
     tlp-stat:
       - Add workqueue power efficient status
+      - --psup: show power supply diagnostic
 
   * Bugfixes
     - tlp-stat: show Intel graphics parameters for Ubuntu's i915_bpo module

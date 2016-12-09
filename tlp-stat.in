@@ -47,6 +47,7 @@ show_disk=0
 show_pcie=0
 show_pev=0
 show_proc=0
+show_psup=0
 show_rfkill=0
 show_system=0
 show_temp=0
@@ -356,6 +357,12 @@ read_args () { # read command line arguments
                 needs_root_priv=1
                 ;;
 
+            "--psup")
+                show_all=0
+                show_psup=1
+                : ${needs_root_priv:=0}
+                ;;
+
             "-T"|"--trace")
                 show_all=0
                 show_trace=1
@@ -363,13 +370,13 @@ read_args () { # read command line arguments
                 ;;
 
             *)
-                echo "Usage: tlp-stat [ -b | --battery   | -c | --config |"
-                echo "                  -d | --disk      | -e | --pcie   |"
-                echo "                  -p | --processor | -r | --rfkill |"
-                echo "                  -s | --system    | -t | --temp   |"
-                echo "                  -u | --usb       | -w | --warn   |"
-                echo "                  -P | --pev       | -T | --trace  |"
-                echo "                  -v | --verbose ]"
+                echo "Usage: tlp-stat [ -b | --battery   | -c | --config  |"
+                echo "                  -d | --disk      | -e | --pcie    |"
+                echo "                  -p | --processor | -r | --rfkill  |"
+                echo "                  -s | --system    | -t | --temp    |"
+                echo "                  -u | --usb       | -w | --warn    |"
+                echo "                  -P | --pev       |    | --psup    |"
+                echo "                  -T | --trace     | -v | --verbose ]"
                 exit 3
                 ;;
         esac
@@ -1333,6 +1340,14 @@ if [ "$show_pev" = "1" ]; then
         $UDEVADM monitor --udev --property --subsystem-match=power_supply
     fi
 fi # show_pev
+
+if [ "$show_psup" = "1" ]; then
+    # --- show power_supply diagnostic
+    echo "+++ Power supply diagnostic"
+    for ps in /sys/class/power_supply/*; do
+        grep -s '.*' $ps/type $ps/online $ps/present
+    done
+fi # show_sup
 
 if [ "$show_trace" = "1" ]; then
     # --- show debug log
