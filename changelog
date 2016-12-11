@@ -9,6 +9,9 @@
     Graphics:
       - Add "amdgpu" to RUNTIME_PM_DRIVER_BLACKLIST; driver default "auto"
         allows to turn the card off
+    Radio Devices:
+      - Add DEVICES_TO_IGNORE_AS_NETWORK option to give specific devices which
+        shall not trigger the radio device wizard
     ThinkPad Battery:
       - RESTORE_THRESHOLDS_ON_BAT: restore charge thresholds on battery
       - Detect Thinkpad 13 as unsupported (Issue #227)

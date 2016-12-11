@@ -292,3 +292,7 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 # Radio devices to enable/disable when undocked.
 #DEVICES_TO_ENABLE_ON_UNDOCK="wifi"
 #DEVICES_TO_DISABLE_ON_UNDOCK=""
+
+# Devices which shall not trigger the radio device wizard
+# Enter exact device names here
+#DEVICES_TO_IGNORE_AS_NETWORK=""

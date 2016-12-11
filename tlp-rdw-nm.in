@@ -54,6 +54,9 @@ itype="unknown"
 # Quit for invalid interfaces
 [ -n "$iface" ] && [ "$iface" != "none" ] || exit 0
 
+# Quit for ignored interfaces
+wordinlist "$iface" "${DEVICES_TO_IGNORE_AS_NETWORK}" && exit 0
+
 # Quit for actions other than "up" and "down"
 [ "$action" = "up" ] || [ "$action" = "down" ] || exit 0
 
