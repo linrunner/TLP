@@ -109,15 +109,13 @@ case "$mode" in
                 # apply radio states
                 set_radio_device_states start
 
-                # apply power save settings -- but only if not previously run
-                # (by the udev rule) for the same power state
-                if compare_and_save_power_state $pwrmode; then
-                    echo -n "Applying power save settings..."
-                    apply_common_settings $pwrmode
-                    [ "$pwrmode" = "1" ] && poweroff_drivebay 0
-                    [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
-                    echo "done."
-                fi
+                # apply power save settings
+                compare_and_save_power_state $pwrmode
+                echo -n "Applying power save settings..."
+                apply_common_settings $pwrmode
+                [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+                [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
+                echo "done."
 
                 # apply battery settings
                 echo -n "Setting battery charge thresholds..."

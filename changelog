@@ -1,4 +1,4 @@
-+++ 1.0 --- 09.12.2016 +++
++++ 1.0 --- 11.12.2016 +++
 
   *** Development version ***
 
@@ -17,13 +17,16 @@
       - tlp-stat:
         - Show battery temperature (tp-smapi only)
     USB:
-      - USB_BLACKLIST_BTUSB,
-      - USB_BLACKLIST_PHONE: exclude bluetooth and phone devices from autosuspend
+      - USB_BLACKLIST_BTUSB: exclude bluetooth devices from autosuspend
+        (Issue #239)
+      - USB_BLACKLIST_PHONE: exclude phone devices from autosuspend
+        (Issue #188)
     tlp-stat:
       - Add workqueue power efficient status
       - --psup: show power supply diagnostic
 
   * Bugfixes
+    - Issue #237: init start: apply powersave regardless of previous state
     - tlp-stat: show Intel graphics parameters for Ubuntu's i915_bpo module
 
 +++ 0.9 --- 18.08.2016 +++
