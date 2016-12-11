@@ -1729,27 +1729,25 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                         control="on"
                         exc="_dev_black"
                     else
-                        # check for bluetooth devices
-                        USB_BLACKLIST_BTUSB=${USB_BLACKLIST_BTUSB:-0} # default is include
-
-                        if [ $USB_BLACKLIST_BTUSB = "1" ] \
-                            && [ "$(cat $USBD/$usbdev/bDeviceClass)" = "e0" ] \
-                            && [ "$(cat $USBD/$usbdev/bDeviceSubClass)" = "01" ] \
-                            && [ "$(cat $USBD/$usbdev/bDeviceProtocol)" = "01" ]; then
-                            control="on"
-                            exc="_btusb_black"
-                        fi
+                        # check for hid subdevices
+                        for subdev in $USBD/$usbdev/*:*; do
+                            if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
+                                control="on"
+                                exc="_hid_black"
+                                break
+                            fi
+                        done
 
                         if [ -z "$exc" ]; then
-                            # check for phone devices
-                            USB_BLACKLIST_PHONE=${USB_BLACKLIST_PHONE:-0} # default is include
+                            # check for bluetooth devices
+                            USB_BLACKLIST_BTUSB=${USB_BLACKLIST_BTUSB:-0} # default is include
 
-                            if [ $USB_BLACKLIST_PHONE = "1" ] \
-                                && [ "$(cat $USBD/$usbdev/bDeviceClass)" = "00" ] \
-                                && [ "$(cat $USBD/$usbdev/bDeviceSubClass)" = "00" ] \
-                                && [ "$(cat $USBD/$usbdev/bDeviceProtocol)" = "00" ]; then
+                            if [ $USB_BLACKLIST_BTUSB = "1" ] \
+                                && [ "$(cat $USBD/$usbdev/bDeviceClass)" = "e0" ] \
+                                && [ "$(cat $USBD/$usbdev/bDeviceSubClass)" = "01" ] \
+                                && [ "$(cat $USBD/$usbdev/bDeviceProtocol)" = "01" ]; then
                                 control="on"
-                                exc="_phone_black"
+                                exc="_btusb_black"
                             fi
                         fi
 
@@ -1767,14 +1765,16 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                         fi
 
                         if [ -z "$exc" ]; then
-                            # check for hid subdevices
-                            for subdev in $USBD/$usbdev/*:*; do
-                                if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
-                                    control="on"
-                                    exc="_hid_black"
-                                    break
-                                fi
-                            done
+                            # check for phone devices
+                            USB_BLACKLIST_PHONE=${USB_BLACKLIST_PHONE:-0} # default is include
+
+                            if [ $USB_BLACKLIST_PHONE = "1" ] \
+                                && [ "$(cat $USBD/$usbdev/bDeviceClass)" = "00" ] \
+                                && [ "$(cat $USBD/$usbdev/bDeviceSubClass)" = "00" ] \
+                                && [ "$(cat $USBD/$usbdev/bDeviceProtocol)" = "00" ]; then
+                                control="on"
+                                exc="_phone_black"
+                            fi
                         fi
                     fi
                 fi
