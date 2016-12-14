@@ -89,8 +89,7 @@ readonly BAYSTATEFILE=$STATEDIR/bay-saved
 readonly DISK_NOP_WORDS="_ keep"
 readonly DEFAULT_DISK_DEVICES="sda"
 readonly DEFAULT_DISK_IO_SCHEDULER="cfq"
-readonly DEFAULT_PM_DRIVER_BLACKLIST="radeon nouveau"
-readonly DEFAULT_USB_DRIVER_BLACKLIST="usbhid"
+readonly DEFAULT_PM_DRIVER_BLACKLIST="amdgpu nouveau nvidia radeon"
 
 # ----------------------------------------------------------------------------
 # Control
@@ -1326,8 +1325,10 @@ set_runtime_pm () { # set runtime power management
     # enable for all devices
     doall=${RUNTIME_PM_ALL:-1}
 
-    # driver specific blacklist
-    drv_bl=${RUNTIME_PM_DRIVER_BLACKLIST:-$DEFAULT_PM_DRIVER_BLACKLIST}
+    # driver specific blacklist:
+    # - undefined = use internal default from $DEFAULT_PM_DRIVER_BLACKLIST
+    # - empty     = disable feature
+    drv_bl="${RUNTIME_PM_DRIVER_BLACKLIST-${DEFAULT_PM_DRIVER_BLACKLIST}}"
 
     # pci id blacklist
     pci_bl=${RUNTIME_PM_BLACKLIST:-}

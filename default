@@ -187,11 +187,12 @@ RUNTIME_PM_ALL=1
 # (separate with spaces). Use lspci to get the adresses (1st column).
 #RUNTIME_PM_BLACKLIST="bb:dd.f 11:22.3 44:55.6"
 
-# Exclude PCI(e) devices assigned to the listed drivers from Runtime PM
-# (should prevent accidential power on of hybrid graphics' discrete part).
-# Default is "radeon nouveau amdgpu"; use "" to disable the feature completely.
+# Exclude PCI(e) devices assigned to the listed drivers from Runtime PM.
+# Default when unconfigured is "amdgpu nouveau nvidia radeon" which
+# prevents accidential power-on of eGPU in hybrid graphics setups.
+# Use "" to disable the feature completely.
 # Separate multiple drivers with spaces.
-RUNTIME_PM_DRIVER_BLACKLIST="radeon nouveau amdgpu"
+#RUNTIME_PM_DRIVER_BLACKLIST="amdgpu nouveau nvidia radeon"
 
 # Set to 0 to disable, 1 to enable USB autosuspend feature.
 USB_AUTOSUSPEND=1

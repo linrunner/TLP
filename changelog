@@ -1,4 +1,4 @@
-+++ 1.0 --- 11.12.2016 +++
++++ 1.0 --- 14.12.2016 +++
 
   *** Development version ***
 
@@ -7,8 +7,10 @@
       - TLP_PERSISTENT_DEFAULT: use TLP_DEFAULT_MODE regardless of the actual
         power source
     Graphics:
-      - Add "amdgpu" to RUNTIME_PM_DRIVER_BLACKLIST; driver default "auto"
-        allows to turn the card off
+      - RUNTIME_PM_DRIVER_BLACKLIST: when unconfigured default to
+        "amdgpu nouveau nvidia radeon"; driver default control=auto allows
+        PRIME/Bumblebee to turn the eGPU off and prevents accidential power-on
+        during boot as well
     ThinkPad Battery:
       - RESTORE_THRESHOLDS_ON_BAT: restore charge thresholds on battery
       - Detect Thinkpad 13 as unsupported (Issue #227)

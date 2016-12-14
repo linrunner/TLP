@@ -1009,7 +1009,8 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
         echo "Device classes   = Ethernet, Wireless, Audio, Host Bridge, [SD] Card Reader, Firewire"
     fi
     echo "Device blacklist = ${RUNTIME_PM_BLACKLIST:=(not configured)}"
-    echo "Driver blacklist = ${RUNTIME_PM_DRIVER_BLACKLIST:=(not configured)}"
+    pmdbl="${RUNTIME_PM_DRIVER_BLACKLIST-${DEFAULT_PM_DRIVER_BLACKLIST} (default)}"
+    echo "Driver blacklist = ${pmdbl:-(disabled)}"
     echo
 
     if cmd_exists $TLPPCI; then
