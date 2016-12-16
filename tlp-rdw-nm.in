@@ -54,6 +54,9 @@ itype="unknown"
 # Quit for invalid interfaces
 [ -n "$iface" ] && [ "$iface" != "none" ] || exit 0
 
+# Quit for virtual interfaces
+readlink "$NETD/$iface" | grep -q '/virtual/' && exit 0
+
 # Quit for actions other than "up" and "down"
 [ "$action" = "up" ] || [ "$action" = "down" ] || exit 0
 
@@ -118,7 +121,7 @@ case $action in
                 check_switch_lock wifi "$DEVICES_TO_DISABLE_ON_WIFI_CONNECT" off
                 ;;
 
-            gsm|wwan)
+        gsm|wwan)
                 check_switch_lock wwan "$DEVICES_TO_DISABLE_ON_WWAN_CONNECT" off
                 ;;
         esac
