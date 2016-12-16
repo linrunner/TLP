@@ -1868,7 +1868,12 @@ check_tpsmapi () {  # check if tp_smapi is supported and loaded
             fi
         else
             # module not installed
-            tpsmapi=127
+            if supports_tpacpi_only || supports_no_tp_bat_funcs; then
+                # not tp-smapi capable models
+                tpsmapi=255
+            else
+                tpsmapi=127
+            fi
         fi
     fi
 

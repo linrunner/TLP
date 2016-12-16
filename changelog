@@ -1,4 +1,4 @@
-+++ 1.0 --- 14.12.2016 +++
++++ 1.0 --- 16.12.2016 +++
 
   *** Development version ***
 
@@ -18,6 +18,8 @@
         "ThinkPad battery features"
       - tlp-stat:
         - Show battery temperature (tp-smapi only)
+        - Show "unsupported" instead of "not installed" for tp-smapi incapable
+          hardware
     USB:
       - USB_BLACKLIST_BTUSB: exclude bluetooth devices from autosuspend
         (Issue #239)
