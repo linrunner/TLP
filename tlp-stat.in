@@ -754,6 +754,8 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
                                         { printf "    %3d %-25s = %8d %s %s %s %s\n", $1, $2, $10, $11, $12, $13, "[°C]" } ; \
                                   $2 ~ /Airflow_Temperature_Cel/ \
                                         { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[°C]" } ; \
+                                  $2 ~ /G-Sense_Error_Rate/ \
+                                        { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
                                   $2 ~ /Host_Writes/ \
                                         { printf "    %3d %-25s = %8.3f %s\n", $1, $2, $10 / 32768.0, "[TB]" } ; \
                                   $2 ~ /Total_LBAs_Written/ \

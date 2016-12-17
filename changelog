@@ -1,4 +1,4 @@
-+++ 1.0 --- 16.12.2016 +++
++++ 1.0 --- 17.12.2016 +++
 
   *** Development version ***
 
@@ -28,6 +28,7 @@
     tlp-stat:
       - Add workqueue power efficient status
       - --psup: show power supply diagnostic
+      - SMART attribute G-Sense_Error_Rate (191)
 
   * Bugfixes
     - Issue #237: init start: apply powersave regardless of previous state
