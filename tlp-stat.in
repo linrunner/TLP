@@ -83,11 +83,19 @@ printparm () { # formatted output of sysfile - general
     if [ -z "$val" ]; then
         # replace empty value with n/a text
         if [ -n "$namsg" ]; then
-            format=$( echo $format | sed -r "s/##(.*)##/($namsg)/" | sed -r "s/\[.*\]//" )
+            if [ "$namsg" != "_" ]; then
+                # use specific n/a text
+                format=$( echo $format | sed -r "s/##(.*)##/($namsg)/" | sed -r "s/\[.*\]//" )
+            else
+                # _ = skip
+                sysf=""
+            fi
         else
+            # empty n/a text, use default text
             format=$( echo $format | sed -r "s/##(.*)##/(not available)/" | sed -r "s/\[.*\]//" )
         fi
-        printf "$format\n" "$sysf"
+        # output n/a text or skip
+        [ -n "$sysf" ] && printf "$format\n" "$sysf"
     else
         # non empty value: strip delimiters from format str
         format=$( echo $format | sed -r "s/##(.*)##/\1/" )
@@ -683,9 +691,9 @@ if [ "$show_all" = "1" ]; then
     printparm "%-38s = ##%5d##" /proc/sys/vm/dirty_expire_centisecs
     printparm "%-38s = ##%5d##" /proc/sys/vm/dirty_ratio
     printparm "%-38s = ##%5d##" /proc/sys/vm/dirty_background_ratio
-    printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/age_buffer_centisecs
-    printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/xfssyncd_centisecs
-    printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/xfsbufd_centisecs
+    printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/age_buffer_centisecs _
+    printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/xfssyncd_centisecs _
+    printparm "%-38s = ##%5d##" /proc/sys/fs/xfs/xfsbufd_centisecs _
     echo
 fi # show_all
 
