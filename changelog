@@ -26,9 +26,10 @@
       - USB_BLACKLIST_PHONE: exclude phone devices from autosuspend
         (Issue #188)
     tlp-stat:
-      - Add workqueue power efficient status
+      - -g|--graphics: show graphics card data only
       - --psup: show power supply diagnostic
       - SMART attribute G-Sense_Error_Rate (191)
+      - Workqueue power efficient status
 
   * Bugfixes
     - Issue #237: init start: apply powersave regardless of previous state

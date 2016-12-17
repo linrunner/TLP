@@ -44,6 +44,7 @@ show_all=1
 show_bat=0
 show_conf=0
 show_disk=0
+show_graf=0
 show_pcie=0
 show_pev=0
 show_proc=0
@@ -133,9 +134,6 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
             # sysfile was not readable
             printf "%-44s = (not available)\n" "$sysf"
         fi
-    else
-        # Neither sysfile nor alternative exists
-        printf "%-44s = (not available)\n" "$1"
     fi
 
     return 0
@@ -311,6 +309,12 @@ read_args () { # read command line arguments
                 : ${needs_root_priv:=0}
                 ;;
 
+            "-g"|"--graphics")
+                show_all=0
+                show_graf=1
+                : ${needs_root_priv:=0}
+                ;;
+
             "-p"|"--processor")
                 show_all=0
                 show_proc=1
@@ -370,13 +374,14 @@ read_args () { # read command line arguments
                 ;;
 
             *)
-                echo "Usage: tlp-stat [ -b | --battery   | -c | --config  |"
-                echo "                  -d | --disk      | -e | --pcie    |"
-                echo "                  -p | --processor | -r | --rfkill  |"
-                echo "                  -s | --system    | -t | --temp    |"
-                echo "                  -u | --usb       | -w | --warn    |"
-                echo "                  -P | --pev       |    | --psup    |"
-                echo "                  -T | --trace     | -v | --verbose ]"
+                echo "Usage: tlp-stat [ -b | --battery   | -c | --config    |"
+                echo "                  -d | --disk      | -e | --pcie      |"
+                echo "                  -g | --graphics  | -p | --processor |"
+                echo "                  -r | --rfkill    | -s | --system    |"
+                echo "                  -t | --temp      | -u | --usb       |"
+                echo "                  -w | --warn      | -v | --verbose   |"
+                echo "                  -P | --pev       |    | --psup      |"
+                echo "                  -T | --trace ]"
                 exit 3
                 ;;
         esac
@@ -814,7 +819,9 @@ if [ "$show_all" = "1" ]; then
         echo "$ASPM = (not available)"
     fi
     echo
+fi # show_all
 
+if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show i915 power mgmt
     for card in $I915D; do
         if [ -d $card ]; then
@@ -852,7 +859,7 @@ if [ "$show_all" = "1" ]; then
             fi
         done
     fi
-fi # show_all
+fi # show_graf
 
 if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Wireless"
