@@ -529,10 +529,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         if [ -f $cpuf/scaling_driver ]; then
             printparm "%-54s = ##%s##" $cpuf/scaling_driver
             printparm "%-54s = ##%s##" $cpuf/scaling_governor
-
-            if [ -f $cpuf/scaling_available_governors ]; then
-                printparm "%s = ##%s##" $cpuf/scaling_available_governors
-            fi
+            printparm "%s = ##%s##" $cpuf/scaling_available_governors _
 
             if [ -f $cpuf/scaling_min_freq ]; then
                 printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(cat $cpuf/scaling_min_freq)"
@@ -580,7 +577,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show sched power save info
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
-        [ -f $sdev ] && printparm "%-54s = ##%d##" $sdev
+        printparm "%-54s = ##%d##" $sdev _
     done
     echo
 
@@ -749,7 +746,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
                 if [ -f $ddev/control ]; then
                     echo
                     printsysf "  Runtime PM: control = %s, " $ddev/control
-                    printsysf "autosuspend_delay = %4s\n"     $ddev/autosuspend_delay_ms
+                    printsysf "autosuspend_delay = %4s\n"    $ddev/autosuspend_delay_ms
                 fi
 
                 if cmd_exists $SMARTCTL ; then
@@ -791,10 +788,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ SATA Aggressive Link Power Management"
     if stat -t /sys/class/scsi_host/host*/link_power_management_policy > /dev/null 2>&1; then
         for i in /sys/class/scsi_host/host* ; do
-            if [ -f $i/link_power_management_policy ]; then
-                printparm "%-56s = ##%s##" $i/link_power_management_policy
-                cnt=$((cnt+1))
-            fi
+            printparm "%-56s = ##%s##" $i/link_power_management_policy _
         done
     else
         echo "No AHCI-enabled host controller detected."
