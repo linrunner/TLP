@@ -1,3 +1,10 @@
+tlp (0.9.900-1) unstable; urgency=low
+
+  [Thomas Koch]
+  * New upstream release
+
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 10 Sep 2016 22:08:42 +0200
+
 tlp (0.9-1) unstable; urgency=low
 
   [Thomas Koch]
