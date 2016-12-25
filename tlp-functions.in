@@ -1365,7 +1365,7 @@ set_runtime_pm () { # set runtime power management
             elif [ -f $device/class ] && [ -f $device/power/control ]; then
                 class=$(cat $device/class)
                 get_pci_class_descr $class
-                control=$ccontrol                
+                control=$ccontrol
 
                 if [ -z "$lclass" ] && [ $doall -ne 1 ]; then
                     # device has no long descr and all flag is not set
@@ -1699,7 +1699,7 @@ disable_wake_on_lan () {  # disable WOL
 set_usb_suspend () { # activate usb autosuspend for all devices except input and blacklisted
     # $1: 0=silent/1=report result; $2: on/auto
 
-    local busdev control dclass devices exc subdev usbd usbdev usbid subdev vendor
+    local busdev control dclass devices exc subdev usbd usbdev usbid vendor
     local ctrlf="control"
     local autof="autosuspend_delay_ms"
     local drvlist=""
@@ -2615,11 +2615,11 @@ discharge_battery () { # discharge battery
 
 get_drivebay_device () { # Find generic dock interface for drive bay
                          # rc: 0; retval: $dock
-	dock=$(grep -l ata_bay $DOCKGLOB/type 2> /dev/null)
-	dock=${dock%%/type}
-	if [ ! -d "$dock" ]; then
-		dock=""
-	fi
+    dock=$(grep -l ata_bay $DOCKGLOB/type 2> /dev/null)
+    dock=${dock%%/type}
+    if [ ! -d "$dock" ]; then
+        dock=""
+    fi
 
     return 0
 }
@@ -2670,9 +2670,9 @@ suspend_drivebay () { # Save power state of drive bay before suspend
 
 resume_drivebay () { # Restore power state of drive bay after resume
 
-	local cnt rc
+    local cnt rc
 
-	[ -f $BAYSTATEFILE ] || return 0 # no state file -> do nothing
+    [ -f $BAYSTATEFILE ] || return 0 # no state file -> do nothing
 
     if [ "$(cat $BAYSTATEFILE)" = "off" ]; then
         get_drivebay_device
