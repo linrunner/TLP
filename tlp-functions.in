@@ -1699,7 +1699,7 @@ disable_wake_on_lan () {  # disable WOL
 set_usb_suspend () { # activate usb autosuspend for all devices except input and blacklisted
     # $1: 0=silent/1=report result; $2: on/auto
 
-    local busdev control devices exc usbdev usbid subdev
+    local busdev control dclass devices exc subdev usbd usbdev usbid subdev vendor
     local ctrlf="control"
     local autof="autosuspend_delay_ms"
     local drvlist=""
@@ -1712,22 +1712,25 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
         # iterate devices
         devices=$(ls $USBD 2> /dev/null | grep -v ':')
 
-        for usbdev in $devices; do
-            if [ -f $USBD/$usbdev/power/autosuspend ] || [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
-                usbid="$(cat $USBD/$usbdev/idVendor):$(cat $USBD/$usbdev/idProduct)"
-                busdev="Bus $(cat $USBD/$usbdev/busnum) Dev $(cat $USBD/$usbdev/devnum)"
+        for usbd in $devices; do
+            # concat full device path
+            usbdev=$USBD/$usbd
 
+            if [ -f $usbdev/power/autosuspend ] || [ -f $usbdev/power/autosuspend_delay_ms ]; then
+                vendor="$(cat $usbdev/idVendor)"
+                usbid="$vendor:$(cat $usbdev/idProduct)"
+                busdev="Bus $(cat $usbdev/busnum) Dev $(cat $usbdev/devnum)"
+                dclass="$(cat $usbdev/bDeviceClass)"
                 control="${2:-auto}"
                 exc=""
                 chg=0
 
                 # trace only: get drivers for the device and all subdevices
                 if [ "$X_USB_DRIVER_TRACE" = "1" ]; then
-                    drvlist=$(for dl in $USBD/$usbdev/*:*/driver; do readlink $dl | \
+                    drvlist=$(for dl in $usbdev/*:*/driver; do readlink $dl | \
                         sed -r 's/.+\///'; done | sort | uniq | tr '\n' ' ')
                     drvlist="(${drvlist% })"
                 fi
-
 
                 if [ "$control" != "on" ]; then
                     if wordinlist "$usbid" "$USB_WHITELIST"; then
@@ -1740,7 +1743,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                         exc="_dev_black"
                     else
                         # check for hid subdevices
-                        for subdev in $USBD/$usbdev/*:*; do
+                        for subdev in $usbdev/*:*; do
                             if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
                                 control="on"
                                 exc="_hid_black"
@@ -1752,24 +1755,37 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                             # check for bluetooth devices
                             USB_BLACKLIST_BTUSB=${USB_BLACKLIST_BTUSB:-0} # default is include
 
-                            if [ $USB_BLACKLIST_BTUSB = "1" ] \
-                                && [ "$(cat $USBD/$usbdev/bDeviceClass)" = "e0" ] \
-                                && [ "$(cat $USBD/$usbdev/bDeviceSubClass)" = "01" ] \
-                                && [ "$(cat $USBD/$usbdev/bDeviceProtocol)" = "01" ]; then
+                            if [ "$USB_BLACKLIST_BTUSB" = "1" ] \
+                                && [ "$dclass" = "e0" ] \
+                                && [ "$(cat $usbdev/bDeviceSubClass)" = "01" ] \
+                                && [ "$(cat $usbdev/bDeviceProtocol)" = "01" ]; then
                                 control="on"
                                 exc="_btusb_black"
                             fi
                         fi
 
                         if [ -z "$exc" ]; then
-                            # check for wwan devices via vendor id
+                            # check for wwan devices
                             USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
 
-                            if [ $USB_BLACKLIST_WWAN = "1" ]; then
-                                vendor="$(cat $USBD/$usbdev/idVendor)"
-                                if wordinlist "$vendor" "$USB_WWAN_VENDORS"; then
-                                    control="on"
-                                    exc="_wwan_black"
+                            if [ "$USB_BLACKLIST_WWAN" = "1" ]; then
+                                if [ "$dclass" != "00" ]; then
+                                    # check for cdc subdevices
+                                    for subdev in $usbdev/*:*; do
+                                        if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "0a" ]; then
+                                            control="on"
+                                            exc="_wwan_black"
+                                            break
+                                        fi
+                                    done
+
+                                    if [ -z "$exc" ]; then
+                                        # check for vendors
+                                        if wordinlist "$vendor" "$USB_WWAN_VENDORS"; then
+                                            control="on"
+                                            exc="_wwan_black"
+                                        fi
+                                    fi
                                 fi
                             fi
                         fi
@@ -1778,48 +1794,93 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                             # check for phone devices
                             USB_BLACKLIST_PHONE=${USB_BLACKLIST_PHONE:-0} # default is include
 
-                            if [ $USB_BLACKLIST_PHONE = "1" ] \
-                                && [ "$(cat $USBD/$usbdev/bDeviceClass)" = "00" ] \
-                                && [ "$(cat $USBD/$usbdev/bDeviceSubClass)" = "00" ] \
-                                && [ "$(cat $USBD/$usbdev/bDeviceProtocol)" = "00" ]; then
-                                control="on"
-                                exc="_phone_black"
+                            if [ "$USB_BLACKLIST_PHONE" = "1" ]; then
+                                if [ "$dclass" = "00" ]; then
+                                    # class defined at interface level, iterate subdevices
+                                    for subdev in $usbdev/*:*; do
+                                        if [ -d $subdev ]; then
+                                            if [ "$(cat $subdev/interface 2> /dev/null)" = "MTP" ]; then
+                                                # MTP: mostly Android
+                                                control="on"
+                                                exc="_phone_black"
+                                                break
+                                            elif [ "$(cat $subdev/bInterfaceClass)" = "ff" ] \
+                                                && [ "$(cat $subdev/bInterfaceSubClass)" = "42" ] \
+                                                && [ "$(cat $subdev/bInterfaceProtocol)" = "01" ]; then
+                                                # ADB: Android
+                                                control="on"
+                                                exc="_phone_black"
+                                                break
+                                            elif [ "$(cat $subdev/bInterfaceClass)" = "06" ] \
+                                                && [ "$(cat $subdev/bInterfaceSubClass)" = "01" ] \
+                                                && [ "$(cat $subdev/bInterfaceProtocol)" = "01" ]; then
+                                                # PTP: iPhone, Lumia et al.
+                                                # caveat: may also be a camera
+                                                control="on"
+                                                exc="_phone_black"
+                                                break
+                                            fi
+                                        fi
+                                    done
+                                elif [ "$vendor" = "0fca" ]; then
+                                    # RIM
+                                    if [ "$dclass" = "ef" ]; then
+                                        # RIM / BlackBerry
+                                        control="on"
+                                        exc="_phone_black"
+                                    elif [ "$dclass" = "00" ]; then
+                                       for subdev in $usbdev/*:*; do
+                                            if [ -d $subdev ]; then
+                                                if [ "$(cat $subdev/interface 2> /dev/null)" = "BlackBerry" ]; then
+                                                    # Blackberry
+                                                    control="on"
+                                                    exc="_phone_black"
+                                                    break
+                                                fi
+                                            fi
+                                        done
+                                    fi
+                                elif [ "$vendor" = "045e" ] && [ "$dclass" = "ef" ]; then
+                                    # Windows Phone
+                                    control="on"
+                                    exc="_phone_black"
+                                fi
                             fi
                         fi
                     fi
                 fi
 
-                if [ -f $USBD/$usbdev/power/control ]; then
-                    if [ "$(cat $USBD/$usbdev/power/control)" != "$control" ]; then
+                if [ -f $usbdev/power/control ]; then
+                    if [ "$(cat $usbdev/power/control)" != "$control" ]; then
                         # Write actual changes only
-                        echo "$control" > $USBD/$usbdev/power/control
+                        echo "$control" > $usbdev/power/control
                         chg=1
                     fi
                 else
                     # level is deprecated
-                    if [ "$(cat $USBD/$usbdev/power/level)" != "$control" ]; then
+                    if [ "$(cat $usbdev/power/level)" != "$control" ]; then
                         # Write actual changes only
-                        echo "$control" > $USBD/$usbdev/power/level
+                        echo "$control" > $usbdev/power/level
                         chg=1
                     fi
                     ctrlf="level"
                 fi
                 if [ "$X_TLP_USB_SET_AUTOSUSPEND_DELAY" = "1" ]; then
                     # set autosuspend_delay
-                    if [ -f $USBD/$usbdev/power/autosuspend_delay_ms ]; then
-                        echo $USB_TIMEOUT_MS > $USBD/$usbdev/power/autosuspend_delay_ms
+                    if [ -f $usbdev/power/autosuspend_delay_ms ]; then
+                        echo $USB_TIMEOUT_MS > $usbdev/power/autosuspend_delay_ms
                     else
                         # autosuspend is deprecated
-                        echo $USB_TIMEOUT > $USBD/$usbdev/power/autosuspend
+                        echo $USB_TIMEOUT > $usbdev/power/autosuspend
                         autof="autosuspend"
                     fi
-                    echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $USBD/$usbdev [$ctrlf $autof] $drvlist"
+                    echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $usbdev [$ctrlf $autof] $drvlist"
                 elif [ $chg -eq 1 ]; then
                     # default: change control but not autosuspend_delay, i.e. keep kernel default setting
-                    echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $USBD/$usbdev [$ctrlf] $drvlist"
+                    echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $usbdev [$ctrlf] $drvlist"
                 else
                     # we didn't change anything actually
-                    echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $USBD/$usbdev $drvlist"
+                    echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $usbdev $drvlist"
                 fi
             fi
         done
