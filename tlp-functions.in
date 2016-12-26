@@ -1822,6 +1822,15 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                             fi
                                         fi
                                     done
+
+                                    if [ -z "$exc" ]; then
+                                        if [ "$vendor" = "05ac" ] \
+                                            && [ "$(cat $usbdev/product)" = "iPhone" ]; then
+                                            # iPhone
+                                            control="on"
+                                            exc="_phone_black"
+                                        fi
+                                    fi
                                 elif [ "$vendor" = "0fca" ]; then
                                     # RIM
                                     if [ "$dclass" = "ef" ]; then
