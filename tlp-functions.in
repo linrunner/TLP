@@ -1762,33 +1762,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                 control="on"
                                 exc="_btusb_black"
                             fi
-                        fi
-
-                        if [ -z "$exc" ]; then
-                            # check for wwan devices
-                            USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
-
-                            if [ "$USB_BLACKLIST_WWAN" = "1" ]; then
-                                if [ "$dclass" != "00" ]; then
-                                    # check for cdc subdevices
-                                    for subdev in $usbdev/*:*; do
-                                        if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "0a" ]; then
-                                            control="on"
-                                            exc="_wwan_black"
-                                            break
-                                        fi
-                                    done
-
-                                    if [ -z "$exc" ]; then
-                                        # check for vendors
-                                        if wordinlist "$vendor" "$USB_WWAN_VENDORS"; then
-                                            control="on"
-                                            exc="_wwan_black"
-                                        fi
-                                    fi
-                                fi
-                            fi
-                        fi
+                        fi # bluetooth
 
                         if [ -z "$exc" ]; then
                             # check for phone devices
@@ -1854,10 +1828,36 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                     control="on"
                                     exc="_phone_black"
                                 fi
-                            fi
-                        fi
-                    fi
-                fi
+                            fi # blacklist phone
+                        fi # phone
+
+                        if [ -z "$exc" ]; then
+                            # check for wwan devices
+                            USB_BLACKLIST_WWAN=${USB_BLACKLIST_WWAN:-1} # default is exclude
+
+                            if [ "$USB_BLACKLIST_WWAN" = "1" ]; then
+                                if [ "$dclass" != "00" ]; then
+                                    # check for cdc subdevices
+                                    for subdev in $usbdev/*:*; do
+                                        if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "0a" ]; then
+                                            control="on"
+                                            exc="_wwan_black"
+                                            break
+                                        fi
+                                    done
+
+                                    if [ -z "$exc" ]; then
+                                        # check for vendors
+                                        if wordinlist "$vendor" "$USB_WWAN_VENDORS"; then
+                                            control="on"
+                                            exc="_wwan_black"
+                                        fi
+                                    fi
+                                fi
+                            fi # blacklist wwan
+                        fi # wwan
+                    fi # !device blacklist
+                fi # control=on
 
                 if [ -f $usbdev/power/control ]; then
                     if [ "$(cat $usbdev/power/control)" != "$control" ]; then
