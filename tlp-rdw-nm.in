@@ -95,6 +95,7 @@ if [ "$action" = "down" ]; then
     fi
 fi
 
+echo_debug "nm" "+++ rdw_nm($iface).$action"
 if [ -n "$addpath" ]; then
     echo_debug "path" "PATH=$oldpath[$addpath]"
 else
