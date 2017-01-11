@@ -166,11 +166,11 @@ SOUND_POWER_SAVE_ON_BAT=1
 # Disable controller too (HDA only): Y/N
 SOUND_POWER_SAVE_CONTROLLER=Y
 
-# Set to 1 to power off optical drive in UltraBay/MediaBay when running on
-# battery. A value of 0 disables this feature (Default).
+# Power off optical drive in UltraBay/MediaBay: 0=disable, 1=enable.
 # Drive can be powered on again by releasing (and reinserting) the eject lever
 # or by pressing the disc eject button on newer models.
 # Note: an UltraBay/MediaBay hard disk is never powered off.
+BAY_POWEROFF_ON_AC=0
 BAY_POWEROFF_ON_BAT=0
 # Optical drive device to power off (default sr0).
 BAY_DEVICE="sr0"

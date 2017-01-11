@@ -1,4 +1,4 @@
-+++ 1.0 --- 17.12.2016 +++
++++ 1.0 --- 11.01.2017 +++
 
   *** Development version ***
 
@@ -6,6 +6,8 @@
     General:
       - TLP_PERSISTENT_DEFAULT: use TLP_DEFAULT_MODE regardless of the actual
         power source
+    Device Bays:
+      - BAY_POWEROFF_ON_AC: power off optical drive not only on bat (Issue #243)
     Graphics:
       - RUNTIME_PM_DRIVER_BLACKLIST: when unconfigured default to
         "amdgpu nouveau nvidia radeon"; driver default control=auto allows
@@ -153,7 +155,7 @@
   * Bugfixes
     Udev:
     - Run change of power source in a detached subshell to avoid blocking udev
-    - Fix dock/undock event processing for ThinkPad Adv Mini Dock and Ultrabase 
+    - Fix dock/undock event processing for ThinkPad Adv Mini Dock and Ultrabase
     - Make USB device event processing more robust
       - Run in a detached subshell to avoid blocking udev
       - Wait 2s for subdevices to populate for proper black/whitelist detection
@@ -452,7 +454,7 @@
   * Features
     - Intel graphics: rc6 power save mode, frame buffer compression
 
-+++ 0.3.3 --- 19.09.2011 +++ 
++++ 0.3.3 --- 19.09.2011 +++
 
   * Features
     - tlp-stat: show hdd temp SMART values (bassplayer)
