@@ -1076,6 +1076,8 @@ fi # show_usb
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show battery info & charge thresholds
     bcnt=0
+    efsum=0
+    ensum=0
 
     # --- show availability of ThinkPad battery features
     if is_thinkpad; then
@@ -1157,6 +1159,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     ed=$(cat $batd/design_capacity)
                     ef=$(cat $batd/last_full_capacity)
                     en=$(cat $batd/remaining_capacity)
+                    efsum=$(($efsum + $ef))
+                    ensum=$(($ensum + $en))
 
                     # show charge + capacity
                     lcnt=0
@@ -1226,6 +1230,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     ed=$(cat $batd/energy_full_design)
                     ef=$(cat $batd/energy_full)
                     en=$(cat $batd/energy_now)
+                    efsum=$(($efsum + $ef))
+                    ensum=$(($ensum + $en))
 
                 elif [ -f $batd/charge_full ]; then
                     printparm "%-59s = ##%6d## [mAh]" $batd/charge_full_design "" 000
@@ -1237,6 +1243,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     ed=$(cat $batd/charge_full_design)
                     ef=$(cat $batd/charge_full)
                     en=$(cat $batd/charge_now)
+                    efsum=$(($efsum + $ef))
+                    ensum=$(($ensum + $en))
+
                 fi
                 if [ $tpbat -eq 1 ]; then
                     print_tp_batstate $batd/status
@@ -1270,8 +1279,13 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     fi # if /sys/class/power_supply
 
     if [ $bcnt -eq 0 ]; then
+        # no battery detected
         printf "+++ Battery Status\n"
         printf "No batteries detected.\n\n"
+    elif [ $bcnt -gt 1 ] && [ $efsum -ne 0 ]; then
+        # more than one battery detected --> show charge total
+        perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '$ensum' / '$efsum');'
+        echo
     fi
 
 fi # show_bat

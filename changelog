@@ -1,4 +1,4 @@
-+++ 1.0 --- 11.01.2017 +++
++++ 1.0 --- 13.01.2017 +++
 
   *** Development version ***
 
@@ -19,6 +19,7 @@
       - Change texts "ThinkPad (extended) battery functions" to
         "ThinkPad battery features"
       - tlp-stat:
+        - Show "Charge total %" when more than one battery is present
         - Show battery temperature (tp-smapi only)
         - Show "unsupported" instead of "not installed" for tp-smapi incapable
           hardware
