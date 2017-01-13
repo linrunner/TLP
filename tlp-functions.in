@@ -1288,27 +1288,10 @@ set_sound_power_mode () { # set sound chip power modes
     return 0
 }
 
-get_pci_class_descr () { # get long descr of pci device class
-    # $1: class; retval: lclass
-
-    case $1 in
-        0x020000) lclass="Ethernet controller" ;;
-        0x028000) lclass="Wireless" ;;
-        0x040300) lclass="Audio device" ;;
-        0x060000) lclass="Host Bridge" ;;
-        0x080500) lclass="SD Card Reader" ;;
-        0x088000|0x088001) lclass="Card Reader" ;;
-        0x0c0000|0x0c0010) lclass="Firewire" ;;
-        *) lclass="" ;;
-    esac
-
-    return 0
-}
-
 set_runtime_pm () { # set runtime power management
     # $1: 0=ac mode, 1=battery mode
 
-    local address class ccontrol control device doall driver drv_bl pci_bl type
+    local address class ccontrol control device driver drv_bl pci_bl type vendor
 
     if [ "$1" = "1" ]; then
         ccontrol=${RUNTIME_PM_ON_BAT:-}
@@ -1321,9 +1304,6 @@ set_runtime_pm () { # set runtime power management
         echo_debug "pm" "set_runtime_pm($1).not_configured"
         return 0
     fi
-
-    # enable for all devices
-    doall=${RUNTIME_PM_ALL:-1}
 
     # driver specific blacklist:
     # - undefined = use internal default from $DEFAULT_PM_DRIVER_BLACKLIST
@@ -1345,44 +1325,51 @@ set_runtime_pm () { # set runtime power management
                 if ! wordinlist "$address" "$pci_bl"; then
                     pci_bl="$pci_bl $address"
                 fi
-            done
-        fi
-    done
+            done # for device
+        fi # if driver
+    done # for driver
 
     # iterate pci(e) devices
     for type in $PCID; do
         for device in $type/*; do
-            class="none"
-            lclass=""
-
-            # get short device address
-            address=${device##/*/0000:}
-
-            if wordinlist "$address" "$pci_bl"; then
-                # device is in blacklist
-                control="black"
-
-            elif [ -f $device/class ] && [ -f $device/power/control ]; then
+            if [ -f $device/class ] && [ -f $device/power/control ]; then
+                # get short device address, class
+                address=${device##/*/0000:}
                 class=$(cat $device/class)
-                get_pci_class_descr $class
-                control=$ccontrol
 
-                if [ -z "$lclass" ] && [ $doall -ne 1 ]; then
-                    # device has no long descr and all flag is not set
-                    control="class"
-                fi
+                if wordinlist "$address" "$pci_bl"; then
+                    # device is in address blacklist
+                    control="black_address"
 
-                case $control in
-                    auto|on) echo $control > $device/power/control ;;
+                else
+                    control=$ccontrol
 
-                    class|none) ;; # do nothing
-                esac
-            fi
+                    # check for Nvidia gpu's
+                    if wordinlist "nouveau" "$drv_bl" || wordinlist "nvidia" "$drv_bl"; then
+                        # driver nouveau or nvidia is in blacklist
+                        # --> blacklist depending on vendor and class
+                        vendor=$(cat $device/vendor 2> /dev/null)
 
-            [ -n "$lclass" ] && lclass=" $lclass"
-            echo_debug "pm" "set_runtime_pm($1).$control: $device [$class$lclass]"
-        done
-    done
+                        if [ "$vendor" = "0x10de" ]; then
+                            # vendor nvidia
+                            # --> check for display or 3d controller class
+                            case $class in
+                                "0x030000") control="black_nvgpu" ;;
+                                "0x030200") control="black_nvgpu" ;;
+                            esac
+                        fi
+                    fi # if nouveau | nvidia blacklisted
+
+                    case $control in
+                        auto|on) echo $control > $device/power/control ;;
+                        *) ;; # do nothing
+                    esac
+                fi #
+
+                echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]"
+            fi # if class && control
+        done # for device
+    done # for type
 
     return 0
 }

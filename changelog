@@ -11,8 +11,12 @@
     Graphics:
       - RUNTIME_PM_DRIVER_BLACKLIST: when unconfigured default to
         "amdgpu nouveau nvidia radeon"; driver default control=auto allows
-        PRIME/Bumblebee to turn the eGPU off and prevents accidential power-on
+        PRIME/Bumblebee to turn the dGPU off and prevents accidential power-on
         during boot as well
+      - Exclude Nvidia dGPU from runtime power management even when no driver
+        is associated (improve compatibility with Bumblebee)
+    PCI(e) devices
+      - RUNTIME_PM_ALL removed (default to RUNTIME_PM_ALL=1 internally)
     ThinkPad Battery:
       - RESTORE_THRESHOLDS_ON_BAT: restore charge thresholds on battery
       - Detect Thinkpad 13 as unsupported (Issue #227)

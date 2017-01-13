@@ -179,17 +179,13 @@ BAY_DEVICE="sr0"
 RUNTIME_PM_ON_AC=on
 RUNTIME_PM_ON_BAT=auto
 
-# Runtime PM for *all* PCI(e) bus devices, except blacklisted ones:
-#   0=disable, 1=enable
-RUNTIME_PM_ALL=1
-
 # Exclude PCI(e) device adresses the following list from Runtime PM
 # (separate with spaces). Use lspci to get the adresses (1st column).
 #RUNTIME_PM_BLACKLIST="bb:dd.f 11:22.3 44:55.6"
 
 # Exclude PCI(e) devices assigned to the listed drivers from Runtime PM.
 # Default when unconfigured is "amdgpu nouveau nvidia radeon" which
-# prevents accidential power-on of eGPU in hybrid graphics setups.
+# prevents accidential power-on of dGPU in hybrid graphics setups.
 # Use "" to disable the feature completely.
 # Separate multiple drivers with spaces.
 #RUNTIME_PM_DRIVER_BLACKLIST="amdgpu nouveau nvidia radeon"
