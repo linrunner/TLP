@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # tlp-usblist - list usb device info with autosuspend attributes
 #
-# Copyright (c) 2016 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2017 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 package tlp_usblist;

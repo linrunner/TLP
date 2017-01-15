@@ -2,35 +2,12 @@
 # tlp-rdw - network manager dispatcher hook:
 #           enable/disable radios on ifup/ifdown
 #
-# Copyright (c) 2016 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2017 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants
 readonly LIBDIR="@TLP_TLIB@"
 readonly LIBS="tlp-functions tlp-rf-func"
-
-# --- Functions
-
-check_switch_lock() { # switch listed radio devices
-    # and time-lock them afterwards if actually switched
-    # $1: device where the event originated -- do nothing if its time-locked
-    # $2: list of device types to switch
-    # $3: on/off
-    local dev
-
-    # quit if the originating *radio* device is time-locked (not LAN)
-    [ "$1" != "LAN" ] && check_timed_lock "${RDW_NM_LOCK}_$1" && return 1
-
-    for dev in $2; do
-        if [ -n "$dev" ] && [ "$dev" != "$1" ]; then
-            # device type is valid and not the originating one
-            # --> do switch with state change lock
-            device_switch $dev $3 "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
-        fi
-    done
-
-    return 0
-}
 
 # --- Source libraries
 for lib in $LIBS; do
@@ -41,6 +18,45 @@ for lib in $LIBS; do
     . $LIBDIR/$lib
 done
 
+# --- Functions
+
+check_switch_lock() { # switch listed radio devices
+    # and time-lock them afterwards if actually switched
+    # $1: device type where the event originated -- do nothing if its time-locked
+    # $2: list of device types to switch
+    # $3: on/off
+    local type
+
+    # quit if the originating *radio* device is time-locked (not LAN)
+    [ "$1" != "LAN" ] && check_timed_lock "${RDW_NM_LOCK}_$1" && return 1
+
+    for type in $2; do
+        if [ -n "$type" ] && [ "$type" != "$1" ]; then
+            # device type is valid and not the originating one
+            # --> do switch with state change lock
+            device_switch $type $3 "${RDW_NM_LOCK}_${type}" $RDW_LOCKTIME
+        fi
+    done
+
+    return 0
+}
+
+save_iface_type () { # save interface type -- $1: interface; $2: type
+    # rc: 0=saved/1=error
+    [ -d $NETD/$1 ] && echo "$2" > $RUNDIR/${1}.itype 2> /dev/null
+    return $?
+}
+
+get_iface_type () { # get saved interface type -- $1: interface
+    # rc: 0=saved state found/1=not found
+    # retval: $itype
+    local rc
+
+    itype=$(cat $RUNDIR/${1}.itype 2> /dev/null); rc=$?
+    rm -f $RUNDIR/${1}.itype
+    return $rc
+}
+
 # --- MAIN
 read_defaults
 check_tlp_enabled || exit 0
@@ -49,16 +65,35 @@ add_sbin2path
 # Get args
 iface="$1"
 action="$2"
-itype="unknown"
+itype=""
+
 
 # Quit for invalid interfaces
 [ -n "$iface" ] && [ "$iface" != "none" ] || exit 0
 
-# Quit for virtual interfaces
-readlink "$NETD/$iface" | grep -q '/virtual/' && exit 0
-
 # Quit for actions other than "up" and "down"
 [ "$action" = "up" ] || [ "$action" = "down" ] || exit 0
+
+#  Quit for virtual interfaces (up action)
+if [ "$action" = "up" ] && readlink "$NETD/$iface" | grep -q '/virtual/'; then
+    # save type for down action where $NETD/$iface won't be there anymore
+    save_iface_type $iface virtual
+    [ "$X_NET_VIRTUAL_TRACE" = 1 ] && \
+        echo_debug "nm" "+++ rdw_nm($iface).up.ignore_virtual"
+    exit 0
+fi
+
+# Get saved interface type (down action)
+if [ "$action" = "down" ]; then
+    get_iface_type $iface
+
+    # quit for virtual interfaces
+    if [ "$itype" = "virtual" ]; then
+        [ "$X_NET_VIRTUAL_TRACE" = 1 ] && \
+            echo_debug "nm" "+++ rdw_nm($iface).down.ignore_virtual"
+        exit 0
+    fi
+fi
 
 echo_debug "nm" "+++ rdw_nm($iface).$action"
 if [ -n "$addpath" ]; then
@@ -68,8 +103,13 @@ else
 fi
 
 # Determine interface type
-if cmd_exists $NMCLI ; then
-    # nmcli is available --> check if nmcli dev output matches interface
+if [ -n "$itype" ]; then
+    # saved type available (down action)
+    echo_debug "nm" "rdw_nm($iface).$action: type=$itype [saved]"
+
+elif cmd_exists $NMCLI ; then
+    # no saved type but nmcli is available
+    # --> check if nmcli dev output matches interface
     itype="$($NMCLI dev | awk '$1 ~ /^'$iface'$/ { print $2; }')"
 
     if [ -z "$itype" ]; then
@@ -103,10 +143,16 @@ if cmd_exists $NMCLI ; then
             esac
         fi
     fi
+
+    # save interface type (up action)
+    [ "$action" = "up" ] && save_iface_type "$iface" "$itype"
+
     echo_debug "nm" "rdw_nm($iface).$action: type=$itype [nmcli]"
+
 else
     # nmcli is not available
-    echo_debug "nm" "rdw_nm($iface)$action.nmcli_not_available"
+    itype="unknown"
+    echo_debug "nm" "rdw_nm($iface)$action: : type=$itype [none]"
 fi
 
 case $action in
@@ -121,7 +167,7 @@ case $action in
                 check_switch_lock wifi "$DEVICES_TO_DISABLE_ON_WIFI_CONNECT" off
                 ;;
 
-        gsm|wwan)
+            gsm|wwan)
                 check_switch_lock wwan "$DEVICES_TO_DISABLE_ON_WWAN_CONNECT" off
                 ;;
         esac

@@ -1,7 +1,7 @@
 #!/bin/sh
 # tlp - display power save and usb autosuspend status
 #
-# Copyright (c) 2016 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2017 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants
@@ -804,6 +804,47 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
         echo
     fi
 
+    # -- show docks
+    cnt=0
+    for dock in $DOCKGLOB; do
+        [ ! -d $dock ] && break # no dock/bay detected
+
+        # dock/bay detected, print header
+        [ $cnt -eq 0 ] && echo "+++ Docks and Device Bays"
+        cnt=$((cnt+1))
+
+        # get dock type
+        { read -r dock_type < $dock/type; } 2>/dev/null
+
+        # get dock state
+        if check_is_docked; then
+            # docked
+            case $dock_type in
+                ata_bay)      dock_state="drive present" ;;
+                battery_bay)  dock_state="battery present" ;;
+                dock_station) dock_state="docked" ;;
+
+                *)  dock_state="docked"
+                    dock_type="unknown"
+                    ;;
+            esac
+        else
+            # not docked
+            case $dock_type in
+                ata_bay)      dock_state="no drive (or powered off)" ;;
+                battery_bay)  dock_state="no battery " ;;
+                dock_station) dock_state="undocked" ;;
+
+                *)  dock_state="undocked"
+                    dock_type="unknown"
+                    ;;
+            esac
+        fi
+
+        # print dock data
+        printf "%s: %-13s = %s\n" "$dock" "$dock_type" "$dock_state"
+    done
+    [ $cnt -gt 0 ] && echo
 fi # show_disk
 
 if [ "$show_all" = "1" ]; then
@@ -965,60 +1006,11 @@ if [ "$show_all" = "1" ]; then
         printparm "%s = ##%s##" /sys/module/snd_ac97_codec/parameters/power_save
     fi
     echo
-
-    # -- show docks
-    cnt=0
-    for dock in $DOCKGLOB; do
-        [ ! -d $dock ] && break # no dock/bay detected
-
-        # dock/bay detected, print header
-        [ $cnt -eq 0 ] && echo "+++ Docks and Device Bays"
-        cnt=$((cnt+1))
-
-        # get dock type
-        { read -r dock_type < $dock/type; } 2>/dev/null
-
-        # get dock state
-        if check_is_docked; then
-            # docked
-            case $dock_type in
-                ata_bay)      dock_state="drive present" ;;
-                battery_bay)  dock_state="battery present" ;;
-                dock_station) dock_state="docked" ;;
-
-                *)  dock_state="docked"
-                    dock_type="unknown"
-                    ;;
-            esac
-        else
-            # not docked
-            case $dock_type in
-                ata_bay)      dock_state="no drive (or powered off)" ;;
-                battery_bay)  dock_state="no battery " ;;
-                dock_station) dock_state="undocked" ;;
-
-                *)  dock_state="undocked"
-                    dock_type="unknown"
-                    ;;
-            esac
-        fi
-
-        # print dock data
-        printf "%s: %-13s = %s\n" "$dock" "$dock_type" "$dock_state"
-    done
-    [ $cnt -gt 0 ] && echo
 fi # show_all
 
 if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show runtime pm
-    doall=${RUNTIME_PM_ALL:-0}
-
     echo "+++ Runtime Power Management"
-    if [ "$doall" = "1" ]; then
-        echo "Device classes   = all"
-    else
-        echo "Device classes   = Ethernet, Wireless, Audio, Host Bridge, [SD] Card Reader, Firewire"
-    fi
     echo "Device blacklist = ${RUNTIME_PM_BLACKLIST:=(not configured)}"
     pmdbl="${RUNTIME_PM_DRIVER_BLACKLIST-${DEFAULT_PM_DRIVER_BLACKLIST} (default)}"
     echo "Driver blacklist = ${pmdbl:-(disabled)}"
@@ -1077,6 +1069,8 @@ fi # show_usb
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show battery info & charge thresholds
     bcnt=0
+    efsum=0
+    ensum=0
 
     # --- show availability of ThinkPad battery features
     if is_thinkpad; then
@@ -1158,6 +1152,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     ed=$(cat $batd/design_capacity)
                     ef=$(cat $batd/last_full_capacity)
                     en=$(cat $batd/remaining_capacity)
+                    efsum=$(($efsum + $ef))
+                    ensum=$(($ensum + $en))
 
                     # show charge + capacity
                     lcnt=0
@@ -1227,6 +1223,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     ed=$(cat $batd/energy_full_design)
                     ef=$(cat $batd/energy_full)
                     en=$(cat $batd/energy_now)
+                    efsum=$(($efsum + $ef))
+                    ensum=$(($ensum + $en))
 
                 elif [ -f $batd/charge_full ]; then
                     printparm "%-59s = ##%6d## [mAh]" $batd/charge_full_design "" 000
@@ -1238,6 +1236,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     ed=$(cat $batd/charge_full_design)
                     ef=$(cat $batd/charge_full)
                     en=$(cat $batd/charge_now)
+                    efsum=$(($efsum + $ef))
+                    ensum=$(($ensum + $en))
+
                 fi
                 if [ $tpbat -eq 1 ]; then
                     print_tp_batstate $batd/status
@@ -1271,8 +1272,13 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     fi # if /sys/class/power_supply
 
     if [ $bcnt -eq 0 ]; then
+        # no battery detected
         printf "+++ Battery Status\n"
         printf "No batteries detected.\n\n"
+    elif [ $bcnt -gt 1 ] && [ $efsum -ne 0 ]; then
+        # more than one battery detected --> show charge total
+        perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '$ensum' / '$efsum');'
+        echo
     fi
 
 fi # show_bat

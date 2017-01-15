@@ -1,7 +1,7 @@
 #!/bin/sh
 # tlp - adjust power settings
 #
-# Copyright (c) 2016 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2017 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants
@@ -113,7 +113,7 @@ case "$mode" in
                 compare_and_save_power_state $pwrmode
                 echo -n "Applying power save settings..."
                 apply_common_settings $pwrmode
-                [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+                poweroff_drivebay $pwrmode 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
 
@@ -128,7 +128,7 @@ case "$mode" in
                 compare_and_save_power_state $pwrmode
                 echo -n "Applying power save settings..."
                 apply_common_settings $pwrmode
-                [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+                poweroff_drivebay $pwrmode 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
 
@@ -156,6 +156,7 @@ case "$mode" in
                 # apply ac settings for faster shutdown
                 echo -n "Applying power save settings..."
                 apply_common_settings 0
+                poweroff_drivebay $pwrmode 0
                 echo "done."
                 ;;
 
@@ -176,7 +177,7 @@ case "$mode" in
         if lock_tlp_nb; then
             if compare_and_save_power_state $pwrmode; then
                 apply_common_settings $pwrmode
-                [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+                poweroff_drivebay $pwrmode 0
                 set_radio_device_states $pwrmode
                 if [ "$RESTORE_THRESHOLDS_ON_BAT" = "1" ] && [ "$pwrmode" = "1" ]; then
                     set_charge_thresholds
@@ -193,7 +194,7 @@ case "$mode" in
         if lock_tlp; then
             compare_and_save_power_state $pwrmode
             apply_common_settings $pwrmode
-            [ "$pwrmode" = "1" ] && poweroff_drivebay 0
+            poweroff_drivebay $pwrmode 0
             set_usb_suspend 0 auto
             set_charge_thresholds
             set_radio_device_states $pwrmode
@@ -211,7 +212,7 @@ case "$mode" in
         if lock_tlp; then
             compare_and_save_power_state 1
             apply_common_settings 1
-            poweroff_drivebay 0
+            poweroff_drivebay $pwrmode 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
             set_radio_device_states 1
             unlock_tlp
@@ -228,6 +229,7 @@ case "$mode" in
         if lock_tlp; then
             compare_and_save_power_state 0
             apply_common_settings 0
+            poweroff_drivebay $pwrmode 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
             set_radio_device_states 0
             unlock_tlp
@@ -259,7 +261,7 @@ case "$mode" in
 
             compare_and_save_power_state $pwrmode
             apply_common_settings $pwrmode
-            resume_drivebay
+            resume_drivebay $pwrmode
             unlock_tlp
         else
             exitcode=4
@@ -273,7 +275,7 @@ case "$mode" in
 
     bayoff) # power off drive bay
         check_root
-        poweroff_drivebay 1
+        poweroff_drivebay $pwrmode 1
         ;;
 
     setcharge) # set charge thresholds (temporarily)

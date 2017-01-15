@@ -1,7 +1,7 @@
 #!/bin/sh
 # tlp - switch bluetooth/wifi/wwan on/off
 #
-# Copyright (c) 2016 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2017 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # --- Constants
