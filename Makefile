@@ -9,6 +9,7 @@ TLP_ULIB   ?= /lib/udev
 TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
 TLP_CONF   ?= /etc/default/tlp
 TLP_SYSD   ?= /lib/systemd/system
+TLP_SYSV   ?= /etc/init.d
 TLP_SHCPL  ?= /usr/share/bash-completion/completions
 TLP_MAN    ?= /usr/share/man
 
@@ -21,6 +22,7 @@ _ULIB  = $(DESTDIR)$(TLP_ULIB)
 _NMDSP = $(DESTDIR)$(TLP_NMDSP)
 _CONF  = $(DESTDIR)$(TLP_CONF)
 _SYSD  = $(DESTDIR)$(TLP_SYSD)
+_SYSV  = $(DESTDIR)$(TLP_SYSV)
 _SHCPL = $(DESTDIR)$(TLP_SHCPL)
 _MAN   = $(DESTDIR)$(TLP_MAN)
 
@@ -76,7 +78,7 @@ endif
 	install -D -m 644 tlp.rules $(_ULIB)/rules.d/85-tlp.rules
 	[ -f $(_CONF) ] || install -D -m 644 default $(_CONF)
 ifneq ($(TLP_NO_INIT),1)
-	install -D -m 755 tlp.init $(DESTDIR)/etc/init.d/tlp
+	install -D -m 755 tlp.init $(_SYSV)/tlp
 endif
 ifeq ($(TLP_WITH_SYSTEMD),1)
 	install -D -m 644 tlp.service $(_SYSD)/tlp.service
