@@ -2,8 +2,9 @@ tlp (0.9.901-1) unstable; urgency=low
 
   [Thomas Koch]
   * New upstream release
+  * debian/tlp.init: update from upstream
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 15 Jan 2017 12:11:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 18 Jan 2017 19:00:29 +0100
 
 tlp (0.9-1) unstable; urgency=low
 

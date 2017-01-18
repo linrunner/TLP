@@ -2,8 +2,10 @@
 
 # tlp - system startup/shutdown
 #
-# Copyright (c) 2015 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2017 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
+#
+# chkconfig: 2345 98 01
 
 ### BEGIN INIT INFO
 # Provides:          tlp
