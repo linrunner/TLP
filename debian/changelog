@@ -4,7 +4,14 @@ tlp (0.9.901-1) unstable; urgency=low
   * New upstream release
   * debian/tlp.init: update from upstream
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 18 Jan 2017 19:00:29 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 24 Jan 2017 23:42:33 +0100
+
+tlp (0.9-2) unstable; urgency=low
+
+  * [b8cbaa7] Recommend linux-tools on Ubuntu only (Closes: #852204)
+  * [da84365] Add missing dependency on lsb-base
+
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Sun, 22 Jan 2017 23:18:29 +0100
 
 tlp (0.9-1) unstable; urgency=low
 

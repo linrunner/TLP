@@ -11,6 +11,11 @@
 # Uncomment this to turn on verbose mode.
 # export DH_VERBOSE=1
 
+# Debian doesn't provide x86_energy_perf_policy, but Ubuntu does
+ifeq ($(shell dpkg-vendor --derives-from Ubuntu && echo yes),yes)
+       SUBSTVARS = -Vdist:Recommends="linux-tools"
+endif
+
 # Build: no binaries to build; but keeps lintian happy ...
 build-arch:
 	# do nothing
@@ -47,11 +52,11 @@ tlp:
 	dh_fixperms -p$@
 	dh_installdeb -p$@
 	dh_shlibdeps -p$@
-	dh_gencontrol -p$@
+	dh_gencontrol -p$@ $(SUBSTVARS)
 	dh_md5sums -p$@
 	dh_builddeb -p$@
 
-# Install tlp-rdw 
+# Install tlp-rdw
 tlp-rdw:
 	dh_testdir
 	dh_testroot
@@ -72,7 +77,7 @@ tlp-rdw:
 	dh_md5sums -p$@
 	dh_builddeb -p$@
 
-# Install 
+# Install
 install-indep: tlp tlp-rdw
 
 # Build + Install
