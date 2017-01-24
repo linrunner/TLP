@@ -5,7 +5,7 @@ set -e
 
 PMD="/usr/lib/pm-utils/power.d"
 ETD="/etc/pm/power.d"
-NOP="/usr/share/tlp-pm/tlp-nop"
+NOP="/usr/share/tlp/tlp-nop"
 SYD="/lib/systemd/system"
 ESY="/etc/systemd/system"
 NUL="/dev/null"
@@ -26,7 +26,7 @@ case "$1" in
                     # Executable hook in /usr/lib/pm-utils/power.d/ exists
                     if [ -f ${ETD}/${i} ]; then
                         # Exclude symlinks to tlp-nop
-                        if [ "$(readlink -s ${ETD}/${i})" != "${NOP}" ]; then
+                        if ! readlink ${ETD}/${i} | egrep -q 'tlp-nop$' ; then
                             # Move aside superseding hook of same name in /etc/pm/power.d/
                             mv -n ${ETD}/${i} ${ETD}/${i}.tlp-save
                         fi

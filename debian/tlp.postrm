@@ -5,7 +5,6 @@ set -e
 
 PMD="/usr/lib/pm-utils/power.d"
 ETD="/etc/pm/power.d"
-NOP="/usr/share/tlp-pm/tlp-nop"
 SYD="/lib/systemd/system"
 ESY="/etc/systemd/system"
 NUL="/dev/null"
@@ -17,7 +16,7 @@ case "$1" in
         for i in 95hdparm-apm disable_wol hal-cd-polling intel-audio-powersave harddrive \
             laptop-mode journal-commit pci_devices pcie_aspm readahead sata_alpm \
             sched-powersave usb_bluetooth wireless xfs_buffer; do
-            if [ "$( readlink ${ETD}/${i} )" = "$NOP" ]; then
+            if readlink ${ETD}/${i} | egrep -q 'tlp-nop$' ; then
                 rm ${ETD}/${i}
             fi
         done
