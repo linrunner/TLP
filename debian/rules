@@ -52,7 +52,7 @@ tlp:
 	dh_fixperms -p$@
 	dh_installdeb -p$@
 	dh_shlibdeps -p$@
-	dh_gencontrol -p$@ $(SUBSTVARS)
+	dh_gencontrol -p$@ -- $(SUBSTVARS)
 	dh_md5sums -p$@
 	dh_builddeb -p$@
 

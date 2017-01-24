@@ -4,8 +4,9 @@ tlp (0.9.901-1) unstable; urgency=low
   * New upstream release
   * debian/tlp.init: update from upstream
   * debian/tlp.postinst,postrm: tlp-nop moved to /usr/share/tlp
+  * debian/rules: fix invocation of dh_gencontrol with $(SUBSTVARS)
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 25 Jan 2017 00:04:20 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 25 Jan 2017 00:42:12 +0100
 
 tlp (0.9-2) unstable; urgency=low
 
