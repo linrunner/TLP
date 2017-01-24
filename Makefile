@@ -3,7 +3,7 @@
 # Evaluate parameters
 TLP_SBIN   ?= /usr/sbin
 TLP_BIN    ?= /usr/bin
-TLP_TLIB   ?= /usr/share/tlp-pm
+TLP_TLIB   ?= /usr/share/tlp
 TLP_PLIB   ?= /usr/lib/pm-utils
 TLP_ULIB   ?= /lib/udev
 TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
