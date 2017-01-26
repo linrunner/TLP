@@ -106,8 +106,10 @@ install-man:
 	# manpages
 	install -d -m 755 $(_MAN)/man1
 	install -m 644 man/{bluetooth,run-on-ac,run-on-bat,wifi,wwan}.1 $(_MAN)/man1/
+	install -m 644 man/tlp-{pcilist,usblist}.1 $(_MAN)/man1/
 	install -d -m 755 $(_MAN)/man8
 	install -m 644 man/{tlp,tlp-stat}.8 $(_MAN)/man8/
+	install -m 644 man/{tlp,tlp-sleep}.service.8 $(_MAN)/man8/
 
 install: install-tlp install-rdw
 
@@ -148,7 +150,9 @@ uninstall-rdw:
 uninstall-man:
 	# manpages
 	rm $(_MAN)/man1/{bluetooth,run-on-ac,run-on-bat,wifi,wwan}.1
+	rm $(_MAN)/man1/tlp-{pcilist,usblist}.1
 	rm $(_MAN)/man8/{tlp,tlp-stat}.8
+	rm $(_MAN)/man8/{tlp,tlp-sleep}.service.8
 
 uninstall: uninstall-tlp uninstall-rdw
 
