@@ -32,7 +32,7 @@ readonly JOURNALCTL=journalctl
 readonly DEBUGLOG=/var/log/debug
 
 readonly SYSTEMD_SERVICES="tlp.service tlp-sleep.service"
-readonly RFKILL_SERVICES="systemd-rfkill@.service systemd-rfkill.service"
+readonly RFKILL_SERVICES="systemd-rfkill.service"
 
 readonly EFID=/sys/firmware/efi
 
