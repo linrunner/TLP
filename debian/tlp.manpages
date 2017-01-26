@@ -1,7 +1,1 @@
-man/bluetooth.1  
-man/run-on-ac.1  
-man/run-on-bat.1  
-man/tlp.8  
-man/tlp-stat.8  
-man/wifi.1  
-man/wwan.1
+man/*
