@@ -1,0 +1,26 @@
+.TH tlp.service 8 2017-01-26 "TLP 1.0" "Power Management"
+.
+.SH NAME
+.
+tlp.service \- Initialize powersave at boot and cleanup upon shutdown
+.
+.SH SYNOPSIS
+.B tlp\&.service
+.
+.SH DESCRIPTION
+tlp.service executes the following tasks:
+.IP (1) 4
+\fBAt system boot:\fR
+Switch or restore radio states, apply powersave settings and charge thresholds.
+.IP (2) 4
+\fBUpon system shutdown:\fR
+Switch or save radio states, apply AC settings and cleanup.
+.PP
+Do not employ tlp.service to refresh settings after a configuration change. Use \fBtlp start\fR instead.
+.
+.SH SEE ALSO
+.BR tlp (8),
+.BR tlp-sleep.service (8).
+.
+.SH AUTHOR
+(c) 2017 Thomas Koch <linrunner at gmx.net>
