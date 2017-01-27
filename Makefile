@@ -49,6 +49,21 @@ INFILES = \
 	tlp.upstart \
 	tlp-usb-udev
 
+MANFILES1 = \
+	bluetooth.1 \
+	run-on-ac.1 \
+	run-on-bat.1 \
+	tlp-pcilist.1 \
+	tlp-usblist.1 \
+	wifi.1 \
+	wwan.1
+
+MANFILES8 = \
+	tlp.8 \
+	tlp-stat.8 \
+	tlp.service.8 \
+	tlp-sleep.service.8
+
 # Make targets
 all: $(INFILES)
 
@@ -104,12 +119,10 @@ install-rdw: all
 
 install-man:
 	# manpages
-	install -d -m 755 $(_MAN)/man1
-	install -m 644 man/{bluetooth,run-on-ac,run-on-bat,wifi,wwan}.1 $(_MAN)/man1/
-	install -m 644 man/tlp-{pcilist,usblist}.1 $(_MAN)/man1/
-	install -d -m 755 $(_MAN)/man8
-	install -m 644 man/{tlp,tlp-stat}.8 $(_MAN)/man8/
-	install -m 644 man/{tlp,tlp-sleep}.service.8 $(_MAN)/man8/
+	install -d 755 $(_MAN)/man1
+	cd man && install -m 644 $(MANFILES1) $(_MAN)/man1/
+	install -d 755 $(_MAN)/man8
+	cd man && install -m 644 $(MANFILES8) $(_MAN)/man8/
 
 install: install-tlp install-rdw
 
@@ -149,10 +162,8 @@ uninstall-rdw:
 
 uninstall-man:
 	# manpages
-	rm $(_MAN)/man1/{bluetooth,run-on-ac,run-on-bat,wifi,wwan}.1
-	rm $(_MAN)/man1/tlp-{pcilist,usblist}.1
-	rm $(_MAN)/man8/{tlp,tlp-stat}.8
-	rm $(_MAN)/man8/{tlp,tlp-sleep}.service.8
+	cd $(_MAN)/man1 && rm -f $(MANFILES1)
+	cd $(_MAN)/man8 && rm -f $(MANFILES8)
 
 uninstall: uninstall-tlp uninstall-rdw
 
