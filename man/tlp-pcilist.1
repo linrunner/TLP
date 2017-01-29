@@ -1,4 +1,4 @@
-.TH tlp\-pcilist 1 2017-01-24 "TLP 1.0" "Power Management"
+.TH tlp\-pcilist 1 2017-01-29 "TLP 1.0" "Power Management"
 .
 .SH NAME
 tlp\-pcilist \- show PCI(e) device data.
@@ -7,10 +7,14 @@ tlp\-pcilist \- show PCI(e) device data.
 .B tlp\-pcilist
 .
 .SH DESCRIPTION
-This command is called as a subroutine from tlp\-stat, do not invoke it directly.
+List syspath, power saving control, class and driver for all devices.
 .
 .SH SEE ALSO
 .BR tlp\-stat (8).
+.
+.SH NOTES
+This command is called as a subroutine from tlp\-stat, do \fInot\fR invoke it
+directly.
 .
 .SH AUTHOR
 (c) 2017 Thomas Koch <linrunner at gmx.net>

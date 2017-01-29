@@ -1,22 +1,21 @@
-.TH tlp\-sleep.service 8 2017-01-26 "TLP 1.0" "Power Management"
+.TH tlp\-sleep.service 8 2017-01-29 "TLP 1.0" "Power Management"
 .
 .SH NAME
 .
-tlp\sleep.service \- Disable powersave at suspend and restore upon resume.
+tlp\sleep.service \- Disable power saving at suspend and restore upon resume.
 .
 .SH SYNOPSIS
 .B tlp\-sleep\&.service
 .
 .SH DESCRIPTION
 tlp-sleep.service executes the following tasks:
-.IP (1) 4
-\fBAt system suspend:\fR
-Save radio states and apply AC settings.
-.IP (2) 4
-\fBUpon system resume:\fR
-Restore radio states and apply powersave settings.
+.IP " 1." 4
+System suspend: save radio states and apply AC settings.
+.IP " 2. " 4
+System resume: restore radio states and apply power saving settings.
 .
 .SH SEE ALSO
+.BR systemd-sleep (8),
 .BR tlp.service (8).
 .
 .SH AUTHOR
