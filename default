@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# tlp - Parameters for power save
+# tlp - Parameters for power saving
 # See full explanation: http://linrunner.de/en/tlp/docs/tlp-configuration.html
 
 # Hint: some features are disabled by default, remove the leading # to enable
@@ -159,7 +159,7 @@ WIFI_PWR_ON_BAT=on
 WOL_DISABLE=Y
 
 # Enable audio power saving for Intel HDA, AC97 devices (timeout in secs).
-# A value of 0 disables, >=1 enables power save.
+# A value of 0 disables, >=1 enables power saving.
 SOUND_POWER_SAVE_ON_AC=0
 SOUND_POWER_SAVE_ON_BAT=1
 
