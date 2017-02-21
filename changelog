@@ -1,4 +1,4 @@
-+++ 1.0 --- 13.01.2017 +++
++++ 1.0 --- 21.02.2017 +++
 
   *** Development version ***
 
@@ -36,6 +36,7 @@
       - -g|--graphics: show graphics card data only
       - --psup: show power supply diagnostic
       - SMART attribute G-Sense_Error_Rate (191)
+      - -v: additional battery voltages
       - Workqueue power efficient status
 
   * Bugfixes

@@ -1130,6 +1130,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     print_tp_batstate $batd/state
                     echo
                     if [ $show_verbose -eq 1 ]; then
+                        printparm "%-59s = ##%6s## [mV]" $batd/design_voltage
+                        printparm "%-59s = ##%6s## [mV]" $batd/voltage
                         printparm "%-59s = ##%6s## [mV]" $batd/group0_voltage
                         printparm "%-59s = ##%6s## [mV]" $batd/group1_voltage
                         printparm "%-59s = ##%6s## [mV]" $batd/group2_voltage
@@ -1246,6 +1248,12 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%s##" $batd/status
                 fi
                 echo
+
+                if [ $show_verbose -eq 1 ]; then
+                    printparm "%-59s = ##%6s## [mV]" $batd/voltage_min_design "" 000
+                    printparm "%-59s = ##%6s## [mV]" $batd/voltage_now "" 000
+                    echo
+                fi
 
                 if [ $tpacpi -eq 0 ]; then
                     # --- show ThinkPad charge thresholds via tpacpi-bat
