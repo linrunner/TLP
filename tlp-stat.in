@@ -61,6 +61,15 @@ no_runtimepm=0
 
 # --- Functions
 
+catparm () { # echo contents of sysfile or default if non-existent or unreadable
+    # $1: sysfile, $2: default value
+    local val="$(cat $1 2> /dev/null)"
+    [ -n "$val" ] || val="$2" # sysfile nonexistent or read failed
+
+    printf "%s" $val
+    return 0
+}
+
 printparm () { # formatted output of sysfile - general
     # $1: format, $2: sysfile, $3: namsg, $4: cutoff
     local format="$1"
@@ -1151,9 +1160,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     echo
 
                     # store values for charge / capacity calculation below
-                    ed=$(cat $batd/design_capacity)
-                    ef=$(cat $batd/last_full_capacity)
-                    en=$(cat $batd/remaining_capacity)
+                    ed=$(catparm $batd/design_capacity 0)
+                    ef=$(catparm $batd/last_full_capacity 0)
+                    en=$(catparm $batd/remaining_capacity 0)
                     efsum=$(($efsum + $ef))
                     ensum=$(($ensum + $en))
 
@@ -1222,9 +1231,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mW]" $batd/power_now "" 000
 
                     # store values for charge / capacity calculation below
-                    ed=$(cat $batd/energy_full_design)
-                    ef=$(cat $batd/energy_full)
-                    en=$(cat $batd/energy_now)
+                    ed=$(catparm $batd/energy_full_design 0)
+                    ef=$(catparm $batd/energy_full 0)
+                    en=$(catparm $batd/energy_now 0)
                     efsum=$(($efsum + $ef))
                     ensum=$(($ensum + $en))
 
@@ -1235,11 +1244,16 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mA]" $batd/current_now "" 000
 
                     # store values for charge / capacity calculation below
-                    ed=$(cat $batd/charge_full_design)
-                    ef=$(cat $batd/charge_full)
-                    en=$(cat $batd/charge_now)
+                    ed=$(catparm $batd/charge_full_design 0)
+                    ef=$(catparm $batd/charge_full 0)
+                    en=$(catparm $batd/charge_now 0)
                     efsum=$(($efsum + $ef))
                     ensum=$(($ensum + $en))
+
+                else
+                    ed=0
+                    ef=0
+                    en=0
 
                 fi
                 if [ $tpbat -eq 1 ]; then
