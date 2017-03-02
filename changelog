@@ -1,4 +1,4 @@
-+++ 1.0 --- 28.02.2017 +++
++++ 1.0 --- 02.03.2017 +++
 
   *** Development version ***
 
@@ -41,8 +41,8 @@
 
   * Bugfixes
     - Issue #237: init start: apply powersave regardless of previous state
-    - tlp-stat: show Intel graphics parameters for Ubuntu's i915_bpo module
     - Issue #256: tlp-stat: intercept non-existing or invalid charge values
+    - tlp-stat: show Intel graphics parameters for Ubuntu's i915_bpo module
 
 +++ 0.9 --- 18.08.2016 +++
 

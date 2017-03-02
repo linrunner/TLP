@@ -376,17 +376,19 @@ set_radio_device_states () { # set/initialize all radio states
                 devs2disable="$DEVICES_TO_DISABLE_ON_SHUTDOWN"
                 devs2enable="$DEVICES_TO_ENABLE_ON_SHUTDOWN"
 
-                # NM workaround: if
-                # 1. disable wifi is configured somehow, and
-                # 2. wifi is not explicitly configured for shutdown
-                # then re-enable wifi on shutdown to prepare for startup
-                if wordinlist "wifi" "$DEVICES_TO_DISABLE_ON_BAT
-                                      $DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE
-                                      $DEVICES_TO_DISABLE_ON_LAN_CONNECT
-                                      $DEVICES_TO_DISABLE_ON_WIFI_CONNECT
-                                      $DEVICES_TO_DISABLE_ON_WWAN_CONNECT" && \
-                   ! wordinlist "wifi" "$devs2disable $devs2enable"; then
-                    devs2enable="wifi $devs2enable"
+                if [ "$X_WIFI_ON_SHUTDOWN" != "0" ]; then
+                    # NM workaround: if
+                    # 1. disable wifi is configured somehow, and
+                    # 2. wifi is not explicitly configured for shutdown
+                    # then re-enable wifi on shutdown to prepare for startup
+                    if wordinlist "wifi" "$DEVICES_TO_DISABLE_ON_BAT
+                                          $DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE
+                                          $DEVICES_TO_DISABLE_ON_LAN_CONNECT
+                                          $DEVICES_TO_DISABLE_ON_WIFI_CONNECT
+                                          $DEVICES_TO_DISABLE_ON_WWAN_CONNECT" && \
+                       ! wordinlist "wifi" "$devs2disable $devs2enable"; then
+                        devs2enable="wifi $devs2enable"
+                    fi
                 fi
                 ;;
 
