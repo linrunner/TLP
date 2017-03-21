@@ -680,7 +680,7 @@ set_cpu_hwp_pref () { # set HWP energy performance hints -- $1: 0=ac mode, 1=bat
 
     if [ -n "$hwpp" ]; then
         echo_debug "pm" "set_cpu_hwp_pref($1): $hwpp"
-        for cpu in /sys/devices/system/cpu/cpu*/energy_performance_preference; do
+        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
             [ -f $cpu ] && printf '%s\n' "$hwpp" > $cpu 2> /dev/null
         done
     fi
