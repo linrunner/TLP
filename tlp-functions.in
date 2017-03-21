@@ -669,6 +669,25 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
     return 0
 }
 
+set_cpu_hwp_pref () { # set HWP energy performance hints -- $1: 0=ac mode, 1=battery mode
+    local hwpp cpu
+
+    if [ "$1" = "1" ]; then
+        hwpp=$CPU_HWP_ON_BAT
+    else
+        hwpp=$CPU_HWP_ON_AC
+    fi
+
+    if [ -n "$hwpp" ]; then
+        echo_debug "pm" "set_cpu_hwp_pref($1): $hwpp"
+        for cpu in /sys/devices/system/cpu/cpu*/energy_performance_preference; do
+            [ -f $cpu ] && printf '%s\n' "$hwpp" > $cpu 2> /dev/null
+        done
+    fi
+
+    return 0
+}
+
 set_cpu_perf_pct () { # set Intel P-state performance
                       # $1: 0=ac mode, 1=battery mode
     local min max
