@@ -52,9 +52,9 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 
 # Set energy performance hints (HWP) for Intel P-state governor:
 #   default, performance, balance_performance, balance_power, power
-# Hint: do not use together with ENERGY_PERF_POLICY_* below.
-#CPU_HWP_ON_AC=default
-#CPU_HWP_ON_BAT=default
+# Values are given in order of increasing power saving.
+CPU_HWP_ON_AC=balance_performance
+CPU_HWP_ON_BAT=balance_power
 
 # Set Intel P-state performance: 0..100 (%)
 # Limit the max/min P-state to control the power dissipation of the CPU.
@@ -90,7 +90,6 @@ NMI_WATCHDOG=0
 # Set CPU performance versus energy savings policy:
 #   performance, normal, powersave
 # Requires kernel module msr and x86_energy_perf_policy from linux-tools
-# Hint: do not use together with CPU_HWP_* above.
 ENERGY_PERF_POLICY_ON_AC=performance
 ENERGY_PERF_POLICY_ON_BAT=powersave
 
