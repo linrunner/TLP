@@ -115,7 +115,7 @@ printparm () { # formatted output of sysfile - general
 }
 
 printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
-    # $1: sysfile, $2: alternative
+    # $1: sysfile; $2: alternative; $3: 1=psr/0=other
     local sysf val
 
     # Check if sysfile or alternative exist
@@ -138,13 +138,25 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
                 echo "(use per-chip default)"
             else
                 echo -n "("
-                if [ $(( $val & 1 )) -ne 0 ]; then
-                    echo -n "enabled"
+                if [ "$3" = "1" ]; then
+                    # enable_psr
+                    case $val in
+                        0) echo -n "disabled" ;;
+                        1) echo -n "enabled" ;;
+                        2) echo -n "force link-standby mode" ;;
+                        3) echo -n "force link-off mode" ;;
+                        *) echo -n "unknown" ;;
+                    esac
                 else
-                    echo -n "disabled"
+                    # other parms
+                    if [ $(( $val & 1 )) -ne 0 ]; then
+                        echo -n "enabled"
+                    else
+                        echo -n "disabled"
+                    fi
+                    [ $(( $val & 2 )) -ne 0 ] && echo -n " + deep"
+                    [ $(( $val & 4 )) -ne 0 ] && echo -n " + deepest"
                 fi
-                [ $(( $val & 2 )) -ne 0 ] && echo -n " + deep"
-                [ $(( $val & 4 )) -ne 0 ] && echo -n " + deepest"
                 echo ")"
             fi
         else
@@ -890,7 +902,7 @@ if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
             printparm_i915 $card/enable_rc6 $card/i915_enable_rc6
             printparm_i915 $card/enable_dc
             printparm_i915 $card/enable_fbc $card/i915_enable_fbc
-            printparm_i915 $card/enable_psr
+            printparm_i915 $card/enable_psr "" 1
             printparm_i915 $card/lvds_downclock
             printparm_i915 $card/modeset
             printparm_i915 $card/semaphores

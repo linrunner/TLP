@@ -38,6 +38,7 @@
         (Issue #188)
     tlp-stat:
       - -g|--graphics: show graphics card data only
+      - i915: explain enable_psr modes
       - --psup: show power supply diagnostic
       - SMART attribute G-Sense_Error_Rate (191)
       - -v: additional battery voltages
