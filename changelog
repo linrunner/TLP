@@ -1,4 +1,4 @@
-+++ 1.0 --- 23.03.2017 +++
++++ 1.0 --- 16.04.2017 +++
 
   *** Beta version ***
 
@@ -22,7 +22,8 @@
         Intel Skylake CPU or newer, intel_pstate only
     ThinkPad Battery:
       - RESTORE_THRESHOLDS_ON_BAT: restore charge thresholds on battery
-      - Detect Thinkpad 13 as unsupported (Issue #227)
+      - Detect ThinkPad *70 models (Kaby Lake)
+      - Detect ThinkPad 13 (1st and 2nd Gen) as unsupported (Issue #227)
       - Change texts "ThinkPad (extended) battery functions" to
         "ThinkPad battery features"
       - tlp-stat:
