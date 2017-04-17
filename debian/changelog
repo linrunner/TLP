@@ -1,4 +1,4 @@
-tlp (0.9.902-1) unstable; urgency=low
+tlp (0.9.903-1) unstable; urgency=low
 
   [Thomas Koch]
   * New upstream release
@@ -6,7 +6,7 @@ tlp (0.9.902-1) unstable; urgency=low
   * debian/tlp.postinst,postrm: tlp-nop moved to /usr/share/tlp
   * debian/tlp.manpages: install everything in man/
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 26 Jan 2017 22:22:24 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 17 Apr 2017 11:21:42 +0200
 
 tlp (0.9-3) unstable; urgency=low
 
