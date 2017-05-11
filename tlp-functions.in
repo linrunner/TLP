@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="0.9.903"
+readonly TLPVER="0.9.904"
 
 readonly CONFFILE=@TLP_CONF@
 readonly RUNDIR=/var/run/tlp
@@ -356,7 +356,7 @@ get_power_state () { # get current power mode -- rc: 0=ac, 1=battery
     # returns TLP_DEFAULT_MODE when TLP_PERSISTENT_DEFAULT=1
 
     get_sys_power_supply
-    rc=$?
+    local rc=$?
 
     if [ -n "$TLP_DEFAULT_MODE" ] \
         && [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then
@@ -1750,9 +1750,9 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                 # trace only: get drivers for the device and all subdevices
                 if [ "$X_USB_DRIVER_TRACE" = "1" ]; then
                     drvlist=$(for dl in $usbdev/*:*/driver; do readlink $dl | \
-                        sed -r 's/.+\///'; done | sort | uniq | tr '\n' ' ')
+                        sed -r 's/.+\///'; done | sort -u | tr '\n' ' ')
                     drvlist="(${drvlist% })"
-                fi
+               fi
 
                 if [ "$control" != "on" ]; then
                     if wordinlist "$usbid" "$USB_WHITELIST"; then
@@ -1791,7 +1791,36 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                             USB_BLACKLIST_PHONE=${USB_BLACKLIST_PHONE:-0} # default is include
 
                             if [ "$USB_BLACKLIST_PHONE" = "1" ]; then
-                                if [ "$dclass" = "00" ]; then
+                                if [ "$vendor" = "0fca" ]; then
+                                    # RIM
+                                    if [ "$dclass" = "ef" ]; then
+                                        # RIM / BlackBerry
+                                        control="on"
+                                        exc="_phone_black"
+                                    elif [ "$dclass" = "00" ]; then
+                                       for subdev in $usbdev/*:*; do
+                                            if [ -d $subdev ]; then
+                                                if [ "$(cat $subdev/interface 2> /dev/null)" = "BlackBerry" ]; then
+                                                    # Blackberry
+                                                    control="on"
+                                                    exc="_phone_black"
+                                                    break
+                                                fi
+                                            fi
+                                        done
+                                    fi
+
+                                elif [ "$vendor" = "045e" ] && [ "$dclass" = "ef" ]; then
+                                    # Windows Phone
+                                    control="on"
+                                    exc="_phone_black"
+
+                                elif [ "$vendor" = "05ac" ] && [ "$(cat $usbdev/product)" = "iPhone" ]; then
+                                    # iPhone
+                                    control="on"
+                                    exc="_phone_black"
+
+                                elif [ "$dclass" = "00" ]; then
                                     # class defined at interface level, iterate subdevices
                                     for subdev in $usbdev/*:*; do
                                         if [ -d $subdev ]; then
@@ -1819,37 +1848,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                         fi
                                     done
 
-                                    if [ -z "$exc" ]; then
-                                        if [ "$vendor" = "05ac" ] \
-                                            && [ "$(cat $usbdev/product)" = "iPhone" ]; then
-                                            # iPhone
-                                            control="on"
-                                            exc="_phone_black"
-                                        fi
-                                    fi
-                                elif [ "$vendor" = "0fca" ]; then
-                                    # RIM
-                                    if [ "$dclass" = "ef" ]; then
-                                        # RIM / BlackBerry
-                                        control="on"
-                                        exc="_phone_black"
-                                    elif [ "$dclass" = "00" ]; then
-                                       for subdev in $usbdev/*:*; do
-                                            if [ -d $subdev ]; then
-                                                if [ "$(cat $subdev/interface 2> /dev/null)" = "BlackBerry" ]; then
-                                                    # Blackberry
-                                                    control="on"
-                                                    exc="_phone_black"
-                                                    break
-                                                fi
-                                            fi
-                                        done
-                                    fi
-                                elif [ "$vendor" = "045e" ] && [ "$dclass" = "ef" ]; then
-                                    # Windows Phone
-                                    control="on"
-                                    exc="_phone_black"
-                                fi
+                                fi # dclass 00
                             fi # blacklist phone
                         fi # phone
 
