@@ -15,7 +15,6 @@ Type=oneshot
 RemainAfterExit=yes
 ExecStart=@TLP_SBIN@/tlp init start
 ExecStop=@TLP_SBIN@/tlp init stop
-TimeoutStopSec=3
 
 [Install]
 WantedBy=multi-user.target
