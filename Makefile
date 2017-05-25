@@ -64,6 +64,18 @@ MANFILES8 = \
 	tlp.service.8 \
 	tlp-sleep.service.8
 
+SHFILES = \
+	tlp.in \
+	tlp-functions.in \
+	tlp-nop.in \
+	tlp-rdw-nm.in \
+	tlp-rdw-udev.in \
+	tlp-rf-func \
+	tlp-rf.in \
+	tlp-run-on.in \
+	tlp-stat.in \
+	tlp-usb-udev.in
+
 # Make targets
 all: $(INFILES)
 
@@ -167,3 +179,5 @@ uninstall-man:
 
 uninstall: uninstall-tlp uninstall-rdw
 
+checkbashisms:
+	checkbashisms $(SHFILES) || true
