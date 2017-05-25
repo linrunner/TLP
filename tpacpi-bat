@@ -26,8 +26,8 @@
 # Tested and does NOT work on: T400, X201S
 #
 # Limitations/Known Issues:
-# 1) you cant force discharge on battery, so balancing is still impossible
-# 2) sometimes you cant convince a slice battery to charge before the main
+# 1) you can't force discharge on battery, so balancing is still impossible
+# 2) sometimes you can't convince a slice battery to charge before the main
 #    ANYONE who figures out this second issue gets a cookie!
 #    if my main is above 80, and my slice is at 80, my main charges.
 #    i can inhibit the main, but i CANNOT trick the slice into charging
