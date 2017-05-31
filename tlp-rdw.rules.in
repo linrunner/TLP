@@ -26,3 +26,6 @@ ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}
 
 # ThinkPad OneLink Dock
 ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/3049/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
+
+# ThinkPad OneLink Dock Plus
+ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/3054/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
