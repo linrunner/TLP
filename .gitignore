@@ -1,0 +1,14 @@
+tlp
+tlp-functions
+tlp-nop
+tlp-rdw-nm
+tlp-rdw.rules
+tlp-rdw-udev
+tlp-rf
+tlp.rules
+tlp-run-on
+tlp.service
+tlp-sleep.service
+tlp-stat
+tlp.upstart
+tlp-usb-udev

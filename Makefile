@@ -82,6 +82,9 @@ all: $(INFILES)
 $(INFILES): %: %.in
 	$(SED) $< > $@
 
+gitignore:
+	echo $(INFILES) | tr " " "\n" > .gitignore
+
 clean:
 	rm -f $(INFILES)
 
