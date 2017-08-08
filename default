@@ -168,7 +168,7 @@ WIFI_PWR_ON_BAT=on
 WOL_DISABLE=Y
 
 # Enable audio power saving for Intel HDA, AC97 devices (timeout in secs).
-# A value of 0 disables, >=1 enables power saving.
+# A value of 0 disables, >=1 enables power saving (recommended: 10).
 SOUND_POWER_SAVE_ON_AC=0
 SOUND_POWER_SAVE_ON_BAT=10
 
