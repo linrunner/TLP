@@ -1866,7 +1866,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                             break
                                         fi
                                     done
-				fi
+                                fi
                             fi
                         fi # printer
 

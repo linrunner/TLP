@@ -6,6 +6,8 @@
     Audio:
       - SOUND_POWER_SAVE_ON_BAT: change default to 10 to prevent clicking noises
         caused by applications trying to reopen the device frequently
+    USB:
+      - USB_BLACKLIST_PRINTER: exclude printers from autosuspend
 
   * Bugfixes
 
