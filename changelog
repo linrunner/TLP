@@ -1,4 +1,4 @@
-+++ 1.1 --- 08.08.2017 +++
++++ 1.1 --- 22.08.2017 +++
 
 *** Development version ***
 
@@ -10,6 +10,7 @@
       - USB_BLACKLIST_PRINTER: exclude printers from autosuspend
 
   * Bugfixes
+    - Issue #283: fix AC power detection for MacBook Pro 2017
 
 +++ 1.0 --- 25.05.2017 +++
 
