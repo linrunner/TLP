@@ -327,7 +327,7 @@ get_sys_power_supply () { # get current power supply
             Mains)
                 # AC detected, check if online;
                 # exclude MacBook Pro 2017 sbs-charger
-                if [ "$(cat $psrc/online 2> /dev/null)" = "1" ]
+                if [ "$(cat $psrc/online 2> /dev/null)" = "1" ] \
                     && [ "${psrc##/*/}" != "sbs-charger" ]; then
                     syspwr=0
                     break
