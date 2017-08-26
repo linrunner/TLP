@@ -2,8 +2,9 @@ tlp (1.0.900-1) unstable; urgency=low
 
   [Thomas Koch]
   * New upstream alpha version
+  * Recommend linux-cpupower on non-Ubuntu (from Debian 1.0-1 refactored pkg)
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 04 Jun 2017 12:44:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 26 Jun 2017 20:42:24 +0200
 
 tlp (1.0-1) unstable; urgency=low
 

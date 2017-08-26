@@ -14,6 +14,8 @@
 # Debian doesn't provide x86_energy_perf_policy, but Ubuntu does
 ifeq ($(shell dpkg-vendor --derives-from Ubuntu && echo yes),yes)
        SUBSTVARS = -Vdist:Recommends="linux-tools"
+else
+       SUBSTVARS = -Vdist:Recommends="linux-cpupower"
 endif
 
 # Build: no binaries to build; but keeps lintian happy ...
