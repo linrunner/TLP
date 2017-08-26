@@ -12,6 +12,7 @@ TLP_SYSD   ?= /lib/systemd/system
 TLP_SYSV   ?= /etc/init.d
 TLP_SHCPL  ?= /usr/share/bash-completion/completions
 TLP_MAN    ?= /usr/share/man
+TLP_META   ?= /usr/share/metainfo
 
 # Catenate DESTDIR to paths
 _SBIN  = $(DESTDIR)$(TLP_SBIN)
@@ -25,6 +26,7 @@ _SYSD  = $(DESTDIR)$(TLP_SYSD)
 _SYSV  = $(DESTDIR)$(TLP_SYSV)
 _SHCPL = $(DESTDIR)$(TLP_SHCPL)
 _MAN   = $(DESTDIR)$(TLP_MAN)
+_META  = $(DESTDIR)$(TLP_META)
 
 SED = sed \
 	-e "s|@TLP_SBIN@|$(TLP_SBIN)|g" \
@@ -122,6 +124,7 @@ ifneq ($(TLP_NO_BASHCOMP),1)
 	ln -sf tlp $(_SHCPL)/wifi
 	ln -sf tlp $(_SHCPL)/wwan
 endif
+	install -D -m 644 de.linrunner.tlp.metainfo.xml $(_META)
 
 install-rdw: all
 	# Package tlp-rdw
@@ -165,6 +168,7 @@ uninstall-tlp:
 	rm -f $(_SHCPL)/wifi
 	rm -f $(_SHCPL)/wwan
 	rm -f $(_SHCPL)/tlp
+	rm -f $(_META)/de.linrunner.tlp.metainfo.xml
 
 uninstall-rdw:
 	# Package tlp-rdw
