@@ -2,19 +2,63 @@ tlp (1.0.900-1) unstable; urgency=low
 
   [Thomas Koch]
   * New upstream alpha version
-  * Recommend linux-cpupower on non-Ubuntu (from Debian 1.0-1 refactored pkg)
+  * Make it work with Ubuntu 16.04 again:
+    - debian/control: Build-Depends: debhelper (>= 9), dh-systemd
+    - debian/rules: dh_installinit --onlyscripts
+    - debian/changelog: change Maintainer
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 26 Jun 2017 20:42:24 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 30 Aug 2017 19:29:42 +0200
 
-tlp (1.0-1) unstable; urgency=low
+tlp (1.0-1) unstable; urgency=medium
 
-  [Thomas Koch]
-  * New upstream release
-  * debian/tlp.init: update from upstream
-  * debian/tlp.postinst,postrm: tlp-nop moved to /usr/share/tlp
-  * debian/tlp.manpages: install everything in man/
+  * [b811fae] New upstream version 1.0 (Closes: #850293)
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 25 May 2017 11:42:24 +0200
+    Highlights:
+
+    - General
+      + TLP_PERSISTENT_DEFAULT: force battery settings on AC power
+        (or vice versa)
+
+    - Device bays
+      + BAY_POWEROFF_ON_AC: power off optical drive on AC power
+
+    - Graphics
+      + Blacklist all dGPU's by default and use kernel default for Runtime PM
+      + Improved compatibility with Bumblebee
+
+    - Processor
+      + CPU_HWP_ON_AC/BAT: HWP energy performance hints for Intel Skylake or
+        newer
+
+    - ThinkPad Battery
+      + RESTORE_THRESHOLDS_ON_BAT: restore charge thresholds when unplugging
+        AC
+      + Detect Intel Kaby Lake (*70) models
+      + tlp-stat: show "Charge total %" when more than one battery is present
+
+    - USB
+      Exclude certain devices from autosuspend to:
+      + Solve stability issues with bluetooth devices (USB_BLACKLIST_BTUSB)
+      + Enable phone charging (USB_BLACKLIST_PHONE)
+
+  [ Thomas Koch ]
+  * [639a7fe] debian/copyright,tlp.init: update copyright year
+  * [a5de719] debian/tlp.postinst,postrm: tlp-nop moved to /usr/share/tlp
+  * [00a4beb] debian/tlp.manpages: install everything in man/
+
+  [ Raphaël Halimi ]
+  * [b5691d7] debian/rules: use dh7 syntax
+  * [f6a1c00] debian/tlp.docs: remove changelog
+  * [faa8223] Use upstream init script
+  * [5a705f1] Bump Standards-Version to 4.0.1, no changes needed
+  * [070c629] Get rid of dh-systemd build-dep
+  * [d54e072] Recommend linux-cpupower on non-Ubuntu
+  * [9befab8] Add AppStream metadata (Closes: #838702)
+  * [4c3ff3f] Link tlp-rdw documentation directory to tlp
+  * [3de1e38] Add debian/README.Debian
+  * [65e57ae] debian/gbp.conf: add spaces around equal signs
+
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Mon, 21 Aug 2017 17:42:04 +0200
 
 tlp (0.9-3) unstable; urgency=low
 
@@ -33,7 +77,12 @@ tlp (0.9-2) unstable; urgency=low
 
  -- Raphaël Halimi <raphael.halimi@gmail.com>  Sun, 22 Jan 2017 23:18:29 +0100
 
-tlp (0.9-1) unstable; urgency=low
+tlp (0.9-1) unstable; urgency=medium
+
+  * New upstream version 0.9
+
+  [ Raphaël Halimi ]
+  * Merge changes from upstream's debian/current branch
 
   [Thomas Koch]
   * debian/rules: add 'make clean' to clean target
@@ -48,7 +97,7 @@ tlp (0.9-1) unstable; urgency=low
     - point Vcs-git to https://...
   * debian/watch: adapt to GitHub releases
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 18 Aug 2016 14:18:42 +0200
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Tue, 13 Sep 2016 04:43:28 +0200
 
 tlp (0.8-1) unstable; urgency=low
 

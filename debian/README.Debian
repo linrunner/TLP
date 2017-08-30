@@ -1,0 +1,44 @@
+README for tlp 1.0-1 in Debian
+==============================
+
+Backporting to versions older than Jessie
+-----------------------------------------
+
+Release 1.0-1 of TLP introduces some changes in the building process that need
+to be reverted in case you want to backport it to Wheezy or older versions of
+Debian.
+
+First, it needs dh-systemd, which used to be available in its own package, but
+has been merged in debhelper 9.20160709. Suitable versions are available in
+Stretch, and in Jessie backports, but not in Wheezy.
+
+Furthermore, the documentation directory of tlp-rdw has become a symlink
+pointing to tlp. This change requires a "dir to symlink" migration, which is
+supported by dpkg starting with version 1.17.14. Again, suitables versions are
+available in both Stretch and Jessie, but not in Wheezy.
+
+Finally, dh_installinit option --onlyscripts changed to --only-scripts in
+debhelper 10.1.
+
+Official backports of this package are released for oldstable and oldoldstable
+(Stretch and Jessie at the time of writing), but since only security updates are
+officially released in LTS, you'll have to build the package yourself if you
+want to backport it.
+
+The Git repository on collab-maint has a branch named "debian/wheezy-lts" which
+already contains the needed changes, so you can use it as-is to build your own
+package for Wheezy.  If you want to backport the package to an even older
+release, you can use it as a base, but you're on your own.
+
+Downgrades
+----------
+
+Downgrades are not supported in Debian. They usually work, but not always. In
+the case of a "dir to symlink" migration, the downgrade will seem to work, but
+the symlink won't be converted back to a directory. Worse, an upgrade following
+a downgrade may leave the target directory in an inconsistent state (but a
+second upgrade seems to fix that).
+
+The bottom line is that if you want to downgrade to a version older than 1.0-1,
+you should rather purge both tlp and tlp-rdw and re-install them, than
+downgrade them.

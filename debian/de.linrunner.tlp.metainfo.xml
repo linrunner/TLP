@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component>
+
+  <id>de.linrunner.tlp</id>
+  <metadata_license>MIT</metadata_license>
+  <name>TLP</name>
+
+  <summary>Save battery power on laptops</summary>
+  <description>
+    <p>
+      TLP is an advanced power management tool for Linux. It comes with a
+      default configuration already optimized for battery life. At the same
+      time it is highly customizable to fulfil specific user requirements.
+    </p>
+    <p>
+      TLP supplies separate settings profiles for AC and battery power and can
+      enable or disable bluetooth, WiFi and WWAN radio devices upon system
+      startup.
+    </p>
+    <p>
+      For ThinkPads it provides a unified way to configure charging thresholds
+      and recalibrate the battery for all models which support it (via tp-smapi
+      or acpi-call).
+    </p>
+    <p>
+      TLP is a pure command line tool with automated background tasks, it does
+      not contain a GUI.
+    </p>
+  </description>
+
+  <categories>
+    <category>System</category>
+  </categories>
+
+  <!-- Do we want software centers to automatically launch TLP ? -->
+  <!-- <launchable type="service">tlp</launchable> -->
+
+  <project_license>GPL-2.0+</project_license>
+  <developer_name>Thomas Koch</developer_name>
+  <url type="homepage">http://linrunner.de/tlp</url>
+
+  <provides>
+    <!-- Match "Portable" chassis type -->
+    <modalias>dmi:*:ct8:*</modalias>
+    <!-- Match "Laptop" chassis type -->
+    <modalias>dmi:*:ct9:*</modalias>
+    <!-- Match "Notebook" chassis type -->
+    <modalias>dmi:*:ct10:*</modalias>
+    <!-- Match "battery" kernel module -->
+    <modalias>acpi:PNP0C0A:*</modalias>
+  </provides>
+
+</component>

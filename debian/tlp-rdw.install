@@ -1,0 +1,3 @@
+etc/NetworkManager/dispatcher.d/99tlp-rdw-nm
+lib/udev/rules.d/85-tlp-rdw.rules
+lib/udev/tlp-rdw-udev

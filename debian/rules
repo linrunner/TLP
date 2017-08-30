@@ -1,92 +1,33 @@
 #!/usr/bin/make -f
-# -*- makefile -*-
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+#export DH_VERBOSE = 1
 
-# debian/rules for TLP
-
-# This file was originally written by Joey Hess and Craig Small.
-# As a special exception, when this file is copied by dh-make into a
-# dh-make output file, you may use that output file without restriction.
-# This special exception was added by Craig Small in version 0.37 of dh-make.
-
-# Uncomment this to turn on verbose mode.
-# export DH_VERBOSE=1
-
-# Debian doesn't provide x86_energy_perf_policy, but Ubuntu does
+# Debian and Ubuntu provide x86_energy_perf_policy in different packages
 ifeq ($(shell dpkg-vendor --derives-from Ubuntu && echo yes),yes)
-       SUBSTVARS = -Vdist:Recommends="linux-tools"
+	SUBSTVARS = -Vdist:Recommends="linux-tools"
 else
-       SUBSTVARS = -Vdist:Recommends="linux-cpupower"
+	SUBSTVARS = -Vdist:Recommends="linux-cpupower"
 endif
 
-# Build: no binaries to build; but keeps lintian happy ...
-build-arch:
-	# do nothing
-build-indep:
-	# do nothing
-build: build-indep build-arch
+%:
+	dh $@ --with systemd
 
-# Cleanup after build
-clean:
-	dh_testdir
-	dh_testroot
-	# add here commands to clean up after the build process.
-	$(MAKE) clean
-	dh_clean
+override_dh_auto_install:
+	dh_auto_install -- TLP_WITH_SYSTEMD=1
 
-# Install tlp
-tlp:
-	dh_testdir
-	dh_testroot
-	dh_prep
+override_dh_systemd_enable:
+	dh_systemd_enable --package=tlp tlp.service tlp-sleep.service
 
-	# install into debian/tlp.
-	$(MAKE) TLP_WITH_SYSTEMD=1 TLP_NO_PMUTILS=0 TLP_NO_INIT=1 DESTDIR=$(CURDIR)/debian/$@ install-tlp
+override_dh_installinit:
+	dh_installinit --package=tlp --no-start --onlyscripts -- defaults 98 01
 
-	dh_installchangelogs -p$@
-	dh_installdocs -p$@
-	dh_systemd_enable -p$@ tlp.service tlp-sleep.service
-	dh_installinit -p$@ --no-start -- defaults 98 01
-	dh_systemd_start -p$@ --no-start
-	dh_installman -p$@
-	dh_link -p$@
-	dh_strip -p$@
-	dh_compress -p$@
-	dh_fixperms -p$@
-	dh_installdeb -p$@
-	dh_shlibdeps -p$@
-	dh_gencontrol -p$@ -- $(SUBSTVARS)
-	dh_md5sums -p$@
-	dh_builddeb -p$@
+override_dh_systemd_start:
+	dh_systemd_start --package=tlp --no-start
 
-# Install tlp-rdw
-tlp-rdw:
-	dh_testdir
-	dh_testroot
-	dh_prep
+override_dh_gencontrol:
+	dh_gencontrol --package=tlp -- $(SUBSTVARS)
+	dh_gencontrol --remaining-packages
 
-	# install into debian/tlp-rdw.
-	$(MAKE) DESTDIR=$(CURDIR)/debian/$@ install-rdw
-
-	dh_installchangelogs -p$@
-	dh_installdocs -p$@
-	dh_link -p$@
-	dh_strip -p$@
-	dh_compress -p$@
-	dh_fixperms -p$@
-	dh_installdeb -p$@
-	dh_shlibdeps -p$@
-	dh_gencontrol -p$@
-	dh_md5sums -p$@
-	dh_builddeb -p$@
-
-# Install
-install-indep: tlp tlp-rdw
-
-# Build + Install
-binary-indep: build-indep install-indep
-binary-arch:
-	# do nothing
-binary: binary-indep binary-arch
-
-# Run targets that don't result in corresponding files
-.PHONY: clean tlp tlp-rdw binary-indep binary-arch binary install install-indep
+override_dh_installdocs:
+	dh_installdocs --link-doc tlp
