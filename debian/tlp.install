@@ -23,4 +23,4 @@ usr/share/tlp/tlp-functions
 usr/share/tlp/tlp-nop
 usr/share/tlp/tlp-rf-func
 usr/share/tlp/tpacpi-bat
-debian/de.linrunner.tlp.metainfo.xml usr/share/metainfo
+usr/share/metainfo/de.linrunner.tlp.metainfo.xml
