@@ -124,7 +124,7 @@ ifneq ($(TLP_NO_BASHCOMP),1)
 	ln -sf tlp $(_SHCPL)/wifi
 	ln -sf tlp $(_SHCPL)/wwan
 endif
-	install -D -m 644 de.linrunner.tlp.metainfo.xml $(_META)
+	install -D -m 644 de.linrunner.tlp.metainfo.xml $(_META)/de.linrunner.tlp.metainfo.xml
 
 install-rdw: all
 	# Package tlp-rdw
