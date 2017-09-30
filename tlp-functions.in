@@ -2066,7 +2066,7 @@ check_tp_battery () { # check ThinkPad battery presence and return index
     elif [ $tpacpi -eq 0 ]; then # tpacpi-bat available
         for bs in $blist; do
             # check acpi name space
-            [ -d $ACPIBATDIR/$bs ] && [ "$(cat $ACPIBATDIR/$bs/present)" = "1" ]
+            [ -d $ACPIBATDIR/$bs ] && [ "$(cat $ACPIBATDIR/$bs/present 2> /dev/null)" = "1" ]
             rc=$?
             if [ $rc -eq 0 ]; then
                 # determine tpacpi-bat index

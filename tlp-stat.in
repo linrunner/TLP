@@ -1226,7 +1226,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 fi
             elif [ -d $batd ] \
                  && [ "$(cat $batd/type)" = "Battery" ] \
-                 && [ "$(cat $batd/present)" = "1" ]; then
+                 && [ "$(cat $batd/present 2> /dev/null )" = "1" ]; then
                     # it's some other laptop model or brand
                     echo "+++ Battery Status"
             else
