@@ -13,6 +13,7 @@ TLP_SYSV   ?= /etc/init.d
 TLP_SHCPL  ?= /usr/share/bash-completion/completions
 TLP_MAN    ?= /usr/share/man
 TLP_META   ?= /usr/share/metainfo
+TLP_RUN    ?= /run/tlp
 
 # Catenate DESTDIR to paths
 _SBIN  = $(DESTDIR)$(TLP_SBIN)
@@ -27,13 +28,15 @@ _SYSV  = $(DESTDIR)$(TLP_SYSV)
 _SHCPL = $(DESTDIR)$(TLP_SHCPL)
 _MAN   = $(DESTDIR)$(TLP_MAN)
 _META  = $(DESTDIR)$(TLP_META)
+_RUN   = $(DESTDIR)$(TLP_RUN)
 
 SED = sed \
 	-e "s|@TLP_SBIN@|$(TLP_SBIN)|g" \
 	-e "s|@TLP_TLIB@|$(TLP_TLIB)|g" \
 	-e "s|@TLP_PLIB@|$(TLP_PLIB)|g" \
 	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
-	-e "s|@TLP_CONF@|$(TLP_CONF)|g"
+	-e "s|@TLP_CONF@|$(TLP_CONF)|g" \
+	-e "s|@TLP_RUN@|$(TLP_RUN)|g"
 
 INFILES = \
 	tlp \

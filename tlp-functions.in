@@ -14,7 +14,7 @@
 readonly TLPVER="1.0.900"
 
 readonly CONFFILE=@TLP_CONF@
-readonly RUNDIR=/var/run/tlp
+readonly RUNDIR=@TLP_RUN@
 
 readonly ETHTOOL=ethtool
 readonly HDPARM=hdparm

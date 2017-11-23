@@ -15,7 +15,7 @@ readonly USB_TIMEOUT=2
 readonly USB_TIMEOUT_MS=2000
 readonly USB_WWAN_VENDORS="0bdb 05c6 1199"
 
-readonly RUNDIR=/var/run/tlp
+readonly RUNDIR=@TLP_RUN@
 readonly USB_DONE=usb_done
 
 readonly CONFFILE=@TLP_CONF@

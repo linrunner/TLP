@@ -1,4 +1,4 @@
-+++ 1.1 --- 22.08.2017 +++
++++ 1.1 --- 23.11.2017 +++
 
 *** Development version ***
 
@@ -11,6 +11,8 @@
 
   * Bugfixes
     - Issue #283: fix AC power detection for MacBook Pro 2017
+    - Issue #298: move runtime data from /var/run/tlp to /run/tlp
+
 
 +++ 1.0 --- 25.05.2017 +++
 
