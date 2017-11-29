@@ -222,7 +222,7 @@ device_switch () { # switch radio type state
                 # use direct write
                 if test_root ; then
                     echo_debug "rf" "device_switch($1, $2).devc"
-                    echo -n $devn > $devc
+                    { printf '%s' $devn > $devc; } 2> /dev/null
                     # record device state after direct write
                     get_devs $1
                 else
@@ -304,12 +304,12 @@ save_device_states () { # save radio states  -- $1: list of rftypes
 
     # create empty state file
     mkdir -p $STATEDIR 2> /dev/null 1>&2
-    : > $RFSTATEFILE
+    { : > $RFSTATEFILE; } 2> /dev/null
 
     # iterate over all possible devices -> save state in file
     for dev in $devlist; do
         device_state $dev
-        echo "$dev $devs" >> $RFSTATEFILE
+        { printf '%s\n' "$dev $devs" >> $RFSTATEFILE; } 2> /dev/null
     done
 
     return 0

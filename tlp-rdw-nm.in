@@ -43,7 +43,7 @@ check_switch_lock() { # switch listed radio devices
 
 save_iface_type () { # save interface type -- $1: interface; $2: type
     # rc: 0=saved/1=error
-    [ -d $NETD/$1 ] && echo "$2" > $RUNDIR/${1}.itype 2> /dev/null
+    [ -d $NETD/$1 ] && { printf '%s\n' "$2" > $RUNDIR/${1}.itype; } 2> /dev/null
     return $?
 }
 

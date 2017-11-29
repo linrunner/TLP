@@ -237,14 +237,14 @@ if [ -f $usbdev/power/autosuspend ] || [ -f $usbdev/power/autosuspend_delay_ms ]
     if [ -f $usbdev/power/control ]; then
         if [ "$(cat $usbdev/power/control)" != "$control" ]; then
             # Write actual changes only
-            echo "$control" > $usbdev/power/control
+            { printf '%s\n' "$control" > $usbdev/power/control; } 2> /dev/null
             chg=1
         fi
     else
         # level is deprecated
         if [ "$(cat $usbdev/power/level)" != "$control" ]; then
             # Write actual changes only
-            echo "$control" > $usbdev/power/level
+            { printf '%s\n' "$control" > $usbdev/power/level; } 2> /dev/null
             chg=1
         fi
         ctrlf="level"
@@ -253,10 +253,10 @@ if [ -f $usbdev/power/autosuspend ] || [ -f $usbdev/power/autosuspend_delay_ms ]
     if [ "$X_TLP_USB_SET_AUTOSUSPEND_DELAY" = "1" ]; then
         # set autosuspend_delay
         if [ -f $usbdev/power/autosuspend_delay_ms ]; then
-            echo $USB_TIMEOUT_MS > $usbdev/power/autosuspend_delay_ms
+            { printf '%s\n' $USB_TIMEOUT_MS > $usbdev/power/autosuspend_delay_ms; } 2> /dev/null
         else
             # autosuspend is deprecated
-            echo $USB_TIMEOUT > $usbdev/power/autosuspend
+            { printf '%s\n' $USB_TIMEOUT > $usbdev/power/autosuspend; } 2> /dev/null
             autof="autosuspend"
         fi
         echo_debug "usb" "udev_usb.$control$exc: $busdev ID $usbid $usbdev [$ctrlf $autof] $drvlist"

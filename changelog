@@ -13,6 +13,7 @@
       - USB_BLACKLIST_PRINTER: exclude printers from autosuspend
 
   * Bugfixes
+    - Issue #271: intercept link_power_management_policy write error
     - Issue #283: fix AC power detection for MacBook Pro 2017
     - Issue #298: move runtime data from /var/run/tlp to /run/tlp
 

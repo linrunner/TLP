@@ -594,7 +594,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         get_sysval $CPU_BOOST_ALL_CTRL; boost=$?
 
         # simple test for attribute "w" doesn't work, so actually write
-        if ( echo "$boost" > $CPU_BOOST_ALL_CTRL ) 2> /dev/null; then
+        if { printf '%s\n' "$boost" > $CPU_BOOST_ALL_CTRL; } 2> /dev/null; then
             printparm "%-54s = ##%d##" $CPU_BOOST_ALL_CTRL
         else
             printparm "%-54s = ##%d## (cpu not supported)" $CPU_BOOST_ALL_CTRL
@@ -883,7 +883,7 @@ if [ "$show_all" = "1" ]; then
     echo "+++ PCIe Active State Power Management"
     if [ -f $ASPM ]; then
         pol=$(cat $ASPM | sed -r 's/.*\[(.*)\].*/\1/')
-        printf '%s' "$pol" > $ASPM 2> /dev/null
+        { printf '%s' "$pol" > $ASPM; } 2> /dev/null
         if [ $? = 0 ]; then
             echo "$ASPM = $pol"
         else

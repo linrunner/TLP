@@ -395,7 +395,7 @@ compare_and_save_power_state() { # compare $1 to last saved power state,
     if [ -z "$lp" ] || [ "$lp" != "$1" ]; then
         # saved state is nonexistent/empty or is different --> save new state
         create_rundir
-        echo "$1" > $PWRRUNFILE 2> /dev/null
+        { printf '%s\n' "$1" > $PWRRUNFILE; } 2> /dev/null
 
         echo_debug "pm" "compare_and_save_power_state($1).different: old=$lp"
         return 0
@@ -461,7 +461,7 @@ lock_tlp () { # get exclusive lock: blocking with timeout
 
     create_rundir
     # open file for writing and attach fd 9
-    exec 9> ${LOCKFILE}_${1:-tlp}
+    { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null
     # lock fd 9 exclusive and blocking, wait $LOCKTIME secs to obtain the lock
     if $FLOCK -x -w $LOCKTIMEOUT 9 ; then
         echo_debug "lock" "lock_tlp.locked"
@@ -478,7 +478,7 @@ lock_tlp_nb () { # get exclusive lock: non-blocking
 
     create_rundir
     # open file for writing and attach fd 9
-    exec 9> ${LOCKFILE}_${1:-tlp}
+    { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null
     # lock fd 9 exclusive and non-blocking
     if $FLOCK -x -n 9 ; then
         echo_debug "lock" "lock_tlp_nb.locked"
@@ -495,7 +495,7 @@ unlock_tlp () { # free exclusive lock
     [ -n "$X_DEFER_UNLOCK" ] && sleep $X_DEFER_UNLOCK
 
     # free fd 9
-    exec 9>&-
+    { exec 9>&- ; } 2> /dev/null
     echo_debug "lock" "unlock_tlp"
 
     return 0
@@ -571,7 +571,7 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
     fi
 
     echo_debug "pm" "set_laptopmode($1): $isec"
-    printf '%s\n' "$isec" > /proc/sys/vm/laptop_mode
+    { printf '%s\n' "$isec" > /proc/sys/vm/laptop_mode; } 2> /dev/null
 
     return 0
 }
@@ -605,11 +605,11 @@ set_dirty_parms () { # set filesystem buffer params
              /proc/sys/vm/dirty_expire_centisecs \
              /proc/sys/fs/xfs/age_buffer_centisecs \
              /proc/sys/fs/xfs/xfssyncd_centisecs; do
-        [ -w $df ] && echo $cage > $df
+        [ -w $df ] && { printf '%s\n' "$cage" > $df; } 2> /dev/null
     done
 
     [ -w /proc/sys/fs/xfs/xfsbufd_centisecs ] \
-        && echo 3000 > /proc/sys/fs/xfs/xfsbufd_centisecs
+        && { printf '%s\n' "3000" > /proc/sys/fs/xfs/xfsbufd_centisecs; } 2> /dev/null
 
     return 0
 }
@@ -636,7 +636,7 @@ set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mod
     if [ -n "$gov" ]; then
         echo_debug "pm" "set_scaling_governor($1): $gov"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-            [ -f $cpu ] && printf '%s\n' "$gov" > $cpu 2> /dev/null
+            [ -f $cpu ] && { printf '%s\n' "$gov" > $cpu; } 2> /dev/null
         done
     fi
 
@@ -657,14 +657,14 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
     if [ -n "$minfreq" ]; then
         echo_debug "pm" "set_scaling_min_max_freq($1).min: $minfreq"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
-            [ -f $cpu ] && printf '%s\n' "$minfreq" > $cpu 2> /dev/null
+            [ -f $cpu ] && { printf '%s\n' "$minfreq" > $cpu; } 2> /dev/null
         done
     fi
 
     if [ -n "$maxfreq" ]; then
         echo_debug "pm" "set_scaling_min_max_freq($1).max: $maxfreq"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
-            [ -f $cpu ] && printf '%s\n' "$maxfreq" > $cpu 2> /dev/null
+            [ -f $cpu ] && { printf '%s\n' "$maxfreq" > $cpu; } 2> /dev/null
         done
     fi
 
@@ -690,7 +690,7 @@ set_cpu_hwp_pref () { # set HWP energy performance hints -- $1: 0=ac mode, 1=bat
     if [ -n "$hwpp" ]; then
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
             if [ -f $cpu ]; then
-                printf '%s\n' "$hwpp" > $cpu 2> /dev/null
+                { printf '%s\n' "$hwpp" > $cpu; } 2> /dev/null
                 avail=1
             fi
         done
@@ -775,7 +775,7 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
         # use intel_pstate sysfiles
         if [ -f $CPU_TURBO_PSTATE ]; then
             ival=$(($val ^ 1))
-            printf '%s\n' "$ival" > $CPU_TURBO_PSTATE 2> /dev/null
+            { printf '%s\n' "$ival" > $CPU_TURBO_PSTATE; } 2> /dev/null
             echo_debug "pm" "set_cpu_boost_all($1).intel_pstate: $val"
         else
             echo_debug "pm" "set_cpu_boost_all($1).intel_pstate.cpu_not_supported"
@@ -783,7 +783,7 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
     elif [ -f $CPU_BOOST_ALL_CTRL ]; then
         # use acpi_cpufreq sysfiles
         # simple test for attribute "w" doesn't work, so actually write
-        if ( printf '%s\n' "$val" > $CPU_BOOST_ALL_CTRL ) 2> /dev/null; then
+        if { printf '%s\n' "$val" > $CPU_BOOST_ALL_CTRL; } 2> /dev/null; then
             echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq: $val"
         else
             echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq.cpu_not_supported"
@@ -817,7 +817,7 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
         if [ -f $sdev ]; then
             echo_debug "pm" "set_sched_powersave($1): ${sdev##/*/} $pwr"
-            printf '%s\n' "$pwr" > "$sdev"
+            { printf '%s\n' "$pwr" > "$sdev"; } 2> /dev/null
             avail=1
         fi
     done
@@ -837,7 +837,7 @@ set_nmi_watchdog () { # enable/disable nmi watchdog
     fi
 
     if [ -f /proc/sys/kernel/nmi_watchdog ]; then
-        printf '%s\n' "$nmiwd" > /proc/sys/kernel/nmi_watchdog 2> /dev/null
+        { printf '%s\n' "$nmiwd" > /proc/sys/kernel/nmi_watchdog; } 2> /dev/null
         if [ $? = 0 ]; then
             echo_debug "pm" "set_nmi_watchdog: $nmiwd"
         else
@@ -865,7 +865,7 @@ set_phc_controls () { # set core voltages
     for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do
         if [ -f $control ]; then
             echo_debug "pm" "set_phc_controls: $control $phc_controls"
-            printf '%s\n' "$phc_controls" > $control
+            { printf '%s\n' "$phc_controls" > $control; } 2> /dev/null
             ctrl_avail="1"
         fi
     done
@@ -1132,7 +1132,7 @@ set_disk_io_sched () { # set disk io scheduler
             echo_debug "disk" "${log_message} -- keep as is"
         else
             echo_debug "disk" "${log_message}"
-            printf '%s' "$sched" > $schedctrl
+            { printf '%s' "$sched" > $schedctrl; } 2> /dev/null
         fi
 
         # using %DEFAULT_DISK_IO_SCHEDULER when argv is empty
@@ -1177,8 +1177,8 @@ set_sata_link_power () { # set sata link power management
                 ctrl_avail="1"
             else
                 # host not blacklisted
-                printf '%s\n' "$pwr" > $linkpol
-                echo_debug "pm" "set_sata_link_power($1).$pwr: $host"
+                { printf '%s\n' "$pwr" > $linkpol; } 2> /dev/null
+                echo_debug "pm" "set_sata_link_power($1).$pwr: $host; rc=$?"
                 ctrl_avail="1"
             fi
         fi
@@ -1206,7 +1206,7 @@ set_pcie_aspm () { # set pcie active state power management
     fi
 
     if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
-        printf '%s\n' "$pwr" > /sys/module/pcie_aspm/parameters/policy 2> /dev/null
+        { printf '%s\n' "$pwr" > /sys/module/pcie_aspm/parameters/policy; } 2> /dev/null
         if [ $? = 0 ]; then
             echo_debug "pm" "set_pcie_aspm($1): $pwr"
         else
@@ -1249,8 +1249,8 @@ set_radeon_profile () { # set radeon power profile
             fi
 
             if [ -n "$pwr" ]; then
-                printf '%s\n' "$pwr" > $card/power_dpm_state 2> /dev/null; rc1=$?
-                printf '%s\n' "$level" > $card/power_dpm_force_performance_level 2> /dev/null; rc2=$?
+                { printf '%s\n' "$pwr" > $card/power_dpm_state; } 2> /dev/null; rc1=$?
+                { printf '%s\n' "$level" > $card/power_dpm_force_performance_level; } 2> /dev/null; rc2=$?
                 echo_debug "pm" "set_radeon_profile($1): $card state=$pwr [rc=$rc1] perf=$level [rc=$rc2]"
             fi
 
@@ -1272,8 +1272,8 @@ set_radeon_profile () { # set radeon power profile
 
             if [ -n "$pwr" ]; then
                 echo_debug "pm" "set_radeon_profile($1): $card profile=$pwr"
-                printf '%s\n' "profile" > $card/power_method 2> /dev/null
-                printf '%s\n' "$pwr" > $card/power_profile 2> /dev/null
+                { printf '%s\n' "profile" > $card/power_method; } 2> /dev/null
+                { printf '%s\n' "$pwr" > $card/power_profile; } 2> /dev/null
             fi
 
             sdone=1
@@ -1314,18 +1314,18 @@ set_sound_power_mode () { # set sound chip power modes
 
     if [ -d /sys/module/snd_hda_intel ]; then
         echo_debug "pm" "set_sound_power_mode($1).hda: $pwr controller=$cpwr"
-        printf '%s\n' "$pwr" > /sys/module/snd_hda_intel/parameters/power_save
+        { printf '%s\n' "$pwr" > /sys/module/snd_hda_intel/parameters/power_save; } 2> /dev/null
 
         if [ "$pwr" = "0" ]; then
-            echo "N" >  /sys/module/snd_hda_intel/parameters/power_save_controller
+            { printf '%s\n' "N" >  /sys/module/snd_hda_intel/parameters/power_save_controller; } 2> /dev/null
         else
-            printf '%s\n' "$cpwr" > /sys/module/snd_hda_intel/parameters/power_save_controller
+            { printf '%s\n' "$cpwr" > /sys/module/snd_hda_intel/parameters/power_save_controller; } 2> /dev/null
         fi
     fi
 
     if [ -d /sys/module/snd_ac97_codec ]; then
         echo_debug "pm" "set_sound_power_mode($1).ac97: $pwr"
-        printf '%s\n' "$pwr"  > /sys/module/snd_ac97_codec/parameters/power_save
+        { printf '%s\n' "$pwr"  > /sys/module/snd_ac97_codec/parameters/power_save; } 2> /dev/null
     fi
 
     return 0
@@ -1404,7 +1404,7 @@ set_runtime_pm () { # set runtime power management
                     fi # if nouveau | nvidia blacklisted
 
                     case $control in
-                        auto|on) echo $control > $device/power/control ;;
+                        auto|on) { printf '%s\n' $control > $device/power/control; } 2> /dev/null ;;
                         *) ;; # do nothing
                     esac
                 fi #
@@ -1447,7 +1447,7 @@ set_ahci_runtime_pm () { # set ahci runtime power management
     # iterate ahci devices
     for device in $AHCID; do
         if [ -f ${device}/power/control ]; then
-            echo $control > ${device}/power/control
+            { printf '%s\n' $control $control > ${device}/power/control; } 2> /dev/null
             echo_debug "pm" "set_ahci_runtime_pm($1).$control: host=$device"
         fi
     done
@@ -1459,10 +1459,10 @@ set_ahci_runtime_pm () { # set ahci runtime power management
             # timeout -1 still active will lockup the machine!
             rc=0
 
-            if echo $timeout > ${device}/device/power/autosuspend_delay_ms 2> /dev/null; then
+            if { printf '%s\n' "$timeout" > ${device}/device/power/autosuspend_delay_ms; } 2> /dev/null; then
                 # writing timeout was successful --> proceed with activation;
                 # rc=2 when unsuccessful
-                echo $control > ${device}/device/power/control 2> /dev/null || rc=2
+                { printf '%s\n' $control > ${device}/device/power/control; } 2> /dev/null || rc=2
             else
                 # writing timeout was successful
                 rc=1
@@ -1909,14 +1909,14 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                 if [ -f $usbdev/power/control ]; then
                     if [ "$(cat $usbdev/power/control)" != "$control" ]; then
                         # Write actual changes only
-                        echo "$control" > $usbdev/power/control
+                        { printf '%s\n' "$control" > $usbdev/power/control; } 2> /dev/null
                         chg=1
                     fi
                 else
                     # level is deprecated
                     if [ "$(cat $usbdev/power/level)" != "$control" ]; then
                         # Write actual changes only
-                        echo "$control" > $usbdev/power/level
+                        { printf '%s\n' "$control" > $usbdev/power/level; } 2> /dev/null
                         chg=1
                     fi
                     ctrlf="level"
@@ -1924,10 +1924,10 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                 if [ "$X_TLP_USB_SET_AUTOSUSPEND_DELAY" = "1" ]; then
                     # set autosuspend_delay
                     if [ -f $usbdev/power/autosuspend_delay_ms ]; then
-                        echo $USB_TIMEOUT_MS > $usbdev/power/autosuspend_delay_ms
+                        { printf '%s\n' $USB_TIMEOUT_MS > $usbdev/power/autosuspend_delay_ms; } 2> /dev/null
                     else
                         # autosuspend is deprecated
-                        echo $USB_TIMEOUT > $usbdev/power/autosuspend
+                        { printf '%s\n' $USB_TIMEOUT > $usbdev/power/autosuspend; } 2> /dev/null
                         autof="autosuspend"
                     fi
                     echo_debug "usb" "set_usb_suspend.$control$exc: $busdev ID $usbid $usbdev [$ctrlf $autof] $drvlist"
@@ -2157,7 +2157,7 @@ do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
             if [ -z "$old_thresh" ]; then
                 rc=1
             elif [ "$old_thresh" -ne "$new_thresh" ]; then
-                echo $new_thresh > $bsys 2> /dev/null
+                { printf '%s\n' $new_thresh > $bsys; } 2> /dev/null
                 rc=$?
             fi
         else
@@ -2275,7 +2275,7 @@ do_force_discharge () { # write force discharge state
         bsys=$SMAPIDIR/$1/force_discharge
 
         if [ -f $bsys ]; then
-            echo $2 > $bsys 2> /dev/null; rc=$?
+            { printf '%s\n' $2 > $bsys; } 2> /dev/null; rc=$?
         else
             rc=2
         fi
@@ -2755,7 +2755,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
 
                 if [ "$syspath" != "/sys" ]; then
                     echo_debug "pm" "poweroff_drivebay($1): syspath=$syspath"
-                    echo 1 > $syspath/delete
+                    { printf '%s\n' "1" > $syspath/delete; } 2> /dev/null
                 else
                     echo_debug "pm" "poweroff_drivebay($1): got empty/invalid syspath for $optdrv"
                 fi
@@ -2764,7 +2764,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
             fi
 
             # Turn power off
-            echo 1 > $dock/undock 2> /dev/null
+            { printf '%s\n' "1" > $dock/undock; } 2> /dev/null
             [ "$2" = "1" ] && echo "done."
             echo_debug "pm" "poweroff_drivebay($1).bay_powered_off"
         fi
@@ -2785,10 +2785,10 @@ suspend_drivebay () { # Save power state of drive bay before suspend
             mkdir -p $STATEDIR 2> /dev/null 1>&2
 
             if ! check_is_docked; then
-                echo "off" > $BAYSTATEFILE
+                { printf '%s\n' "off" > $BAYSTATEFILE; } 2> /dev/null
                 echo_debug "pm" "suspend_drivebay($1): bay=off"
             else
-                echo "on" > $BAYSTATEFILE
+                { printf '%s\n' "on" > $BAYSTATEFILE; } 2> /dev/null
                 echo_debug "pm" "suspend_drivebay($1): bay=on"
             fi
         fi
@@ -2817,7 +2817,7 @@ resume_drivebay () { #
                     rc=1
                     until [ $rc = 0 -o $cnt = 0 ]; do
                         cnt=$((cnt - 1))
-                        echo 1 > $dock/undock 2> /dev/null
+                        { printf '%s\n' "1" > $dock/undock; } 2> /dev/null
                         rc=$?
                         [ $rc = 0 ] || sleep 0.5
                     done
