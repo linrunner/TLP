@@ -878,15 +878,21 @@ set_phc_controls () { # set core voltages
 set_energy_perf_policy () { # set performance versus energy savings policy
     # $1: 0=ac mode, 1=battery mode
 
-    local perf rc
+    local perf pnum rc
 
     if [ "$1" = "1" ]; then
         perf=${ENERGY_PERF_POLICY_ON_BAT:-}
     else
         perf=${ENERGY_PERF_POLICY_ON_AC:-}
     fi
+    # translate alphanumeric to numeric values for backward compatibility
+    pnum=$(echo $perf | sed -r 's/^performance$/0/;
+                                s/^balance-performance$/4/;
+                                s/^(default|normal)$/6/;
+                                s/^balance-power?$/8/;
+                                s/^power(save)?$/15/')
 
-    if [ -z "$perf" ]; then
+    if [ -z "$pnum" ]; then
         echo_debug "pm" "set_energy_perf_policy($1).not_configured"
     elif ! cmd_exists $ENERGYPERF; then
         # x86_energy_perf_policy not installed
@@ -894,13 +900,13 @@ set_energy_perf_policy () { # set performance versus energy savings policy
     else
         # x86_energy_perf_policy needs kernel module 'msr'
         load_modules $MOD_MSR
-        $ENERGYPERF $perf > /dev/null 2>&1
+        $ENERGYPERF $pnum > /dev/null 2>&1
         rc=$?
         case $rc in
-            0) echo_debug "pm" "set_energy_perf_policy($1): $perf" ;;
-            1) echo_debug "pm" "set_energy_perf_policy($1): $perf -- unsupported cpu" ;;
-            2) echo_debug "pm" "set_energy_perf_policy($1): $perf -- kernel specific x86_energy_perf_policy missing" ;;
-            *) echo_debug "pm" "set_energy_perf_policy($1): $perf -- unknown rc=$rc " ;;
+            0) echo_debug "pm" "set_energy_perf_policy($1): $perf($pnum)" ;;
+            1) echo_debug "pm" "set_energy_perf_policy($1): $perf($pnum) -- unsupported cpu" ;;
+            2) echo_debug "pm" "set_energy_perf_policy($1): $perf($pnum) -- kernel specific x86_energy_perf_policy missing" ;;
+            *) echo_debug "pm" "set_energy_perf_policy($1): $perf($pnum) -- unknown rc=$rc " ;;
         esac
         return $rc
     fi

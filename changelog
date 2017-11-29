@@ -1,4 +1,4 @@
-+++ 1.1 --- 23.11.2017 +++
++++ 1.1 --- 29.11.2017 +++
 
 *** Development version ***
 
@@ -6,13 +6,15 @@
     Audio:
       - SOUND_POWER_SAVE_ON_BAT: change default to 10 to prevent clicking noises
         caused by applications trying to reopen the device frequently
+    Processor:
+      - Issue #297: ENERGY_PERF_POLICY_ON_AC/BAT: support changed values
+            performance, balance-performance, default, balance-power, power
     USB:
       - USB_BLACKLIST_PRINTER: exclude printers from autosuspend
 
   * Bugfixes
     - Issue #283: fix AC power detection for MacBook Pro 2017
     - Issue #298: move runtime data from /var/run/tlp to /run/tlp
-
 
 +++ 1.0 --- 25.05.2017 +++
 
