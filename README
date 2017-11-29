@@ -1,4 +1,4 @@
-TLP README - 21.03.2017
+TLP README - 29.11.2017
 
 TLP brings you the benefits of advanced power management for Linux without the need
 to understand every technical detail. TLP comes with a default configuration already
@@ -15,7 +15,7 @@ Separate settings profiles depending on the power source AC/battery:
 - Power aware process scheduler for multi-core/hyper-threading
 - Processor performance versus energy savings policy (x86_energy_perf_policy)
 - Hard disk advanced power magement level and spin down timeout (per disk)
-- SATA aggressive link power management (APLM) with device blacklist
+- SATA link power management (LPM) with device blacklist
 - AHCI runtime power management for host controllers and disks *EXPERIMENTAL*
 - PCIe active state power management (PCIe ASPM)
 - Runtime power management for PCI(e) bus devices

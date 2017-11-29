@@ -815,8 +815,8 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     done
     echo
 
-    # --- show sata alpm mode
-    echo "+++ SATA Aggressive Link Power Management"
+    # --- show sata lpm mode
+    echo "+++ SATA Link Power Management"
     if stat -t /sys/class/scsi_host/host*/link_power_management_policy > /dev/null 2>&1; then
         for i in /sys/class/scsi_host/host* ; do
             printparm "%-56s = ##%s##" $i/link_power_management_policy _

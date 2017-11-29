@@ -1163,7 +1163,7 @@ set_sata_link_power () { # set sata link power management
         return 0
     fi
 
-    # ALPM blacklist
+    # LPM blacklist
     host_bl=${SATA_LINKPWR_BLACKLIST:-}
 
     # iterate SATA hosts
