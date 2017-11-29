@@ -20,7 +20,7 @@ Separate settings profiles depending on the power source AC/battery:
 - PCIe active state power management (PCIe ASPM)
 - Runtime power management for PCI(e) bus devices
 - Radeon graphics KMS power management - not fglrx
-- Radeon graphics dynamic power management - Kernel 3.11 and above, not fglrx
+- Radeon graphics dynamic power management - not fglrx
 - Wifi power saving mode -  depending on kernel/driver
 - Enable/disable integrated radio devices (excluding connected devices)
 - Power off optical drive in UltraBay/MediaBay
