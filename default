@@ -53,7 +53,7 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #CPU_SCALING_MAX_FREQ_ON_BAT=0
 
 # Set energy performance hints (HWP) for Intel P-state governor:
-#   default, performance, balance_performance, balance_power, power
+#   performance, balance_performance, default, balance_power, power
 # Values are given in order of increasing power saving.
 # Note: Intel Skylake or newer CPU and Kernel >= 4.10 required.
 CPU_HWP_ON_AC=balance_performance
@@ -123,8 +123,9 @@ DISK_APM_LEVEL_ON_BAT="128 128"
 # to keep the kernel default scheduler for the particular disk.
 #DISK_IOSCHED="cfq cfq"
 
-# SATA aggressive link power management (ALPM):
-#   min_power, medium_power, max_performance
+# SATA link power management (LPM):
+#   min_power, med_power_with_dipm(*), medium_power, max_performance
+# (*) Kernel >= 4.15 required, then recommended
 SATA_LINKPWR_ON_AC=max_performance
 SATA_LINKPWR_ON_BAT=min_power
 
@@ -148,12 +149,10 @@ PCIE_ASPM_ON_BAT=powersave
 
 # Radeon graphics clock speed (profile method): low, mid, high, auto, default;
 # auto = mid on BAT, high on AC; default = use hardware defaults.
-# (Kernel >= 2.6.35 only, open-source radeon driver explicitly)
 RADEON_POWER_PROFILE_ON_AC=high
 RADEON_POWER_PROFILE_ON_BAT=low
 
 # Radeon dynamic power management method (DPM): battery, performance
-# (Kernel >= 3.11 only, requires boot option radeon.dpm=1)
 RADEON_DPM_STATE_ON_AC=performance
 RADEON_DPM_STATE_ON_BAT=battery
 
