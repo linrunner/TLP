@@ -210,7 +210,7 @@ sub setMethod($$@){
     #they are shifting a bit somewhere; the limit should be 1440
     #the same range in peak-shift-state is used, except shifted to the left
     #the value returned by peak-shift-state is the REAL duration, though
-    $info{min} *= 2 if $method eq $methodIC;
+    $info{min} *= 2 if $method eq $methodIC and $info{min} != 65535;
     ############################################################
 
     if($info{min} !~ /^\d+$/ or ($info{min} > 1440 and $info{min} != 65535)){
@@ -388,17 +388,31 @@ sub acpiCall($){
     die "Could not find $acpiCallDev. Is module acpi_call loaded?\n";
   }
 
-  my $psdev = "";
-  foreach my $dev (glob "$psDeviceGlob") {
-    if(-e $dev) {
-        $psdev = $dev;
-        last;
-    };
+  my $dmiVersion = `cat /sys/class/dmi/id/product_version 2>/dev/null`;
+  chomp $dmiVersion;
+
+  my %aslBaseOverrides = (
+      'ThinkPad S2'         => '\_SB.PCI0.LPCB.EC.HKEY',
+      'ThinkPad 13 2nd Gen' => '\_SB.PCI0.LPCB.EC.HKEY',
+  );
+
+  my $aslBase;
+  if (exists($aslBaseOverrides{$dmiVersion})) {
+      $aslBase = $aslBaseOverrides{$dmiVersion};
+  } else {
+      my $psdev = "";
+      foreach my $dev (glob "$psDeviceGlob") {
+          if(-e $dev) {
+              $psdev = $dev;
+              last;
+          };
+      }
+      if(not -e $psdev){
+          die "No power supply device path to read ASL base from: $psDeviceGlob\n";
+      }
+      $aslBase = `cat $psdev`;
   }
-  if(not -e $psdev){
-    die "No power supply device path to read ASL base from: $psDeviceGlob\n";
-  }
-  my $aslBase = `cat $psdev`;
+
   chomp $aslBase;
 
   $aslBase =~ s/_+(\.|$)/$1/g; #trim trailing _s from components
