@@ -126,8 +126,9 @@ DISK_APM_LEVEL_ON_BAT="128 128"
 # SATA link power management (LPM):
 #   min_power, med_power_with_dipm(*), medium_power, max_performance
 # (*) Kernel >= 4.15 required, then recommended
-SATA_LINKPWR_ON_AC=max_performance
-SATA_LINKPWR_ON_BAT=min_power
+# Multiple values separated with spaces are tried sequentially until success.
+SATA_LINKPWR_ON_AC="med_power_with_dipm max_performance"
+SATA_LINKPWR_ON_BAT="med_power_with_dipm min_power"
 
 # Exclude SATA host devices from link power management.
 # Separate multiple hosts with spaces.

@@ -1147,17 +1147,18 @@ set_disk_io_sched () { # set disk io scheduler
 set_sata_link_power () { # set sata link power management
     # $1: 0=ac mode, 1=battery mode
 
-    local host host_bl hostid linkpol
-    local pwr=""
+    local host host_bl hostid linkpol pwr rc
+    local pwrlist=""
+    local pwr_bl=""
     local ctrl_avail="0"
 
     if [ "$1" = "1" ]; then
-        pwr=${SATA_LINKPWR_ON_BAT:-}
+        pwrlist=${SATA_LINKPWR_ON_BAT:-}
     else
-        pwr=${SATA_LINKPWR_ON_AC:-}
+        pwrlist=${SATA_LINKPWR_ON_AC:-}
     fi
 
-    if [ -z "$pwr" ]; then
+    if [ -z "$pwrlist" ]; then
         # do nothing if unconfigured
         echo_debug "pm" "set_sata_link_power($1).not_configured"
         return 0
@@ -1172,14 +1173,24 @@ set_sata_link_power () { # set sata link power management
         if [ -f $linkpol ]; then
             hostid=${host##*/}
             if wordinlist "$hostid" "$host_bl"; then
-                # host blacklisted
+                # host blacklisted --> skip
                 echo_debug "pm" "set_sata_link_power($1).black: $host"
                 ctrl_avail="1"
             else
-                # host not blacklisted
-                { printf '%s\n' "$pwr" > $linkpol; } 2> /dev/null
-                echo_debug "pm" "set_sata_link_power($1).$pwr: $host; rc=$?"
-                ctrl_avail="1"
+                # host not blacklisted --> iterate all configured values
+                for pwr in $pwrlist; do
+                    { printf '%s\n' "$pwr" > $linkpol; } 2> /dev/null; rc=$?
+                    echo_debug "pm" "set_sata_link_power($1).$pwr: $host; rc=$rc"
+                    if [ $rc -eq 0 ]; then
+                        # write successful --> goto next host
+                        ctrl_avail="1"
+                        break
+                    else
+                        # write failed --> don't use this value for remaining hosts
+                        # and try next value
+                        pwrlist=$(echo "$pwrlist" | sed -r 's/'$pwr'\s*//g')
+                    fi
+                done
             fi
         fi
     done

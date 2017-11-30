@@ -1,4 +1,4 @@
-+++ 1.1 --- 29.11.2017 +++
++++ 1.1 --- 30.11.2017 +++
 
 *** Development version ***
 
@@ -6,6 +6,9 @@
     Audio:
       - SOUND_POWER_SAVE_ON_BAT: change default to 10 to prevent clicking noises
         caused by applications trying to reopen the device frequently
+   Disks:
+      - SATA_LINKPWR_ON_AC/BAT: try multiple values to support new recommended
+        LPM policy "med_power_with_dipm" in kernel 4.15
     Processor:
       - Issue #297: ENERGY_PERF_POLICY_ON_AC/BAT: support changed values
             performance, balance-performance, default, balance-power, power
