@@ -36,7 +36,7 @@ get_devc () { # get control device for radio type
     case $1 in
         wwan|bluetooth)
             for i in /sys/class/rfkill/rfkill* ; do
-                if [ -f $i/type ] && [ "$(cat $i/type)" = "$1" ]; then
+                if [ "$(cat $i/type 2> /dev/null)" = "$1" ]; then
                     devc="$i/state"
                     echo_debug "rf" "get_devc($1) = $devc"
                     return 0
@@ -57,7 +57,7 @@ get_devc () { # get control device for radio type
             done
 
             for i in /sys/class/rfkill/rfkill* ; do
-                if [ -f $i/type ] && [ "$(cat $i/type)" = "wlan" ]; then
+                if [ "$(cat $i/type 2> /dev/null)" = "wlan" ]; then
                     devc="$i/state"
                     echo_debug "rf" "get_devc($1) = $devc"
                     return 0
@@ -79,7 +79,7 @@ get_devc () { # get control device for radio type
 
 get_devs () { # get radio device state -- $1: rftype; retval $devs: 0=off/1=on
     if [ -n "$devc" ]; then
-        devs=$(cat $devc)
+        devs=$(cat $devc 2> /dev/null)
         [ "$rfkdev" = "0" ] && devs=$(($devs ^ $devoff))
     fi
 

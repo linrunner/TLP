@@ -6,7 +6,7 @@ _batteries() {
 
     bats=$( {
         for b in /sys/class/power_supply/BAT*; do
-            if [ -f $b/present ] && [ $(cat $b/present) = "1" ]; then
+            if [ $(cat $b/present 2> /dev/null) = "1" ]; then
                 echo "${b##/*/} "
             fi
         done } )

@@ -61,15 +61,6 @@ no_runtimepm=0
 
 # --- Functions
 
-catparm () { # echo contents of sysfile or default if non-existent or unreadable
-    # $1: sysfile, $2: default value
-    local val="$(cat $1 2> /dev/null)"
-    [ -n "$val" ] || val="$2" # sysfile nonexistent or read failed
-
-    printf "%s" $val
-    return 0
-}
-
 printparm () { # formatted output of sysfile - general
     # $1: format, $2: sysfile, $3: namsg, $4: cutoff
     local format="$1"
@@ -170,10 +161,15 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
 
 printsysf () { # output a sysfile
     # $1: format; $2: sysfile
+    local val
 
-    if [ -f $2 ]; then
-        # sysfile exists
-        printf "$1" $(cat $2 2> /dev/null)
+    val=$(cat $2 2> /dev/null)
+    if [ $? = 0 ]; then
+         # sysfile readable
+        printf "$1" "$val"
+    else
+        # sysfile not readable
+        printf "$1" "(not available)"
     fi
 
     return 0
@@ -553,16 +549,16 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
             printparm "%s = ##%s##" $cpuf/scaling_available_governors _
 
             if [ -f $cpuf/scaling_min_freq ]; then
-                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(cat $cpuf/scaling_min_freq)"
+                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(cat $cpuf/scaling_min_freq 2> /dev/null)"
             fi
 
             if [ -f $cpuf/scaling_max_freq ]; then
-                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(cat $cpuf/scaling_max_freq)"
+                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(cat $cpuf/scaling_max_freq 2> /dev/null)"
             fi
 
             if [ -f $cpuf/scaling_available_frequencies ]; then
                 printf "%s = " "$cpuf/scaling_available_frequencies"
-                for freq in $(cat $cpuf/scaling_available_frequencies); do
+                for freq in $(cat $cpuf/scaling_available_frequencies 2> /dev/null); do
                     printf "%s " "$freq"
                 done
                 printf "[kHz]\n"
@@ -668,7 +664,7 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Temperatures"
     if [ -f $IBMTHERMAL ]; then
         # use thinkpad-specific sysfile
-        echo "$IBMTHERMAL = $(cat $IBMTHERMAL | cut -f2) [°C]"
+        echo "$IBMTHERMAL = $(cat $IBMTHERMAL 2> /dev/null | cut -f2  ) [°C]"
     else
         # use sensors
         cmax=0
@@ -766,7 +762,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
                 esac
 
                 if [ -f /sys/block/$disk_dev/queue/scheduler ]; then
-                    sched="$(cat /sys/block/$disk_dev/queue/scheduler | sed -r 's/.*\[(.*)\].*/\1/')"
+                    sched="$(cat /sys/block/$disk_dev/queue/scheduler 2> /dev/null | sed -r 's/.*\[(.*)\].*/\1/')"
                     if [ "$sched" = "none" ] && [ -d /sys/block/$disk_dev/mq ]; then
                         sched="blk-mq"
                     fi
@@ -882,7 +878,7 @@ if [ "$show_all" = "1" ]; then
     # --- show pcie aspm state
     echo "+++ PCIe Active State Power Management"
     if [ -f $ASPM ]; then
-        pol=$(cat $ASPM | sed -r 's/.*\[(.*)\].*/\1/')
+        pol=$(cat $ASPM 2> /dev/null | sed -r 's/.*\[(.*)\].*/\1/')
         { printf '%s' "$pol" > $ASPM; } 2> /dev/null
         if [ $? = 0 ]; then
             echo "$ASPM = $pol"
@@ -1147,7 +1143,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d##" $batd/cycle_count
 
                     if [ -f $batd/temperature ]; then
-                        perl -e 'printf ("%-59s = %6d [°C]\n", "'$batd/temperature'", '$(cat $batd/temperature)' / 1000.0);'
+                        perl -e 'printf ("%-59s = %6d [°C]\n", "'$batd/temperature'", '$(catsysfd $batd/temperature 0)' / 1000.0);'
                     fi
 
                     printparm "%-59s = ##%6d## [mWh]" $batd/design_capacity
@@ -1182,9 +1178,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     echo
 
                     # store values for charge / capacity calculation below
-                    ed=$(catparm $batd/design_capacity 0)
-                    ef=$(catparm $batd/last_full_capacity 0)
-                    en=$(catparm $batd/remaining_capacity 0)
+                    ed=$(catsysfd $batd/design_capacity 0)
+                    ef=$(catsysfd $batd/last_full_capacity 0)
+                    en=$(catsysfd $batd/remaining_capacity 0)
                     efsum=$(($efsum + $ef))
                     ensum=$(($ensum + $en))
 
@@ -1227,7 +1223,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     echo "+++ Battery Status"
                 fi
             elif [ -d $batd ] \
-                 && [ "$(cat $batd/type)" = "Battery" ] \
+                 && [ "$(cat $batd/type 2> /dev/null)" = "Battery" ] \
                  && [ "$(cat $batd/present 2> /dev/null )" = "1" ]; then
                     # it's some other laptop model or brand
                     echo "+++ Battery Status"
@@ -1253,9 +1249,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mW]" $batd/power_now "" 000
 
                     # store values for charge / capacity calculation below
-                    ed=$(catparm $batd/energy_full_design 0)
-                    ef=$(catparm $batd/energy_full 0)
-                    en=$(catparm $batd/energy_now 0)
+                    ed=$(catsysfd $batd/energy_full_design 0)
+                    ef=$(catsysfd $batd/energy_full 0)
+                    en=$(catsysfd $batd/energy_now 0)
                     efsum=$(($efsum + $ef))
                     ensum=$(($ensum + $en))
 
@@ -1266,9 +1262,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mA]" $batd/current_now "" 000
 
                     # store values for charge / capacity calculation below
-                    ed=$(catparm $batd/charge_full_design 0)
-                    ef=$(catparm $batd/charge_full 0)
-                    en=$(catparm $batd/charge_now 0)
+                    ed=$(catsysfd $batd/charge_full_design 0)
+                    ef=$(catsysfd $batd/charge_full 0)
+                    en=$(catsysfd $batd/charge_now 0)
                     efsum=$(($efsum + $ef))
                     ensum=$(($ensum + $en))
 

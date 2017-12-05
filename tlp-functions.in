@@ -98,6 +98,18 @@ nodebug=0
 # ----------------------------------------------------------------------------
 # Functions
 
+# --- Sysfiles
+
+catsysfd () { # echo contents of a sysfile; if file is non-existent or
+              # read fails, echo default value instead
+              # $1: sysfile, $2: default value
+    local val="$(cat $1 2> /dev/null)"
+    [ -n "$val" ] || val="$2" # sysfile nonexistent or read failed
+
+    printf "%s" $val
+    return 0
+}
+
 # --- Tests
 
 wordinlist () { # test if word in list
@@ -1386,10 +1398,10 @@ set_runtime_pm () { # set runtime power management
     # iterate pci(e) devices
     for type in $PCID; do
         for device in $type/*; do
-            if [ -f $device/class ] && [ -f $device/power/control ]; then
+            if [ -f $device/power/control ]; then
                 # get short device address, class
                 address=${device##/*/0000:}
-                class=$(cat $device/class)
+                class=$(cat $device/class 2> /dev/null)
 
                 if wordinlist "$address" "$pci_bl"; then
                     # device is in address blacklist
@@ -1705,8 +1717,7 @@ get_eth_ifaces () { # get all eth devices -- retval: $ethifaces
     ethifaces=""
 
     for eic in $NETD/*/device/class; do
-        if [ -f $eic ] \
-            && [ "$(cat $eic)" = "0x020000" ] \
+        if [ "$(cat $eic 2> /dev/null)" = "0x020000" ] \
             && [ ! -d "${eic%/class}/ieee80211" ]; then
 
             ei=${eic%/device/class}; ei=${ei##*/}
@@ -1758,10 +1769,10 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
             usbdev=$USBD/$usbd
 
             if [ -f $usbdev/power/autosuspend ] || [ -f $usbdev/power/autosuspend_delay_ms ]; then
-                vendor="$(cat $usbdev/idVendor)"
-                usbid="$vendor:$(cat $usbdev/idProduct)"
-                busdev="Bus $(cat $usbdev/busnum) Dev $(cat $usbdev/devnum)"
-                dclass="$(cat $usbdev/bDeviceClass)"
+                vendor="$(cat $usbdev/idVendor 2> /dev/null)"
+                usbid="$vendor:$(cat $usbdev/idProduct 2> /dev/null)"
+                busdev="Bus $(cat $usbdev/busnum 2> /dev/null) Dev $(cat $usbdev/devnum 2> /dev/null)"
+                dclass="$(cat $usbdev/bDeviceClass 2> /dev/null)"
                 control="${2:-auto}"
                 exc=""
                 chg=0
@@ -1785,7 +1796,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                     else
                         # check for hid subdevices
                         for subdev in $usbdev/*:*; do
-                            if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "03" ]; then
+                            if [ "$(cat $subdev/bInterfaceClass 2> /dev/null)" = "03" ]; then
                                 control="on"
                                 exc="_hid_black"
                                 break
@@ -1798,8 +1809,8 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
 
                             if [ "$USB_BLACKLIST_BTUSB" = "1" ] \
                                 && [ "$dclass" = "e0" ] \
-                                && [ "$(cat $usbdev/bDeviceSubClass)" = "01" ] \
-                                && [ "$(cat $usbdev/bDeviceProtocol)" = "01" ]; then
+                                && [ "$(cat $usbdev/bDeviceSubClass 2> /dev/null)" = "01" ] \
+                                && [ "$(cat $usbdev/bDeviceProtocol 2> /dev/null)" = "01" ]; then
                                 control="on"
                                 exc="_btusb_black"
                             fi
@@ -1834,7 +1845,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                     control="on"
                                     exc="_phone_black"
 
-                                elif [ "$vendor" = "05ac" ] && [ "$(cat $usbdev/product)" = "iPhone" ]; then
+                                elif [ "$vendor" = "05ac" ] && [ "$(cat $usbdev/product 2> /dev/null)" = "iPhone" ]; then
                                     # iPhone
                                     control="on"
                                     exc="_phone_black"
@@ -1848,16 +1859,16 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                                 control="on"
                                                 exc="_phone_black"
                                                 break
-                                            elif [ "$(cat $subdev/bInterfaceClass)" = "ff" ] \
-                                                && [ "$(cat $subdev/bInterfaceSubClass)" = "42" ] \
-                                                && [ "$(cat $subdev/bInterfaceProtocol)" = "01" ]; then
+                                            elif [ "$(cat $subdev/bInterfaceClass 2> /dev/null)" = "ff" ] \
+                                                && [ "$(cat $subdev/bInterfaceSubClass 2> /dev/null)" = "42" ] \
+                                                && [ "$(cat $subdev/bInterfaceProtocol 2> /dev/null)" = "01" ]; then
                                                 # ADB: Android
                                                 control="on"
                                                 exc="_phone_black"
                                                 break
-                                            elif [ "$(cat $subdev/bInterfaceClass)" = "06" ] \
-                                                && [ "$(cat $subdev/bInterfaceSubClass)" = "01" ] \
-                                                && [ "$(cat $subdev/bInterfaceProtocol)" = "01" ]; then
+                                            elif [ "$(cat $subdev/bInterfaceClass 2> /dev/null)" = "06" ] \
+                                                && [ "$(cat $subdev/bInterfaceSubClass 2> /dev/null)" = "01" ] \
+                                                && [ "$(cat $subdev/bInterfaceProtocol 2> /dev/null)" = "01" ]; then
                                                 # PTP: iPhone, Lumia et al.
                                                 # caveat: may also be a camera
                                                 control="on"
@@ -1879,7 +1890,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                 if [ "$dclass" = "00" ]; then
                                     # check for printer subdevices
                                     for subdev in $usbdev/*:*; do
-                                        if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "07" ]; then
+                                        if [ "$(cat $subdev/bInterfaceClass 2> /dev/null)" = "07" ]; then
                                             control="on"
                                             exc="_printer_black"
                                             break
@@ -1897,7 +1908,7 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                                 if [ "$dclass" != "00" ]; then
                                     # check for cdc subdevices
                                     for subdev in $usbdev/*:*; do
-                                        if [ -d $subdev ] && [ "$(cat $subdev/bInterfaceClass)" = "0a" ]; then
+                                        if [ "$(cat $subdev/bInterfaceClass 2> /dev/null)" = "0a" ]; then
                                             control="on"
                                             exc="_wwan_black"
                                             break
@@ -1918,14 +1929,14 @@ set_usb_suspend () { # activate usb autosuspend for all devices except input and
                 fi # control=on
 
                 if [ -f $usbdev/power/control ]; then
-                    if [ "$(cat $usbdev/power/control)" != "$control" ]; then
+                    if [ "$(cat $usbdev/power/control 2> /dev/null)" != "$control" ]; then
                         # Write actual changes only
                         { printf '%s\n' "$control" > $usbdev/power/control; } 2> /dev/null
                         chg=1
                     fi
                 else
                     # level is deprecated
-                    if [ "$(cat $usbdev/power/level)" != "$control" ]; then
+                    if [ "$(cat $usbdev/power/level 2> /dev/null)" != "$control" ]; then
                         # Write actual changes only
                         { printf '%s\n' "$control" > $usbdev/power/level; } 2> /dev/null
                         chg=1
@@ -2068,24 +2079,24 @@ check_tp_battery () { # check ThinkPad battery presence and return index
     esac
 
     if [ $tpsmapi -eq 0 ]; then # tp-smapi available
+        rc=1
         for bs in $blist; do
             # check tp-smapi name space
-            [ -d $SMAPIDIR/$bs ] && [ "$(cat $SMAPIDIR/$bs/installed)" = "1" ]
-            rc=$?
-            if [ $rc -eq 0 ]; then
+            if [ "$(cat $SMAPIDIR/$bs/installed 2> /dev/null)" = "1" ]; then
+                rc=0 # battery detected
                 case $bs in
                     BAT0) bat_idx=1; bat_str="$bs" ;;
                     BAT1) bat_idx=2; bat_str="$bs" ;;
                 esac
+                break # exit loop on first battery detected
             fi
-            [ $rc -ne 0 ] || break # exit loop on first battery detected
         done
     elif [ $tpacpi -eq 0 ]; then # tpacpi-bat available
+        rc=1
         for bs in $blist; do
             # check acpi name space
-            [ -d $ACPIBATDIR/$bs ] && [ "$(cat $ACPIBATDIR/$bs/present 2> /dev/null)" = "1" ]
-            rc=$?
-            if [ $rc -eq 0 ]; then
+            if [ "$(cat $ACPIBATDIR/$bs/present 2> /dev/null)" = "1" ]; then
+                rc=0 # battery detected
                 # determine tpacpi-bat index
                 case $bs in
                     BAT0)
@@ -2103,8 +2114,8 @@ check_tp_battery () { # check ThinkPad battery presence and return index
                         bat_str="$bs"
                         ;;
                 esac
+                break # exit loop on first battery detected
             fi
-            [ $rc -ne 0 ] || break # exit loop on first battery detected
         done
     fi
 
@@ -2632,28 +2643,28 @@ discharge_battery () { # discharge battery
         if [ $tpsmapi -eq 0 ]; then # use tp_smapi
             bdir=$SMAPIDIR/$bat_str
 
-            printf "voltage            = %6s [mV]\n"  "$(cat $bdir/voltage)"
-            printf "remaining capacity = %6s [mWh]\n" "$(cat $bdir/remaining_capacity)"
-            printf "remaining percent  = %6s [%%]\n"  "$(cat $bdir/remaining_percent)"
-            printf "remaining time     = %6s [min]\n" "$(cat $bdir/remaining_running_time_now)"
-            printf "power              = %6s [mW]\n"  "$(cat $bdir/power_avg)"
+            printf "voltage            = %6s [mV]\n"  "$(cat $bdir/voltage 2> /dev/null)"
+            printf "remaining capacity = %6s [mWh]\n" "$(cat $bdir/remaining_capacity 2> /dev/null)"
+            printf "remaining percent  = %6s [%%]\n"  "$(cat $bdir/remaining_percent 2> /dev/null)"
+            printf "remaining time     = %6s [min]\n" "$(cat $bdir/remaining_running_time_now 2> /dev/null)"
+            printf "power              = %6s [mW]\n"  "$(cat $bdir/power_avg 2> /dev/null)"
         else # use acpi
             bdir=$ACPIBATDIR/$bat_str
 
             if [ -d $bdir ]; then
-                perl -e 'printf ("voltage            = %6d [mV]\n", '$(cat $bdir/voltage_now)' / 1000.0);'
+                perl -e 'printf ("voltage            = %6d [mV]\n", '$(catsysfd $bdir/voltage_now 0 2> /dev/null)' / 1000.0);'
 
-                en=$(cat $bdir/energy_now)
+                en=$(catsysfd $bdir/energy_now 0 2> /dev/null)
                 perl -e 'printf ("remaining capacity = %6d [mWh]\n", '$en' / 1000.0);'
 
-                ef=$(cat $bdir/energy_full)
+                ef=$(catsysfd $bdir/energy_full 0 2> /dev/null)
                 if [ "$ef" != "0" ]; then
                     perl -e 'printf ("remaining percent  = %6d [%%]\n", 100.0 * '$en' / '$ef' );'
                 else
                     printf "remaining percent  = not available [%]\n"
                 fi
 
-                pn=$(cat $bdir/power_now)
+                pn=$(catsysfd $bdir/power_now 0 2> /dev/null)
                 if [ "$pn" != "0" ]; then
                     perl -e 'printf ("remaining time     = %6d [min]\n", 60.0 * '$en' / '$pn');'
                     perl -e 'printf ("power              = %6d [mW]\n", '$pn' / 1000.0);'

@@ -32,10 +32,10 @@ devtype=$2
 case $devtype in
     dock)
         # check if type is "dock_station", exit if not
-        type=$(cat $ddev/type)
+        type=$(cat $ddev/type 2> /dev/null)
         [ "$type" = "dock_station" ] || exit 0
 
-        docked=$(cat $ddev/docked)
+        docked=$(cat $ddev/docked 2> /dev/null)
         action=$EVENT
 
         echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev type=$type docked=$docked syspwr=$syspwr"
@@ -63,7 +63,7 @@ case $action in
     dock) # laptop was docked
 
         # lock for 2 seconds in case dock has multiple devices
-        set_timed_lock $RDW_DOCK_LOCK $RDW_LOCKTIME 
+        set_timed_lock $RDW_DOCK_LOCK $RDW_LOCKTIME
 
         # enable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_ENABLE_ON_DOCK; do
