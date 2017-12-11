@@ -2648,6 +2648,8 @@ discharge_battery () { # discharge battery
             printf "remaining percent  = %6s [%%]\n"  "$(cat $bdir/remaining_percent 2> /dev/null)"
             printf "remaining time     = %6s [min]\n" "$(cat $bdir/remaining_running_time_now 2> /dev/null)"
             printf "power              = %6s [mW]\n"  "$(cat $bdir/power_avg 2> /dev/null)"
+            printf "state              = %s\n"  "$(cat $bdir/state 2> /dev/null)"
+            get_force_discharge $bat_str; printf "force discharge    = %s\n"  "$?"
         else # use acpi
             bdir=$ACPIBATDIR/$bat_str
 
@@ -2671,7 +2673,8 @@ discharge_battery () { # discharge battery
                 else
                     printf "remaining time     = not discharging [min]\n"
                 fi
-
+                printf "state              = %s\n"  "$(cat $bdir/status 2> /dev/null)"
+                get_force_discharge $bat_str; printf "force discharge    = %s\n"  "$?"
             fi
         fi
         echo "Press Ctrl+C to cancel."

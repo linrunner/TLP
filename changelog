@@ -15,6 +15,7 @@
     ThinkPad Battery:
       - Support ThinkPad 13 (1st and 2nd Gen); new tacpi-bat version
       - tlp-stat --psup: show ASLbase for tpacpi-bat (in device/path)
+      - tlp discharge: show state of battery and force_discharge
     USB:
       - USB_BLACKLIST_PRINTER: exclude printers from autosuspend
 
