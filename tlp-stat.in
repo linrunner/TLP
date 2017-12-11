@@ -1403,7 +1403,7 @@ if [ "$show_psup" = "1" ]; then
     # --- show power_supply diagnostic
     echo "+++ Power supply diagnostic"
     for ps in /sys/class/power_supply/*; do
-        grep -s '.*' $ps/type $ps/online $ps/present
+        grep -s '.*' $ps/type $ps/online $ps/present $ps/device/path
     done
 fi # show_sup
 

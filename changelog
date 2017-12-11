@@ -1,4 +1,4 @@
-+++ 1.1 --- 08.12.2017 +++
++++ 1.1 --- 11.12.2017 +++
 
 *** Development version ***
 
@@ -14,6 +14,7 @@
             performance, balance-performance, default, balance-power, power
     ThinkPad Battery:
       - Support ThinkPad 13 (1st and 2nd Gen); new tacpi-bat version
+      - tlp-stat --psup: show ASLbase for tpacpi-bat (in device/path)
     USB:
       - USB_BLACKLIST_PRINTER: exclude printers from autosuspend
 
