@@ -22,7 +22,7 @@
 # Makes ACPI calls using the acpi_call kernel module, which is REQUIRED.
 #
 # Supports 2011-released thinkpads, and possibly later ones.
-# Tested and works on: W520, T420, X220
+# Tested and works on: W520, T420, X220, E130
 # Tested and does NOT work on: T400, X201S
 #
 # Limitations/Known Issues:
@@ -394,6 +394,7 @@ sub acpiCall($){
   my %aslBaseOverrides = (
       'ThinkPad S2'         => '\_SB.PCI0.LPCB.EC.HKEY',
       'ThinkPad 13 2nd Gen' => '\_SB.PCI0.LPCB.EC.HKEY',
+      'ThinkPad Edge E130'  => '\_SB.PCI0.LPCB.EC.HKEY',
   );
 
   my $aslBase;
