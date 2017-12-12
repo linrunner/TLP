@@ -1,4 +1,4 @@
-+++ 1.1 --- 11.12.2017 +++
++++ 1.1 --- 12.12.2017 +++
 
 *** Development version ***
 
@@ -23,6 +23,8 @@
     - Issue #271: intercept link_power_management_policy write error
     - Issue #283: fix AC power detection for MacBook Pro 2017
     - Issue #298: move runtime data from /var/run/tlp to /run/tlp
+    - Issue #301: DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE="bluetooth"
+          not working as expected
 
 +++ 1.0 --- 25.05.2017 +++
 

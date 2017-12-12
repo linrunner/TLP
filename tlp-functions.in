@@ -1607,7 +1607,7 @@ any_wifi_in_use () { # check if any wifi device is in use
     return 1
 }
 
-# --- WWAN Power Management
+# --- WWAN Device Checks
 
 get_wwan_ifaces () { # get all wwan devices -- retval: $wanifaces
     local wi wiu
@@ -1648,9 +1648,9 @@ get_wwan_driver () { # get driver associated with interface
     return 0
 }
 
-# --- Bluetooth Power Management
+# --- Bluetooth Device Checks
 
-get_bluetooth_ifaces () { # get all bluetooth devices -- retval: $bifaces
+get_bluetooth_ifaces () { # get all bluetooth interfaces -- retval: $bifaces
     # enumerate symlinks only
     bifaces="$(for i in $BLUETOOTHD/*; do [ -h $i ] && echo ${i##/*/}; done | grep -v ':')"
     return 0
@@ -1668,43 +1668,25 @@ get_bluetooth_driver () { # get driver associated with interface -- $1: iface; r
     return 0
 }
 
-dbus_call () { # call method via system dbus -- $1: dest; $2: $path; $3: interface, $4: $method
-    $DBUSSEND --system --type=method_call --print-reply --dest="$1" "$2" "$3.$4" 2> /dev/null
-}
+bluetooth_in_use () { # check if bluetooth interface is in use -- $1: iface
+    local uev
 
-bluez_call () { # call bluez method via dbus -- $1: path; $2: interface; $3: $method
-    dbus_call "org.bluez" "$1" "org.bluez.$2" "$3"
-}
-
-bluez_bluetooth_in_use () { # check if bluetooth device (specified as dbus path) is in use $1: dbus path
-    local devices device connected
-
-    devices=$(bluez_call $1 Adapter ListDevices | sed -n 's/\s*object path "\(.*\)"\s*/\1/p')
-    for device in $devices; do
-        connected="$(bluez_call $device Device GetProperties | grep -A 1 Connected | sed -n 's/.*boolean //p')"
-        test "$connected" = "true" && return 0
+    # when devices are connected to an interface its sysdir is populated with
+    # subdevices like <iface>:<number> where the uevent file contains a line
+    # "DEVTYPE=link"
+    for uev in $BLUETOOTHD/$1/$1:*/uevent; do
+        grep -qs "DEVTYPE=link" $uev && return 0
     done
 
     return 1
 }
 
-bluetooth_in_use () { # check if bluetooth device is in use -- $1: iface
-    local paths path
+any_bluetooth_in_use () { # check if any bluetooth interface is in use
+    local i
 
-    paths="$(bluez_call / Manager ListAdapters | sed -n 's/\s*object path "\(.*\)"\s*/\1/p' | grep /$1\$)"
-    for path in $paths; do
-        bluez_bluetooth_in_use "$path" && return 0
-    done
-
-    return 1
-}
-
-any_bluetooth_in_use () { # check if some bluetooth device is in use
-    local paths path
-
-    paths="$(bluez_call / Manager ListAdapters | sed -n 's/\s*object path "\(.*\)"\s*/\1/p')"
-    for path in $paths; do
-        bluez_bluetooth_in_use "$path" && return 0
+    get_bluetooth_ifaces
+    for i in $bifaces; do
+        bluetooth_in_use "$i" && return 0
     done
 
     return 1
