@@ -3,9 +3,6 @@
 *** Development version ***
 
   * Features
-    Audio:
-      - SOUND_POWER_SAVE_ON_BAT: change default to 10 to prevent clicking noises
-        caused by applications trying to reopen the device frequently
    Disks:
       - SATA_LINKPWR_ON_AC/BAT: try multiple values to support new recommended
         LPM policy "med_power_with_dipm" in kernel 4.15
