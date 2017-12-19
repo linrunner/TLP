@@ -10,7 +10,7 @@
       - Issue #297: ENERGY_PERF_POLICY_ON_AC/BAT: support changed values
             performance, balance-performance, default, balance-power, power
     ThinkPad Battery:
-      - Support ThinkPad 13 1st & 2nd Gen, E130; new tacpi-bat version
+      - Support ThinkPad 13 1st & 2nd Gen, E130; new tpacpi-bat version
       - tlp-stat --psup: show ASLbase for tpacpi-bat (in device/path)
       - tlp discharge: show state of battery and force_discharge
     USB:
