@@ -1,22 +1,22 @@
 #!/bin/sh
 # tlp - handle suspend/hibernate/resume tasks
 #
-# Copyright (c) 2017 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2018 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 . "${PM_FUNCTIONS}"
 
 case $1 in
-	hibernate|suspend)
-		tlp suspend
-		;;
+    hibernate|suspend)
+        tlp suspend
+        ;;
 
-	thaw|resume)
-		tlp resume
-		;;
+    thaw|resume)
+        tlp resume
+        ;;
 
-	*) exit $NA
-		;;
+    *) exit $NA
+        ;;
 esac
 
 exit 0

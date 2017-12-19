@@ -4,16 +4,18 @@ Author:
 
 Copyright:
 
-    Copyright (c) 2017 Thomas Koch, André Erdmann, Pali Rohár
+    Copyright (c) 2018 Thomas Koch, André Erdmann, Pali Rohár
+
+    See https://github.com/linrunner/TLP/ for additional contributors
 
     Some code and descriptions were adapted from:
     - laptop-mode-tools
          Copyright (c) 2004 by Bart Samwel, Kiko Piris, Micha Feigin,
          Andrew Morton, Herve Eychenne, Dax Kelson, Jan Topinski
-	- http://thinkwiki.org
+    - http://thinkwiki.org
 
     Thinkpad ACPI Battery Control (tpacpi-bat):
-    Copyright (c) 2011 Elliot Wolk
+    Copyright (c) 2011-2016 Elliot Wolk
 
 License:
 

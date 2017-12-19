@@ -1,6 +1,6 @@
 # tlp-rdw - udev rules
 #
-# Copyright (c) 2017 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2018 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
 # --- Dock/undock events
@@ -21,7 +21,7 @@ ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}
 # *** TODO: yet unknown ***
 
 # ThinkPad OneLink Pro Dock (USB3 Gigabit LAN interface)
-ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/304b/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock" 
+ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/304b/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
 ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/304f/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
 
 # ThinkPad OneLink Dock
