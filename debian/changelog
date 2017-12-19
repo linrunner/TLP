@@ -1,14 +1,14 @@
-tlp (1.0.900-1) unstable; urgency=low
+tlp (1.0.901-1) unstable; urgency=low
 
   [Thomas Koch]
-  * New upstream alpha version
+  * New upstream beta version
   * Make it work with Ubuntu 16.04 again:
     - debian/control: Build-Depends: debhelper (>= 9), dh-systemd
     - debian/rules: dh_installinit --onlyscripts
     - debian/changelog: change Maintainer
   * Use upstream de.linrunner.tlp.metainfo.xml
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 30 Aug 2017 19:29:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 19 Dec 2017 12:42:14 +0200
 
 tlp (1.0-1) unstable; urgency=medium
 
