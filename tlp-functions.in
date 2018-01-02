@@ -348,12 +348,15 @@ get_sys_power_supply () { # get current power supply
                 ;;
 
             Battery)
-                # set rc to battery, but don't stop looking for AC
-                syspwr=1
+                # battery detected, exclude hid peripherals
+                if echo "${psrc##/*/}" | grep -vq "hidpp_battery"; then
+                    # not hid --> set rc to battery, but don't stop looking for AC
+                    syspwr=1
+                fi
                 ;;
 
             *)
-                echo_debug "pm" "unknown power supply: ${psrc##*/}"
+                echo_debug "pm" "unknown power supply: ${psrc##/*/}"
                 ;;
         esac
     done

@@ -1,4 +1,4 @@
-+++ 1.1 --- 19.12.2017 +++
++++ 1.1 --- 02.01.2018 +++
 
 *** Beta version ***
 
@@ -22,6 +22,7 @@
     - Issue #298: move runtime data from /var/run/tlp to /run/tlp
     - Issue #301: DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE="bluetooth"
           not working as expected
+    - Issue #313: don't detect wireless input devices' batteries as power supply
 
 +++ 1.0 --- 25.05.2017 +++
 
