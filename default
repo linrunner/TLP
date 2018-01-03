@@ -8,12 +8,12 @@
 # Set to 0 to disable, 1 to enable TLP.
 TLP_ENABLE=1
 
-# Operation mode when no power supply can be detected: AC, BAT
+# Operation mode when no power supply can be detected: AC, BAT.
 # Concerns some desktop and embedded hardware only.
 TLP_DEFAULT_MODE=AC
 
 # Operation mode select: 0=depend on power source, 1=always use TLP_DEFAULT_MODE
-# Hint: use in conjunction with TLP_DEFAULT_MODE=BAT for BAT settings on AC
+# Hint: use in conjunction with TLP_DEFAULT_MODE=BAT for BAT settings on AC.
 TLP_PERSISTENT_DEFAULT=0
 
 # Seconds laptop mode has to wait after the disk goes idle before doing a sync.
@@ -30,9 +30,9 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 
 # Select a CPU frequency scaling governor.
 # Intel Core i processor with intel_pstate driver:
-#   powersave(*), performance
+#   powersave(*), performance.
 # Older hardware with acpi-cpufreq driver:
-#   ondemand(*), powersave, performance, conservative, schedutil
+#   ondemand(*), powersave, performance, conservative, schedutil.
 # (*) is recommended.
 # Hint: use tlp-stat -p to show the active driver and available governors.
 # Important:
@@ -59,7 +59,7 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 CPU_HWP_ON_AC=balance_performance
 CPU_HWP_ON_BAT=balance_power
 
-# Set Intel P-state performance: 0..100 (%)
+# Set Intel P-state performance: 0..100 (%).
 # Limit the max/min P-state to control the power dissipation of the CPU.
 # Values are stated as a percentage of the available performance.
 # Requires an Intel Core i processor with intel_pstate driver.
@@ -76,24 +76,25 @@ CPU_HWP_ON_BAT=balance_power
 #CPU_BOOST_ON_AC=1
 #CPU_BOOST_ON_BAT=0
 
-# Minimize number of used CPU cores/hyper-threads under light load conditions
+# Minimize number of used CPU cores/hyper-threads under light load conditions:
+#   0=disable, 1=enable.
 SCHED_POWERSAVE_ON_AC=0
 SCHED_POWERSAVE_ON_BAT=1
 
 # Kernel NMI Watchdog:
-#   0=disable (default, saves power), 1=enable (for kernel debugging only)
+#   0=disable (default, saves power), 1=enable (for kernel debugging only).
 NMI_WATCHDOG=0
 
-# Change CPU voltages aka "undervolting" - Kernel with PHC patch required
+# Change CPU voltages aka "undervolting" - Kernel with PHC patch required.
 # Frequency voltage pairs are written to:
 #   /sys/devices/system/cpu/cpu0/cpufreq/phc_controls
 # CAUTION: only use this, if you thoroughly understand what you are doing!
 #PHC_CONTROLS="F:V F:V F:V F:V"
 
 # Set CPU performance versus energy savings policy:
-#   performance, balance-performance, default, balance-power, power
+#   performance, balance-performance, default, balance-power, power.
 # Values are given in order of increasing power saving.
-# Requires kernel module msr and x86_energy_perf_policy from linux-tools
+# Requires kernel module msr and x86_energy_perf_policy from linux-tools.
 ENERGY_PERF_POLICY_ON_AC=performance
 ENERGY_PERF_POLICY_ON_BAT=power
 
@@ -101,7 +102,7 @@ ENERGY_PERF_POLICY_ON_BAT=power
 # Devices can be specified by disk ID also (lookup with: tlp diskid).
 DISK_DEVICES="sda sdb"
 
-# Hard disk advanced power management level: 1..254, 255 (max saving, min, off)
+# Hard disk advanced power management level: 1..254, 255 (max saving, min, off).
 # Levels 1..127 may spin down the disk; 255 allowable on most drives.
 # Separate values for multiple disks with spaces. Use the special value 'keep'
 # to keep the hardware default for the particular disk.
@@ -118,14 +119,14 @@ DISK_APM_LEVEL_ON_BAT="128 128"
 #DISK_SPINDOWN_TIMEOUT_ON_AC="0 0"
 #DISK_SPINDOWN_TIMEOUT_ON_BAT="0 0"
 
-# Select IO scheduler for the disk devices: cfq, deadline, noop (Default: cfq);
+# Select IO scheduler for the disk devices: cfq, deadline, noop (Default: cfq).
 # Separate values for multiple disks with spaces. Use the special value 'keep'
 # to keep the kernel default scheduler for the particular disk.
 #DISK_IOSCHED="cfq cfq"
 
 # SATA link power management (LPM):
-#   min_power, med_power_with_dipm(*), medium_power, max_performance
-# (*) Kernel >= 4.15 required, then recommended
+#   min_power, med_power_with_dipm(*), medium_power, max_performance.
+# (*) Kernel >= 4.15 required, then recommended.
 # Multiple values separated with spaces are tried sequentially until success.
 SATA_LINKPWR_ON_AC="med_power_with_dipm max_performance"
 SATA_LINKPWR_ON_BAT="med_power_with_dipm min_power"
@@ -135,16 +136,16 @@ SATA_LINKPWR_ON_BAT="med_power_with_dipm min_power"
 #SATA_LINKPWR_BLACKLIST="host1"
 
 # Runtime Power Management for AHCI controllers and disks:
-#   on=disable, auto=enable
-# EXPERIMENTAL ** WARNING: auto will most likely cause system lockups/data loss
+#   on=disable, auto=enable.
+# EXPERIMENTAL ** WARNING: auto will most likely cause system lockups/data loss.
 #AHCI_RUNTIME_PM_ON_AC=on
 #AHCI_RUNTIME_PM_ON_BAT=on
 
-# Seconds of inactivity before disk is suspended
+# Seconds of inactivity before disk is suspended.
 AHCI_RUNTIME_PM_TIMEOUT=15
 
 # PCI Express Active State Power Management (PCIe ASPM):
-#   default, performance, powersave
+#   default, performance, powersave.
 PCIE_ASPM_ON_AC=performance
 PCIE_ASPM_ON_BAT=powersave
 
@@ -153,7 +154,7 @@ PCIE_ASPM_ON_BAT=powersave
 RADEON_POWER_PROFILE_ON_AC=high
 RADEON_POWER_PROFILE_ON_BAT=low
 
-# Radeon dynamic power management method (DPM): battery, performance
+# Radeon dynamic power management method (DPM): battery, performance.
 RADEON_DPM_STATE_ON_AC=performance
 RADEON_DPM_STATE_ON_BAT=battery
 
@@ -165,15 +166,15 @@ RADEON_DPM_PERF_LEVEL_ON_BAT=auto
 WIFI_PWR_ON_AC=off
 WIFI_PWR_ON_BAT=on
 
-# Disable wake on LAN: Y/N
+# Disable wake on LAN: Y/N.
 WOL_DISABLE=Y
 
 # Enable audio power saving for Intel HDA, AC97 devices (timeout in secs).
-# A value of 0 disables, >=1 enables power saving (recommended: 10).
+# A value of 0 disables, >=1 enables power saving (recommended: 1).
 SOUND_POWER_SAVE_ON_AC=0
 SOUND_POWER_SAVE_ON_BAT=1
 
-# Disable controller too (HDA only): Y/N
+# Disable controller too (HDA only): Y/N.
 SOUND_POWER_SAVE_CONTROLLER=Y
 
 # Power off optical drive in UltraBay/MediaBay: 0=disable, 1=enable.
@@ -185,7 +186,7 @@ BAY_POWEROFF_ON_BAT=0
 # Optical drive device to power off (default sr0).
 BAY_DEVICE="sr0"
 
-# Runtime Power Management for PCI(e) bus devices: on=disable, auto=enable
+# Runtime Power Management for PCI(e) bus devices: on=disable, auto=enable.
 RUNTIME_PM_ON_AC=on
 RUNTIME_PM_ON_BAT=auto
 
@@ -209,19 +210,19 @@ USB_AUTOSUSPEND=1
 #USB_BLACKLIST="1111:2222 3333:4444"
 
 # Bluetooth devices are excluded from USB autosuspend:
-#   0=do not exclude, 1=exclude
+#   0=do not exclude, 1=exclude.
 USB_BLACKLIST_BTUSB=0
 
 # Phone devices are excluded from USB autosuspend:
-#   0=do not exclude, 1=exclude (enable charging)
+#   0=do not exclude, 1=exclude (enable charging).
 USB_BLACKLIST_PHONE=0
 
 # Printers are excluded from USB autosuspend:
-#   0=do not exclude, 1=exclude
+#   0=do not exclude, 1=exclude.
 USB_BLACKLIST_PRINTER=1
 
 # WWAN devices are excluded from USB autosuspend:
-#   0=do not exclude, 1=exclude
+#   0=do not exclude, 1=exclude.
 USB_BLACKLIST_WWAN=1
 
 # Include listed devices into USB autosuspend even if already excluded
@@ -247,22 +248,22 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 # Separate multiple devices with spaces.
 #DEVICES_TO_ENABLE_ON_STARTUP="wifi"
 
-# Radio devices to disable on shutdown: bluetooth, wifi, wwan
+# Radio devices to disable on shutdown: bluetooth, wifi, wwan.
 # (workaround for devices that are blocking shutdown).
 #DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth wifi wwan"
 
-# Radio devices to enable on shutdown: bluetooth, wifi, wwan
+# Radio devices to enable on shutdown: bluetooth, wifi, wwan.
 # (to prevent other operating systems from missing radios).
 #DEVICES_TO_ENABLE_ON_SHUTDOWN="wwan"
 
-# Radio devices to enable on AC: bluetooth, wifi, wwan
+# Radio devices to enable on AC: bluetooth, wifi, wwan.
 #DEVICES_TO_ENABLE_ON_AC="bluetooth wifi wwan"
 
-# Radio devices to disable on battery: bluetooth, wifi, wwan
+# Radio devices to disable on battery: bluetooth, wifi, wwan.
 #DEVICES_TO_DISABLE_ON_BAT="bluetooth wifi wwan"
 
 # Radio devices to disable on battery when not in use (not connected):
-# bluetooth, wifi, wwan
+#   bluetooth, wifi, wwan.
 #DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE="bluetooth wifi wwan"
 
 # Battery charge thresholds (ThinkPad only, tp-smapi or acpi-call kernel module
@@ -275,16 +276,16 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 #START_CHARGE_THRESH_BAT1=75
 #STOP_CHARGE_THRESH_BAT1=80
 
-# Restore charge thresholds when AC is unplugged: 0=disable, 1=enable
+# Restore charge thresholds when AC is unplugged: 0=disable, 1=enable.
 #RESTORE_THRESHOLDS_ON_BAT=1
 
 # ------------------------------------------------------------------------------
 # tlp-rdw - Parameters for the radio device wizard
-# Possible devices: bluetooth, wifi, wwan
+# Possible devices: bluetooth, wifi, wwan.
 
 # Hints:
-# - Parameters are disabled by default, remove the leading # to enable them.
-# - Separate multiple radio devices with spaces.
+# - Parameters are disabled by default, remove the leading # to enable them
+# - Separate multiple radio devices with spaces
 
 # Radio devices to disable on connect.
 #DEVICES_TO_DISABLE_ON_LAN_CONNECT="wifi wwan"
