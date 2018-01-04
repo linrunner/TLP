@@ -2616,7 +2616,7 @@ discharge_battery () { # discharge battery
     trap cancel_force_discharge INT # enable ^C hook
 
     # wait for start == while status not "discharging"
-    while ! bat_discharging $bat_str; do :; done
+    while ! bat_discharging $bat_str; do sleep 0.5; done
     echo_debug "bat" "discharge_battery.running($bat_str)"
 
     # wait for completion == while status "discharging"
@@ -2663,7 +2663,7 @@ discharge_battery () { # discharge battery
             fi
         fi
         echo "Press Ctrl+C to cancel."
-        sleep 2
+        sleep 5
     done
 
     trap - INT # remove ^C hook
