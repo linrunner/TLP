@@ -98,11 +98,11 @@ NMI_WATCHDOG=0
 ENERGY_PERF_POLICY_ON_AC=performance
 ENERGY_PERF_POLICY_ON_BAT=power
 
-# Hard disk devices; separate multiple devices with spaces (default: sda).
+# Disk devices; separate multiple devices with spaces (default: sda).
 # Devices can be specified by disk ID also (lookup with: tlp diskid).
 DISK_DEVICES="sda sdb"
 
-# Hard disk advanced power management level: 1..254, 255 (max saving, min, off).
+# Disk advanced power management level: 1..254, 255 (max saving, min, off).
 # Levels 1..127 may spin down the disk; 255 allowable on most drives.
 # Separate values for multiple disks with spaces. Use the special value 'keep'
 # to keep the hardware default for the particular disk.
@@ -124,18 +124,18 @@ DISK_APM_LEVEL_ON_BAT="128 128"
 # to keep the kernel default scheduler for the particular disk.
 #DISK_IOSCHED="cfq cfq"
 
-# SATA link power management (LPM):
+# AHCI link power management (ALPM) for disk devices:
 #   min_power, med_power_with_dipm(*), medium_power, max_performance.
 # (*) Kernel >= 4.15 required, then recommended.
 # Multiple values separated with spaces are tried sequentially until success.
 SATA_LINKPWR_ON_AC="med_power_with_dipm max_performance"
 SATA_LINKPWR_ON_BAT="med_power_with_dipm min_power"
 
-# Exclude SATA host devices from link power management.
+# Exclude host devices from AHCI link power management.
 # Separate multiple hosts with spaces.
 #SATA_LINKPWR_BLACKLIST="host1"
 
-# Runtime Power Management for AHCI controllers and disks:
+# Runtime Power Management for AHCI host and disks devices:
 #   on=disable, auto=enable.
 # EXPERIMENTAL ** WARNING: auto will most likely cause system lockups/data loss.
 #AHCI_RUNTIME_PM_ON_AC=on
