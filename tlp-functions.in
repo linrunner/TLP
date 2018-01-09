@@ -477,9 +477,10 @@ lock_tlp () { # get exclusive lock: blocking with timeout
     create_rundir
     # open file for writing and attach fd 9
     { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null
-    # lock fd 9 exclusive and blocking, wait $LOCKTIME secs to obtain the lock
-    if $FLOCK -x -w $LOCKTIMEOUT 9 ; then
-        echo_debug "lock" "lock_tlp.locked"
+    # fopen/attach successful --> lock fd 9 exclusive and blocking,
+    # wait $LOCKTIME secs to obtain the lock
+    if [ $? -eq 0 ] && $FLOCK -x -w $LOCKTIMEOUT 9 ; then
+        echo_debug "lock" "lock_tlp.success"
         return 0
     else
         echo_debug "lock" "lock_tlp.failed"
@@ -494,9 +495,9 @@ lock_tlp_nb () { # get exclusive lock: non-blocking
     create_rundir
     # open file for writing and attach fd 9
     { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null
-    # lock fd 9 exclusive and non-blocking
-    if $FLOCK -x -n 9 ; then
-        echo_debug "lock" "lock_tlp_nb.locked"
+    # fopen/attach successful --> lock fd 9 exclusive and non-blocking
+    if [ $? -eq 0 ] && $FLOCK -x -n 9 ; then
+        echo_debug "lock" "lock_tlp_nb.success"
         return 0
     else
         echo_debug "lock" "lock_tlp_nb.failed"
@@ -1162,12 +1163,13 @@ set_disk_io_sched () { # set disk io scheduler
 set_sata_link_power () { # set sata link power management
     # $1: 0=ac mode, 1=battery mode
 
+    local pm="$1"
     local host host_bl hostid linkpol pwr rc
     local pwrlist=""
     local pwr_bl=""
     local ctrl_avail="0"
 
-    if [ "$1" = "1" ]; then
+    if [ "$pm" = "1" ]; then
         pwrlist=${SATA_LINKPWR_ON_BAT:-}
     else
         pwrlist=${SATA_LINKPWR_ON_AC:-}
@@ -1175,13 +1177,15 @@ set_sata_link_power () { # set sata link power management
 
     if [ -z "$pwrlist" ]; then
         # do nothing if unconfigured
-        echo_debug "pm" "set_sata_link_power($1).not_configured"
+        echo_debug "pm" "set_sata_link_power($pm).not_configured"
         return 0
     fi
 
     # LPM blacklist
     host_bl=${SATA_LINKPWR_BLACKLIST:-}
 
+    # copy configured values to args
+    set -- $pwrlist
     # iterate SATA hosts
     for host in /sys/class/scsi_host/host* ; do
         linkpol=$host/link_power_management_policy
@@ -1189,13 +1193,13 @@ set_sata_link_power () { # set sata link power management
             hostid=${host##*/}
             if wordinlist "$hostid" "$host_bl"; then
                 # host blacklisted --> skip
-                echo_debug "pm" "set_sata_link_power($1).black: $host"
+                echo_debug "pm" "set_sata_link_power($pm).black: $host"
                 ctrl_avail="1"
             else
                 # host not blacklisted --> iterate all configured values
-                for pwr in $pwrlist; do
+                for pwr in "$@"; do
                     { printf '%s\n' "$pwr" > $linkpol; } 2> /dev/null; rc=$?
-                    echo_debug "pm" "set_sata_link_power($1).$pwr: $host; rc=$rc"
+                    echo_debug "pm" "set_sata_link_power($pm).$pwr: $host; rc=$rc"
                     if [ $rc -eq 0 ]; then
                         # write successful --> goto next host
                         ctrl_avail="1"
@@ -1203,14 +1207,14 @@ set_sata_link_power () { # set sata link power management
                     else
                         # write failed --> don't use this value for remaining hosts
                         # and try next value
-                        pwrlist=$(echo "$pwrlist" | sed -r 's/'$pwr'\s*//g')
+                        shift
                     fi
                 done
             fi
         fi
     done
 
-    [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_sata_link_power($1).not_available"
+    [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_sata_link_power($pm).not_available"
     return 0
 }
 

@@ -152,7 +152,7 @@ elif cmd_exists $NMCLI ; then
 else
     # nmcli is not available
     itype="unknown"
-    echo_debug "nm" "rdw_nm($iface)$action: : type=$itype [none]"
+    echo_debug "nm" "rdw_nm($iface)$action: type=$itype [none]"
 fi
 
 case $action in
