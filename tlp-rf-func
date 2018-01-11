@@ -80,7 +80,13 @@ get_devc () { # get control device for radio type
 get_devs () { # get radio device state -- $1: rftype; retval $devs: 0=off/1=on
     if [ -n "$devc" ]; then
         devs=$(cat $devc 2> /dev/null)
-        [ "$rfkdev" = "0" ] && devs=$(($devs ^ $devoff))
+        case "$devs" in
+            0|1) # invert state when not a rfkill device
+                [ "$rfkdev" = "0" ] && devs=$(($devs ^ $devoff))
+                ;;
+            2) ;; # hard blocked device
+            *) devs=3 # invalid state
+        esac
     fi
 
     echo_debug "rf" "get_devs($1) = $devs"
@@ -132,7 +138,7 @@ device_switch () { # switch radio type state
                    # $1: rftype, $2: 1/on/0/off/toggle
                    # $3: lock id, $4: lock duration
                    # rc: 0=switched/1=invalid device or operation/
-                   #     2=hard blocked/4=no change
+                   #     2=hard blocked/3=invalid state/4=no change
                    # retval $devc, $devs: 0=off/1=on
 
     local curst newst devn
@@ -157,10 +163,13 @@ device_switch () { # switch radio type state
     get_devs $1
     curst=$devs
 
-    # quit if device is hard blocked
-    if [ "$curst" = "2" ]; then
-        echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=2"
-        return 2
+    # quit if device state is hard blocked or invalid
+    if [ $devs -ge 2 ]; then
+        case $devs in
+            2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$devs" ;;
+            *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$devs" ;;
+        esac
+        return $devs
     fi
 
     # determine desired device state
@@ -170,7 +179,7 @@ device_switch () { # switch radio type state
         toggle) newst=$(($curst ^ 1)) ;;
     esac
 
-    # wifi, wwan: before rfkill -- notify NM of desired state
+    # wifi, wwan: before rfkill (only if X_configured) -- notify NM of desired state
     if [ "$X_USE_NMCLI" = "1" ] && [ "$1" != "bluetooth" ]; then
         case $newst in
             1) invoke_nmcli $1 on  ;;
@@ -180,6 +189,15 @@ device_switch () { # switch radio type state
         get_devs $1
         # update current state
         curst=$devs
+
+        # quit if device state is hard blocked or invalid
+        if [ $devs -ge 2 ]; then
+            case $devs in
+                2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$devs" ;;
+                *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$devs" ;;
+            esac
+            return $devs
+        fi
     fi
 
     # compare current and desired device state
@@ -232,7 +250,7 @@ device_switch () { # switch radio type state
         fi # rfkill not disabled or bluetooth
     fi # states did not match
 
-    # wifi, wwan: after rfill -- notify NM of desired state
+    # wifi, wwan: after rkfill (default) -- notify NM of desired state
     if [ "$X_USE_NMCLI" != "0" ] && [ "$1" != "bluetooth" ]; then
         case $newst in
             1) invoke_nmcli $1 on  ;;
@@ -240,6 +258,15 @@ device_switch () { # switch radio type state
         esac
         # record final device state
         get_devs $1
+    fi
+
+    # quit if device state is hard blocked or invalid
+    if [ $devs -ge 2 ]; then
+        case $devs in
+            2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$devs" ;;
+            *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$devs" ;;
+        esac
+        return $devs
     fi
 
     # compare old and new device state
@@ -290,7 +317,7 @@ echo_device_state () { # print radio type state -- $1: rftype, $2: state
             ;;
 
         *)
-            echo "$devstr = unknown state \"$2\""
+            echo "$devstr = invalid state"
     esac
 
     return 0
