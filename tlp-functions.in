@@ -531,23 +531,34 @@ set_timed_lock () { # create timestamp n seconds in the future
     set_run_flag $lock; rc=$?
     echo_debug "lock" "set_timed_lock($1, $2): $lock; rc=$rc"
 
+    # cleanup obsolete locks
+    local time=$(date +%s)
+    for lockfile in $RUNDIR/${1}_timed_lock_*; do
+        if [ -f $lockfile ]; then
+            locktime=${lockfile#${RUNDIR}/${1}_timed_lock_}
+            if [ $time -ge $locktime ]; then
+                rm -f $lockfile
+                echo_debug "lock" "set_timed_lock($1, $2).remove_obsolete: ${lockfile#${RUNDIR}/}"
+            fi
+        fi
+    done
+
     return $rc
 }
 
 check_timed_lock () { # check if active timestamp exists
     # $1: lock id; rc: 0=locked/1=not locked
 
-    local lockid=$1
     local lockfile locktime
     local time=$(date +%s)
 
-    for lockfile in $RUNDIR/${lockid}_timed_lock_*; do
+    for lockfile in $RUNDIR/${1}_timed_lock_*; do
         if [ -f $lockfile ]; then
-            locktime=${lockfile#${RUNDIR}/${lockid}_timed_lock_}
+            locktime=${lockfile#${RUNDIR}/${1}_timed_lock_}
             if [ $time -lt $(( $locktime - 120 )) ]; then
                 # timestamp is more than 120 secs in the future,
                 # something weird has happened -> remove it
-                rm $lockfile
+                rm -f $lockfile
                 echo_debug "lock" "check_timed_lock($1).remove_invalid: ${lockfile#${RUNDIR}/}"
             elif [ $time -lt $locktime ]; then
                 # timestamp in the future -> we're locked
@@ -555,7 +566,7 @@ check_timed_lock () { # check if active timestamp exists
                 return 0
             else
                 # obsolete timestamp -> remove it
-                rm $lockfile
+                rm -f $lockfile
                 echo_debug "lock" "check_timed_lock($1).remove_obsolete: ${lockfile#${RUNDIR}/}"
             fi
         fi
