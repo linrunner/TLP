@@ -293,7 +293,7 @@ sub readStartChargeThreshold($){
 sub readStopChargeThreshold($){
   my @bits = parseStatusHexToBitArray $_[0];
   if($bits[8] != 1 and $bits[9] != 1){
-    die "<start charge threshold unsupported>\n";
+    die "<stop charge threshold unsupported>\n";
   }
   my $val = bitRangeToDec @bits, 0, 7;
   if($val == 0){
