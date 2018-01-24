@@ -811,7 +811,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     done
     echo
 
-    # --- show sata lpm mode
+    # --- show sata alpm mode
     echo "+++ AHCI Link Power Management (ALPM)"
     if stat -t /sys/class/scsi_host/host*/link_power_management_policy > /dev/null 2>&1; then
         for i in /sys/class/scsi_host/host* ; do

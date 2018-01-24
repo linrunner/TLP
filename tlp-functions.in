@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="1.0.903"
+readonly TLPVER="1.1"
 
 readonly CONFFILE=@TLP_CONF@
 readonly RUNDIR=@TLP_RUN@
@@ -1171,7 +1171,7 @@ set_disk_io_sched () { # set disk io scheduler
 
 # --- Device Power Management
 
-set_sata_link_power () { # set sata link power management
+set_sata_link_power () { # set ahci link power management
     # $1: 0=ac mode, 1=battery mode
 
     local pm="$1"
@@ -1192,7 +1192,7 @@ set_sata_link_power () { # set sata link power management
         return 0
     fi
 
-    # LPM blacklist
+    # ALPM blacklist
     host_bl=${SATA_LINKPWR_BLACKLIST:-}
 
     # copy configured values to args
