@@ -1,4 +1,4 @@
-TLP README - 09.01.2018
+TLP README - 25.01.2018
 
 TLP brings you the benefits of advanced power management for Linux without the need
 to understand every technical detail. TLP comes with a default configuration already
@@ -11,24 +11,22 @@ Separate settings profiles depending on the power source AC/battery:
 - Kernel laptop mode and dirty buffer params
 - Processor frequency scaling including "turbo boost" / "turbo core"
 - Limit max/min P-state to control power dissipation of the CPU - intel_pstate only
-- HWP energy performance hints - Kernel 4.10 and Intel Skylake CPU or newer
+- HWP energy performance hints
 - Power aware process scheduler for multi-core/hyper-threading
 - Processor performance versus energy savings policy (x86_energy_perf_policy)
-- Hard disk advanced power magement level and spin down timeout (per disk)
+- Hard disk advanced power magement level (APM) and spin down timeout (per disk)
 - AHCI link power management (ALPM) with device blacklist
 - AHCI runtime power management for host controllers and disks *EXPERIMENTAL*
 - PCIe active state power management (PCIe ASPM)
 - Runtime power management for PCI(e) bus devices
-- Radeon graphics KMS power management - not fglrx
-- Radeon graphics dynamic power management - not fglrx
-- Wifi power saving mode -  depending on kernel/driver
+- Radeon graphics power management (KMS and DPM)
+- Wifi power saving mode
 - Enable/disable integrated radio devices (excluding connected devices)
 - Power off optical drive in UltraBay/MediaBay
-- Audio power saving mode - hda_intel, ac97
+- Audio power saving mode
 
 Additional functions:
 - I/O scheduler (per disk)
-- X86 energy perf policy
 - USB autosuspend with device blacklist/whitelist (input devices excluded automatically)
 - Enable or disable integrated radio devices upon system startup and shutdown
 - Restore radio device state on system startup (from previous shutdown)
