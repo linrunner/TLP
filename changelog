@@ -6,6 +6,7 @@
 
   * Bugfixes
     - Issue #320: AC mode not detected with USB charger
+    - tlp-stat: filter HWP lines from x86_energy_perf_policy output
 
 +++ 1.1 --- 24.01.2018 +++
 

@@ -615,7 +615,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                 # - replace numbers with descriptive strings
                 # - remove ":"
                 # - indent and align
-                $ENERGYPERF -r 2>/dev/null | \
+                $ENERGYPERF -r 2>/dev/null | grep -v 'HWP_' | \
                     sed -r 's/://;
                             s/(0x0000000000000000|EPB 0)/performance/;
                             s/(0x0000000000000004|EPB 4)/balance-performance/;
