@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="1.1"
+readonly TLPVER="1.1.900"
 
 readonly CONFFILE=@TLP_CONF@
 readonly RUNDIR=@TLP_RUN@
@@ -336,7 +336,7 @@ get_sys_power_supply () { # get current power supply
     for psrc in /sys/class/power_supply/*; do
         # -f $psrc/type not necessary - cat 2>.. handles this
         case "$(cat $psrc/type 2> /dev/null)" in
-            Mains)
+            Mains|USB)
                 # AC detected, check if online;
                 # exclude MacBook Pro 2017 sbs-charger
                 if [ "$(cat $psrc/online 2> /dev/null)" = "1" ] \
