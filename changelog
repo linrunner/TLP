@@ -1,8 +1,9 @@
-+++ 1.2 --- 08.02.2018 +++
++++ 1.2 --- 27.02.2018 +++
 
 *** Development version ***
 
   * Features
+    - tlp-stat: check systemd-rfkill.socket masked status
 
   * Bugfixes
     - Issue #320: AC mode not detected with USB charger
