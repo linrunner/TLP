@@ -41,7 +41,7 @@ readonly SMAPIDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
 
 readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T23|T[346][0123][p]?|T[45][01]0[s]?|W[57]0[01]|X[346][012][s]?( Tablet)?|X1[02]0e|X[23]0[01][s]?( Tablet)?|Z6[01][mpt])$'
-readonly RE_TPACPI_ONLY='^(13.*|(Edge )?E[1345][234567][05][ps]?|Helix.*|L[45][34567]0|P[75][01][s]?|S2|(Edge )?S[245][345][01]*|T[45][34567][01][psu]?|W5[345][01][s]?|X1 Carbon.*|X2[34567]0[s]?( Tablet)?|.*Yoga.*)$'
+readonly RE_TPACPI_ONLY='^(13.*|25|(Edge )?E[1345][234567][05][ps]?|Helix.*|L[45][34567]0|P[75][01][s]?|S2|(Edge )?S[245][345][01]*|T[45][34567][01][psu]?|W5[345][01][s]?|X1 Carbon.*|X2[34567]0[s]?( Tablet)?|.*Yoga.*)$'
 readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
 readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
 
