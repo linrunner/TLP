@@ -1032,8 +1032,6 @@ get_disk_dev () { # translate disk id to device (sdX)
         disk_dev=$1
         disk_id=""
     fi
-    # strip partition number
-    disk_dev=$(printf '%s' "$disk_dev" | sed -r 's/[1-9][0-9]*$//')
 }
 
 set_disk_apm_level () { # set disk apm level

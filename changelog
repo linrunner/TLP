@@ -9,9 +9,10 @@
       - Check systemd-rfkill.socket masked status
 
   * Bugfixes
+    - Issue #319: get_disk_dev logic is not compatible with NVMe devices
     - Issue #320: AC mode not detected with USB charger
     - Issue #331: Process '/usr/bin/tlp auto' failed with exit code 4
-    - Issue #332: fix zsh parse error in tlp diskid
+    - Issue #332: zsh parse error in tlp diskid
     - tlp-stat: filter HWP lines from x86_energy_perf_policy output
 
 +++ 1.1 --- 24.01.2018 +++
