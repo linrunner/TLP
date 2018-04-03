@@ -187,8 +187,6 @@ case "$mode" in
                 fi
             fi
             unlock_tlp
-        else
-            exitcode=4
         fi
         ;;
 
@@ -206,7 +204,6 @@ case "$mode" in
             echo_started_mode $pwrmode
         else
             echo_tlp_locked
-            exitcode=4
         fi
         ;;
 
@@ -223,7 +220,6 @@ case "$mode" in
             echo_started_mode 1
         else
             echo_tlp_locked
-            exitcode=4
         fi
         ;;
 
@@ -240,7 +236,6 @@ case "$mode" in
             echo_started_mode 0
         else
             echo_tlp_locked
-            exitcode=4
         fi
         ;;
 
@@ -252,8 +247,6 @@ case "$mode" in
             apply_common_settings 0
             suspend_drivebay $pwrmode
             unlock_tlp
-        else
-            exitcode=4
         fi
         ;;
 
@@ -266,8 +259,6 @@ case "$mode" in
             apply_common_settings $pwrmode
             resume_drivebay $pwrmode
             unlock_tlp
-        else
-            exitcode=4
         fi
         ;;
 

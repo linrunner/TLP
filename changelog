@@ -10,6 +10,7 @@
 
   * Bugfixes
     - Issue #320: AC mode not detected with USB charger
+    - Issue #331: Process '/usr/bin/tlp auto' failed with exit code 4
     - Issue #332: fix zsh parse error in tlp diskid
     - tlp-stat: filter HWP lines from x86_energy_perf_policy output
 
