@@ -20,10 +20,10 @@ Depends: ${misc:Depends},
          usbutils
 Recommends: tlp-rdw,
             ethtool,
-            smartmontools,
             ${dist:Recommends}
 Suggests: tp-smapi-dkms,
-          acpi-call-dkms
+          acpi-call-dkms,
+          smartmontools
 Conflicts: laptop-mode-tools
 Description: Save battery power on laptops
  TLP is an advanced power management tool for Linux. It comes with a
