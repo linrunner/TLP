@@ -1,0 +1,2 @@
+# This unusual WantedBy target is intentional
+tlp: systemd-service-file-refers-to-unusual-wantedby-target lib/systemd/system/tlp-sleep.service sleep.target
