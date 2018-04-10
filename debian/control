@@ -11,19 +11,9 @@ Homepage: http://linrunner.de/tlp
 
 Package: tlp
 Architecture: all
-Depends: ${misc:Depends},
-         lsb-base,
-         hdparm,
-         iw | wireless-tools,
-         pciutils,
-         rfkill,
-         usbutils
-Recommends: tlp-rdw,
-            ethtool,
-            ${dist:Recommends}
-Suggests: tp-smapi-dkms,
-          acpi-call-dkms,
-          smartmontools
+Depends: lsb-base, hdparm, iw | wireless-tools, pciutils, rfkill, usbutils, ${misc:Depends}
+Recommends: tlp-rdw, ethtool, ${dist:Recommends}
+Suggests: tp-smapi-dkms, acpi-call-dkms, smartmontools
 Conflicts: laptop-mode-tools
 Description: Save battery power on laptops
  TLP is an advanced power management tool for Linux. It comes with a
@@ -43,12 +33,10 @@ Description: Save battery power on laptops
 Package: tlp-rdw
 Architecture: all
 Pre-Depends: dpkg (>= 1.17.14)
-Depends: ${misc:Depends},
-         network-manager,
-         tlp
+Depends: network-manager, tlp, ${misc:Depends}
 Description: Radio device wizard
  Radio device wizard is an add-on to TLP. It provides event based
- switching of
+ switching of:
   - bluetooth, wifi, wwan radio devices
   - upon network connect/disconnect
   - and dock/undock.
