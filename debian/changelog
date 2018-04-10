@@ -3,7 +3,24 @@ tlp (1.1.900-1) unstable; urgency=low
   [Thomas Koch]
   * Track development version
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 08 Feb 2018 17:29:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 10 Apr 2018 07:11:42 +0200
+
+tlp (1.1-2) unstable; urgency=medium
+
+  Merge changes from Debian.
+
+  [Raphaël Halimi]
+  * [59b316a] Demote smartmontools from Recommends to Suggests
+    smartmontools dependencies end up pulling in a mail server, which may
+    not be wanted on desktop installations (LP: 1758798)
+  * [56bc43f] debian/control: cosmetic changes
+  * [a78888a] Override lintian warning about unusual WantedBy target
+  * [7b94358] Override lintian warning about missing test suite
+
+  [Thomas Koch]
+  * [b407a57] debian/control: point Vcs-* to github.com/linrunner/tlp
+
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 10 Apr 2018 07:11:42 +0200
 
 tlp (1.1-1) unstable; urgency=low
 
