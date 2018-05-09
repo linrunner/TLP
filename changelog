@@ -1,10 +1,11 @@
-+++ 1.2 --- 03.04.2018 +++
++++ 1.2 --- 09.05.2018 +++
 
 *** Development version ***
 
   * Features
     ThinkPad Battery:
       - Detect ThinkPad 25 (Issue #326)
+      - Detect ThinkPad *80 models (Coffee Lake)
     tlp-stat:
       - Check systemd-rfkill.socket masked status
 
