@@ -141,9 +141,9 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
                 else
                     # other parms
                     if [ $(( $val & 1 )) -ne 0 ]; then
-                        echo -n "enabled"
-                    else
                         echo -n "disabled"
+                    else
+                        echo -n "enabled"
                     fi
                     [ $(( $val & 2 )) -ne 0 ] && echo -n " + deep"
                     [ $(( $val & 4 )) -ne 0 ] && echo -n " + deepest"
