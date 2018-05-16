@@ -145,9 +145,10 @@ SATA_LINKPWR_ON_BAT="med_power_with_dipm min_power"
 AHCI_RUNTIME_PM_TIMEOUT=15
 
 # PCI Express Active State Power Management (PCIe ASPM):
-#   default, performance, powersave.
-PCIE_ASPM_ON_AC=performance
-PCIE_ASPM_ON_BAT=powersave
+#   default(*), performance, powersave.
+# (*) keeps BIOS ASPM defaults (recommended)
+#PCIE_ASPM_ON_AC=default
+#PCIE_ASPM_ON_BAT=default
 
 # Radeon graphics clock speed (profile method): low, mid, high, auto, default;
 # auto = mid on BAT, high on AC; default = use hardware defaults.

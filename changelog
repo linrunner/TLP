@@ -1,4 +1,4 @@
-+++ 1.2 --- 09.05.2018 +++
++++ 1.2 --- 16.05.2018 +++
 
 *** Development version ***
 
@@ -14,6 +14,7 @@
     - Issue #320: AC mode not detected with USB charger
     - Issue #331: Process '/usr/bin/tlp auto' failed with exit code 4
     - Issue #332: zsh parse error in tlp diskid
+    - Issue #344: keep ASPM default to enable deeper C-states on AC
     - tlp-stat: filter HWP lines from x86_energy_perf_policy output
 
 +++ 1.1 --- 24.01.2018 +++
