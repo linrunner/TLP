@@ -195,7 +195,7 @@ print_tp_batstate () { # print battery charging state with an explanation when
             printf "%-59s = %s" "$sysf" "$val"
             # Explain content if necessary
             case $val in
-                Unknown) # "Unknown" means a threshold forbids charging
+                "Unknown"|"Not charging") # a threshold forbids charging
                     printf " (threshold effective)\n"
                     ;;
 
@@ -443,6 +443,7 @@ if [ "$needs_root_priv" = "1" ]; then
     check_tpacpi
     check_tpsmapi
 fi
+check_natacpi
 
 echo "--- TLP $TLPVER --------------------------------------------"
 echo
@@ -1099,9 +1100,15 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     efsum=0
     ensum=0
 
-    # --- show availability of ThinkPad battery features
+    # --- show availability of (ThinkPad) battery features
     if is_thinkpad; then
         echo "+++ ThinkPad Battery Features"
+    else
+        echo "+++ Battery Features"
+    fi
+
+    # ThinkPad-specific
+    if is_thinkpad; then
         echo -n "tp-smapi   = "
         case $tpsmapi in
             0)   echo "active" ;;
@@ -1119,8 +1126,17 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
             127) echo "inactive (kernel module 'acpi_call' not installed)" ;;
             255) echo "inactive (unsupported hardware)" ;;
         esac
-        echo
     fi
+
+    # native ACPI kernel battery API
+    echo -n "natacpi    = "
+    case $natacpi in
+        0)   echo "active (thresholds and force_discharge)" ;;
+        1)   echo "active (thresholds only)" ;;
+        254) echo "inactive (unsupported hardware)" ;;
+        255) echo "inactive (unsupported kernel)" ;;
+    esac
+    echo
 
     if [ $tpsmapi -eq 0 ]; then
         # it's a ThinkPad with tp-smapi
@@ -1352,7 +1368,7 @@ if [ "$show_all" = "1" ]; then
     fi
 
     if is_thinkpad; then
-        # add ThinkPad specific suggestions -- $tpmodel preset by check_thinkpad()
+        # add ThinkPad specific suggestions -- $_tpmodel preset by check_thinkpad()
         if supports_tpsmapi_only; then
             # tp-smapi only capable models
             [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
