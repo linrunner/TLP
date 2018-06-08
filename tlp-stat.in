@@ -175,12 +175,12 @@ printsysf () { # output a sysfile
     return 0
 }
 
-print_tp_batstate () { # print battery charging state with an explanation when
-    # a threshold inhibits charging
-    # $1: sysfile; $2: 1=ThinkPad battery/0=other
+print_batstate () { # print battery charging state with
+    # an explanation when a threshold inhibits charging
+    # $1: sysfile
     local sysf val
 
-    # Check if bat state sysfile exists
+    # check if bat state sysfile exists
     if [ -f $1 ]; then
         sysf=$1
     else
@@ -215,12 +215,12 @@ print_tp_batstate () { # print battery charging state with an explanation when
     return 0
 }
 
-print_tpacpi_thresholds () { # formatted output of ThinkPad charging thresholds
-    # - tpcapi-bat variant
-    # $1: BAT0/BAT1; $2: bat # = 1/2
-    local start_thresh stop_thresh force
+print_tpacpi_thresh () { # formatted output of ThinkPad charging thresholds
+    # - tpacpi-bat variant
+    # $1: BAT0/BAT1; $2: bat# = 1/2
+    local start_thresh stop_thresh
 
-    read_tpacpi_threshold ST $2
+    get_tpacpi_threshold ST $2
     start_thresh=$?
     if [ $start_thresh -ne 255 ]; then
         [ $start_thresh -eq 0 ] && start_thresh=96
@@ -229,7 +229,7 @@ print_tpacpi_thresholds () { # formatted output of ThinkPad charging thresholds
         printf "%-59s = (not available)\n" "tpacpi-bat.${1}.startThreshold"
     fi
 
-    read_tpacpi_threshold SP $2
+    get_tpacpi_threshold SP $2
     stop_thresh=$?
     if [ $stop_thresh -ne 255 ]; then
         [ $stop_thresh -eq  0 ] && stop_thresh=100
@@ -237,6 +237,14 @@ print_tpacpi_thresholds () { # formatted output of ThinkPad charging thresholds
     else
         printf "%-59s = (not available)\n" "tpacpi-bat.${1}.stopThreshold"
     fi
+
+    return 0
+}
+
+print_tpacpi_dischg () { # formatted output of ThinkPad force_discharge
+    # - tpacpi-bat variant
+    # $1: BAT0/BAT1; $2: bat# = 1/2
+    local force
 
     get_force_discharge $2; force=$?
     if [ $force -ne 2 ]; then
@@ -440,10 +448,8 @@ if [ "$needs_root_priv" = "1" ]; then
     check_root
     load_modules $MOD_MSR $MOD_TEMP
     check_thinkpad
-    check_tpacpi
-    check_tpsmapi
+    check_battery_features
 fi
-check_natacpi
 
 echo "--- TLP $TLPVER --------------------------------------------"
 echo
@@ -1101,153 +1107,65 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     ensum=0
 
     # --- show availability of (ThinkPad) battery features
-    if is_thinkpad; then
-        echo "+++ ThinkPad Battery Features"
-    else
-        echo "+++ Battery Features"
-    fi
-
-    # ThinkPad-specific
-    if is_thinkpad; then
-        echo -n "tp-smapi   = "
-        case $tpsmapi in
-            0)   echo "active" ;;
-            2)   echo "inactive (kernel module 'tp_smapi' load error)" ;;
-            127) echo "inactive (kernel module 'tp_smapi' not installed)" ;;
-            255) echo "inactive (unsupported hardware)" ;;
-            *)   echo "unknown status"
-        esac
-
-        echo -n "tpacpi-bat = "
-        case $tpacpi in
-            0)   echo "active" ;;
-            2)   echo "inactive (kernel module 'acpi_call' load error)" ;;
-            4)   echo "inactive (disabled by user configuration)" ;;
-            127) echo "inactive (kernel module 'acpi_call' not installed)" ;;
-            255) echo "inactive (unsupported hardware)" ;;
-        esac
-    fi
+    echo "+++ Battery Features"
 
     # native ACPI kernel battery API
-    echo -n "natacpi    = "
-    case $natacpi in
-        0)   echo "active (thresholds and force_discharge)" ;;
-        1)   echo "active (thresholds only)" ;;
-        254) echo "inactive (unsupported hardware)" ;;
-        255) echo "inactive (unsupported kernel)" ;;
+    case $_natacpi in
+        0)   echo "natacpi    = active (thresholds and force_discharge)" ;;
+        1)   echo "natacpi    = active (thresholds only)" ;;
+        32)  echo "natacpi    = inactive (disabled by user configuration)" ;;
+        128) echo "natacpi    = inactive (no kernel support)" ;;
+        254) echo "natacpi    = inactive (Laptop not supported)" ;;
+        *)   echo "natacpi    = unknown status" ;;
+    esac
+
+    # ThinkPad-specific
+    case $_tpacpi in
+        0)   echo "tpacpi-bat = active" ;;
+        32)  echo "tpacpi-bat = inactive (disabled by user configuration)" ;;
+        64)  echo "tpacpi-bat = inactive (kernel module 'acpi_call' load error)" ;;
+        128) echo "tpacpi-bat = inactive (kernel module 'acpi_call' not installed)" ;;
+        254) echo "tpacpi-bat = inactive (ThinkPad not supported)" ;;
+        255) echo "tpacpi-bat = inactive (superseded by natacpi)" ;;
+        *)   echo "tpacpi-bat = unknown status" ;;
+    esac
+    case $_tpsmapi in
+        0)   echo "tp-smapi   = active" ;;
+        32)  echo "tp-smapi   = inactive (disabled by user configuration)" ;;
+        64)  echo "tp-smapi   = inactive (kernel module 'tp_smapi' load error)" ;;
+        128) echo "tp-smapi   = inactive (kernel module 'tp_smapi' not installed)" ;;
+        254) echo "tp-smapi   = inactive (ThinkPad not supported)" ;;
+        255) echo "tp-smapi   = inactive (superseded by natacpi)" ;;
+        *)   echo "tp-smapi   = unknown status" ;;
     esac
     echo
 
-    if [ $tpsmapi -eq 0 ]; then
-        # it's a ThinkPad with tp-smapi
+    case $_bm_read in
+        natacpi) batglob="$ACPIBATDIR/*" ;;
+        tpsmapi) batglob="$SMAPIDIR/BAT[01]" ;;
+    esac
 
-        for batd in $SMAPIDIR/BAT[01]; do
-            if [ -d $batd ]; then
-                batt=${batd##/*/}
+    # -- show battery data
+    for batd in $batglob; do # iterate all batteries
 
-                if check_tp_battery $batt; then # battery is present
-                    case $bat_idx in
-                        1) echo "+++ ThinkPad Battery Status: $batt (Main / Internal)" ;;
-                        2) echo "+++ ThinkPad Battery Status: $batt (Ultrabay / Slice / Replaceable)" ;;
-                        0) echo "+++ ThinkPad Battery Status: $batt" ;;
-                    esac
+        [ -d $batd ] || continue # skip if battery directory does not exist
+        batt=${batd##/*/}
+        battery_present $batt || continue # skip if battery is not present
 
-                    printparm "%-59s = ##%s##" $batd/manufacturer
-                    printparm "%-59s = ##%s##" $batd/model
-                    printparm "%-59s = ##%s##" $batd/manufacture_date
-                    printparm "%-59s = ##%s##" $batd/first_use_date
-                    printparm "%-59s = ##%6d##" $batd/cycle_count
+        if is_thinkpad && [ "$_bm_thresh" != 'none' ]; then
+            # ThinkPad with battery feature support
+            case $_bat_idx in
+                1) echo "+++ ThinkPad Battery Status: $batt (Main / Internal)" ;;
+                2) echo "+++ ThinkPad Battery Status: $batt (Ultrabay / Slice / Replaceable)" ;;
+                0) echo "+++ ThinkPad Battery Status: $batt" ;;
+            esac
+        else
+            # laptop or ThinkPad without feature support
+            echo "+++ Battery Status"
+        fi
 
-                    if [ -f $batd/temperature ]; then
-                        perl -e 'printf ("%-59s = %6d [°C]\n", "'$batd/temperature'", '$(catsysfd $batd/temperature 0)' / 1000.0);'
-                    fi
-
-                    printparm "%-59s = ##%6d## [mWh]" $batd/design_capacity
-                    printparm "%-59s = ##%6d## [mWh]" $batd/last_full_capacity
-                    printparm "%-59s = ##%6d## [mWh]" $batd/remaining_capacity
-                    printparm "%-59s = ##%6d## [%%]" $batd/remaining_percent
-                    printparm "%-59s = ##%6s## [min]" $batd/remaining_running_time_now
-                    printparm "%-59s = ##%6s## [min]" $batd/remaining_charging_time
-                    printparm "%-59s = ##%6d## [mW]" $batd/power_now
-                    printparm "%-59s = ##%6d## [mW]" $batd/power_avg
-                    print_tp_batstate $batd/state
-                    echo
-                    if [ $show_verbose -eq 1 ]; then
-                        printparm "%-59s = ##%6s## [mV]" $batd/design_voltage
-                        printparm "%-59s = ##%6s## [mV]" $batd/voltage
-                        printparm "%-59s = ##%6s## [mV]" $batd/group0_voltage
-                        printparm "%-59s = ##%6s## [mV]" $batd/group1_voltage
-                        printparm "%-59s = ##%6s## [mV]" $batd/group2_voltage
-                        printparm "%-59s = ##%6s## [mV]" $batd/group3_voltage
-                        echo
-                    fi
-
-                    if [ $tpacpi -eq 0 ]; then
-                        # --- show ThinkPad charge thresholds via tpacpi-bat
-                        print_tpacpi_thresholds $batt $bat_idx
-                    else
-                        # show thresholds via tp-smapi
-                        printparm "%-59s = ##%6d## [%%]" $batd/start_charge_thresh
-                        printparm "%-59s = ##%6d## [%%]" $batd/stop_charge_thresh
-                        printparm "%-59s = ##%6d##" $batd/force_discharge
-                    fi
-                    echo
-
-                    # store values for charge / capacity calculation below
-                    ed=$(catsysfd $batd/design_capacity 0)
-                    ef=$(catsysfd $batd/last_full_capacity 0)
-                    en=$(catsysfd $batd/remaining_capacity 0)
-                    efsum=$(($efsum + $ef))
-                    ensum=$(($ensum + $en))
-
-                    # show charge + capacity
-                    lcnt=0
-                    if [ $ef -ne 0 ]; then
-                        perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'
-                        lcnt=$(($lcnt+1))
-                    fi
-                    if [ $ed -ne 0 ]; then
-                        perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '$ef' / '$ed');'
-                        lcnt=$(($lcnt+1))
-                    fi
-                    [ $lcnt -gt 0 ] && echo
-
-                    bcnt=$(($bcnt+1))
-                fi
-            fi
-        done
-    elif [ -d $ACPIBATDIR ]; then
-        # --- show ACPI data
-
-        for batd in $ACPIBATDIR/*; do
-            batt=${batd##/*/}
-            tpbat=0
-
-            if check_tp_battery $batt; then
-                # ThinkPad battery is present
-                tpbat=1
-
-                if [ $tpacpi -eq 0 ]; then
-                    # it's a ThinkPad with tpacpi-bat only
-                    case $bat_idx in
-                        1) echo "+++ ThinkPad Battery Status: $batt (Main / Internal)" ;;
-                        2) echo "+++ ThinkPad Battery Status: $batt (Ultrabay / Slice / Replaceable)" ;;
-                        0) echo "+++ ThinkPad Battery Status: $batt" ;;
-                    esac
-                else
-                   # it's a ThinkPad with neither tp-smapi nor tpacpi-bat
-                    echo "+++ Battery Status"
-                fi
-            elif [ -d $batd ] \
-                 && [ "$(cat $batd/type 2> /dev/null)" = "Battery" ] \
-                 && [ "$(cat $batd/present 2> /dev/null )" = "1" ]; then
-                    # it's some other laptop model or brand
-                    echo "+++ Battery Status"
-            else
-                batt="" # power supply is not a battery
-            fi
-
-            if [ -n "$batt" ]; then
+        case $_bm_read in
+            natacpi) # use ACPI data
                 printparm "%-59s = ##%s##" $batd/manufacturer
                 printparm "%-59s = ##%s##" $batd/model_name
 
@@ -1288,13 +1206,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     ed=0
                     ef=0
                     en=0
+                fi
 
-                fi
-                if [ $tpbat -eq 1 ]; then
-                    print_tp_batstate $batd/status
-                else
-                    printparm "%-59s = ##%s##" $batd/status
-                fi
+                print_batstate $batd/status
                 echo
 
                 if [ $show_verbose -eq 1 ]; then
@@ -1302,30 +1216,101 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6s## [mV]" $batd/voltage_now "" 000
                     echo
                 fi
+                ;; # natacpi
 
-                if [ $tpacpi -eq 0 ]; then
-                    # --- show ThinkPad charge thresholds via tpacpi-bat
-                    print_tpacpi_thresholds $batt $bat_idx
+            tpsmapi) # ThinkPad with active tp-smapi
+                printparm "%-59s = ##%s##" $batd/manufacturer
+                printparm "%-59s = ##%s##" $batd/model
+                printparm "%-59s = ##%s##" $batd/manufacture_date
+                printparm "%-59s = ##%s##" $batd/first_use_date
+                printparm "%-59s = ##%6d##" $batd/cycle_count
+
+                if [ -f $batd/temperature ]; then
+                    perl -e 'printf ("%-59s = %6d [°C]\n", "'$batd/temperature'", '$(catsysfd $batd/temperature 0)' / 1000.0);'
+                fi
+
+                printparm "%-59s = ##%6d## [mWh]" $batd/design_capacity
+                printparm "%-59s = ##%6d## [mWh]" $batd/last_full_capacity
+                printparm "%-59s = ##%6d## [mWh]" $batd/remaining_capacity
+                printparm "%-59s = ##%6d## [%%]" $batd/remaining_percent
+                printparm "%-59s = ##%6s## [min]" $batd/remaining_running_time_now
+                printparm "%-59s = ##%6s## [min]" $batd/remaining_charging_time
+                printparm "%-59s = ##%6d## [mW]" $batd/power_now
+                printparm "%-59s = ##%6d## [mW]" $batd/power_avg
+                print_batstate $batd/state
+                echo
+                if [ $show_verbose -eq 1 ]; then
+                    printparm "%-59s = ##%6s## [mV]" $batd/design_voltage
+                    printparm "%-59s = ##%6s## [mV]" $batd/voltage
+                    printparm "%-59s = ##%6s## [mV]" $batd/group0_voltage
+                    printparm "%-59s = ##%6s## [mV]" $batd/group1_voltage
+                    printparm "%-59s = ##%6s## [mV]" $batd/group2_voltage
+                    printparm "%-59s = ##%6s## [mV]" $batd/group3_voltage
                     echo
-                fi # if $tpcacpi
-
-                # show charge + capacity
-                lcnt=0
-                if [ $ef -ne 0 ]; then
-                    perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'
-                    lcnt=$(($lcnt+1))
                 fi
-                if [ $ed -ne 0 ]; then
-                    perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '$ef' / '$ed');'
-                    lcnt=$(($lcnt+1))
-                fi
-                [ $lcnt -gt 0 ] && echo
 
-                bcnt=$(($bcnt+1))
-            fi # if $batt
-        done # $batd
+                # store values for charge / capacity calculation below
+                ed=$(catsysfd $batd/design_capacity 0)
+                ef=$(catsysfd $batd/last_full_capacity 0)
+                en=$(catsysfd $batd/remaining_capacity 0)
+                efsum=$(($efsum + $ef))
+                ensum=$(($ensum + $en))
+                ;; # tp-smapi
 
-    fi # if /sys/class/power_supply
+        esac # $_bm_read
+
+        # --- show thresholds
+        case $_bm_thresh in
+            natacpi)
+                printparm "%-59s = ##%6d## [%%]" $batd/charge_start_threshold
+                printparm "%-59s = ##%6d## [%%]" $batd/charge_stop_threshold
+                ;;
+
+            tpacpi)
+                print_tpacpi_thresh $batt $_bat_idx
+                ;;
+
+            tpsmapi)
+                printparm "%-59s = ##%6d## [%%]" $batd/start_charge_thresh
+                printparm "%-59s = ##%6d## [%%]" $batd/stop_charge_thresh
+                ;;
+
+            none) ;; # nothing to show
+        esac
+
+        # --- show force_discharge
+        case $_bm_dischg in
+            natacpi)
+                printparm "%-59s = ##%6d##" $batd/force_discharge
+                ;;
+
+            tpacpi)
+                print_tpacpi_dischg $batt $_bat_idx
+                ;;
+
+            tpsmapi)
+                printparm "%-59s = ##%6d##" $batd/force_discharge
+                ;;
+
+            none) ;; # nothing to show
+        esac
+
+        # show charge + capacity
+        echo
+        lcnt=0
+        if [ $ef -ne 0 ]; then
+            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'
+            lcnt=$(($lcnt+1))
+        fi
+        if [ $ed -ne 0 ]; then
+            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '$ef' / '$ed');'
+            lcnt=$(($lcnt+1))
+        fi
+        [ $lcnt -gt 0 ] && echo
+
+        bcnt=$(($bcnt+1))
+
+    done # for $batd
 
     if [ $bcnt -eq 0 ]; then
         # no battery detected
@@ -1371,23 +1356,23 @@ if [ "$show_all" = "1" ]; then
         # add ThinkPad specific suggestions -- $_tpmodel preset by check_thinkpad()
         if supports_tpsmapi_only; then
             # tp-smapi only capable models
-            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
+            [ $_tpsmapi -eq 128 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
 
         elif supports_tpacpi_only; then
             # tpacpi-bat only capable models
-            [ $tpacpi -eq 127 ] && suout="${suout}Install acpi-call kernel module for ThinkPad battery features\n"
+            [ $_tpacpi -eq 128 ] && suout="${suout}Install acpi-call kernel module for ThinkPad battery features\n"
 
         elif supports_tpsmapi_and_tpacpi; then
             # tp-smapi and tpacpi-bat capable models
-            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
-            [ $tpacpi -eq 127 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad battery features\n"
+            [ $_tpsmapi -eq 128 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
+            [ $_tpacpi -eq 128 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad battery features\n"
 
         elif supports_no_tp_bat_funcs; then
             : # models that are neither tp_smapi nor tpacpi-bat capable
 
         else
-            # all others assumed tp-smapi capable ...
-            [ $tpsmapi -eq 127 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
+            # all others assumed tpacpi-bat capable ...
+            [ $_tpsmapi -eq 128 ] && suout="${suout}Install acpi-call kernel modules for ThinkPad battery features\n"
 
         fi
     fi # if ThinkPad
