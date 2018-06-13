@@ -1142,13 +1142,13 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
     case $_bm_read in
         natacpi) batglob="$ACPIBATDIR/*" ;;
-        tpsmapi) batglob="$SMAPIDIR/BAT[01]" ;;
+        tpsmapi) batglob="$SMAPIBATDIR/BAT[01]" ;;
     esac
 
     # -- show battery data
     for batd in $batglob; do # iterate all batteries
 
-        [ -d $batd ] || continue # skip if battery directory does not exist
+        [ -d "$batd" ] || continue # skip if battery directory does not exist
         batt=${batd##/*/}
         battery_present $batt || continue # skip if battery is not present
 
@@ -1261,18 +1261,13 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
         # --- show thresholds
         case $_bm_thresh in
-            natacpi)
-                printparm "%-59s = ##%6d## [%%]" $batd/charge_start_threshold
-                printparm "%-59s = ##%6d## [%%]" $batd/charge_stop_threshold
+            natacpi|tpsmapi)
+                printparm "%-59s = ##%6d## [%%]" $_bf_start
+                printparm "%-59s = ##%6d## [%%]" $_bf_stop
                 ;;
 
             tpacpi)
                 print_tpacpi_thresh $batt $_bat_idx
-                ;;
-
-            tpsmapi)
-                printparm "%-59s = ##%6d## [%%]" $batd/start_charge_thresh
-                printparm "%-59s = ##%6d## [%%]" $batd/stop_charge_thresh
                 ;;
 
             none) ;; # nothing to show
@@ -1280,16 +1275,12 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
         # --- show force_discharge
         case $_bm_dischg in
-            natacpi)
-                printparm "%-59s = ##%6d##" $batd/force_discharge
+            natacpi|tpsmapi)
+                printparm "%-59s = ##%6d##" $_bf_dischg
                 ;;
 
             tpacpi)
                 print_tpacpi_dischg $batt $_bat_idx
-                ;;
-
-            tpsmapi)
-                printparm "%-59s = ##%6d##" $batd/force_discharge
                 ;;
 
             none) ;; # nothing to show

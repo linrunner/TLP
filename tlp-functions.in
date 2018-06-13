@@ -37,7 +37,7 @@ readonly FLOCK=flock
 readonly TPACPIBAT=$LIBDIR/tpacpi-bat # LIBDIR is initialized by main program
 
 readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
-readonly SMAPIDIR=/sys/devices/platform/smapi
+readonly SMAPIBATDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
 
 readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T23|T[346][0123][p]?|T[45][01]0[s]?|W[57]0[01]|X[346][012][s]?( Tablet)?|X1[02]0e|X[23]0[01][s]?( Tablet)?|Z6[01][mpt])$'
@@ -2031,7 +2031,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
     #    reading battery data                   --> retval $_bm_read,
     #    reading/writing charging thresholds    --> retval $_bm_thresh,
     #    reading/writing force discharge        --> retval $_bm_dischg:
-    #       ""/natacpi/tpacpi/tpsmapi
+    #       none/natacpi/tpacpi/tpsmapi
     #
     # prerequisite: check_thinkpad()
     # replaces: check_tpsmapi, check_tpacpi
@@ -2069,9 +2069,6 @@ check_battery_features () { # determine which battery feature APIs/tools are
     done
     echo_debug "bat" "check_battery_features.natacpi: $_natacpi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
 
-    # when native kernel ACPI provides all features --> we're done
-    [ $_natacpi -eq 0 ] && return 0
-
     # when not a Thinkpad --> we're done
     is_thinkpad || return 0
 
@@ -2091,7 +2088,6 @@ check_battery_features () { # determine which battery feature APIs/tools are
         # module present --> try tpacpi-bat
         $TPACPIBAT -g FD 1 > /dev/null 2>&1
         _tpacpi=$?
-        echo_debug "bat" "check_battery_features.tpacpi0: $_tpacpi"
         # TODO: handle tpacpi-bat errors (rc=127 when $TPACPIBAT non-existent)
 
         if [ $_tpacpi -eq 0 ] && [ "$DISABLE_TPACPIBAT" = "1" ]; then
@@ -2100,15 +2096,25 @@ check_battery_features () { # determine which battery feature APIs/tools are
         fi
 
         if [ $_tpacpi -eq 0 ]; then
-            # tpacpi available --> fill in missing methods
-            [ "$_bm_thresh" = "none" ] && _bm_thresh="tpacpi"
-            [ "$_bm_dischg" = "none" ] && _bm_dischg="tpacpi"
+            # tpacpi available --> fill in methods depending on natacpi results
+            case $_natacpi in
+                0) ;; # natacpi covers it all
+
+                1) # discharge needed
+                    _bm_dischg="tpacpi"
+                    ;;
+
+                *) # thresholds and discharge needed
+                    _bm_thresh="tpacpi"
+                    _bm_dischg="tpacpi"
+                    ;;
+            esac
         fi
     fi
     echo_debug "bat" "check_battery_features.tpacpi: $_tpacpi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
 
     # --- 3. check for tp-smapi external kernel module [ThinkPads only]
-    if [ -d $SMAPIDIR ]; then
+    if [ -d $SMAPIBATDIR ]; then
         # module loaded
         _tpsmapi=0
 
@@ -2138,14 +2144,23 @@ check_battery_features () { # determine which battery feature APIs/tools are
 battery_present () { # check battery presence and return tpacpi-bat index
     # $1: BAT0/BAT1/DEF
     # global param: $_bm_read
-    # rc: 0=bat exists/1=bat nonexistent/255=no thresh api available
-    # retval: $_bat_str: BAT0/BAT1; $_bat_idx: 1/2
+    # rc: 0=bat exists/1=bat nonexistent/255=no method available
+    # retval: $_bat_str:   BAT0/BAT1;
+    #         $_bat_idx:   1/2;
+    #         $_bd_read:   directory with battery data sysfiles;
+    #         $_bf_start:  sysfile for start threshold;
+    #         $_bf_stop:   sysfile for stop threshold;
+    #         $_bf_dischg: sysfile for force discharge
 
     # defaults
     local rc=255 # no threshold API available
-    _bat_idx=0    # no tpacpi-bat index
-    _bat_str=""   # no default bat found
-    local blist bs
+    _bat_idx=0    # no index
+    _bat_str=""   # no bat
+    _bd_read=""   # no directories
+    _bf_start=""
+    _bf_stop=""
+    _bf_dischg=""
+    local blist bs bsd
 
     # load modules and check prerequisites
     check_thinkpad
@@ -2162,24 +2177,28 @@ battery_present () { # check battery presence and return tpacpi-bat index
         natacpi) # note: includes tpacpi
             rc=1
             for bs in $blist; do
+                bsd="$ACPIBATDIR/$bs"
+
                 # check acpi name space
-                if [ "$(cat $ACPIBATDIR/$bs/present 2> /dev/null)" = "1" ] \
-                   && [ "$(cat $ACPIBATDIR/$bs/type 2> /dev/null)" = "Battery" ]; then
+                if [ "$(cat $bsd/present 2> /dev/null)" = "1" ] \
+                   && [ "$(cat $bsd/type 2> /dev/null)" = "Battery" ]; then
                     rc=0 # battery detected
                     # determine tpacpi-bat index
                     case $bs in
                         BAT0)
-                            _bat_idx=1 # BAT0 is always assumed main battery
                             _bat_str="$bs"
+                            _bd_read="$bsd"
+                            _bat_idx=1 # BAT0 is always assumed main battery
                             ;;
 
                         BAT1)
+                            _bat_str="$bs"
+                            _bd_read="$bsd"
                             if [ -d $ACPIBATDIR/BAT0 ]; then
                                 _bat_idx=2 # BAT0 exists --> BAT1 is aux
                             else
                                 _bat_idx=1 # BAT0 nonexistent --> BAT1 is main
                             fi
-                            _bat_str="$bs"
                             ;;
                     esac
                     break # exit loop on first battery detected
@@ -2190,12 +2209,14 @@ battery_present () { # check battery presence and return tpacpi-bat index
         tpsmapi)
             rc=1
             for bs in $blist; do
+                bsd="$SMAPIBATDIR/$bs"
+
                 # check tp-smapi name space
-                if [ "$(cat $SMAPIDIR/$bs/installed 2> /dev/null)" = "1" ]; then
+                if [ "$(cat $bsd/installed 2> /dev/null)" = "1" ]; then
                     rc=0 # battery detected
                     case $bs in
-                        BAT0) _bat_idx=1; _bat_str="$bs" ;;
-                        BAT1) _bat_idx=2; _bat_str="$bs" ;;
+                        BAT0) _bat_str="$bs"; _bd_read="$bsd" ; _bat_idx=1 ;;
+                        BAT1) _bat_str="$bs"; _bd_read="$bsd" ; _bat_idx=2 ;;
                     esac
                     break # exit loop on first battery detected
                 fi
@@ -2203,7 +2224,25 @@ battery_present () { # check battery presence and return tpacpi-bat index
             ;; # tpsmapi
     esac
 
-    echo_debug "bat" "battery_present($1): idx=$_bat_idx; str=$_bat_str; rc=$rc"
+    if [ $_bat_idx -ne 0 ]; then
+        case $_bm_thresh in
+            natacpi)
+                _bf_start="$ACPIBATDIR/$_bat_str/charge_start_threshold"
+                _bf_stop="$ACPIBATDIR/$_bat_str/charge_stop_threshold"
+                ;;
+
+            tpsmapi)
+                _bf_start="$SMAPIBATDIR/$_bat_str/start_charge_thresh"
+                _bf_stop="$SMAPIBATDIR/$_bat_str/stop_charge_thresh"
+                ;;
+        esac
+        case $_bm_dischg in
+            natacpi) _bf_dischg="$ACPIBATDIR/$_bat_str/force_discharge" ;;
+            tpsmapi) _bf_dischg="$SMAPIBATDIR/$_bat_str/force_discharge" ;;
+        esac
+    fi
+
+    echo_debug "bat" "battery_present($1): bm_read=$_bm_read; bat_str=$_bat_str; bat_idx=$_bat_idx; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg; rc=$rc"
     return $rc
 }
 
@@ -2223,7 +2262,7 @@ get_tpacpi_threshold () { # $1: ST/SP (start/stop); $2: 1/2 (battery)
 }
 
 do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
-    # global param: $_bat_idx, $_tpsmapi, $_tpacpi
+    # global param: $_bm_thresh, $_bat_idx, $_bf_start, $_bf_stop
     # rc: 0=ok/1=read error/2=thresh not present/255=no thresh api
 
     local bsys ts
@@ -2233,48 +2272,63 @@ do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
 
     [ $3 -eq -1 ] && return 0 # -1 = do not set threshold
 
-    if [ $_tpacpi -eq 0 ]; then # use tpacpi-bat
-        if [ $_bat_idx -ne 0 ]; then
-            # replace factory default values with 0 for tpacpi
+    case $_bm_thresh in
+        natacpi|tpsmapi)
             case $1 in
-                start)
-                    [ $new_thresh -eq  96 ] && new_thresh=0
-                    ts="ST"
-                    ;;
-                stop)
-                    [ $new_thresh -eq 100 ] && new_thresh=0
-                    ts="SP"
-                    ;;
+                start) bsys=$_bf_start ;;
+                stop)  bsys=$_bf_stop ;;
             esac
-
-            get_tpacpi_threshold $ts $_bat_idx
-            old_thresh=$?
-
-            if [ $new_thresh -ne $old_thresh ]; then
-                $TPACPIBAT -s $ts $_bat_idx $new_thresh > /dev/null 2>&1
-                rc=$?
+            if [ -f "$bsys" ]; then
+                # get effective threshold
+                old_thresh=$(cat $bsys 2> /dev/null)
+                if [ -z "$old_thresh" ]; then
+                    # can't determine effective threshold --> don't write new
+                    rc=1
+                elif [ "$old_thresh" -ne "$new_thresh" ]; then
+                    # when new threshold differs --> write new
+                    { printf '%s\n' $new_thresh > $bsys; } 2> /dev/null
+                    rc=$?
+                fi
+            else
+                # sysfile non-existent, probably invalid bat argument
+                rc=2
             fi
-        fi
-    elif [ $_tpsmapi -eq 0 ]; then # use tp-smapi
-        bsys=$SMAPIDIR/$2/${1}_charge_thresh
+            ;; # natacpi, tpsmapi
 
-        if [ -f $bsys ]; then
-            old_thresh=$(cat $bsys 2> /dev/null)
-            if [ -z "$old_thresh" ]; then
-                rc=1
-            elif [ "$old_thresh" -ne "$new_thresh" ]; then
-                { printf '%s\n' $new_thresh > $bsys; } 2> /dev/null
-                rc=$?
+        tpacpi) # use tpacpi-bat
+            if [ $_bat_idx -ne 0 ]; then
+                # bat index is valid
+
+                # replace factory default values with 0 for tpacpi
+                case $1 in
+                    start)
+                        [ $new_thresh -eq  96 ] && new_thresh=0
+                        ts="ST"
+                        ;;
+                    stop)
+                        [ $new_thresh -eq 100 ] && new_thresh=0
+                        ts="SP"
+                        ;;
+                esac
+
+                # get effective threshold
+                get_tpacpi_threshold $ts $_bat_idx
+                old_thresh=$?
+
+                # when new threshold differs --> write new
+                if [ $new_thresh -ne $old_thresh ]; then
+                    $TPACPIBAT -s $ts $_bat_idx $new_thresh > /dev/null 2>&1
+                    rc=$?
+                fi
             fi
-        else
-            rc=2 # invalid bat argument
-        fi
-    else
-        # no threshold API available
-        rc=255
-    fi
+            ;; # tpacpi
 
-    echo_debug "bat" "do_threshold($1, $2): bat_idx=$_bat_idx; tpacpi=$_tpacpi; tpsmapi=$_tpsmapi; old=$old_thresh; new=$new_thresh; rc=$rc"
+        *) # invalid threshold method
+            rc=255
+            ;;
+    esac
+
+    echo_debug "bat" "do_threshold($1, $2): bm_thresh=$_bm_thresh; bat_idx=$_bat_idx; old=$old_thresh; new=$new_thresh; rc=$rc"
     return $rc
 }
 
@@ -2322,7 +2376,6 @@ normalize_thresholds () { # check values and enforce start < stop - 3
 }
 
 set_charge_thresholds () { # write all charge thresholds from configuration
-    # global param: $_tpacpi, $_tpsmapi
     # rc: 0
 
     local rc
@@ -2368,56 +2421,67 @@ set_charge_thresholds () { # write all charge thresholds from configuration
 
 do_force_discharge () { # write force discharge state
     # $1: BAT0/BAT1, $2: 0=off/1=on
-    # global param: $_bat_idx, $_tpacpi, $_tpsmapi
+    # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
     # rc: 0=done/1=write error/2=discharge not present/255=no thresh api
 
-    local bsys rc=0
+    local rc=0
 
-    if [ $_tpacpi -eq 0 ]; then # use tpacpi-bat
-        $TPACPIBAT -s FD $_bat_idx $2 > /dev/null 2>&1; rc=$?
-        echo_debug "bat" "do_force_discharge.tpacpi-bat($1, $2): rc=$rc"
-    elif [ $_tpsmapi -eq 0 ]; then # use tp-smapi
-        bsys=$SMAPIDIR/$1/force_discharge
+    case $_bm_dischg in
+        natacpi|tpsmapi)
+            if [ -f "$_bf_dischg" ]; then
+                # write force_discharge
+                { printf '%s\n' $2 > $_bf_dischg; } 2> /dev/null; rc=$?
+            else
+                # sysfile non-existent, possibly invalid bat argument
+                rc=2
+            fi
+            ;; # natacpi, tpsmapi
 
-        if [ -f $bsys ]; then
-            { printf '%s\n' $2 > $bsys; } 2> /dev/null; rc=$?
-        else
-            rc=2
-        fi
-        echo_debug "bat" "do_force_discharge.tp-smapi($1, $2): rc=$rc"
-    else # no threshold API available
-        rc=255
-        echo_debug "bat" "do_force_discharge.noapi($1, $2)"
-    fi
+        tpacpi) # use tpacpi-bat
+            $TPACPIBAT -s FD $_bat_idx $2 > /dev/null 2>&1; rc=$?
+            ;; # tpcpaci
+
+        *) # invalid discharge method
+            rc=255
+            ;;
+    esac
+
+    echo_debug "bat" "do_force_discharge($1, $2): bm_dischg=$_bm_dischg; bat_idx=$_bat_idx; rc=$rc"
 
     return $rc
 }
 
 get_force_discharge () { # $1: BAT0/BAT1,
-    # global param: $_bat_idx, $_tpacpi, $_tpsmapi
+    # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
     # rc: 0=off/1=on/2=discharge not present/255=no thresh api
 
     local bsys rc=0
 
-    if [ $_tpacpi -eq 0 ]; then # use tpacpi-bat
-        case $($TPACPIBAT -g FD $_bat_idx 2> /dev/null) in
-            yes) rc=1 ;;
-            no)  rc=0 ;;
-            *)   rc=2 ;;
-        esac
-    elif [ $_tpsmapi -eq 0 ]; then # use tp-smapi
-        bsys=$SMAPIDIR/$1/force_discharge
+    case $_bm_dischg in
+        natacpi|tpsmapi)
+            if [ -f "$_bf_dischg" ]; then
+                # read sysfile
+                rc=$(cat $_bf_dischg 2> /dev/null)
+            else
+                # sysfile non-existent
+                rc=2
+            fi
+            ;; # natacpi, tpsmapi
 
-        if [ -f $bsys ]; then
-            rc=$(cat $bsys 2> /dev/null)
-        else
-            rc=2
-        fi
-    else # no threshold API available
-        rc=255
-    fi
+        tpacpi) # read via tpacpi-bat
+            case $($TPACPIBAT -g FD $_bat_idx 2> /dev/null) in
+                yes) rc=1 ;;
+                no)  rc=0 ;;
+                *)   rc=2 ;;
+            esac
+            ;; # tpacpi
 
-    echo_debug "bat" "get_force_discharge($1): rc=$rc"
+        *) # invalid discharge method
+            rc=255
+            ;;
+    esac
+
+    echo_debug "bat" "get_force_discharge($1): bm_dischg=$_bm_dischg; bat_idx=$_bat_idx; rc=$rc"
     return $rc
 }
 
@@ -2430,27 +2494,36 @@ cancel_force_discharge () { # called from trap -- global param: $_bat_str
 }
 
 battery_discharging () { # check if battery is discharging -- $1: BAT0/BAT1,
-    # global param: $_tpacpi, $_tpsmapi
+    # global param: $_bm_read, $_bd_read
     # rc: 0=discharging/1=not discharging/255=no battery api
 
     local bsys rc=255
 
-    # determine battery api
-    if [ $_tpsmapi -eq 0 ]; then # use tp-smapi
-        bsys=$SMAPIDIR/$1/state
-    elif [ $_tpacpi -eq 0 ]; then # use tpacpi-bat
-        bsys=$ACPIBATDIR/$1/status
-    fi
+    # determine status sysfile
+    case $_bm_read in
+        natacpi|tpacpi)
+            bsys=$_bd_read/status # use ACPI sysfile
+            ;;
+
+        tpsmapi)
+            bsys=$_bd_read/state # use tpsmapi sysfile
+            ;;
+
+        *) # invalid read method
+            bsys=""
+            rc=255
+            ;;
+    esac
 
     # get battery state
-    if [ -f $bsys ]; then
+    if [ -f "$bsys" ]; then
         case "$(cat $bsys 2> /dev/null)" in
             [Dd]ischarging) rc=0 ;;
             *) rc=1 ;;
         esac
     fi
 
-    echo_debug "bat" "battery_discharging($1): rc=$rc"
+    echo_debug "bat" "battery_discharging($1): bm_read=$_bm_read; rc=$rc"
     return $rc
 }
 
@@ -2467,7 +2540,6 @@ check_ac_power () { # check if ac power connected -- $1: function
 
 setcharge_battery () { # write charge thresholds (called from cmd line)
     # $1: start charge threshold, $2: stop charge threshold, $3: battery
-    # global param: $_tpacpi, $_tpsmapi
     # rc: 0=ok/1=error
 
     local bat rc st sp
@@ -2513,9 +2585,9 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
             fi
             ;;
 
-        255) # no api
-            echo "Error: battery features not available." 1>&2
-            echo_debug "bat" "setcharge_battery.noapi"
+        255) # no method
+            echo "Error: battery feature not available." 1>&2
+            echo_debug "bat" "setcharge_battery.no_method"
             return 1
             ;;
 
@@ -2580,10 +2652,9 @@ get_sysval () { # $1: file; rc: sysfile value
 
 chargeonce_battery () { # charge battery to upper threshold once
     # $1: battery
-    # global param: $_tpacpi, $_tpsmapi
     # rc: 0=ok/1=error
 
-    local bat bdir temp_start_thresh
+    local bat temp_start_thresh
     local start_thresh=""
     local stop_thresh=""
     local efull=0
@@ -2607,9 +2678,9 @@ chargeonce_battery () { # charge battery to upper threshold once
     case $? in
         0) ;; # battery present
 
-        255) # no api
-            echo "Error: ThinkPad battery features not available." 1>&2
-            echo_debug "bat" "chargeonce_battery.noapi"
+        255) # no method
+            echo "Error: battery feature not available." 1>&2
+            echo_debug "bat" "chargeonce_battery.no_method"
             return 1
             ;;
 
@@ -2632,24 +2703,29 @@ chargeonce_battery () { # charge battery to upper threshold once
     fi
 
     # get current charge level (in %)
-    if [ $_tpsmapi -eq 0 ]; then
-        # use tp-smapi
-        bdir="$SMAPIDIR/$_bat_str"
-        get_sysval $bdir/remaining_percent; ccharge=$?
-    else
-        # use ACPI data
-        bdir="$ACPIBATDIR/$_bat_str"
-        if [ -f $bdir/energy_full ]; then
-            get_sysval $bdir/energy_full; efull=$?
-            get_sysval $dir/energy_now; enow=$?
-        fi
+    case $_bm_read in
+        natacpi|tpacpi) # use ACPI sysfiles
+            if [ -f $_bd_read/energy_full ]; then
+                get_sysval $_bd_read/energy_full; efull=$?
+                get_sysval $_bd_read/energy_now; enow=$?
+            fi
 
-        if [ $efull -ne 0 ]; then
-            ccharge=$(( 100 * $enow / $efull ))
-        else
-            ccharge=-1
-        fi
-    fi
+            if [ $efull -ne 0 ]; then
+                ccharge=$(( 100 * $enow / $efull ))
+            else
+                ccharge=-1
+            fi
+            ;; # natacpi, tpacpi
+
+        tpsmapi) # use tp-smapi sysfiles
+            get_sysval $_bd_read/remaining_percent; ccharge=$?
+            ;; # tpsmapi
+
+        *) # invalid read method
+            bsys=""
+            rc=255
+            ;;
+    esac
 
     if [ $ccharge -eq -1 ] ; then
         echo_debug "bat" "chargeonce_battery($_bat_str).charge_level_unknown: enow=$enow; efull=$efull; ccharge=$ccharge"
@@ -2677,7 +2753,7 @@ discharge_battery () { # discharge battery
     # global param: $_tpacpi, $_tpsmapi
     # rc: 0=ok/1=error
 
-    local bat bdir en ef pn rc
+    local bat en ef pn rc wt
     # $_bat_str is global for cancel_force_discharge() trap
 
     # check params
@@ -2690,9 +2766,9 @@ discharge_battery () { # discharge battery
     case $? in
         0) ;; # battery present
 
-        255) # no api
-            echo "Error: ThinkPad battery features not available." 1>&2
-            echo_debug "bat" "discharge_battery.noapi"
+        255) # no method
+            echo "Error: battery feature not available." 1>&2
+            echo_debug "bat" "discharge_battery.no_method"
             return 1
             ;;
 
@@ -2713,56 +2789,65 @@ discharge_battery () { # discharge battery
 
     trap cancel_force_discharge INT # enable ^C hook
 
-    # wait for start == while status not "discharging"
-    while ! battery_discharging $_bat_str; do sleep 0.5; done
+    # wait for start == while status not "discharging" -- 2.5 sec timeout
+    wt=5
+    while ! battery_discharging $_bat_str && [ $wt -gt 0 ] ; do sleep 0.5; wt=$((wt - 1)); done
     echo_debug "bat" "discharge_battery.running($_bat_str)"
 
-    # wait for completion == while status "discharging"
-    while battery_discharging $_bat_str; do
-        clear
-        echo "Currently discharging battery $_bat_str:"
+    if battery_discharging $_bat_str; then
+        # discharge initiated sucessfully --> wait for completion == while status "discharging"
+        while battery_discharging $_bat_str; do
+            clear
+            echo "Currently discharging battery $_bat_str:"
 
-        # show current battery state
-        if [ $_tpsmapi -eq 0 ]; then # use tp_smapi
-            bdir=$SMAPIDIR/$_bat_str
+            # show current battery state
+            case $_bm_read in
+                natacpi|tpacpi) # use ACPI sysfiles
+                    perl -e 'printf ("voltage            = %6d [mV]\n", '$(catsysfd $_bd_read/voltage_now 0 2> /dev/null)' / 1000.0);'
 
-            printf "voltage            = %6s [mV]\n"  "$(cat $bdir/voltage 2> /dev/null)"
-            printf "remaining capacity = %6s [mWh]\n" "$(cat $bdir/remaining_capacity 2> /dev/null)"
-            printf "remaining percent  = %6s [%%]\n"  "$(cat $bdir/remaining_percent 2> /dev/null)"
-            printf "remaining time     = %6s [min]\n" "$(cat $bdir/remaining_running_time_now 2> /dev/null)"
-            printf "power              = %6s [mW]\n"  "$(cat $bdir/power_avg 2> /dev/null)"
-            printf "state              = %s\n"  "$(cat $bdir/state 2> /dev/null)"
+                    en=$(catsysfd $_bd_read/energy_now 0 2> /dev/null)
+                    perl -e 'printf ("remaining capacity = %6d [mWh]\n", '$en' / 1000.0);'
+
+                    ef=$(catsysfd $_bd_read/energy_full 0 2> /dev/null)
+                    if [ "$ef" != "0" ]; then
+                        perl -e 'printf ("remaining percent  = %6d [%%]\n", 100.0 * '$en' / '$ef' );'
+                    else
+                        printf "remaining percent  = not available [%]\n"
+                    fi
+
+                    pn=$(catsysfd $_bd_read/power_now 0 2> /dev/null)
+                    if [ "$pn" != "0" ]; then
+                        perl -e 'printf ("remaining time     = %6d [min]\n", 60.0 * '$en' / '$pn');'
+                        perl -e 'printf ("power              = %6d [mW]\n", '$pn' / 1000.0);'
+                    else
+                        printf "remaining time     = not discharging [min]\n"
+                    fi
+                    printf "state              = %s\n"  "$(cat $_bd_read/status 2> /dev/null)"
+                    ;; # natacpi, tpsmapi
+
+                tpsmapi) # use tp-smapi sysfiles
+                    printf "voltage            = %6s [mV]\n"  "$(cat $_bd_read/voltage 2> /dev/null)"
+                    printf "remaining capacity = %6s [mWh]\n" "$(cat $_bd_read/remaining_capacity 2> /dev/null)"
+                    printf "remaining percent  = %6s [%%]\n"  "$(cat $_bd_read/remaining_percent 2> /dev/null)"
+                    printf "remaining time     = %6s [min]\n" "$(cat $_bd_read/remaining_running_time_now 2> /dev/null)"
+                    printf "power              = %6s [mW]\n"  "$(cat $_bd_read/power_avg 2> /dev/null)"
+                    printf "state              = %s\n"  "$(cat $_bd_read/state 2> /dev/null)"
+                    ;; # tpsmapi
+
+            esac
             get_force_discharge $_bat_str; printf "force discharge    = %s\n"  "$?"
-        else # use acpi
-            bdir=$ACPIBATDIR/$_bat_str
 
-            if [ -d $bdir ]; then
-                perl -e 'printf ("voltage            = %6d [mV]\n", '$(catsysfd $bdir/voltage_now 0 2> /dev/null)' / 1000.0);'
-
-                en=$(catsysfd $bdir/energy_now 0 2> /dev/null)
-                perl -e 'printf ("remaining capacity = %6d [mWh]\n", '$en' / 1000.0);'
-
-                ef=$(catsysfd $bdir/energy_full 0 2> /dev/null)
-                if [ "$ef" != "0" ]; then
-                    perl -e 'printf ("remaining percent  = %6d [%%]\n", 100.0 * '$en' / '$ef' );'
-                else
-                    printf "remaining percent  = not available [%]\n"
-                fi
-
-                pn=$(catsysfd $bdir/power_now 0 2> /dev/null)
-                if [ "$pn" != "0" ]; then
-                    perl -e 'printf ("remaining time     = %6d [min]\n", 60.0 * '$en' / '$pn');'
-                    perl -e 'printf ("power              = %6d [mW]\n", '$pn' / 1000.0);'
-                else
-                    printf "remaining time     = not discharging [min]\n"
-                fi
-                printf "state              = %s\n"  "$(cat $bdir/status 2> /dev/null)"
-                get_force_discharge $_bat_str; printf "force discharge    = %s\n"  "$?"
-            fi
-        fi
-        echo "Press Ctrl+C to cancel."
-        sleep 5
-    done
+            echo "Press Ctrl+C to cancel."
+            sleep 5
+        done
+    else
+        # discharge malfunction --> cancel discharge and abort
+        do_force_discharge $_bat_str 0;
+        echo_debug "bat" "discharge_battery.malfunction($_bat_str)"
+        echo "Error: discharge $_bat_str malfunction." 1>&2
+        trap - INT # remove ^C hook
+        return 1
+    fi
 
     trap - INT # remove ^C hook
 
