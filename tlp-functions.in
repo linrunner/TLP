@@ -2055,10 +2055,14 @@ check_battery_features () { # determine which battery feature APIs/tools are
 
                 if [ -n "$(cat $ps/charge_start_threshold 2> /dev/null)" ]; then
                     # charge_start_threshold exists and is actually readable
-                    _natacpi=1
-                    _bm_thresh="natacpi"
+                    if [ "${NATACPI_ENABLE:-0}" = "1" ]; then
+                        _natacpi=1
+                        _bm_thresh="natacpi"
+                    else
+                        _natacpi=32
+                    fi
                 fi
-                if [ -n "$(cat $ps/force_discharge 2> /dev/null)" ]; then
+                if [ $_natacpi != 32 ] && [ -n "$(cat $ps/force_discharge 2> /dev/null)" ]; then
                     # force_discharge exists and is actually readable
                     _natacpi=0
                     _bm_dischg="natacpi"
@@ -2090,7 +2094,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
         _tpacpi=$?
         # TODO: handle tpacpi-bat errors (rc=127 when $TPACPIBAT non-existent)
 
-        if [ $_tpacpi -eq 0 ] && [ "$DISABLE_TPACPIBAT" = "1" ]; then
+        if [ $_tpacpi -eq 0 ] && [ "${TPACPI_ENABLE:-1}" = "0" ]; then
             # tpacpi disabled by configuration
             _tpacpi=32
         fi
@@ -2115,17 +2119,22 @@ check_battery_features () { # determine which battery feature APIs/tools are
 
     # --- 3. check for tp-smapi external kernel module [ThinkPads only]
     if [ -d $SMAPIBATDIR ]; then
-        # module loaded
-        _tpsmapi=0
+        # module loaded --> TPS-MAPI AVAILABLE
+        if [ "${TPSMAPI_ENABLE:-1}" = "0" ]; then
+            # tpsmapi disabled by configuration
+            _tpsmapi=32
+        else
+            # enabled (default)
+            _tpsmapi=0
 
-        # reading battery data via tpsmapi is preferred over natacpi
-        # because it provides cycle count and more
-        _bm_read="tpsmapi"
+            # reading battery data via tpsmapi is preferred over natacpi
+            # because it provides cycle count and more
+            _bm_read="tpsmapi"
 
-        # fill in missing methods
-        [ "$_bm_thresh" = "none" ] && _bm_thresh="tpsmapi"
-        [ "$_bm_dischg" = "none" ] && _bm_dischg="tpsmapi"
-
+            # fill in missing methods
+            [ "$_bm_thresh" = "none" ] && _bm_thresh="tpsmapi"
+            [ "$_bm_dischg" = "none" ] && _bm_dischg="tpsmapi"
+        fi
     elif supports_tpacpi_only || supports_no_tp_bat_funcs; then
         # not tp-smapi capable models
         _tpsmapi=254

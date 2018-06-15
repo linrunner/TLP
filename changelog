@@ -1,9 +1,13 @@
-+++ 1.2 --- 16.05.2018 +++
++++ 1.2 --- 15.06.2018 +++
 
 *** Development version ***
 
   * Features
     ThinkPad Battery:
+      - New native kernel API for battery features "natacpi" (Issue #321;
+        requires kernel 4.17; disabled by default
+      - NATACPI_ENABLE, TPACPI_ENABLE, TPSMAPI_ENABLE: make all battery feature
+        drivers switchable
       - Detect ThinkPad 25 (Issue #326)
       - Detect ThinkPad *80 models (Coffee Lake)
     tlp-stat:

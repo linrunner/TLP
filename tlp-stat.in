@@ -1142,7 +1142,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # native ACPI kernel battery API
     case $_natacpi in
         0|1) printf "natacpi    = active "; print_methods_per_driver "natacpi" ;;
-        32)  echo "natacpi    = inactive (disabled by user configuration)" ;;
+        32)  echo "natacpi    = inactive (disabled by configuration)" ;;
         128) echo "natacpi    = inactive (no kernel support)" ;;
         254) echo "natacpi    = inactive (laptop not supported)" ;;
         *)   echo "natacpi    = unknown status" ;;
@@ -1151,7 +1151,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # ThinkPad-specific
     case $_tpacpi in
         0)   printf "tpacpi-bat = active "; print_methods_per_driver "tpacpi" ;;
-        32)  echo "tpacpi-bat = inactive (disabled by user configuration)" ;;
+        32)  echo "tpacpi-bat = inactive (disabled by configuration)" ;;
         64)  echo "tpacpi-bat = inactive (kernel module 'acpi_call' load error)" ;;
         128) echo "tpacpi-bat = inactive (kernel module 'acpi_call' not installed)" ;;
         254) echo "tpacpi-bat = inactive (ThinkPad not supported)" ;;
@@ -1160,7 +1160,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     esac
     case $_tpsmapi in
         0)   printf "tp-smapi   = active "; print_methods_per_driver "tpsmapi" ;;
-        32)  echo "tp-smapi   = inactive (disabled by user configuration)" ;;
+        32)  echo "tp-smapi   = inactive (disabled by configuration)" ;;
         64)  echo "tp-smapi   = inactive (kernel module 'tp_smapi' load error)" ;;
         128) echo "tp-smapi   = inactive (kernel module 'tp_smapi' not installed)" ;;
         254) echo "tp-smapi   = inactive (ThinkPad not supported)" ;;
