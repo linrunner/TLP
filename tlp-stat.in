@@ -256,6 +256,36 @@ print_tpacpi_dischg () { # formatted output of ThinkPad force_discharge
     return 0
 }
 
+print_methods_per_driver () { # show features provided by a battery driver
+    # $1: driver = natacpi, tpacpi, tpsmapi
+    local bm m mlist=""
+
+    for bm in _bm_read _bm_thresh _bm_dischg; do
+        if [ "$(eval echo \$$bm)" = "$1" ]; then
+            # method matches driver
+            case $bm in
+                _bm_read)   m="data" ;;
+                _bm_thresh) m="thresholds" ;;
+                _bm_dischg) m="discharge" ;;
+            esac
+            # concat method to output
+            if [ -n "$mlist" ]; then
+                mlist="$mlist, $m"
+            else
+                mlist="$m"
+            fi
+        fi
+    done
+
+    if [ -n "$mlist" ]; then
+        printf "(%s)\n" "$mlist"
+    else
+        printf "(none)\n"
+    fi
+
+    return 0
+}
+
 print_file_modtime_and_age () { # show a file's last modification time
     #  and age in secs -- $1: file
     local mtime age
@@ -1111,17 +1141,16 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
     # native ACPI kernel battery API
     case $_natacpi in
-        0)   echo "natacpi    = active (thresholds and force_discharge)" ;;
-        1)   echo "natacpi    = active (thresholds only)" ;;
+        0|1) printf "natacpi    = active "; print_methods_per_driver "natacpi" ;;
         32)  echo "natacpi    = inactive (disabled by user configuration)" ;;
         128) echo "natacpi    = inactive (no kernel support)" ;;
-        254) echo "natacpi    = inactive (Laptop not supported)" ;;
+        254) echo "natacpi    = inactive (laptop not supported)" ;;
         *)   echo "natacpi    = unknown status" ;;
     esac
 
     # ThinkPad-specific
     case $_tpacpi in
-        0)   echo "tpacpi-bat = active" ;;
+        0)   printf "tpacpi-bat = active "; print_methods_per_driver "tpacpi" ;;
         32)  echo "tpacpi-bat = inactive (disabled by user configuration)" ;;
         64)  echo "tpacpi-bat = inactive (kernel module 'acpi_call' load error)" ;;
         128) echo "tpacpi-bat = inactive (kernel module 'acpi_call' not installed)" ;;
@@ -1130,7 +1159,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         *)   echo "tpacpi-bat = unknown status" ;;
     esac
     case $_tpsmapi in
-        0)   echo "tp-smapi   = active" ;;
+        0)   printf "tp-smapi   = active "; print_methods_per_driver "tpsmapi" ;;
         32)  echo "tp-smapi   = inactive (disabled by user configuration)" ;;
         64)  echo "tp-smapi   = inactive (kernel module 'tp_smapi' load error)" ;;
         128) echo "tp-smapi   = inactive (kernel module 'tp_smapi' not installed)" ;;
