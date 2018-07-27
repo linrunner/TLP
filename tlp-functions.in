@@ -681,14 +681,14 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
         maxfreq=$CPU_SCALING_MAX_FREQ_ON_AC
     fi
 
-    if [ -n "$minfreq" ]; then
+    if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
         echo_debug "pm" "set_scaling_min_max_freq($1).min: $minfreq"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
             [ -f $cpu ] && { printf '%s\n' "$minfreq" > $cpu; } 2> /dev/null
         done
     fi
 
-    if [ -n "$maxfreq" ]; then
+    if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
         echo_debug "pm" "set_scaling_min_max_freq($1).max: $maxfreq"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
             [ -f $cpu ] && { printf '%s\n' "$maxfreq" > $cpu; } 2> /dev/null
