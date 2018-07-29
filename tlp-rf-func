@@ -327,7 +327,7 @@ save_device_states () { # save radio states  -- $1: list of rftypes
     local dev
     local devlist="${1:-$ALLDEV}" # when arg empty -> use all
 
-    echo_debug "rf" "save_device_states($devlist)"
+    echo_debug "rf" "save_device_states($devlist): $RFSTATEFILE"
 
     # create empty state file
     create_rundir
@@ -345,7 +345,7 @@ save_device_states () { # save radio states  -- $1: list of rftypes
 restore_device_states () { # restore radio type states
     local sline
 
-    echo_debug "rf" "restore_device_states"
+    echo_debug "rf" "restore_device_states: $RFSTATEFILE"
 
     if [ -f $RFSTATEFILE ]; then
         # read state file

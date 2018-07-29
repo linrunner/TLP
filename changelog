@@ -4,7 +4,7 @@
 
   * Features
     General:
-      - tlp bat/ac: keep manual power settings until tlp start (Issue #348)
+      - tlp bat/ac: keep manual power settings until tlp start (Issue #349)
     ThinkPad Battery:
       - New native kernel API for battery features "natacpi" (Issue #321;
         requires kernel 4.17; disabled by default
