@@ -82,9 +82,8 @@ readonly RDW_NM_LOCK="rdw_nm"
 readonly RDW_DOCK_LOCK="rdw_dock"
 readonly RDW_LOCKTIME=2
 
-readonly STATEDIR="/var/lib/tlp"
-readonly RFSTATEFILE=$STATEDIR/rfkill-saved
-readonly BAYSTATEFILE=$STATEDIR/bay-saved
+readonly RFSTATEFILE=$RUNDIR/rfkill_saved
+readonly BAYSTATEFILE=$RUNDIR/bay_saved
 
 readonly DISK_NOP_WORDS="_ keep"
 readonly DEFAULT_DISK_DEVICES="sda"
@@ -3023,7 +3022,7 @@ suspend_drivebay () { # Save power state of drive bay before suspend
         get_drivebay_device
 
         if [ -n "$dock" ]; then
-            mkdir -p $STATEDIR 2> /dev/null 1>&2
+            create_rundir
 
             if ! check_is_docked; then
                 { printf '%s\n' "off" > $BAYSTATEFILE; } 2> /dev/null
