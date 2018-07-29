@@ -62,6 +62,7 @@ mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
 
 # get current power state
 get_power_state; pwrmode=$?
+get_manual_mode
 
 case "$mode" in
     true|bat) pwrmode=1 ;;
@@ -84,7 +85,13 @@ else
     echo_debug "run" "power_mode=ac"
 fi
 
-case "$syspwr" in
+case "$_manual_mode" in
+    0)  echo_debug "run" "manual_mode=ac" ;;
+    1)  echo_debug "run" "manual_mode=bat" ;;
+    "") echo_debug "run" "manual_mode=none" ;;
+esac
+
+case "$_syspwr" in
     0) echo_debug "run" "power_source=ac" ;;
     1) echo_debug "run" "power_source=bat" ;;
     *) echo_debug "run" "power_source=unknown" ;;
@@ -168,6 +175,7 @@ case "$mode" in
                 exit 3
                 ;;
         esac
+        clear_manual_mode
 
         # unlock if necessary
         [ $locked -eq 0 ] || unlock_tlp
@@ -178,6 +186,9 @@ case "$mode" in
           # rationale: filter out duplicate power_supply udev events
         check_root
         if lock_tlp_nb; then
+            # if manual mode is set, use instead of current power state
+            [ -n $_manual_mode ] && pwrmode=$_manual_mode
+
             if compare_and_save_power_state $pwrmode; then
                 apply_common_settings $pwrmode
                 poweroff_drivebay $pwrmode 0
@@ -199,6 +210,7 @@ case "$mode" in
             set_usb_suspend 0 auto
             set_charge_thresholds
             set_radio_device_states $pwrmode
+            clear_manual_mode
             unlock_tlp
 
             echo_started_mode $pwrmode
@@ -215,6 +227,7 @@ case "$mode" in
             poweroff_drivebay $pwrmode 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
             set_radio_device_states 1
+            set_manual_mode 1
             unlock_tlp
 
             echo_started_mode 1
@@ -231,6 +244,7 @@ case "$mode" in
             poweroff_drivebay $pwrmode 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
             set_radio_device_states 0
+            set_manual_mode 0
             unlock_tlp
 
             echo_started_mode 0

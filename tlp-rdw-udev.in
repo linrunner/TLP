@@ -38,7 +38,7 @@ case $devtype in
         docked=$(cat $ddev/docked 2> /dev/null)
         action=$EVENT
 
-        echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev type=$type docked=$docked syspwr=$syspwr"
+        echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev type=$type docked=$docked syspwr=$_syspwr"
         ;;
 
     usb_dock)
@@ -47,7 +47,7 @@ case $devtype in
             remove) action="undock"  ;;
         esac
 
-        echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev syspwr=$syspwr"
+        echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev syspwr=$_syspwr"
         ;;
 
     *) exit 0 ;; # unknown device type

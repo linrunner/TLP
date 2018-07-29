@@ -74,13 +74,13 @@ readonly MOD_TPSMAPI="tp_smapi"
 readonly MOD_TPACPI="acpi_call"
 
 readonly PWRRUNFILE=$RUNDIR/last_pwr
+readonly MANUALMODEFILE=$RUNDIR/manual_mode
 readonly LOCKFILE=$RUNDIR/lock
 readonly LOCKTIMEOUT=2
 
 readonly RDW_NM_LOCK="rdw_nm"
 readonly RDW_DOCK_LOCK="rdw_dock"
 readonly RDW_LOCKTIME=2
-
 
 readonly STATEDIR="/var/lib/tlp"
 readonly RFSTATEFILE=$STATEDIR/rfkill-saved
@@ -327,11 +327,11 @@ is_thinkpad () { # check for ThinkPad by saved model string
 # --- Power Source
 
 get_sys_power_supply () { # get current power supply
-                          # retval/rc: $syspwr/0=ac, 1=battery, 2=unknown
+                          # retval/rc: $_syspwr (0=ac, 1=battery, 2=unknown)
 
     local psrc
 
-    syspwr=
+    _syspwr=
 
     for psrc in /sys/class/power_supply/*; do
         # -f $psrc/type not necessary - cat 2>.. handles this
@@ -341,17 +341,17 @@ get_sys_power_supply () { # get current power supply
                 # exclude MacBook Pro 2017 sbs-charger
                 if [ "$(cat $psrc/online 2> /dev/null)" = "1" ] \
                     && [ "${psrc##/*/}" != "sbs-charger" ]; then
-                    syspwr=0
+                    _syspwr=0
                     break
                 fi
-                # else AC not online => keep $syspwr as-is
+                # else AC not online => keep $_syspwr as-is
                 ;;
 
             Battery)
                 # battery detected, exclude hid peripherals
                 if echo "${psrc##/*/}" | grep -vq "hidpp_battery"; then
                     # not hid --> set rc to battery, but don't stop looking for AC
-                    syspwr=1
+                    _syspwr=1
                 fi
                 ;;
 
@@ -362,9 +362,9 @@ get_sys_power_supply () { # get current power supply
     done
 
     # set pwrsrc to unknown if we haven't seen any AC/battery power source so far
-    : ${syspwr:=2}
+    : ${_syspwr:=2}
 
-    return $syspwr
+    return $_syspwr
 }
 
 get_power_state () { # get current power mode -- rc: 0=ac, 1=battery
@@ -435,6 +435,44 @@ echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
     fi
 
     return 0
+}
+
+set_manual_mode () { # set manual operation mode
+    # $1: 0=ac mode, 1=battery mode
+
+    create_rundir
+    { printf '%s\n' "$1" > $MANUALMODEFILE; } 2> /dev/null
+
+    echo_debug "pm" "set_manual_mode($1)"
+    return 0
+}
+
+clear_manual_mode () { # remove manual operation mode
+
+    rm -r $MANUALMODEFILE 2> /dev/null
+
+    echo_debug "pm" "clear_manual_mode"
+    return 0
+}
+
+get_manual_mode () { # get manual operation mode
+    # rc: 0=ok/1=not found
+    # retval: $_manual_mode (0=ac, 1=battery)
+    local rc=1
+    _manual_mode=""
+
+    if [ -f $MANUALMODEFILE ]; then
+        # read mode file
+        _manual_mode=$(cat $MANUALMODEFILE)
+        case $_manual_mode in
+            0|1) rc=0 ;;
+            "") ;;
+            *) _manual_mode="" ;;
+        esac
+    fi
+
+    echo_debug "pm" "get_manual_mode: manual_mode=$_manual_mode; rc=$rc"
+    return $rc
 }
 
 # --- Locking and Semaphores
