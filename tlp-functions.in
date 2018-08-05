@@ -109,6 +109,21 @@ catsysfd () { # echo contents of a sysfile; if file is non-existent or
     return 0
 }
 
+get_sysval () { # read numeric contents of a sysfile, return 0 if contents
+                # is not numeric, empty or read fails
+                # $1: file; rc: sysfile value
+    local sysf="$1"
+    local val=""
+
+    # read sysval when it exists
+    [ -f $sysf ] && val=$(cat $sysf 2> /dev/null)
+
+    # replace with 0 if empty string or non-numeric chars are contained
+    [ -z "$(printf '%s' "$val" | egrep '^[0-9]+$')" ] && val=0
+
+    return $val
+}
+
 # --- Tests
 
 wordinlist () { # test if word in list
@@ -2307,7 +2322,7 @@ get_tpacpi_threshold () { # $1: ST/SP (start/stop); $2: 1/2 (battery)
     fi
 }
 
-do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
+set_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
     # global param: $_bm_thresh, $_bat_idx, $_bf_start, $_bf_stop
     # rc: 0=ok/1=read error/2=thresh not present/255=no thresh api
 
@@ -2374,7 +2389,7 @@ do_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
             ;;
     esac
 
-    echo_debug "bat" "do_threshold($1, $2): bm_thresh=$_bm_thresh; bat_idx=$_bat_idx; old=$old_thresh; new=$new_thresh; rc=$rc"
+    echo_debug "bat" "set_threshold($1, $2): bm_thresh=$_bm_thresh; bat_idx=$_bat_idx; old=$old_thresh; new=$new_thresh; rc=$rc"
     return $rc
 }
 
@@ -2430,14 +2445,14 @@ set_charge_thresholds () { # write all charge thresholds from configuration
         normalize_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0"
 
         if [ $stop_thresh -ne -1 ]; then
-            do_threshold stop BAT0 $stop_thresh; rc=$?
+            set_threshold stop BAT0 $stop_thresh; rc=$?
             echo_debug "bat" "set_charge_thresholds.stop(BAT0): $stop_thresh; rc=$rc"
         else
             echo_debug "bat" "set_charge_thresholds.stop(BAT0).not_set"
         fi
 
         if [ $start_thresh -ne -1 ]; then
-            do_threshold start BAT0 $start_thresh; rc=$?
+            set_threshold start BAT0 $start_thresh; rc=$?
             echo_debug "bat" "set_charge_thresholds.start(BAT0): $start_thresh; rc=$rc"
         else
             echo_debug "bat" "set_charge_thresholds.start(BAT0).not_set"
@@ -2448,14 +2463,14 @@ set_charge_thresholds () { # write all charge thresholds from configuration
         normalize_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1"
 
         if [ $stop_thresh -ne -1 ]; then
-            do_threshold stop BAT1 $stop_thresh; rc=$?
+            set_threshold stop BAT1 $stop_thresh; rc=$?
             echo_debug "bat" "set_charge_thresholds.stop(BAT1): $stop_thresh; rc=$rc"
         else
             echo_debug "bat" "set_charge_thresholds.stop(BAT1).not_set"
         fi
 
         if [ $start_thresh -ne -1 ]; then
-            do_threshold start BAT1 $start_thresh; rc=$?
+            set_threshold start BAT1 $start_thresh; rc=$?
             echo_debug "bat" "set_charge_thresholds.start(BAT1): $start_thresh; rc=$rc"
         else
             echo_debug "bat" "set_charge_thresholds.start(BAT1).not_set"
@@ -2465,7 +2480,7 @@ set_charge_thresholds () { # write all charge thresholds from configuration
     return 0
 }
 
-do_force_discharge () { # write force discharge state
+set_force_discharge () { # write force discharge state
     # $1: BAT0/BAT1, $2: 0=off/1=on
     # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
     # rc: 0=done/1=write error/2=discharge not present/255=no thresh api
@@ -2492,7 +2507,7 @@ do_force_discharge () { # write force discharge state
             ;;
     esac
 
-    echo_debug "bat" "do_force_discharge($1, $2): bm_dischg=$_bm_dischg; bat_idx=$_bat_idx; rc=$rc"
+    echo_debug "bat" "set_force_discharge($1, $2): bm_dischg=$_bm_dischg; bat_idx=$_bat_idx; rc=$rc"
 
     return $rc
 }
@@ -2532,7 +2547,7 @@ get_force_discharge () { # $1: BAT0/BAT1,
 }
 
 cancel_force_discharge () { # called from trap -- global param: $_bat_str
-    do_force_discharge $_bat_str 0
+    set_force_discharge $_bat_str 0
     echo_debug "bat" "force_discharge.cancelled($_bat_str)"
     echo " Cancelled."
 
@@ -2651,7 +2666,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     echo "Setting temporary charge thresholds for $_bat_str:"
 
     if [ $stop_thresh -ne -1 ]; then
-        do_threshold stop $_bat_str $stop_thresh; rc=$?
+        set_threshold stop $_bat_str $stop_thresh; rc=$?
 
         echo_debug "bat" "setcharge_battery.stop($_bat_str): $stop_thresh; rc=$rc"
         if [ $rc -eq 0 ]; then
@@ -2666,7 +2681,7 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     fi
 
     if [ $start_thresh -ne -1 ]; then
-        do_threshold start $_bat_str $start_thresh; rc=$?
+        set_threshold start $_bat_str $start_thresh; rc=$?
 
         echo_debug "bat" "setcharge_battery.start($_bat_str): $start_thresh; rc=$rc"
         if [ $rc -eq 0 ]; then
@@ -2681,19 +2696,6 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     fi
 
     return 0
-}
-
-get_sysval () { # $1: file; rc: sysfile value
-    local sysf="$1"
-    local val=""
-
-    # read sysval when it exists
-    [ -f $sysf ] && val=$(cat $sysf 2> /dev/null)
-
-    # replace with 0 if empty string or non-numeric chars are contained
-    [ -z "$(printf '%s' "$val" | egrep '^[0-9]+$')" ] && val=0
-
-    return $val
 }
 
 chargeonce_battery () { # charge battery to upper threshold once
@@ -2826,7 +2828,7 @@ discharge_battery () { # discharge battery
     esac
 
     # start discharge
-    do_force_discharge $_bat_str 1; rc=$?
+    set_force_discharge $_bat_str 1; rc=$?
     if [ $rc -ne 0 ]; then
         echo_debug "bat" "discharge_battery.force_discharge_not_available($_bat_str)"
         echo "Error: discharge function not available for this laptop." 1>&2
@@ -2889,7 +2891,7 @@ discharge_battery () { # discharge battery
         done
     else
         # discharge malfunction --> cancel discharge and abort
-        do_force_discharge $_bat_str 0;
+        set_force_discharge $_bat_str 0;
         echo_debug "bat" "discharge_battery.malfunction($_bat_str)"
         echo "Error: discharge $_bat_str malfunction." 1>&2
         trap - INT # remove ^C hook
@@ -2899,7 +2901,7 @@ discharge_battery () { # discharge battery
     trap - INT # remove ^C hook
 
     # ThinkPad E-series firmware may keep force_discharge active --> cancel it
-    ! get_force_discharge $_bat_str && do_force_discharge $_bat_str 0
+    ! get_force_discharge $_bat_str && set_force_discharge $_bat_str 0
 
     echo
     echo "Done: battery $_bat_str was completely discharged."
