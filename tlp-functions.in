@@ -441,6 +441,17 @@ clear_saved_power_state() { # remove last saved power state
     return 0
 }
 
+check_ac_power () { # check if ac power connected -- $1: function
+
+    if ! get_sys_power_supply ; then
+        echo_debug "bat" "check_ac_power($1).no_ac_power"
+        echo "Error: $1 is possible on AC power only." 1>&2
+        return 1
+    fi
+
+    return 0
+}
+
 echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
     if [ "$1" = "0" ]; then
         echo "TLP started in AC mode."
@@ -2307,31 +2318,11 @@ battery_present () { # check battery presence and return tpacpi-bat index
     return $rc
 }
 
-get_tpacpi_threshold () { # $1: ST/SP (start/stop); $2: 1/2 (battery)
-                          # rc: threshold (1..99, 0=default, 255=error)
-    local thresh rc
-
-    thresh=$($TPACPIBAT -g $1 $2 2> /dev/null | cut -f1 -d' ')
-    rc=$?
-
-    if [ $rc -eq 0 ] && [ -n "$thresh" ]; then
-        [ $thresh -ge 128 ] && thresh=$(($thresh - 128)) # Remove offset of 128 for Edge S430
-        return $thresh
-    else
-        return 255
-    fi
-}
-
-set_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
+get_threshold () { # read and echo charge threshold
+    # $1: start/stop
     # global param: $_bm_thresh, $_bat_idx, $_bf_start, $_bf_stop
-    # rc: 0=ok/1=read error/2=thresh not present/255=no thresh api
-
-    local bsys ts
-    local old_thresh=-1
-    local new_thresh=$3
-    local rc=0
-
-    [ $3 -eq -1 ] && return 0 # -1 = do not set threshold
+    # rc: threshold (1..100, 255=error)
+    local rc tprc
 
     case $_bm_thresh in
         natacpi|tpsmapi)
@@ -2341,26 +2332,85 @@ set_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
             esac
             if [ -f "$bsys" ]; then
                 # get effective threshold
-                old_thresh=$(cat $bsys 2> /dev/null)
-                if [ -z "$old_thresh" ]; then
-                    # can't determine effective threshold --> don't write new
-                    rc=1
-                elif [ "$old_thresh" -ne "$new_thresh" ]; then
-                    # when new threshold differs --> write new
-                    { printf '%s\n' $new_thresh > $bsys; } 2> /dev/null
-                    rc=$?
+                rc=$(cat $bsys 2> /dev/null)
+                if [ -z "$rc" ]; then
+                    # can't determine effective threshold
+                    rc=255
                 fi
             else
                 # sysfile non-existent, probably invalid bat argument
-                rc=2
+                rc=255
             fi
             ;; # natacpi, tpsmapi
 
         tpacpi) # use tpacpi-bat
             if [ $_bat_idx -ne 0 ]; then
                 # bat index is valid
+                rc=$($TPACPIBAT -g $1 $_bat_idx 2> /dev/null | cut -f1 -d' '); tprc=$?
 
-                # replace factory default values with 0 for tpacpi
+                if [ $tprc -eq 0 ] && [ -n "$rc" ]; then
+                    if [ $rc -ge 128 ]; then
+                        # Remove offset of 128 for Edge S430 et al.
+                        rc=$(($rc - 128))
+                    fi
+                    if [ $rc -eq 0 ]; then
+                        # replace 0 with factory default values
+                        case $1 in
+                            start) rc=96 ;;
+                            stop)  rc=100 ;;
+                        esac
+                    fi
+                else
+                    rc=255
+                fi
+            else
+                # bat index is invalid
+                rc=255
+            fi
+            ;; # tpacpi
+
+        *) # invalid threshold method
+            rc=255
+            ;;
+    esac
+
+    echo_debug "bat" "get_threshold($1): bm_thresh=$_bm_thresh; bat_idx=$_bat_idx; thresh=$rt"
+    return $rc
+}
+
+set_threshold () { # write charge threshold
+    # $1: start/stop, $2: BAT0/BAT1, $3: new value
+    # global param: $_bm_thresh, $_bat_idx, $_bf_start, $_bf_stop
+    # rc: 0=ok/1=read error/255=no thresh api
+
+    local bsys ts
+    local old_thresh=-1
+    local new_thresh=$3
+    local rc=0
+
+    [ $3 -eq -1 ] && return 0 # -1 = do not set threshold
+
+    # get effective threshold
+    get_threshold $1; old_thresh=$?
+
+    if [ $old_thresh -eq 255 ]; then
+        # can't determine effective threshold --> don't write new
+        rc=1
+
+    elif [ "$old_thresh" -ne "$new_thresh" ]; then
+        # new differs from effective threshold --> write it
+
+        case $_bm_thresh in
+            natacpi|tpsmapi)
+                case $1 in
+                    start) { printf '%s\n' $new_thresh > $_bf_start; } 2> /dev/null ;;
+                    stop)  { printf '%s\n' $new_thresh > $_bf_stop;  } 2> /dev/null ;;
+                esac
+                rc=$?
+                ;; # natacpi, tpsmapi
+
+            tpacpi)
+                # replace factory default values with 0 for tpacpi-bat
                 case $1 in
                     start)
                         [ $new_thresh -eq  96 ] && new_thresh=0
@@ -2371,23 +2421,15 @@ set_threshold () { # $1: start/stop, $2: BAT0/BAT1, $3: new value
                         ts="SP"
                         ;;
                 esac
+                $TPACPIBAT -s $ts $_bat_idx $new_thresh > /dev/null 2>&1;
+                rc=$?
+                ;; # tpacpi
 
-                # get effective threshold
-                get_tpacpi_threshold $ts $_bat_idx
-                old_thresh=$?
-
-                # when new threshold differs --> write new
-                if [ $new_thresh -ne $old_thresh ]; then
-                    $TPACPIBAT -s $ts $_bat_idx $new_thresh > /dev/null 2>&1
-                    rc=$?
-                fi
-            fi
-            ;; # tpacpi
-
-        *) # invalid threshold method
-            rc=255
-            ;;
-    esac
+            *) # invalid threshold method
+                rc=255
+                ;;
+        esac
+    fi
 
     echo_debug "bat" "set_threshold($1, $2): bm_thresh=$_bm_thresh; bat_idx=$_bat_idx; old=$old_thresh; new=$new_thresh; rc=$rc"
     return $rc
@@ -2480,38 +2522,6 @@ set_charge_thresholds () { # write all charge thresholds from configuration
     return 0
 }
 
-set_force_discharge () { # write force discharge state
-    # $1: BAT0/BAT1, $2: 0=off/1=on
-    # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
-    # rc: 0=done/1=write error/2=discharge not present/255=no thresh api
-
-    local rc=0
-
-    case $_bm_dischg in
-        natacpi|tpsmapi)
-            if [ -f "$_bf_dischg" ]; then
-                # write force_discharge
-                { printf '%s\n' $2 > $_bf_dischg; } 2> /dev/null; rc=$?
-            else
-                # sysfile non-existent, possibly invalid bat argument
-                rc=2
-            fi
-            ;; # natacpi, tpsmapi
-
-        tpacpi) # use tpacpi-bat
-            $TPACPIBAT -s FD $_bat_idx $2 > /dev/null 2>&1; rc=$?
-            ;; # tpcpaci
-
-        *) # invalid discharge method
-            rc=255
-            ;;
-    esac
-
-    echo_debug "bat" "set_force_discharge($1, $2): bm_dischg=$_bm_dischg; bat_idx=$_bat_idx; rc=$rc"
-
-    return $rc
-}
-
 get_force_discharge () { # $1: BAT0/BAT1,
     # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
     # rc: 0=off/1=on/2=discharge not present/255=no thresh api
@@ -2543,6 +2553,38 @@ get_force_discharge () { # $1: BAT0/BAT1,
     esac
 
     echo_debug "bat" "get_force_discharge($1): bm_dischg=$_bm_dischg; bat_idx=$_bat_idx; rc=$rc"
+    return $rc
+}
+
+set_force_discharge () { # write force discharge state
+    # $1: BAT0/BAT1, $2: 0=off/1=on
+    # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
+    # rc: 0=done/1=write error/2=discharge not present/255=no thresh api
+
+    local rc=0
+
+    case $_bm_dischg in
+        natacpi|tpsmapi)
+            if [ -f "$_bf_dischg" ]; then
+                # write force_discharge
+                { printf '%s\n' $2 > $_bf_dischg; } 2> /dev/null; rc=$?
+            else
+                # sysfile non-existent, possibly invalid bat argument
+                rc=2
+            fi
+            ;; # natacpi, tpsmapi
+
+        tpacpi) # use tpacpi-bat
+            $TPACPIBAT -s FD $_bat_idx $2 > /dev/null 2>&1; rc=$?
+            ;; # tpcpaci
+
+        *) # invalid discharge method
+            rc=255
+            ;;
+    esac
+
+    echo_debug "bat" "set_force_discharge($1, $2): bm_dischg=$_bm_dischg; bat_idx=$_bat_idx; rc=$rc"
+
     return $rc
 }
 
@@ -2586,17 +2628,6 @@ battery_discharging () { # check if battery is discharging -- $1: BAT0/BAT1,
 
     echo_debug "bat" "battery_discharging($1): bm_read=$_bm_read; rc=$rc"
     return $rc
-}
-
-check_ac_power () { # check if ac power connected -- $1: function
-
-    if ! get_sys_power_supply ; then
-        echo_debug "bat" "check_ac_power($1).no_ac_power"
-        echo "Error: $1 is possible on AC power only." 1>&2
-        return 1
-    fi
-
-    return 0
 }
 
 setcharge_battery () { # write charge thresholds (called from cmd line)
