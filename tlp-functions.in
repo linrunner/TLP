@@ -99,7 +99,7 @@ nodebug=0
 
 # --- Sysfiles
 
-catsysfd () { # echo contents of a sysfile; if file is non-existent or
+cat_sysfd () { # echo contents of a sysfile; if file is non-existent or
               # read fails, echo default value instead
               # $1: sysfile, $2: default value
     local val="$(cat $1 2> /dev/null)"
@@ -2883,19 +2883,19 @@ discharge_battery () { # discharge battery
             # show current battery state
             case $_bm_read in
                 natacpi|tpacpi) # use ACPI sysfiles
-                    perl -e 'printf ("voltage            = %6d [mV]\n", '$(catsysfd $_bd_read/voltage_now 0 2> /dev/null)' / 1000.0);'
+                    perl -e 'printf ("voltage            = %6d [mV]\n", '$(cat_sysfd $_bd_read/voltage_now 0 2> /dev/null)' / 1000.0);'
 
-                    en=$(catsysfd $_bd_read/energy_now 0 2> /dev/null)
+                    en=$(cat_sysfd $_bd_read/energy_now 0 2> /dev/null)
                     perl -e 'printf ("remaining capacity = %6d [mWh]\n", '$en' / 1000.0);'
 
-                    ef=$(catsysfd $_bd_read/energy_full 0 2> /dev/null)
+                    ef=$(cat_sysfd $_bd_read/energy_full 0 2> /dev/null)
                     if [ "$ef" != "0" ]; then
                         perl -e 'printf ("remaining percent  = %6d [%%]\n", 100.0 * '$en' / '$ef' );'
                     else
                         printf "remaining percent  = not available [%]\n"
                     fi
 
-                    pn=$(catsysfd $_bd_read/power_now 0 2> /dev/null)
+                    pn=$(cat_sysfd $_bd_read/power_now 0 2> /dev/null)
                     if [ "$pn" != "0" ]; then
                         perl -e 'printf ("remaining time     = %6d [min]\n", 60.0 * '$en' / '$pn');'
                         perl -e 'printf ("power              = %6d [mW]\n", '$pn' / 1000.0);'

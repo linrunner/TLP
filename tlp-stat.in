@@ -159,7 +159,7 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
     return 0
 }
 
-printsysf () { # output a sysfile
+print_sysf () { # output a sysfile
     # $1: format; $2: sysfile
     local val
 
@@ -859,8 +859,8 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
                 ddev=/sys/block/$disk_dev/device/power
                 if [ -f $ddev/control ]; then
                     echo
-                    printsysf "  Runtime PM: control = %s, " $ddev/control
-                    printsysf "autosuspend_delay = %4s\n"    $ddev/autosuspend_delay_ms
+                    print_sysf "  Runtime PM: control = %s, " $ddev/control
+                    print_sysf "autosuspend_delay = %4s\n"    $ddev/autosuspend_delay_ms
                 fi
 
                 if cmd_exists $SMARTCTL ; then
@@ -1262,9 +1262,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mW]" $batd/power_now "" 000
 
                     # store values for charge / capacity calculation below
-                    ed=$(catsysfd $batd/energy_full_design 0)
-                    ef=$(catsysfd $batd/energy_full 0)
-                    en=$(catsysfd $batd/energy_now 0)
+                    ed=$(cat_sysfd $batd/energy_full_design 0)
+                    ef=$(cat_sysfd $batd/energy_full 0)
+                    en=$(cat_sysfd $batd/energy_now 0)
                     efsum=$(($efsum + $ef))
                     ensum=$(($ensum + $en))
 
@@ -1275,9 +1275,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mA]" $batd/current_now "" 000
 
                     # store values for charge / capacity calculation below
-                    ed=$(catsysfd $batd/charge_full_design 0)
-                    ef=$(catsysfd $batd/charge_full 0)
-                    en=$(catsysfd $batd/charge_now 0)
+                    ed=$(cat_sysfd $batd/charge_full_design 0)
+                    ef=$(cat_sysfd $batd/charge_full 0)
+                    en=$(cat_sysfd $batd/charge_now 0)
                     efsum=$(($efsum + $ef))
                     ensum=$(($ensum + $en))
 
@@ -1305,7 +1305,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 printparm "%-59s = ##%6d##" $batd/cycle_count
 
                 if [ -f $batd/temperature ]; then
-                    perl -e 'printf ("%-59s = %6d [°C]\n", "'$batd/temperature'", '$(catsysfd $batd/temperature 0)' / 1000.0);'
+                    perl -e 'printf ("%-59s = %6d [°C]\n", "'$batd/temperature'", '$(cat_sysfd $batd/temperature 0)' / 1000.0);'
                 fi
 
                 printparm "%-59s = ##%6d## [mWh]" $batd/design_capacity
@@ -1329,9 +1329,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 fi
 
                 # store values for charge / capacity calculation below
-                ed=$(catsysfd $batd/design_capacity 0)
-                ef=$(catsysfd $batd/last_full_capacity 0)
-                en=$(catsysfd $batd/remaining_capacity 0)
+                ed=$(cat_sysfd $batd/design_capacity 0)
+                ef=$(cat_sysfd $batd/last_full_capacity 0)
+                en=$(cat_sysfd $batd/remaining_capacity 0)
                 efsum=$(($efsum + $ef))
                 ensum=$(($ensum + $en))
                 ;; # tp-smapi
