@@ -1,10 +1,11 @@
-+++ 1.2 --- 29.07.2018 +++
++++ 1.2 --- 17.09.2018 +++
 
 *** Development version ***
 
   * Features
     General:
       - tlp bat/ac: keep manual power settings until tlp start (Issue #349)
+      - Remove all pm-utils scripts (Issue #363)
     ThinkPad Battery:
       - New native kernel API for battery features "natacpi" (Issue #321;
         requires kernel 4.17; disabled by default

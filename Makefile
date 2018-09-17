@@ -4,7 +4,6 @@
 TLP_SBIN   ?= /usr/sbin
 TLP_BIN    ?= /usr/bin
 TLP_TLIB   ?= /usr/share/tlp
-TLP_PLIB   ?= /usr/lib/pm-utils
 TLP_ULIB   ?= /lib/udev
 TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
 TLP_CONF   ?= /etc/default/tlp
@@ -19,7 +18,6 @@ TLP_RUN    ?= /run/tlp
 _SBIN  = $(DESTDIR)$(TLP_SBIN)
 _BIN   = $(DESTDIR)$(TLP_BIN)
 _TLIB  = $(DESTDIR)$(TLP_TLIB)
-_PLIB  = $(DESTDIR)$(TLP_PLIB)
 _ULIB  = $(DESTDIR)$(TLP_ULIB)
 _NMDSP = $(DESTDIR)$(TLP_NMDSP)
 _CONF  = $(DESTDIR)$(TLP_CONF)
@@ -33,7 +31,6 @@ _RUN   = $(DESTDIR)$(TLP_RUN)
 SED = sed \
 	-e "s|@TLP_SBIN@|$(TLP_SBIN)|g" \
 	-e "s|@TLP_TLIB@|$(TLP_TLIB)|g" \
-	-e "s|@TLP_PLIB@|$(TLP_PLIB)|g" \
 	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
 	-e "s|@TLP_CONF@|$(TLP_CONF)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"
@@ -41,7 +38,6 @@ SED = sed \
 INFILES = \
 	tlp \
 	tlp-functions \
-	tlp-nop \
 	tlp-rdw-nm \
 	tlp-rdw.rules \
 	tlp-rdw-udev \
@@ -72,7 +68,6 @@ MANFILES8 = \
 SHFILES = \
 	tlp.in \
 	tlp-functions.in \
-	tlp-nop.in \
 	tlp-rdw-nm.in \
 	tlp-rdw-udev.in \
 	tlp-rf-func \
@@ -116,10 +111,6 @@ ifeq ($(TLP_WITH_SYSTEMD),1)
 	install -D -m 644 tlp.service $(_SYSD)/tlp.service
 	install -m 644 tlp-sleep.service $(_SYSD)/
 endif
-ifneq ($(TLP_NO_PMUTILS),1)
-	install -m 755 tlp-nop $(_TLIB)/
-	install -D -m 755 49tlp $(_PLIB)/sleep.d/49tlp
-endif
 ifneq ($(TLP_NO_BASHCOMP),1)
 	install -D -m 644 tlp.bash_completion $(_SHCPL)/tlp
 	ln -sf tlp $(_SHCPL)/tlp-stat
@@ -158,14 +149,12 @@ uninstall-tlp:
 	rm -f $(_TLIB)/tpacpi-bat
 	rm $(_TLIB)/tlp-functions
 	rm $(_TLIB)/tlp-rf-func
-	rm $(_TLIB)/tlp-nop
 	rmdir $(_TLIB)
 	rm $(_ULIB)/tlp-usb-udev
 	rm $(_ULIB)/rules.d/85-tlp.rules
 	rm -f $(DESTDIR)/etc/init.d/tlp
 	rm -f $(_SYSD)/tlp.service
 	rm -f $(_SYSD)/tlp-sleep.service
-	rm -f $(_PLIB)/sleep.d/49tlp
 	rm -f $(_SHCPL)/tlp-stat
 	rm -f $(_SHCPL)/bluetooth
 	rm -f $(_SHCPL)/wifi
