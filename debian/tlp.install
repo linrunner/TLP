@@ -12,7 +12,6 @@ usr/bin/tlp-stat
 usr/bin/tlp-usblist
 usr/bin/wifi
 usr/bin/wwan
-usr/lib/pm-utils/sleep.d/49tlp
 usr/sbin/tlp
 usr/share/bash-completion/completions/bluetooth
 usr/share/bash-completion/completions/tlp
@@ -20,7 +19,6 @@ usr/share/bash-completion/completions/tlp-stat
 usr/share/bash-completion/completions/wifi
 usr/share/bash-completion/completions/wwan
 usr/share/tlp/tlp-functions
-usr/share/tlp/tlp-nop
 usr/share/tlp/tlp-rf-func
 usr/share/tlp/tpacpi-bat
 usr/share/metainfo/de.linrunner.tlp.metainfo.xml

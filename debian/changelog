@@ -1,9 +1,10 @@
-tlp (1.1.900-1) unstable; urgency=low
+tlp (1.1.901-1) unstable; urgency=low
 
   [Thomas Koch]
   * Track development version
+  * Remove all pm-utils related stuff
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 10 Apr 2018 07:11:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 17 Sep 2018 10:37:42 +0200
 
 tlp (1.1-2) unstable; urgency=medium
 
