@@ -352,7 +352,7 @@ print_saved_powerstate () { # read and print saved state
     get_manual_mode
     case "$_manual_mode" in
         0|1) printf " (manual)\n" ;;
-        "")  printf "\n" ;;
+        *)   printf "\n" ;;
     esac
 
     return 0
@@ -583,7 +583,6 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     fi
 
     # --- show last invocation time
-    get_manual_mode
     printf "Last run       = %s\n" "$(print_file_modtime_and_age ${LOCKFILE}_tlp)"
 
     # --- show actual power mode

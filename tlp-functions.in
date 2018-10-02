@@ -417,6 +417,15 @@ compare_and_save_power_state() { # compare $1 to last saved power state,
     # rc: 0=different, 1=equal
     local lp
 
+    # intercept invalid states
+    case $1 in
+        0|1) ;; # valid state
+        *) # invalid new state --> return "different"
+            echo_debug "pm" "compare_and_save_power_state($1).invalid"
+            return 0
+            ;;
+    esac
+
     # read saved state
     lp=$(cat $PWRRUNFILE 2> /dev/null)
 
@@ -464,17 +473,21 @@ echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
 
 set_manual_mode () { # set manual operation mode
     # $1: 0=ac mode, 1=battery mode
+    # retval: $_manual_mode (0=ac, 1=battery, none=not found)
 
     create_rundir
     { printf '%s\n' "$1" > $MANUALMODEFILE; } 2> /dev/null
+    _manual_mode="$1"
 
     echo_debug "pm" "set_manual_mode($1)"
     return 0
 }
 
 clear_manual_mode () { # remove manual operation mode
+    # retval: $_manual_mode (none)
 
-    rm -r $MANUALMODEFILE 2> /dev/null
+    rm -f $MANUALMODEFILE 2> /dev/null
+    _manual_mode="none"
 
     echo_debug "pm" "clear_manual_mode"
     return 0
@@ -482,21 +495,18 @@ clear_manual_mode () { # remove manual operation mode
 
 get_manual_mode () { # get manual operation mode
     # rc: 0=ok/1=not found
-    # retval: $_manual_mode (0=ac, 1=battery)
+    # retval: $_manual_mode (0=ac, 1=battery, none=not found)
     local rc=1
-    _manual_mode=""
+    _manual_mode="none"
 
     if [ -f $MANUALMODEFILE ]; then
         # read mode file
         _manual_mode=$(cat $MANUALMODEFILE)
         case $_manual_mode in
             0|1) rc=0 ;;
-            "") ;;
-            *) _manual_mode="" ;;
+            *) _manual_mode="none" ;;
         esac
     fi
-
-    echo_debug "pm" "get_manual_mode: manual_mode=$_manual_mode; rc=$rc"
     return $rc
 }
 
