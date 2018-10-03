@@ -55,7 +55,11 @@ check_laptop_mode_tools
 
 # get cmd line args
 mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
-mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
+if [ "$mode" = "init" ]; then
+    mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
+else
+    mode2=""
+fi
 
 # inhibit trace output for tlp stat
 [ "$mode" = "stat" ] && nodebug=1
@@ -64,9 +68,9 @@ mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
 get_power_state; pwrmode=$?
 get_manual_mode
 
-modedebug=$mode
-[ -n "$mode2" ] && modedebug="$modedebug $mode2"
-echo_debug "run" "+++ mode=$modedebug ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
+mode_debug=$mode
+[ -n "$mode2" ] && modedebug="$mode_debug $mode2"
+echo_debug "run" "+++ mode=$mode_debug ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
 
 if [ -n "$addpath" ]; then
     echo_debug "path" "PATH=$oldpath[$addpath]"
@@ -304,21 +308,27 @@ case "$mode" in
         exitcode=$?
         ;;
 
-    fullcharge) # charge battery up to 100% (temporarily)
+    fullcharge) # charge battery to 100% (temporarily)
         if check_ac_power fullcharge; then
             check_root
             setcharge_battery 96 100 $2
             exitcode=$?
+            if [ $exitcode -eq 0 ]; then
+                echo "Charging starts now, keep AC connected."
+            fi
         else
             exitcode=2
         fi
         ;;
 
-    chargeonce) # charge battery to upper threshold once
+    chargeonce) # charge battery to stop threshold once
         if check_ac_power chargeonce; then
             check_root
             chargeonce_battery $2
             exitcode=$?
+            if [ $exitcode -eq 0 ]; then
+                echo "Charging starts now, keep AC connected."
+            fi
         else
             exitcode=2
         fi
@@ -342,8 +352,8 @@ case "$mode" in
             discharge_battery $2
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
-                echo "      The battery starts charging now. For a complete recalibration"
-                echo "      keep AC connected until the battery is fully charged."
+                echo "Charging starts now, for a complete recalibration"
+                echo "keep AC connected until the battery is fully charged."
             fi
         else
             exitcode=2

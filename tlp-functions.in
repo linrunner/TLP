@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="1.1.901"
+readonly TLPVER="1.1.902"
 
 readonly CONFFILE=@TLP_CONF@
 readonly RUNDIR=@TLP_RUN@
@@ -2192,7 +2192,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
 
     # --- 3. check for tp-smapi external kernel module [ThinkPads only]
     if [ -d $SMAPIBATDIR ]; then
-        # module loaded --> TPS-MAPI AVAILABLE
+        # module loaded --> tp-smapi available
         if [ "${TPSMAPI_ENABLE:-1}" = "0" ]; then
             # tpsmapi disabled by configuration
             _tpsmapi=32
@@ -2222,6 +2222,8 @@ check_battery_features () { # determine which battery feature APIs/tools are
 
     return 0
 }
+
+# --- Battery Detection
 
 battery_present () { # check battery presence and return tpacpi-bat index
     # $1: BAT0/BAT1/DEF
@@ -2328,11 +2330,13 @@ battery_present () { # check battery presence and return tpacpi-bat index
     return $rc
 }
 
+# --- Battery Charge Thresholds
+
 get_threshold () { # read and echo charge threshold
     # $1: start/stop
     # global param: $_bm_thresh, $_bat_idx, $_bf_start, $_bf_stop
     # rc: threshold (1..100, 255=error)
-    local rc tprc
+    local bsys rc tprc
 
     case $_bm_thresh in
         natacpi|tpsmapi)
@@ -2384,71 +2388,148 @@ get_threshold () { # read and echo charge threshold
             ;;
     esac
 
-    echo_debug "bat" "get_threshold($1): bm_thresh=$_bm_thresh; bat_idx=$_bat_idx; thresh=$rt"
+    echo_debug "bat" "get_threshold($1): bm_thresh=$_bm_thresh; bat_idx=$_bat_idx; thresh=$rc"
     return $rc
 }
 
-set_threshold () { # write charge threshold
-    # $1: start/stop, $2: BAT0/BAT1, $3: new value
-    # global param: $_bm_thresh, $_bat_idx, $_bf_start, $_bf_stop
-    # rc: 0=ok/1=read error/255=no thresh api
+set_thresholds () { # write both charge thresholds for a battery,
+    # use pre-determined method from global parms, set by battery_present()
+    # $1: BAT0/BAT1,
+    # $2: new start treshold, $3: new stop threshold,
+    # $4: 0=quiet/1=output progress and error messages
+    # global param: $_bm_thresh, $_bat_str, $_bat_idx, $_bf_start, $_bf_stop
+    # rc: 0=ok/1=write error/2=read error/255=no thresh api
+    local verb=${4:-0}
 
-    local bsys ts
-    local old_thresh=-1
-    local new_thresh=$3
-    local rc=0
+    echo_debug "bat" "set_thresholds($1, $2, $3, $4): bm_thresh=$_bm_thresh; bat_str=$_bat_str; bat_idx=$_bat_idx"
 
-    [ $3 -eq -1 ] && return 0 # -1 = do not set threshold
+    # read old threshold values
+    local old_start old_stop
 
-    # get effective threshold
-    get_threshold $1; old_thresh=$?
-
-    if [ $old_thresh -eq 255 ]; then
-        # can't determine effective threshold --> don't write new
-        rc=1
-
-    elif [ "$old_thresh" -ne "$new_thresh" ]; then
-        # new differs from effective threshold --> write it
-
-        case $_bm_thresh in
-            natacpi|tpsmapi)
-                case $1 in
-                    start) { printf '%s\n' $new_thresh > $_bf_start; } 2> /dev/null ;;
-                    stop)  { printf '%s\n' $new_thresh > $_bf_stop;  } 2> /dev/null ;;
-                esac
-                rc=$?
-                ;; # natacpi, tpsmapi
-
-            tpacpi)
-                # replace factory default values with 0 for tpacpi-bat
-                case $1 in
-                    start)
-                        [ $new_thresh -eq  96 ] && new_thresh=0
-                        ts="ST"
-                        ;;
-                    stop)
-                        [ $new_thresh -eq 100 ] && new_thresh=0
-                        ts="SP"
-                        ;;
-                esac
-                $TPACPIBAT -s $ts $_bat_idx $new_thresh > /dev/null 2>&1;
-                rc=$?
-                ;; # tpacpi
-
-            *) # invalid threshold method
-                rc=255
-                ;;
-        esac
+    get_threshold start; old_start=$?
+    if [ $old_start -eq 255 ]; then
+        [ "$verb" = "1" ] && echo "Error: cannot read start threshold. Aborting." 1>&2
+        echo_debug "bat" "set_thresholds($1, $2, $3, $4).start.read_error"
+        return 2
     fi
 
-    echo_debug "bat" "set_threshold($1, $2): bm_thresh=$_bm_thresh; bat_idx=$_bat_idx; old=$old_thresh; new=$new_thresh; rc=$rc"
+    get_threshold stop; old_stop=$?
+    if [ $old_stop -eq 255 ]; then
+        [ "$verb" = "1" ] && echo "Error: cannot read stop threshold. Aborting." 1>&2
+        echo_debug "bat" "set_thresholds($1, $2, $3, $4).stop.read_error"
+        return 2
+    fi
+
+    # evaluate threshold args: replace empty string with -1, which means
+    # don't change this threshold
+    local new_start=${2:--1}
+    local new_stop=${3:--1}
+
+    # determine write sequence to enforce start <= stop - 4 because
+    # driver boundary conditions must be met in all write stages:
+    # - natacpi: start <= stop (write fails if not met)
+    # - tpacpi:  nothing (maybe BIOS enforces something)
+    # - tpsmapi: start <= stop - 4 (changes value for compliance)
+    local tseq
+
+    if [ $new_start -gt $(($old_stop - 4)) ]; then
+        tseq="stop start"
+    else
+        tseq="start stop"
+    fi
+
+    # write new thresholds in determined sequence
+    local rc=0 step steprc
+
+    if [ "$verb" = "1" ]; then
+        echo "Setting temporary charge thresholds for $_bat_str:"
+    fi
+
+    for step in $tseq; do
+        local old_thresh new_thresh
+
+        case $step in
+            start)
+                old_thresh=$old_start
+                new_thresh=$new_start
+                ;;
+
+            stop)
+                old_thresh=$old_stop
+                new_thresh=$new_stop
+                ;;
+        esac
+
+        [ $new_thresh -eq -1 ] && continue # -1 means don't change this threshold
+
+        if [ $old_thresh -ne $new_thresh ]; then
+            # new threshold differs from effective one --> write it
+            case $_bm_thresh in
+                natacpi|tpsmapi)
+                    case $step in
+                        start) { printf '%s\n' $new_thresh > $_bf_start; } 2> /dev/null ;;
+                        stop)  { printf '%s\n' $new_thresh > $_bf_stop;  } 2> /dev/null ;;
+                    esac
+                    steprc=$?; [ $rc -eq 0 ] && rc=$steprc
+                    ;; # natacpi, tpsmapi
+
+                tpacpi)
+                    # replace factory default values with 0 for tpacpi-bat
+                    local nt ts
+
+                    case $step in
+                        start)
+                            ts="ST"
+                            if [ $new_thresh -eq  96 ]; then
+                                nt=0
+                            else
+                                nt=$new_thresh
+                            fi
+                            ;;
+                        stop)
+                            ts="SP"
+                            if [ $new_thresh -eq  100 ]; then
+                                nt=0
+                            else
+                                nt=$new_thresh
+                            fi
+                            ;;
+                    esac
+                    $TPACPIBAT -s $ts $_bat_idx $nt > /dev/null 2>&1;
+                    steprc=$?; [ $rc -eq 0 ] && rc=$steprc
+                    ;; # tpacpi
+
+                *) # invalid threshold method --> abort
+                    rc=255
+                    break
+                    ;;
+            esac
+            echo_debug "bat" "set_thresholds($1, $2, $3, $4).$step.write: old=$old_thresh; new=$new_thresh; steprc=$steprc"
+
+            if [ "$verb" = "1" ]; then
+                if [ $steprc -eq 0 ]; then
+                    printf "  %-5s = %3d\n" $step $new_thresh
+                else
+                    printf "  %-5s => Error: cannot set threshold.\n" $step $new_thresh 1>&2
+                fi
+            fi
+        else
+            echo_debug "bat" "set_thresholds($1, $2, $3, $4).$step.no_change: old=$old_thresh; new=$new_thresh"
+
+            if [ "$verb" = "1" ]; then
+                printf "  %-5s = %3d (no change)\n" $step $new_thresh
+            fi
+        fi
+    done # for step
+
+    echo_debug "bat" "set_thresholds($1, $2, $3, $4): rc=$rc"
     return $rc
 }
 
-normalize_thresholds () { # check values and enforce start < stop - 3
-    # $1: start threshold; $2: stop_threshold
+normalize_thresholds () { # check values and enforce start <= stop - 4
+    # $1: start threshold; $2: stop threshold
     # rc: 0
-    # retval: $start_thresh, $stop_thresh
+    # retval: $_start_thresh, $_stop_thresh
 
     local type thresh
 
@@ -2467,23 +2548,23 @@ normalize_thresholds () { # check values and enforce start < stop - 3
         case $type in
             start)
                 [ $thresh -eq 0 ] || [ $thresh -gt 96 ] && thresh=96
-                start_thresh=$thresh
+                _start_thresh=$thresh
                 ;;
 
             stop)
                 [ $thresh -eq 0 ] || [ $thresh -gt 100 ] && thresh=100
                 [ $thresh -ne -1 ] && [ $thresh -lt 5 ] && thresh=5
-                stop_thresh=$thresh
+                _stop_thresh=$thresh
                 ;;
         esac
     done
 
-    # enforce start < stop - 3
-    if [ $start_thresh -ne -1 ] && [ $stop_thresh -ne -1 ]; then
-        [ $start_thresh -ge $(($stop_thresh - 3)) ] && start_thresh=$(($stop_thresh - 4))
+    # enforce start <= stop - 4
+    if [ $_start_thresh -ne -1 ] && [ $_stop_thresh -ne -1 ]; then
+        [ $_start_thresh -gt $(($_stop_thresh - 4)) ] && _start_thresh=$(($_stop_thresh - 4))
     fi
 
-    echo_debug "bat" "normalize_thresholds($1, $2): start=$start_thresh; stop=$stop_thresh"
+    echo_debug "bat" "normalize_thresholds($1, $2): start=$_start_thresh; stop=$_stop_thresh"
 
     return 0
 }
@@ -2491,46 +2572,188 @@ normalize_thresholds () { # check values and enforce start < stop - 3
 set_charge_thresholds () { # write all charge thresholds from configuration
     # rc: 0
 
-    local rc
-
     if battery_present BAT0; then
+        # validate thresholds
         normalize_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0"
-
-        if [ $stop_thresh -ne -1 ]; then
-            set_threshold stop BAT0 $stop_thresh; rc=$?
-            echo_debug "bat" "set_charge_thresholds.stop(BAT0): $stop_thresh; rc=$rc"
-        else
-            echo_debug "bat" "set_charge_thresholds.stop(BAT0).not_set"
-        fi
-
-        if [ $start_thresh -ne -1 ]; then
-            set_threshold start BAT0 $start_thresh; rc=$?
-            echo_debug "bat" "set_charge_thresholds.start(BAT0): $start_thresh; rc=$rc"
-        else
-            echo_debug "bat" "set_charge_thresholds.start(BAT0).not_set"
-        fi
+        # write thresholds (quiet mode)
+        set_thresholds BAT0 $_start_thresh $_stop_thresh 0
     fi
 
     if battery_present BAT1; then
+        # validate thresholds
         normalize_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1"
-
-        if [ $stop_thresh -ne -1 ]; then
-            set_threshold stop BAT1 $stop_thresh; rc=$?
-            echo_debug "bat" "set_charge_thresholds.stop(BAT1): $stop_thresh; rc=$rc"
-        else
-            echo_debug "bat" "set_charge_thresholds.stop(BAT1).not_set"
-        fi
-
-        if [ $start_thresh -ne -1 ]; then
-            set_threshold start BAT1 $start_thresh; rc=$?
-            echo_debug "bat" "set_charge_thresholds.start(BAT1): $start_thresh; rc=$rc"
-        else
-            echo_debug "bat" "set_charge_thresholds.start(BAT1).not_set"
-        fi
+        # write thresholds (quiet mode)
+        set_thresholds BAT1 $_start_thresh $_stop_thresh 0
     fi
 
     return 0
 }
+
+setcharge_battery () { # write charge thresholds (called from cmd line)
+    # $1: start charge threshold, $2: stop charge threshold, $3: battery
+    # rc: 0=ok/> 0=error
+
+    local bat rc start_thresh stop_thresh
+    local use_cfg=0
+    # $_bat_str is global for cancel_force_discharge() trap
+
+    # check params
+    case $# in
+        0) # no args
+            bat=DEF   # use default(1st) battery
+            use_cfg=1 # use configured values
+            ;;
+
+        1) # assume $1 is battery
+            bat=$1
+            use_cfg=1 # use configured values
+            ;;
+
+        2) # assume $1,$2 are thresholds
+            start_thresh=$1
+            stop_thresh=$2
+            bat=DEF # use default(1st) battery
+            ;;
+
+        3) # assume $1,$2 are thresholds, $3 is battery
+            start_thresh=$1
+            stop_thresh=$2
+            bat=$3
+            ;;
+    esac
+
+    # convert bat to uppercase
+    bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
+
+    # check bat presence and/or get default(1st) battery
+    battery_present $bat
+    case $? in
+        0) # battery present
+            # get configured values if requested
+            if [ $use_cfg -eq 1 ]; then
+                eval start_thresh="\$START_CHARGE_THRESH_${_bat_str}"
+                eval stop_thresh="\$STOP_CHARGE_THRESH_${_bat_str}"
+            fi
+            ;;
+
+        255) # no method
+            echo "Error: battery feature not available." 1>&2
+            echo_debug "bat" "setcharge_battery.no_method"
+            return 1
+            ;;
+
+        *) # not present
+            echo "Error: battery $bat not present." 1>&2
+            echo_debug "bat" "setcharge_battery.not_present($bat)"
+            return 1
+            ;;
+    esac
+
+    # validate thresholds
+    normalize_thresholds $start_thresh $stop_thresh
+    # write thresholds (verbose mode)
+    set_thresholds $_bat_str $_start_thresh $_stop_thresh 1
+    rc=$?
+
+    return $rc
+}
+
+chargeonce_battery () { # charge battery to upper threshold once
+    # $1: battery
+    # rc: 0=ok/1=error
+
+    local bat start_thresh stop_thresh temp_start_thresh
+    local efull=0
+    local enow=0
+    local ccharge=0
+
+    # check params
+    if [ $# -gt 0 ]; then
+        # some parameters given, check them
+
+        # get battery arg
+        bat=${1:-DEF}
+        bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
+    else
+        # no parameters given, use default(1st) battery
+        bat=DEF
+    fi
+
+    # check if selected battery is present
+    battery_present $bat
+    case $? in
+        0) ;; # battery present
+
+        255) # no method
+            echo "Error: battery feature not available." 1>&2
+            echo_debug "bat" "chargeonce_battery.no_method"
+            return 1
+            ;;
+
+        *) # not present
+            echo "Error: battery $_bat_str not present." 1>&2
+            echo_debug "bat" "chargeonce_battery.not_present($_bat_str)"
+            return 1
+            ;;
+    esac
+
+    # get and check thresholds from configuration
+    eval start_thresh="\$START_CHARGE_THRESH_${_bat_str}"
+    eval stop_thresh="\$STOP_CHARGE_THRESH_${_bat_str}"
+
+    [ -z "$stop_thresh" ] && stop_thresh=100
+    if [ -z "$start_thresh" ] ; then
+        echo_debug "bat" "chargeonce_battery($_bat_str).start_threshold_not_configured"
+        echo "Error: no start charge threshold configured for $_bat_str." 1>&2
+        return 1
+    fi
+
+    # get current charge level (in %)
+    case $_bm_read in
+        natacpi|tpacpi) # use ACPI sysfiles
+            if [ -f $_bd_read/energy_full ]; then
+                get_sysval $_bd_read/energy_full; efull=$?
+                get_sysval $_bd_read/energy_now; enow=$?
+            fi
+
+            if [ $efull -ne 0 ]; then
+                ccharge=$(( 100 * $enow / $efull ))
+            else
+                ccharge=-1
+            fi
+            ;; # natacpi, tpacpi
+
+        tpsmapi) # use tp-smapi sysfiles
+            get_sysval $_bd_read/remaining_percent; ccharge=$?
+            ;; # tpsmapi
+
+        *) # invalid read method
+            rc=255
+            ;;
+    esac
+
+    if [ $ccharge -eq -1 ] ; then
+        echo_debug "bat" "chargeonce_battery($_bat_str).charge_level_unknown: enow=$enow; efull=$efull; ccharge=$ccharge"
+        echo "Error: cannot determine charge level for $_bat_str." 1>&2
+        return 1
+    else
+        echo_debug "bat" "chargeonce_battery($_bat_str).charge_level: enow=$enow; efull=$efull; ccharge=$ccharge"
+    fi
+
+    temp_start_thresh=$(( $stop_thresh - 4 ))
+    if [ $temp_start_thresh -le $ccharge ] ; then
+        echo_debug "bat" "chargeonce_battery($_bat_str).charge_level_too_high: $temp_start_thresh $stop_thresh"
+        echo "Error: current charge level ($ccharge) of $_bat_str is higher than stop charge threshold - 4 ($temp_start_thresh)." 1>&2
+        return 1
+    else
+        echo_debug "bat" "chargeonce_battery($_bat_str).setcharge: $temp_start_thresh $stop_thresh"
+    fi
+
+    set_thresholds $_bat_str $temp_start_thresh $stop_thresh 1
+    return $?
+}
+
+# --- Battery Forced Discharge
 
 get_force_discharge () { # $1: BAT0/BAT1,
     # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
@@ -2638,203 +2861,6 @@ battery_discharging () { # check if battery is discharging -- $1: BAT0/BAT1,
 
     echo_debug "bat" "battery_discharging($1): bm_read=$_bm_read; rc=$rc"
     return $rc
-}
-
-setcharge_battery () { # write charge thresholds (called from cmd line)
-    # $1: start charge threshold, $2: stop charge threshold, $3: battery
-    # rc: 0=ok/1=error
-
-    local bat rc st sp
-    local use_cfg=0
-    # $_bat_str is global for cancel_force_discharge() trap
-
-    # check params
-    case $# in
-        0) # no args
-            bat=DEF   # use default(1st) battery
-            use_cfg=1 # use configured values
-            ;;
-
-        1) # assume $1 is battery
-            bat=$1
-            use_cfg=1 # use configured values
-            ;;
-
-        2) # assume $1,$2 are thresholds
-            st=$1
-            sp=$2
-            bat=DEF # use default(1st) battery
-            ;;
-
-        3) # assume $1,$2 are thresholds, $3 is battery
-            st=$1
-            sp=$2
-            bat=$3
-            ;;
-    esac
-
-    # convert bat to uppercase
-    bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
-
-    # check bat presence and/or get default(1st) battery
-    battery_present $bat
-    case $? in
-        0) # battery present
-            # get configured values if requested
-            if [ $use_cfg -eq 1 ]; then
-                eval st="\$START_CHARGE_THRESH_${_bat_str}"
-                eval sp="\$STOP_CHARGE_THRESH_${_bat_str}"
-            fi
-            ;;
-
-        255) # no method
-            echo "Error: battery feature not available." 1>&2
-            echo_debug "bat" "setcharge_battery.no_method"
-            return 1
-            ;;
-
-        *) # not present
-            echo "Error: battery $bat not present." 1>&2
-            echo_debug "bat" "setcharge_battery.not_present($bat)"
-            return 1
-            ;;
-    esac
-
-    # validate thresholds
-    normalize_thresholds $st $sp
-
-    # write threshold values
-    echo "Setting temporary charge thresholds for $_bat_str:"
-
-    if [ $stop_thresh -ne -1 ]; then
-        set_threshold stop $_bat_str $stop_thresh; rc=$?
-
-        echo_debug "bat" "setcharge_battery.stop($_bat_str): $stop_thresh; rc=$rc"
-        if [ $rc -eq 0 ]; then
-            echo "  stop  = $stop_thresh"
-        else
-            echo "  stop  => Error: cannot set threshold. Aborting." 1>&2
-            return 1
-        fi
-    else
-        echo_debug "bat" "setcharge_battery.stop($_bat_str).not_configured"
-        echo "  stop = not configured"
-    fi
-
-    if [ $start_thresh -ne -1 ]; then
-        set_threshold start $_bat_str $start_thresh; rc=$?
-
-        echo_debug "bat" "setcharge_battery.start($_bat_str): $start_thresh; rc=$rc"
-        if [ $rc -eq 0 ]; then
-            echo "  start = $start_thresh"
-        else
-            echo "  start => Warning: cannot set threshold." 1>&2
-            return 1
-        fi
-    else
-        echo_debug "bat" "setcharge_battery.start($_bat_str).not_configured"
-        echo "  start = not configured"
-    fi
-
-    return 0
-}
-
-chargeonce_battery () { # charge battery to upper threshold once
-    # $1: battery
-    # rc: 0=ok/1=error
-
-    local bat temp_start_thresh
-    local start_thresh=""
-    local stop_thresh=""
-    local efull=0
-    local enow=0
-    local ccharge=0
-
-    # check params
-    if [ $# -gt 0 ]; then
-        # some parameters given, check them
-
-        # get battery arg
-        bat=${1:-DEF}
-        bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
-    else
-        # no parameters given, use default(1st) battery
-        bat=DEF
-    fi
-
-    # check if selected battery is present
-    battery_present $bat
-    case $? in
-        0) ;; # battery present
-
-        255) # no method
-            echo "Error: battery feature not available." 1>&2
-            echo_debug "bat" "chargeonce_battery.no_method"
-            return 1
-            ;;
-
-        *) # not present
-            echo "Error: battery $_bat_str not present." 1>&2
-            echo_debug "bat" "chargeonce_battery.not_present($_bat_str)"
-            return 1
-            ;;
-    esac
-
-    # get and check thresholds from configuration)
-    eval stop_thresh="\$START_CHARGE_THRESH_${_bat_str}"
-    eval start_thresh="\$STOP_CHARGE_THRESH_${_bat_str}"
-
-    [ -z "$stop_thresh" ] && stop_thresh=100
-    if [ -z "$start_thresh" ] ; then
-        echo_debug "bat" "chargeonce_battery($_bat_str).start_threshold_not_configured"
-        echo "Error: no start charge threshold configured for $_bat_str." 1>&2
-        return 1
-    fi
-
-    # get current charge level (in %)
-    case $_bm_read in
-        natacpi|tpacpi) # use ACPI sysfiles
-            if [ -f $_bd_read/energy_full ]; then
-                get_sysval $_bd_read/energy_full; efull=$?
-                get_sysval $_bd_read/energy_now; enow=$?
-            fi
-
-            if [ $efull -ne 0 ]; then
-                ccharge=$(( 100 * $enow / $efull ))
-            else
-                ccharge=-1
-            fi
-            ;; # natacpi, tpacpi
-
-        tpsmapi) # use tp-smapi sysfiles
-            get_sysval $_bd_read/remaining_percent; ccharge=$?
-            ;; # tpsmapi
-
-        *) # invalid read method
-            bsys=""
-            rc=255
-            ;;
-    esac
-
-    if [ $ccharge -eq -1 ] ; then
-        echo_debug "bat" "chargeonce_battery($_bat_str).charge_level_unknown: enow=$enow; efull=$efull; ccharge=$ccharge"
-        echo "Error: cannot determine charge level for $_bat_str." 1>&2
-        return 1
-    else
-        echo_debug "bat" "chargeonce_battery($_bat_str).charge_level: enow=$enow; efull=$efull; ccharge=$ccharge"
-    fi
-
-    temp_start_thresh=$(( $stop_thresh - 4 ))
-    if [ $temp_start_thresh -le $ccharge ] ; then
-        echo_debug "bat" "chargeonce_battery($_bat_str).charge_level_too_high: $temp_start_thresh $stop_thresh"
-        echo "Error: current charge level ($ccharge) of $_bat_str is higher than stop charge threshold - 4 ($temp_start_thresh)." 1>&2
-        return 1
-    else
-        echo_debug "bat" "chargeonce_battery($_bat_str).setcharge: $temp_start_thresh $stop_thresh"
-    fi
-
-    setcharge_battery $temp_start_thresh $stop_thresh $_bat_str
-    return $?
 }
 
 discharge_battery () { # discharge battery
