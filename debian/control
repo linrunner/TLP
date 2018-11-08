@@ -12,8 +12,8 @@ Homepage: http://linrunner.de/tlp
 Package: tlp
 Architecture: all
 Depends: lsb-base, hdparm, iw | wireless-tools, pciutils, rfkill, usbutils, ${misc:Depends}
-Recommends: tlp-rdw, ethtool, ${dist:Recommends}
-Suggests: tp-smapi-dkms, acpi-call-dkms, smartmontools
+Recommends: tlp-rdw, ethtool
+Suggests: tp-smapi-dkms, acpi-call-dkms, smartmontools, ${dist:Suggests}
 Conflicts: laptop-mode-tools
 Description: Save battery power on laptops
  TLP is an advanced power management tool for Linux. It comes with a

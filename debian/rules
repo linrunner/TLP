@@ -5,9 +5,9 @@
 
 # Debian and Ubuntu provide x86_energy_perf_policy in different packages
 ifeq ($(shell dpkg-vendor --derives-from Ubuntu && echo yes),yes)
-	SUBSTVARS = -Vdist:Recommends="linux-tools"
+	SUBSTVARS = -Vdist:Suggests="linux-tools-generic | linux-tools"
 else
-	SUBSTVARS = -Vdist:Recommends="linux-cpupower"
+	SUBSTVARS = -Vdist:Suggests="linux-cpupower"
 endif
 
 %:
