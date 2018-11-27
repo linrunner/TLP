@@ -18,7 +18,7 @@ usr/share/bash-completion/completions/tlp
 usr/share/bash-completion/completions/tlp-stat
 usr/share/bash-completion/completions/wifi
 usr/share/bash-completion/completions/wwan
-usr/share/tlp/tlp-functions
-usr/share/tlp/tlp-rf-func
+usr/share/tlp/tlp-func-base
+usr/share/tlp/func.d/*
 usr/share/tlp/tpacpi-bat
 usr/share/metainfo/de.linrunner.tlp.metainfo.xml

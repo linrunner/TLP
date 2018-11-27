@@ -1,11 +1,12 @@
-tlp (1.1.902-1) unstable; urgency=low
+tlp (1.1.903-1) unstable; urgency=low
 
   [Thomas Koch]
   * Track development version
   * Remove all pm-utils related stuff
   * Demote linux-tools Recommends to Suggests and prefer generic (LP: #1783455)
+  * debian/install: reflect func.d changes
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 08 Nov 2018 18:24:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 27 Nov 2018 19:42:49 +0100
 
 tlp (1.1-2) unstable; urgency=medium
 
