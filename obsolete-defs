@@ -1,0 +1,3 @@
+readonly DBUSSEND=dbus-send
+readonly NMD=NetworkManager
+readonly NMTOOL=nm-tool

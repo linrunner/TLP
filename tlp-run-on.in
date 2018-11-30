@@ -4,17 +4,10 @@
 # Copyright (c) 2018 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
-# --- Constants
-readonly LIBDIR="@TLP_TLIB@"
-readonly LIBS="tlp-functions"
-
 # --- Source libraries
-for lib in $LIBS; do
-    if [ ! -f $LIBDIR/$lib ]; then
-        echo "Error: missing function library \'$LIBDIR/$lib\'." 1>&2
-        exit 1
-    fi
-    . $LIBDIR/$lib
+
+for lib in @TLP_TLIB@/tlp-func-base; do
+    . $lib
 done
 
 # --- MAIN

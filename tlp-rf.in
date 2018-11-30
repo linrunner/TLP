@@ -4,20 +4,14 @@
 # Copyright (c) 2018 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
-# --- Constants
-readonly LIBDIR="@TLP_TLIB@"
-readonly LIBS="tlp-functions tlp-rf-func"
-
 # --- Source libraries
-for lib in $LIBS; do
-    if [ ! -f $LIBDIR/$lib ]; then
-        echo "Error: missing function library \'$LIBDIR/$lib\'." 1>&2
-        exit 1
-    fi
-    . $LIBDIR/$lib
+
+for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/25-tlp-func-rf @TLP_FLIB@/30-tlp-func-rdw; do
+    . $lib
 done
 
 # --- MAIN
+
 read_defaults
 add_sbin2path
 self=${0##*/}

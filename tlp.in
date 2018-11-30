@@ -4,20 +4,14 @@
 # Copyright (c) 2018 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
-# --- Constants
-readonly LIBDIR="@TLP_TLIB@"
-readonly LIBS="tlp-functions tlp-rf-func"
-
 # --- Source libraries
-for lib in $LIBS; do
-    if [ ! -f $LIBDIR/$lib ]; then
-        echo "Error: missing function library \'$LIBDIR/$lib\'." 1>&2
-        exit 1
-    fi
-    . $LIBDIR/$lib
+
+for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/[0-9][0-9]*; do
+    . $lib
 done
 
 # --- Subroutines
+
 apply_common_settings () { # apply settings common to all modes
                            # $1: 0=ac mode, 1=battery mode
     set_laptopmode $1
@@ -47,6 +41,7 @@ apply_common_settings () { # apply settings common to all modes
 }
 
 # --- MAIN
+
 read_defaults
 check_tlp_enabled || exit 1
 add_sbin2path

@@ -8,6 +8,7 @@
 #         not for the corresponding subdevices.
 
 # --- Constants
+
 readonly LOGGER=logger
 
 readonly USBD=/sys/bus/usb/devices
@@ -20,7 +21,8 @@ readonly USB_DONE=usb_done
 
 readonly CONFFILE=@TLP_CONF@
 
-# --- Subroutines
+# --- Functions
+
 wordinlist () { # test if word in list
                 # $1: word, $2: whitespace-separated list of words
     local word

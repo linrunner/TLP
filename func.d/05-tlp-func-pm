@@ -1,0 +1,292 @@
+#!/bin/sh
+# tlp-func-pm - Device Power Management Functions
+#
+# Copyright (c) 2018 Thomas Koch <linrunner at gmx.net> and others.
+# This software is licensed under the GPL v2 or later.
+
+# Needs: tlp-func-base
+
+# ----------------------------------------------------------------------------
+# Constants
+
+readonly ETHTOOL=ethtool
+
+readonly RADD=/sys/module/radeon
+readonly PCID=/sys/bus/pci/devices
+readonly PCIDRV=/sys/bus/pci/drivers
+
+readonly DEFAULT_PM_DRIVER_BLACKLIST="amdgpu nouveau nvidia radeon"
+
+# ----------------------------------------------------------------------------
+# Functions
+
+# --- PCI(e) Devices
+
+set_runtime_pm () { # set runtime power management
+    # $1: 0=ac mode, 1=battery mode
+
+    local address class ccontrol control device driver drv_bl pci_bl type vendor
+
+    if [ "$1" = "1" ]; then
+        ccontrol=${RUNTIME_PM_ON_BAT:-}
+    else
+        ccontrol=${RUNTIME_PM_ON_AC:-}
+    fi
+
+    if [ -z "$ccontrol" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_runtime_pm($1).not_configured"
+        return 0
+    fi
+
+    # driver specific blacklist:
+    # - undefined = use internal default from $DEFAULT_PM_DRIVER_BLACKLIST
+    # - empty     = disable feature
+    drv_bl="${RUNTIME_PM_DRIVER_BLACKLIST-${DEFAULT_PM_DRIVER_BLACKLIST}}"
+
+    # pci id blacklist
+    pci_bl=${RUNTIME_PM_BLACKLIST:-}
+
+    # add devices assigned to blacklisted drivers to the pci id blacklist
+    for driver in $drv_bl; do # iterate list
+        if [ -n "$driver" ] && [ -d $PCIDRV/$driver ]; then
+            # driver is active --> iterate over assigned devices
+            for device in $PCIDRV/$driver/0000:*; do
+                # get short device address
+                address=${device##/*/0000:}
+
+                # add to list when not already contained
+                if ! wordinlist "$address" "$pci_bl"; then
+                    pci_bl="$pci_bl $address"
+                fi
+            done # for device
+        fi # if driver
+    done # for driver
+
+    # iterate pci(e) devices
+    for type in $PCID; do
+        for device in $type/*; do
+            if [ -f $device/power/control ]; then
+                # get short device address, class
+                address=${device##/*/0000:}
+                class=$(cat $device/class 2> /dev/null)
+
+                if wordinlist "$address" "$pci_bl"; then
+                    # device is in address blacklist
+                    control="black_address"
+
+                else
+                    control=$ccontrol
+
+                    # check for Nvidia gpu's
+                    if wordinlist "nouveau" "$drv_bl" || wordinlist "nvidia" "$drv_bl"; then
+                        # driver nouveau or nvidia is in blacklist
+                        # --> blacklist depending on vendor and class
+                        vendor=$(cat $device/vendor 2> /dev/null)
+
+                        if [ "$vendor" = "0x10de" ]; then
+                            # vendor nvidia
+                            # --> check for display or 3d controller class
+                            case $class in
+                                "0x030000") control="black_nvgpu" ;;
+                                "0x030200") control="black_nvgpu" ;;
+                            esac
+                        fi
+                    fi # if nouveau | nvidia blacklisted
+
+                    case $control in
+                        auto|on) { printf '%s\n' $control > $device/power/control; } 2> /dev/null ;;
+                        *) ;; # do nothing
+                    esac
+                fi #
+
+                echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]"
+            fi # if class && control
+        done # for device
+    done # for type
+
+    return 0
+}
+
+set_pcie_aspm () { # set pcie active state power management
+    # $1: 0=ac mode, 1=battery mode
+
+    local pwr
+
+    if [ "$1" = "1" ]; then
+        pwr=${PCIE_ASPM_ON_BAT:-}
+    else
+        pwr=${PCIE_ASPM_ON_AC:-}
+    fi
+
+    if [ -z "$pwr" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_pcie_aspm($1).not_configured"
+        return 0
+    fi
+
+    if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
+        { printf '%s\n' "$pwr" > /sys/module/pcie_aspm/parameters/policy; } 2> /dev/null
+        if [ $? = 0 ]; then
+            echo_debug "pm" "set_pcie_aspm($1): $pwr"
+        else
+            echo_debug "pm" "set_pcie_aspm($1).disabled_by_kernel"
+        fi
+    else
+        echo_debug "pm" "set_pcie_aspm($1).not_available"
+    fi
+
+    return 0
+}
+
+# --- Graphics Devices
+
+set_radeon_profile () { # set radeon power profile
+    # $1: 0=ac mode, 1=battery mode
+
+    local card level pwr rc1 rc2
+    local sdone=0 # 1=radeon present
+
+    if [ ! -d $RADD ]; then
+        # No card present --> exit
+        echo_debug "pm" "set_radeon_profile($1).no_card"
+        return 0
+    fi
+
+    for card in /sys/class/drm/card[0-9]/device ; do
+        if [ -f $card/power_dpm_state ] && [ -f $card/power_dpm_force_performance_level ]; then
+            # Use new radeon dynamic power management method (dpm)
+            if [ "$1" = "1" ]; then
+                pwr=${RADEON_DPM_STATE_ON_BAT:-}
+                level=${RADEON_DPM_PERF_LEVEL_ON_BAT:-auto}
+            else
+                pwr=${RADEON_DPM_STATE_ON_AC:-}
+                level=${RADEON_DPM_PERF_LEVEL_ON_AC:-auto}
+            fi
+
+            if [ -z "$pwr" ]; then
+                # do nothing if unconfigured
+                echo_debug "pm" "set_radeon_profile($1).not_configured: $card"
+                return 0
+            fi
+
+            if [ -n "$pwr" ]; then
+                { printf '%s\n' "$pwr" > $card/power_dpm_state; } 2> /dev/null; rc1=$?
+                { printf '%s\n' "$level" > $card/power_dpm_force_performance_level; } 2> /dev/null; rc2=$?
+                echo_debug "pm" "set_radeon_profile($1): $card state=$pwr [rc=$rc1] perf=$level [rc=$rc2]"
+            fi
+
+            sdone=1
+
+        elif [ -f $card/power_method ] && [ -f $card/power_profile ]; then
+            # Use old radeon power profile method
+            if [ "$1" = "1" ]; then
+                pwr=${RADEON_POWER_PROFILE_ON_BAT:-}
+            else
+                pwr=${RADEON_POWER_PROFILE_ON_AC:-}
+            fi
+
+            if [ -z "$pwr" ]; then
+                # do nothing if unconfigured
+                echo_debug "pm" "set_radeon_profile($1).not_configured: $card"
+                return 0
+            fi
+
+            if [ -n "$pwr" ]; then
+                echo_debug "pm" "set_radeon_profile($1): $card profile=$pwr"
+                { printf '%s\n' "profile" > $card/power_method; } 2> /dev/null
+                { printf '%s\n' "$pwr" > $card/power_profile; } 2> /dev/null
+            fi
+
+            sdone=1
+        fi
+    done
+
+    if [ $sdone -eq 0 ]; then
+        echo_debug "pm" "set_radeon_profile($1).not_available"
+    fi
+
+    return 0
+}
+
+# -- Audio Devices
+
+set_sound_power_mode () { # set sound chip power modes
+    # $1: 0=ac mode, 1=battery mode
+
+    local pwr cpwr
+
+    # new config param
+    if [ "$1" = "1" ]; then
+        pwr=${SOUND_POWER_SAVE_ON_BAT:-}
+    else
+        pwr=${SOUND_POWER_SAVE_ON_AC:-}
+    fi
+
+    # when unconfigured consider legacy config param
+    [ -z "$pwr" ] && pwr=${SOUND_POWER_SAVE:-}
+
+    if [ -z "$pwr" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_sound_power_mode($1).not_configured"
+        return 0
+    fi
+
+    cpwr=${SOUND_POWER_SAVE_CONTROLLER:-Y}
+
+    check_sysfs "set_sound_power_mode" "/sys/module"
+
+    if [ -d /sys/module/snd_hda_intel ]; then
+        echo_debug "pm" "set_sound_power_mode($1).hda: $pwr controller=$cpwr"
+        { printf '%s\n' "$pwr" > /sys/module/snd_hda_intel/parameters/power_save; } 2> /dev/null
+
+        if [ "$pwr" = "0" ]; then
+            { printf '%s\n' "N" >  /sys/module/snd_hda_intel/parameters/power_save_controller; } 2> /dev/null
+        else
+            { printf '%s\n' "$cpwr" > /sys/module/snd_hda_intel/parameters/power_save_controller; } 2> /dev/null
+        fi
+    fi
+
+    if [ -d /sys/module/snd_ac97_codec ]; then
+        echo_debug "pm" "set_sound_power_mode($1).ac97: $pwr"
+        { printf '%s\n' "$pwr"  > /sys/module/snd_ac97_codec/parameters/power_save; } 2> /dev/null
+    fi
+
+    return 0
+}
+
+# --- LAN Devices
+
+get_eth_ifaces () { # get all eth devices -- retval: $ethifaces
+    local ei eic
+    ethifaces=""
+
+    for eic in $NETD/*/device/class; do
+        if [ "$(cat $eic 2> /dev/null)" = "0x020000" ] \
+            && [ ! -d "${eic%/class}/ieee80211" ]; then
+
+            ei=${eic%/device/class}; ei=${ei##*/}
+            ethifaces="$ethifaces $ei"
+        fi
+    done
+
+    ethifaces="${ethifaces# }"
+    return 0
+}
+
+disable_wake_on_lan () {  # disable WOL
+    local ei
+
+    WOL_DISABLE=${WOL_DISABLE:-N}
+
+    if [ "$WOL_DISABLE" = "Y" ]; then
+        get_eth_ifaces
+
+        for ei in $ethifaces; do
+            echo_debug "pm" "disable_wake_on_lan: $ei"
+            $ETHTOOL -s $ei wol d > /dev/null 2>&1
+        done
+    fi
+
+    return 0
+}

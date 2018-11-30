@@ -1,0 +1,583 @@
+#!/bin/sh
+# tlp - Base Functions
+#
+# Copyright (c) 2018 Thomas Koch <linrunner at gmx.net> and others.
+# This software is licensed under the GPL v2 or later.
+
+# ----------------------------------------------------------------------------
+# Constants
+
+readonly TLPVER="1.1.903"
+
+readonly CONFFILE=@TLP_CONF@
+readonly RUNDIR=@TLP_RUN@
+
+readonly FLOCK=flock
+readonly HDPARM=hdparm
+readonly LAPMODE=laptop_mode
+readonly LOGGER=logger
+readonly MODPRO=modprobe
+readonly TPACPIBAT=@TLP_TLIB@/tpacpi-bat
+
+readonly LOCKFILE=$RUNDIR/lock
+readonly LOCKTIMEOUT=2
+
+readonly PWRRUNFILE=$RUNDIR/last_pwr
+readonly MANUALMODEFILE=$RUNDIR/manual_mode
+
+readonly MOD_MSR="msr"
+readonly MOD_TEMP="coretemp"
+readonly MOD_TPSMAPI="tp_smapi"
+readonly MOD_TPACPI="acpi_call"
+
+readonly DMID=/sys/class/dmi/id/
+readonly NETD=/sys/class/net
+
+# ----------------------------------------------------------------------------
+# Control
+
+nodebug=0
+
+# ----------------------------------------------------------------------------
+# Functions
+
+# --- Debug
+
+echo_debug () { # write debug msg if tag matches -- $1: tag; $2: msg;
+    [ "$nodebug" = "1" ] && return 0
+
+    if wordinlist "$1" "$TLP_DEBUG"; then
+        $LOGGER -p debug -t "tlp[$$,$PPID]" "$2"
+    fi
+}
+
+# --- Sysfiles
+
+check_sysfs ()  { # check if sysfile exists -- $1: routine; $2: sysfs path
+    if wordinlist "sysfs" "$TLP_DEBUG"; then
+        if [ ! -e $2 ]; then
+            $LOGGER -p debug -t "tlp[$$,$PPID]" "$1: $2 nonexistent"
+        fi
+    fi
+}
+
+cat_sysfd () { # echo contents of a sysfile; if file is non-existent or
+               # read fails, echo default value instead
+               # $1: sysfile, $2: default value
+    local val="$(cat $1 2> /dev/null)"
+    [ -n "$val" ] || val="$2" # sysfile nonexistent or read failed
+
+    printf "%s" $val
+    return 0
+}
+
+get_sysval () { # read numeric contents of a sysfile, return 0 if contents
+                # is not numeric, empty or read fails
+                # $1: file; rc: sysfile value
+    local sysf="$1"
+    local val=""
+
+    # read sysval when it exists
+    [ -f $sysf ] && val=$(cat $sysf 2> /dev/null)
+
+    # replace with 0 if empty string or non-numeric chars are contained
+    [ -z "$(printf '%s' "$val" | egrep '^[0-9]+$')" ] && val=0
+
+    return $val
+}
+
+# --- Tests
+
+wordinlist () { # test if word in list
+                # $1: word, $2: whitespace-separated list of words
+    local word
+
+    if [ -n "${1-}" ]; then
+        for word in ${2-}; do
+            [ "${word}" != "${1}" ] || return 0 # exact match
+        done
+    fi
+
+    return 1 # no match
+}
+
+cmd_exists () { # test if command exists -- $1: command
+    command -v $1 > /dev/null 2>&1
+}
+
+test_root () { # test root privilege -- rc: 0=root, 1=not root
+    [ "$(id -u)" = "0" ]
+}
+
+check_root () { # show error message and exit when root privilege missing
+    if ! test_root; then
+        echo "Error: missing root privilege." 1>&2
+        exit 1
+    fi
+}
+
+check_tlp_enabled () { # check if TLP is enabled in config file
+    # rc: 0=disabled/1=enabled
+
+    if [ ! "$TLP_ENABLE" = "1" ]; then
+        echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in $CONFFILE." 1>&2
+        return 1
+    else
+        return 0
+    fi
+}
+
+# --- Locking and Semaphores
+
+set_run_flag () { # set flag -- $1: flag name
+                  # rc: 0=success/1,2=failed
+    local rc
+
+    create_rundir
+    touch $RUNDIR/$1; rc=$?
+    echo_debug "lock" "set_run_flag.touch: $1; rc=$rc"
+
+    return $rc
+}
+
+reset_run_flag () { # reset flag -- $1: flag name
+    if rm $RUNDIR/$1 2> /dev/null 1>&2 ; then
+        echo_debug "lock" "reset_run_flag($1).remove"
+    else
+        echo_debug "lock" "reset_run_flag($1).not_found"
+    fi
+
+    return 0
+}
+
+check_run_flag () { # check flag -- $1: flag name
+                    # rc: 0=flag set/1=flag not set
+    local rc
+
+    [ -f $RUNDIR/$1 ]; rc=$?
+    echo_debug "lock" "check_run_flag($1): rc=$rc"
+
+    return $rc
+}
+
+lock_tlp () { # get exclusive lock: blocking with timeout
+              # $1: lock id (default: tlp)
+              # rc: 0=success/1=failed
+
+    create_rundir
+    # open file for writing and attach fd 9
+    { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null
+    # fopen/attach successful --> lock fd 9 exclusive and blocking,
+    # wait $LOCKTIME secs to obtain the lock
+    if [ $? -eq 0 ] && $FLOCK -x -w $LOCKTIMEOUT 9 ; then
+        echo_debug "lock" "lock_tlp.success"
+        return 0
+    else
+        echo_debug "lock" "lock_tlp.failed"
+        return 1
+    fi
+}
+
+lock_tlp_nb () { # get exclusive lock: non-blocking
+                 # $1: lock id (default: tlp)
+                 # rc: 0=success/1=failed
+
+    create_rundir
+    # open file for writing and attach fd 9
+    { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null
+    # fopen/attach successful --> lock fd 9 exclusive and non-blocking
+    if [ $? -eq 0 ] && $FLOCK -x -n 9 ; then
+        echo_debug "lock" "lock_tlp_nb.success"
+        return 0
+    else
+        echo_debug "lock" "lock_tlp_nb.failed"
+        return 1
+    fi
+}
+
+unlock_tlp () { # free exclusive lock
+
+    # defer unlock for $X_DEFER_UNLOCK seconds -- debugging only
+    [ -n "$X_DEFER_UNLOCK" ] && sleep $X_DEFER_UNLOCK
+
+    # free fd 9
+    { exec 9>&- ; } 2> /dev/null
+    echo_debug "lock" "unlock_tlp"
+
+    return 0
+}
+
+echo_tlp_locked () { # print "locked" message
+    echo "TLP is locked by another operation."
+    return 0
+}
+
+set_timed_lock () { # create timestamp n seconds in the future
+    # $1: lock id, $2: lock duration [s]
+
+    local rc
+    local lock=${1}_timed_lock_$(date +%s -d "+${2} seconds")
+
+    set_run_flag $lock; rc=$?
+    echo_debug "lock" "set_timed_lock($1, $2): $lock; rc=$rc"
+
+    # cleanup obsolete locks
+    local time=$(date +%s)
+    for lockfile in $RUNDIR/${1}_timed_lock_*; do
+        if [ -f $lockfile ]; then
+            locktime=${lockfile#${RUNDIR}/${1}_timed_lock_}
+            if [ $time -ge $locktime ]; then
+                rm -f $lockfile
+                echo_debug "lock" "set_timed_lock($1, $2).remove_obsolete: ${lockfile#${RUNDIR}/}"
+            fi
+        fi
+    done
+
+    return $rc
+}
+
+check_timed_lock () { # check if active timestamp exists
+    # $1: lock id; rc: 0=locked/1=not locked
+
+    local lockfile locktime
+    local time=$(date +%s)
+
+    for lockfile in $RUNDIR/${1}_timed_lock_*; do
+        if [ -f $lockfile ]; then
+            locktime=${lockfile#${RUNDIR}/${1}_timed_lock_}
+            if [ $time -lt $(( $locktime - 120 )) ]; then
+                # timestamp is more than 120 secs in the future,
+                # something weird has happened -> remove it
+                rm -f $lockfile
+                echo_debug "lock" "check_timed_lock($1).remove_invalid: ${lockfile#${RUNDIR}/}"
+            elif [ $time -lt $locktime ]; then
+                # timestamp in the future -> we're locked
+                echo_debug "lock" "check_timed_lock($1).locked: $time, $locktime"
+                return 0
+            else
+                # obsolete timestamp -> remove it
+                rm -f $lockfile
+                echo_debug "lock" "check_timed_lock($1).remove_obsolete: ${lockfile#${RUNDIR}/}"
+            fi
+        fi
+    done
+
+    echo_debug "lock" "check_timed_lock($1).not_locked: $time"
+    return 1
+}
+
+# --- PATH
+add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
+                   # retval: $PATH, $oldpath, $addpath
+    local sp
+
+    oldpath="$PATH"
+    addpath=""
+
+    for sp in /usr/sbin /sbin; do
+        if [ -d $sp ] && [ ! -h $sp ]; then
+            # dir exists and is not a symlink
+            case ":$PATH:" in
+                *":$sp:"*) # $sp already in $PATH
+                    ;;
+
+                *) # $sp not in $PATH, add it
+                    addpath="$addpath:$sp"
+                    ;;
+            esac
+        fi
+    done
+
+    if [ -n "$addpath" ]; then
+      export PATH="${PATH}${addpath}"
+    fi
+
+    return 0
+}
+
+create_rundir () { # make sure $RUNDIR exists
+    [ -d $RUNDIR ] || mkdir -p $RUNDIR 2> /dev/null 1>&2
+}
+
+# --- Configuration
+
+read_defaults () { # read config file
+    if [ -f $CONFFILE ]; then
+        . $CONFFILE
+        return 0
+    else
+        return 1
+    fi
+}
+
+# --- Kernel Modules
+
+load_modules () { # load kernel module(s) -- $*: modules
+    local mod
+
+    # verify module loading is allowed (else explicitly disabled)
+    # and possible (else implicitly disabled)
+    [ "${TLP_LOAD_MODULES:-y}" = "y" ] && [ -e /proc/modules ] || return 0
+
+    # load modules, ignore any errors
+    for mod in $*; do
+        $MODPRO $mod > /dev/null 2>&1
+    done
+
+    return 0
+}
+
+# --- DMI
+
+read_dmi () { # read DMI data -- $*: keywords; stdout: dmi strings
+    local ds key outr
+
+    outr=""
+    for key in $*; do
+        ds="$( cat ${DMID}/$key 2> /dev/null | \
+                egrep -iv 'not available|to be filled|DMI table is broken' )"
+        if [ -n "$outr" ]; then
+            [ -n "$ds" ] && outr="$outr $ds"
+        else
+            outr="$ds"
+        fi
+    done
+
+    printf '%s' "$outr"
+    return 0
+}
+
+# --- ThinkPad Checks
+
+check_thinkpad () { # check for ThinkPad hardware and save model string,
+                 # load ThinkPad specific kernel modules
+                 # rc: 0=ThinkPad, 1=other hardware
+                 # retval: $_tpmodel
+    local pv
+
+    _tpmodel=""
+
+    if [ -d $TPACPIDIR ]; then
+        # kernel module thinkpad_acpi is loaded
+
+        # get DMI product string and sanitize it
+        pv="$( read_dmi product_version | tr -C -d '[a-zA-Z0-9 ]' )"
+
+        # check DMI product string for occurrence of "ThinkPad"
+        if printf '%s' "$pv" | grep -q "ThinkPad"; then
+            # it's a real ThinkPad --> save model substring
+            _tpmodel=${pv#ThinkPad }
+        fi
+    fi
+
+    if [ -n "$_tpmodel" ]; then
+        # load tp-smapi when not explicitly unsupported only;
+        # prevents kernel error messages
+        if ! supports_tpacpi_only && ! supports_no_tp_bat_funcs; then
+            load_modules $MOD_TPSMAPI
+        fi
+
+        # load acpi-call unconditionally
+        load_modules $MOD_TPACPI
+
+        echo_debug "bat" "check_thinkpad: _tpmodel=$_tpmodel"
+        return 0
+    fi
+
+    # not a ThinkPad
+    echo_debug "bat" "check_thinkpad.not_a_thinkpad"
+    return 1
+}
+
+is_thinkpad () { # check for ThinkPad by saved model string
+                 # rc: 0=ThinkPad, 1=other hardware
+    [ -n "$_tpmodel" ]
+}
+
+# --- Power Source
+
+get_sys_power_supply () { # get current power supply
+                          # retval/rc: $_syspwr (0=ac, 1=battery, 2=unknown)
+
+    local psrc
+
+    _syspwr=
+
+    for psrc in /sys/class/power_supply/*; do
+        # -f $psrc/type not necessary - cat 2>.. handles this
+        case "$(cat $psrc/type 2> /dev/null)" in
+            Mains|USB)
+                # AC detected, check if online;
+                # exclude MacBook Pro 2017 sbs-charger
+                if [ "$(cat $psrc/online 2> /dev/null)" = "1" ] \
+                    && [ "${psrc##/*/}" != "sbs-charger" ]; then
+                    _syspwr=0
+                    break
+                fi
+                # else AC not online => keep $_syspwr as-is
+                ;;
+
+            Battery)
+                # battery detected, exclude hid peripherals
+                if echo "${psrc##/*/}" | grep -vq "hidpp_battery"; then
+                    # not hid --> set rc to battery, but don't stop looking for AC
+                    _syspwr=1
+                fi
+                ;;
+
+            *)
+                echo_debug "pm" "unknown power supply: ${psrc##/*/}"
+                ;;
+        esac
+    done
+
+    # set pwrsrc to unknown if we haven't seen any AC/battery power source so far
+    : ${_syspwr:=2}
+
+    return $_syspwr
+}
+
+get_power_state () { # get current power mode -- rc: 0=ac, 1=battery
+    # similar to get_sys_power_supply(),
+    # but maps unknown power source to TLP_DEFAULT_MODE;
+    # returns TLP_DEFAULT_MODE when TLP_PERSISTENT_DEFAULT=1
+
+    get_sys_power_supply
+    local rc=$?
+
+    if [ -n "$TLP_DEFAULT_MODE" ] \
+        && [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then
+        # persistent mode, use configured default mode
+        case "$TLP_DEFAULT_MODE" in
+            bat|BAT) rc=1 ;;
+            *)       rc=0 ;;
+        esac
+    else
+        # non-persistent mode, use current power source
+        if [ $rc -eq 2 ]; then
+            # unknown power supply, use configured default mode
+            case "$TLP_DEFAULT_MODE" in
+                ac|AC)   rc=0 ;;
+                bat|BAT) rc=1 ;;
+                *)       rc=0 ;; # use AC if no default mode configured
+            esac
+        fi
+    fi
+
+    return $rc
+}
+
+compare_and_save_power_state() { # compare $1 to last saved power state,
+    # save $1 afterwards when different
+    # $1: new state 0=ac, 1=battery
+    # rc: 0=different, 1=equal
+    local lp
+
+    # intercept invalid states
+    case $1 in
+        0|1) ;; # valid state
+        *) # invalid new state --> return "different"
+            echo_debug "pm" "compare_and_save_power_state($1).invalid"
+            return 0
+            ;;
+    esac
+
+    # read saved state
+    lp=$(cat $PWRRUNFILE 2> /dev/null)
+
+    # compare
+    if [ -z "$lp" ] || [ "$lp" != "$1" ]; then
+        # saved state is nonexistent/empty or is different --> save new state
+        create_rundir
+        { printf '%s\n' "$1" > $PWRRUNFILE; } 2> /dev/null
+
+        echo_debug "pm" "compare_and_save_power_state($1).different: old=$lp"
+        return 0
+    else
+        echo_debug "pm" "compare_and_save_power_state($1).equal"
+        return 1
+    fi
+}
+
+clear_saved_power_state() { # remove last saved power state
+
+    rm -f $PWRRUNFILE 2> /dev/null
+
+    return 0
+}
+
+check_ac_power () { # check if ac power connected -- $1: function
+
+    if ! get_sys_power_supply ; then
+        echo_debug "bat" "check_ac_power($1).no_ac_power"
+        echo "Error: $1 is possible on AC power only." 1>&2
+        return 1
+    fi
+
+    return 0
+}
+
+echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
+    if [ "$1" = "0" ]; then
+        echo "TLP started in AC mode."
+    else
+        echo "TLP started in battery mode."
+    fi
+
+    return 0
+}
+
+set_manual_mode () { # set manual operation mode
+    # $1: 0=ac mode, 1=battery mode
+    # retval: $_manual_mode (0=ac, 1=battery, none=not found)
+
+    create_rundir
+    { printf '%s\n' "$1" > $MANUALMODEFILE; } 2> /dev/null
+    _manual_mode="$1"
+
+    echo_debug "pm" "set_manual_mode($1)"
+    return 0
+}
+
+clear_manual_mode () { # remove manual operation mode
+    # retval: $_manual_mode (none)
+
+    rm -f $MANUALMODEFILE 2> /dev/null
+    _manual_mode="none"
+
+    echo_debug "pm" "clear_manual_mode"
+    return 0
+}
+
+get_manual_mode () { # get manual operation mode
+    # rc: 0=ok/1=not found
+    # retval: $_manual_mode (0=ac, 1=battery, none=not found)
+    local rc=1
+    _manual_mode="none"
+
+    if [ -f $MANUALMODEFILE ]; then
+        # read mode file
+        _manual_mode=$(cat $MANUALMODEFILE)
+        case $_manual_mode in
+            0|1) rc=0 ;;
+            *) _manual_mode="none" ;;
+        esac
+    fi
+    return $rc
+}
+
+# --- Misc Checks
+
+check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=installed
+    if cmd_exists $LAPMODE; then
+        echo 1>&2
+        echo "***Warning: laptop-mode-tools detected, this may cause conflicts with TLP." 1>&2
+        echo "            Please uninstall laptop-mode-tools." 1>&2
+        echo 1>&2
+        echo_debug "pm" "check_laptop_mode_tools: yes"
+        return 1
+    else
+        return 0
+    fi
+}
+

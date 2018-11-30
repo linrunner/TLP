@@ -1,0 +1,954 @@
+#!/bin/sh
+# tlp-func-batt - [ThinkPad] Battery Feature Functions
+#
+# Copyright (c) 2018 Thomas Koch <linrunner at gmx.net> and others.
+# This software is licensed under the GPL v2 or later.
+
+# Needs: tlp-func-base
+
+# ----------------------------------------------------------------------------
+# Constants
+
+readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
+readonly SMAPIBATDIR=/sys/devices/platform/smapi
+readonly ACPIBATDIR=/sys/class/power_supply
+
+readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T23|T[346][0123][p]?|T[45][01]0[s]?|W[57]0[01]|X[346][012][s]?( Tablet)?|X1[02]0e|X[23]0[01][s]?( Tablet)?|Z6[01][mpt])$'
+readonly RE_TPACPI_ONLY='^(13.*|25|(Edge )?E[1345][2345678][05][ps]?|Helix.*|L[45][345678]0|P[75][012][s]?|S2|(Edge )?S[245][345][01]*|T[45][345678][01][psu]?|W5[345][01][s]?|X1 Carbon.*|X2[345678]0[s]?( Tablet)?|.*Yoga.*)$'
+readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
+readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
+
+# ----------------------------------------------------------------------------
+# Functions
+
+# --- Battery Feature Support
+
+supports_tpsmapi_only () {
+    # rc: 0=ThinkPad supports tpsmapi only/1=false
+    # prerequisite: check_thinkpad()
+    printf '%s' "$_tpmodel" | egrep -q "${RE_TPSMAPI_ONLY}"
+}
+
+supports_tpacpi_only () {
+    # rc: 0=ThinkPad supports tpacpi-bat only/1=false
+    # prerequisite: check_thinkpad()
+    printf '%s' "$_tpmodel" | egrep -q "${RE_TPACPI_ONLY}"
+}
+
+supports_tpsmapi_and_tpacpi () {
+    # rc: 0=ThinkPad supports tpsmapi and tpacpi-bat/1=false
+    # prerequisite: check_thinkpad()
+    printf '%s' "$_tpmodel" | egrep -q "${RE_TPSMAPI_AND_TPACPI}"
+}
+
+supports_no_tp_bat_funcs () {
+    # rc: 0=ThinkPad doesn't support battery features/1=false
+    # prerequisite: check_thinkpad()
+    printf '%s' "$_tpmodel" | egrep -q "${RE_TP_NONE}"
+}
+
+check_battery_features () { # determine which battery feature APIs/tools are
+    # supported by hardware and running kernel.
+    #
+    # 1. check for native kernel acpi (Linux 4.17 or higher required)
+    #    --> retval $_natacpi:
+    #       0=thresholds and discharge/
+    #       1=thresholds only/
+    #       32=disabled/
+    #       128=no kernel support/
+    #       254=laptop not supported
+    #
+    # 2. check for acpi-call external kernel module and test with integrated
+    #    tpacpi-bat [ThinkPads only]
+    #    --> retval $_tpacpi:
+    #       0=supported/
+    #       32=disabled/
+    #       64=acpi_call module not loaded/
+    #       128=acpi_call module not installed/
+    #       254=ThinkPad not supported/
+    #       255=superseded by natacpi
+    #
+    # 3. check for tp-smapi external kernel module [ThinkPads only]
+    #    --> retval $_tpsmapi:
+    #       0=supported/
+    #       32=disabled/
+    #       64=tp_smapi module not loaded/
+    #       128=tp_smapi module not installed/
+    #       254=ThinkPad not supported/
+    #       255=superseded by natacpi
+    #
+    # 4. determine best method for
+    #    reading battery data                   --> retval $_bm_read,
+    #    reading/writing charging thresholds    --> retval $_bm_thresh,
+    #    reading/writing force discharge        --> retval $_bm_dischg:
+    #       none/natacpi/tpacpi/tpsmapi
+    #
+    # prerequisite: check_thinkpad()
+    # replaces: check_tpsmapi, check_tpacpi
+
+    # preset: natacpi takes it all
+    _natacpi=128
+    _tpacpi=255
+    _tpsmapi=255
+    _bm_read="natacpi"
+    _bm_thresh="none"
+    _bm_dischg="none"
+
+    # --- 1. check for native kernel ACPI (Linux 4.17 or higher required)
+    local ps
+    for ps in $ACPIBATDIR/*; do
+        if [ "$(cat $ps/present 2> /dev/null)" = "1" ]; then
+            # battery detected
+            if [ -f $ps/charge_start_threshold ]; then
+                # kernel with native acpi support detected
+                _natacpi=254
+
+                if [ -n "$(cat $ps/charge_start_threshold 2> /dev/null)" ]; then
+                    # charge_start_threshold exists and is actually readable
+                    if [ "${NATACPI_ENABLE:-0}" = "1" ]; then
+                        _natacpi=1
+                        _bm_thresh="natacpi"
+                    else
+                        _natacpi=32
+                    fi
+                fi
+                if [ $_natacpi != 32 ] && [ -n "$(cat $ps/force_discharge 2> /dev/null)" ]; then
+                    # force_discharge exists and is actually readable
+                    _natacpi=0
+                    _bm_dischg="natacpi"
+                fi
+            fi
+            break # exit loop on first battery detected
+        fi
+    done
+    echo_debug "bat" "check_battery_features.natacpi: $_natacpi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
+
+    # when not a Thinkpad --> we're done
+    is_thinkpad || return 0
+
+    # --- 2. check for acpi-call external kernel module and test with integrated tpacpi-bat [ThinkPads only]
+    if supports_tpsmapi_only || supports_no_tp_bat_funcs; then
+        # not tpacpi-bat capable models
+        _tpacpi=254
+    elif [ ! -e /proc/acpi/call ]; then
+        if [ -z "$(modinfo acpi_call 2> /dev/null)" ]; then
+            # module neither installed nor builtin
+            _tpacpi=128
+        else
+            # module not loaded
+            _tpacpi=64
+        fi
+    else
+        # module present --> try tpacpi-bat
+        $TPACPIBAT -g FD 1 > /dev/null 2>&1
+        _tpacpi=$?
+        # TODO: handle tpacpi-bat errors (rc=127 when $TPACPIBAT non-existent)
+
+        if [ $_tpacpi -eq 0 ] && [ "${TPACPI_ENABLE:-1}" = "0" ]; then
+            # tpacpi disabled by configuration
+            _tpacpi=32
+        fi
+
+        if [ $_tpacpi -eq 0 ]; then
+            # tpacpi available --> fill in methods depending on natacpi results
+            case $_natacpi in
+                0) ;; # natacpi covers it all
+
+                1) # discharge needed
+                    _bm_dischg="tpacpi"
+                    ;;
+
+                *) # thresholds and discharge needed
+                    _bm_thresh="tpacpi"
+                    _bm_dischg="tpacpi"
+                    ;;
+            esac
+        fi
+    fi
+    echo_debug "bat" "check_battery_features.tpacpi: $_tpacpi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
+
+    # --- 3. check for tp-smapi external kernel module [ThinkPads only]
+    if [ -d $SMAPIBATDIR ]; then
+        # module loaded --> tp-smapi available
+        if [ "${TPSMAPI_ENABLE:-1}" = "0" ]; then
+            # tpsmapi disabled by configuration
+            _tpsmapi=32
+        else
+            # enabled (default)
+            _tpsmapi=0
+
+            # reading battery data via tpsmapi is preferred over natacpi
+            # because it provides cycle count and more
+            _bm_read="tpsmapi"
+
+            # fill in missing methods
+            [ "$_bm_thresh" = "none" ] && _bm_thresh="tpsmapi"
+            [ "$_bm_dischg" = "none" ] && _bm_dischg="tpsmapi"
+        fi
+    elif supports_tpacpi_only || supports_no_tp_bat_funcs; then
+        # not tp-smapi capable models
+        _tpsmapi=254
+    elif [ -n "$(modinfo tp_smapi 2> /dev/null)" ]; then
+        # module installed but not loaded
+        _tpsmapi=64
+    else
+        # module not installed
+        _tpsmapi=128
+    fi
+    echo_debug "bat" "check_battery_features.tpsmapi: $_tpsmapi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
+
+    return 0
+}
+
+# --- Battery Detection
+
+battery_present () { # check battery presence and return tpacpi-bat index
+    # $1: BAT0/BAT1/DEF
+    # global param: $_bm_read
+    # rc: 0=bat exists/1=bat nonexistent/255=no method available
+    # retval: $_bat_str:   BAT0/BAT1;
+    #         $_bat_idx:   1/2;
+    #         $_bd_read:   directory with battery data sysfiles;
+    #         $_bf_start:  sysfile for start threshold;
+    #         $_bf_stop:   sysfile for stop threshold;
+    #         $_bf_dischg: sysfile for force discharge
+
+    # defaults
+    local rc=255 # no threshold API available
+    _bat_idx=0    # no index
+    _bat_str=""   # no bat
+    _bd_read=""   # no directories
+    _bf_start=""
+    _bf_stop=""
+    _bf_dischg=""
+    local blist bs bsd
+
+    # load modules and check prerequisites
+    check_thinkpad
+    check_battery_features
+
+    # validate param
+    case $1 in
+        BAT0|BAT1) blist="$1" ;;
+        DEF)       blist="BAT0 BAT1" ;;
+        *)         return 1 ;;
+    esac
+
+    case $_bm_read in
+        natacpi) # note: includes tpacpi
+            rc=1
+            for bs in $blist; do
+                bsd="$ACPIBATDIR/$bs"
+
+                # check acpi name space
+                if [ "$(cat $bsd/present 2> /dev/null)" = "1" ] \
+                   && [ "$(cat $bsd/type 2> /dev/null)" = "Battery" ]; then
+                    rc=0 # battery detected
+                    # determine tpacpi-bat index
+                    case $bs in
+                        BAT0)
+                            _bat_str="$bs"
+                            _bd_read="$bsd"
+                            _bat_idx=1 # BAT0 is always assumed main battery
+                            ;;
+
+                        BAT1)
+                            _bat_str="$bs"
+                            _bd_read="$bsd"
+                            if [ -d $ACPIBATDIR/BAT0 ]; then
+                                _bat_idx=2 # BAT0 exists --> BAT1 is aux
+                            else
+                                _bat_idx=1 # BAT0 nonexistent --> BAT1 is main
+                            fi
+                            ;;
+                    esac
+                    break # exit loop on first battery detected
+                fi
+            done
+            ;; # natacpi
+
+        tpsmapi)
+            rc=1
+            for bs in $blist; do
+                bsd="$SMAPIBATDIR/$bs"
+
+                # check tp-smapi name space
+                if [ "$(cat $bsd/installed 2> /dev/null)" = "1" ]; then
+                    rc=0 # battery detected
+                    case $bs in
+                        BAT0) _bat_str="$bs"; _bd_read="$bsd" ; _bat_idx=1 ;;
+                        BAT1) _bat_str="$bs"; _bd_read="$bsd" ; _bat_idx=2 ;;
+                    esac
+                    break # exit loop on first battery detected
+                fi
+            done
+            ;; # tpsmapi
+    esac
+
+    if [ $_bat_idx -ne 0 ]; then
+        case $_bm_thresh in
+            natacpi)
+                _bf_start="$ACPIBATDIR/$_bat_str/charge_start_threshold"
+                _bf_stop="$ACPIBATDIR/$_bat_str/charge_stop_threshold"
+                ;;
+
+            tpsmapi)
+                _bf_start="$SMAPIBATDIR/$_bat_str/start_charge_thresh"
+                _bf_stop="$SMAPIBATDIR/$_bat_str/stop_charge_thresh"
+                ;;
+        esac
+        case $_bm_dischg in
+            natacpi) _bf_dischg="$ACPIBATDIR/$_bat_str/force_discharge" ;;
+            tpsmapi) _bf_dischg="$SMAPIBATDIR/$_bat_str/force_discharge" ;;
+        esac
+    fi
+
+    echo_debug "bat" "battery_present($1): bm_read=$_bm_read; bat_str=$_bat_str; bat_idx=$_bat_idx; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg; rc=$rc"
+    return $rc
+}
+
+# --- Battery Charge Thresholds
+
+get_threshold () { # read and echo charge threshold
+    # $1: start/stop
+    # global param: $_bm_thresh, $_bat_idx, $_bf_start, $_bf_stop
+    # rc: threshold (1..100, 255=error)
+    local bsys rc tprc
+
+    case $_bm_thresh in
+        natacpi|tpsmapi)
+            case $1 in
+                start) bsys=$_bf_start ;;
+                stop)  bsys=$_bf_stop ;;
+            esac
+            if [ -f "$bsys" ]; then
+                # get effective threshold
+                rc=$(cat $bsys 2> /dev/null)
+                if [ -z "$rc" ]; then
+                    # can't determine effective threshold
+                    rc=255
+                fi
+            else
+                # sysfile non-existent, probably invalid bat argument
+                rc=255
+            fi
+            ;; # natacpi, tpsmapi
+
+        tpacpi) # use tpacpi-bat
+            if [ $_bat_idx -ne 0 ]; then
+                # bat index is valid
+                rc=$($TPACPIBAT -g $1 $_bat_idx 2> /dev/null | cut -f1 -d' '); tprc=$?
+
+                if [ $tprc -eq 0 ] && [ -n "$rc" ]; then
+                    if [ $rc -ge 128 ]; then
+                        # Remove offset of 128 for Edge S430 et al.
+                        rc=$(($rc - 128))
+                    fi
+                    if [ $rc -eq 0 ]; then
+                        # replace 0 with factory default values
+                        case $1 in
+                            start) rc=96 ;;
+                            stop)  rc=100 ;;
+                        esac
+                    fi
+                else
+                    rc=255
+                fi
+            else
+                # bat index is invalid
+                rc=255
+            fi
+            ;; # tpacpi
+
+        *) # invalid threshold method
+            rc=255
+            ;;
+    esac
+
+    echo_debug "bat" "get_threshold($1): bm_thresh=$_bm_thresh; bat_idx=$_bat_idx; thresh=$rc"
+    return $rc
+}
+
+set_thresholds () { # write both charge thresholds for a battery,
+    # use pre-determined method from global parms, set by battery_present()
+    # $1: BAT0/BAT1,
+    # $2: new start treshold, $3: new stop threshold,
+    # $4: 0=quiet/1=output progress and error messages
+    # global param: $_bm_thresh, $_bat_str, $_bat_idx, $_bf_start, $_bf_stop
+    # rc: 0=ok/1=write error/2=read error/255=no thresh api
+    local verb=${4:-0}
+
+    echo_debug "bat" "set_thresholds($1, $2, $3, $4): bm_thresh=$_bm_thresh; bat_str=$_bat_str; bat_idx=$_bat_idx"
+
+    # read old threshold values
+    local old_start old_stop
+
+    get_threshold start; old_start=$?
+    if [ $old_start -eq 255 ]; then
+        [ "$verb" = "1" ] && echo "Error: cannot read start threshold. Aborting." 1>&2
+        echo_debug "bat" "set_thresholds($1, $2, $3, $4).start.read_error"
+        return 2
+    fi
+
+    get_threshold stop; old_stop=$?
+    if [ $old_stop -eq 255 ]; then
+        [ "$verb" = "1" ] && echo "Error: cannot read stop threshold. Aborting." 1>&2
+        echo_debug "bat" "set_thresholds($1, $2, $3, $4).stop.read_error"
+        return 2
+    fi
+
+    # evaluate threshold args: replace empty string with -1, which means
+    # don't change this threshold
+    local new_start=${2:--1}
+    local new_stop=${3:--1}
+
+    # determine write sequence to enforce start <= stop - 4 because
+    # driver boundary conditions must be met in all write stages:
+    # - natacpi: start <= stop (write fails if not met)
+    # - tpacpi:  nothing (maybe BIOS enforces something)
+    # - tpsmapi: start <= stop - 4 (changes value for compliance)
+    local tseq
+
+    if [ $new_start -gt $(($old_stop - 4)) ]; then
+        tseq="stop start"
+    else
+        tseq="start stop"
+    fi
+
+    # write new thresholds in determined sequence
+    local rc=0 step steprc
+
+    if [ "$verb" = "1" ]; then
+        echo "Setting temporary charge thresholds for $_bat_str:"
+    fi
+
+    for step in $tseq; do
+        local old_thresh new_thresh
+
+        case $step in
+            start)
+                old_thresh=$old_start
+                new_thresh=$new_start
+                ;;
+
+            stop)
+                old_thresh=$old_stop
+                new_thresh=$new_stop
+                ;;
+        esac
+
+        [ $new_thresh -eq -1 ] && continue # -1 means don't change this threshold
+
+        if [ $old_thresh -ne $new_thresh ]; then
+            # new threshold differs from effective one --> write it
+            case $_bm_thresh in
+                natacpi|tpsmapi)
+                    case $step in
+                        start) { printf '%s\n' $new_thresh > $_bf_start; } 2> /dev/null ;;
+                        stop)  { printf '%s\n' $new_thresh > $_bf_stop;  } 2> /dev/null ;;
+                    esac
+                    steprc=$?; [ $rc -eq 0 ] && rc=$steprc
+                    ;; # natacpi, tpsmapi
+
+                tpacpi)
+                    # replace factory default values with 0 for tpacpi-bat
+                    local nt ts
+
+                    case $step in
+                        start)
+                            ts="ST"
+                            if [ $new_thresh -eq  96 ]; then
+                                nt=0
+                            else
+                                nt=$new_thresh
+                            fi
+                            ;;
+                        stop)
+                            ts="SP"
+                            if [ $new_thresh -eq  100 ]; then
+                                nt=0
+                            else
+                                nt=$new_thresh
+                            fi
+                            ;;
+                    esac
+                    $TPACPIBAT -s $ts $_bat_idx $nt > /dev/null 2>&1;
+                    steprc=$?; [ $rc -eq 0 ] && rc=$steprc
+                    ;; # tpacpi
+
+                *) # invalid threshold method --> abort
+                    rc=255
+                    break
+                    ;;
+            esac
+            echo_debug "bat" "set_thresholds($1, $2, $3, $4).$step.write: old=$old_thresh; new=$new_thresh; steprc=$steprc"
+
+            if [ "$verb" = "1" ]; then
+                if [ $steprc -eq 0 ]; then
+                    printf "  %-5s = %3d\n" $step $new_thresh
+                else
+                    printf "  %-5s => Error: cannot set threshold.\n" $step $new_thresh 1>&2
+                fi
+            fi
+        else
+            echo_debug "bat" "set_thresholds($1, $2, $3, $4).$step.no_change: old=$old_thresh; new=$new_thresh"
+
+            if [ "$verb" = "1" ]; then
+                printf "  %-5s = %3d (no change)\n" $step $new_thresh
+            fi
+        fi
+    done # for step
+
+    echo_debug "bat" "set_thresholds($1, $2, $3, $4): rc=$rc"
+    return $rc
+}
+
+normalize_thresholds () { # check values and enforce start <= stop - 4
+    # $1: start threshold; $2: stop threshold
+    # rc: 0
+    # retval: $_start_thresh, $_stop_thresh
+
+    local type thresh
+
+    for type in start stop; do
+        case $type in
+            start) thresh=$1 ;;
+            stop)  thresh=$2 ;;
+        esac
+
+        # check for 1..3 digits, replace with empty string if non-numeric chars are contained
+        thresh=$(echo "$thresh" | egrep '^[0-9]{1,3}$')
+        # replace empty string with -1
+        [ -z "$thresh" ] && thresh=-1
+
+        # ensure min/max values; replace 0 with defaults 96/100
+        case $type in
+            start)
+                [ $thresh -eq 0 ] || [ $thresh -gt 96 ] && thresh=96
+                _start_thresh=$thresh
+                ;;
+
+            stop)
+                [ $thresh -eq 0 ] || [ $thresh -gt 100 ] && thresh=100
+                [ $thresh -ne -1 ] && [ $thresh -lt 5 ] && thresh=5
+                _stop_thresh=$thresh
+                ;;
+        esac
+    done
+
+    # enforce start <= stop - 4
+    if [ $_start_thresh -ne -1 ] && [ $_stop_thresh -ne -1 ]; then
+        [ $_start_thresh -gt $(($_stop_thresh - 4)) ] && _start_thresh=$(($_stop_thresh - 4))
+    fi
+
+    echo_debug "bat" "normalize_thresholds($1, $2): start=$_start_thresh; stop=$_stop_thresh"
+
+    return 0
+}
+
+set_charge_thresholds () { # write all charge thresholds from configuration
+    # rc: 0
+
+    if battery_present BAT0; then
+        # validate thresholds
+        normalize_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0"
+        # write thresholds (quiet mode)
+        set_thresholds BAT0 $_start_thresh $_stop_thresh 0
+    fi
+
+    if battery_present BAT1; then
+        # validate thresholds
+        normalize_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1"
+        # write thresholds (quiet mode)
+        set_thresholds BAT1 $_start_thresh $_stop_thresh 0
+    fi
+
+    return 0
+}
+
+setcharge_battery () { # write charge thresholds (called from cmd line)
+    # $1: start charge threshold, $2: stop charge threshold, $3: battery
+    # rc: 0=ok/> 0=error
+
+    local bat rc start_thresh stop_thresh
+    local use_cfg=0
+    # $_bat_str is global for cancel_force_discharge() trap
+
+    # check params
+    case $# in
+        0) # no args
+            bat=DEF   # use default(1st) battery
+            use_cfg=1 # use configured values
+            ;;
+
+        1) # assume $1 is battery
+            bat=$1
+            use_cfg=1 # use configured values
+            ;;
+
+        2) # assume $1,$2 are thresholds
+            start_thresh=$1
+            stop_thresh=$2
+            bat=DEF # use default(1st) battery
+            ;;
+
+        3) # assume $1,$2 are thresholds, $3 is battery
+            start_thresh=$1
+            stop_thresh=$2
+            bat=$3
+            ;;
+    esac
+
+    # convert bat to uppercase
+    bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
+
+    # check bat presence and/or get default(1st) battery
+    battery_present $bat
+    case $? in
+        0) # battery present
+            # get configured values if requested
+            if [ $use_cfg -eq 1 ]; then
+                eval start_thresh="\$START_CHARGE_THRESH_${_bat_str}"
+                eval stop_thresh="\$STOP_CHARGE_THRESH_${_bat_str}"
+            fi
+            ;;
+
+        255) # no method
+            echo "Error: battery feature not available." 1>&2
+            echo_debug "bat" "setcharge_battery.no_method"
+            return 1
+            ;;
+
+        *) # not present
+            echo "Error: battery $bat not present." 1>&2
+            echo_debug "bat" "setcharge_battery.not_present($bat)"
+            return 1
+            ;;
+    esac
+
+    # validate thresholds
+    normalize_thresholds $start_thresh $stop_thresh
+    # write thresholds (verbose mode)
+    set_thresholds $_bat_str $_start_thresh $_stop_thresh 1
+    rc=$?
+
+    return $rc
+}
+
+chargeonce_battery () { # charge battery to upper threshold once
+    # $1: battery
+    # rc: 0=ok/1=error
+
+    local bat start_thresh stop_thresh temp_start_thresh
+    local efull=0
+    local enow=0
+    local ccharge=0
+
+    # check params
+    if [ $# -gt 0 ]; then
+        # some parameters given, check them
+
+        # get battery arg
+        bat=${1:-DEF}
+        bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
+    else
+        # no parameters given, use default(1st) battery
+        bat=DEF
+    fi
+
+    # check if selected battery is present
+    battery_present $bat
+    case $? in
+        0) ;; # battery present
+
+        255) # no method
+            echo "Error: battery feature not available." 1>&2
+            echo_debug "bat" "chargeonce_battery.no_method"
+            return 1
+            ;;
+
+        *) # not present
+            echo "Error: battery $_bat_str not present." 1>&2
+            echo_debug "bat" "chargeonce_battery.not_present($_bat_str)"
+            return 1
+            ;;
+    esac
+
+    # get and check thresholds from configuration
+    eval start_thresh="\$START_CHARGE_THRESH_${_bat_str}"
+    eval stop_thresh="\$STOP_CHARGE_THRESH_${_bat_str}"
+
+    [ -z "$stop_thresh" ] && stop_thresh=100
+    if [ -z "$start_thresh" ] ; then
+        echo_debug "bat" "chargeonce_battery($_bat_str).start_threshold_not_configured"
+        echo "Error: no start charge threshold configured for $_bat_str." 1>&2
+        return 1
+    fi
+
+    # get current charge level (in %)
+    case $_bm_read in
+        natacpi|tpacpi) # use ACPI sysfiles
+            if [ -f $_bd_read/energy_full ]; then
+                get_sysval $_bd_read/energy_full; efull=$?
+                get_sysval $_bd_read/energy_now; enow=$?
+            fi
+
+            if [ $efull -ne 0 ]; then
+                ccharge=$(( 100 * $enow / $efull ))
+            else
+                ccharge=-1
+            fi
+            ;; # natacpi, tpacpi
+
+        tpsmapi) # use tp-smapi sysfiles
+            get_sysval $_bd_read/remaining_percent; ccharge=$?
+            ;; # tpsmapi
+
+        *) # invalid read method
+            rc=255
+            ;;
+    esac
+
+    if [ $ccharge -eq -1 ] ; then
+        echo_debug "bat" "chargeonce_battery($_bat_str).charge_level_unknown: enow=$enow; efull=$efull; ccharge=$ccharge"
+        echo "Error: cannot determine charge level for $_bat_str." 1>&2
+        return 1
+    else
+        echo_debug "bat" "chargeonce_battery($_bat_str).charge_level: enow=$enow; efull=$efull; ccharge=$ccharge"
+    fi
+
+    temp_start_thresh=$(( $stop_thresh - 4 ))
+    if [ $temp_start_thresh -le $ccharge ] ; then
+        echo_debug "bat" "chargeonce_battery($_bat_str).charge_level_too_high: $temp_start_thresh $stop_thresh"
+        echo "Error: current charge level ($ccharge) of $_bat_str is higher than stop charge threshold - 4 ($temp_start_thresh)." 1>&2
+        return 1
+    else
+        echo_debug "bat" "chargeonce_battery($_bat_str).setcharge: $temp_start_thresh $stop_thresh"
+    fi
+
+    set_thresholds $_bat_str $temp_start_thresh $stop_thresh 1
+    return $?
+}
+
+# --- Battery Forced Discharge
+
+get_force_discharge () { # $1: BAT0/BAT1,
+    # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
+    # rc: 0=off/1=on/2=discharge not present/255=no thresh api
+
+    local bsys rc=0
+
+    case $_bm_dischg in
+        natacpi|tpsmapi)
+            if [ -f "$_bf_dischg" ]; then
+                # read sysfile
+                rc=$(cat $_bf_dischg 2> /dev/null)
+            else
+                # sysfile non-existent
+                rc=2
+            fi
+            ;; # natacpi, tpsmapi
+
+        tpacpi) # read via tpacpi-bat
+            case $($TPACPIBAT -g FD $_bat_idx 2> /dev/null) in
+                yes) rc=1 ;;
+                no)  rc=0 ;;
+                *)   rc=2 ;;
+            esac
+            ;; # tpacpi
+
+        *) # invalid discharge method
+            rc=255
+            ;;
+    esac
+
+    echo_debug "bat" "get_force_discharge($1): bm_dischg=$_bm_dischg; bat_idx=$_bat_idx; rc=$rc"
+    return $rc
+}
+
+set_force_discharge () { # write force discharge state
+    # $1: BAT0/BAT1, $2: 0=off/1=on
+    # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
+    # rc: 0=done/1=write error/2=discharge not present/255=no thresh api
+
+    local rc=0
+
+    case $_bm_dischg in
+        natacpi|tpsmapi)
+            if [ -f "$_bf_dischg" ]; then
+                # write force_discharge
+                { printf '%s\n' $2 > $_bf_dischg; } 2> /dev/null; rc=$?
+            else
+                # sysfile non-existent, possibly invalid bat argument
+                rc=2
+            fi
+            ;; # natacpi, tpsmapi
+
+        tpacpi) # use tpacpi-bat
+            $TPACPIBAT -s FD $_bat_idx $2 > /dev/null 2>&1; rc=$?
+            ;; # tpcpaci
+
+        *) # invalid discharge method
+            rc=255
+            ;;
+    esac
+
+    echo_debug "bat" "set_force_discharge($1, $2): bm_dischg=$_bm_dischg; bat_idx=$_bat_idx; rc=$rc"
+
+    return $rc
+}
+
+cancel_force_discharge () { # called from trap -- global param: $_bat_str
+    set_force_discharge $_bat_str 0
+    echo_debug "bat" "force_discharge.cancelled($_bat_str)"
+    echo " Cancelled."
+
+    exit 0
+}
+
+battery_discharging () { # check if battery is discharging -- $1: BAT0/BAT1,
+    # global param: $_bm_read, $_bd_read
+    # rc: 0=discharging/1=not discharging/255=no battery api
+
+    local bsys rc=255
+
+    # determine status sysfile
+    case $_bm_read in
+        natacpi|tpacpi)
+            bsys=$_bd_read/status # use ACPI sysfile
+            ;;
+
+        tpsmapi)
+            bsys=$_bd_read/state # use tpsmapi sysfile
+            ;;
+
+        *) # invalid read method
+            bsys=""
+            rc=255
+            ;;
+    esac
+
+    # get battery state
+    if [ -f "$bsys" ]; then
+        case "$(cat $bsys 2> /dev/null)" in
+            [Dd]ischarging) rc=0 ;;
+            *) rc=1 ;;
+        esac
+    fi
+
+    echo_debug "bat" "battery_discharging($1): bm_read=$_bm_read; rc=$rc"
+    return $rc
+}
+
+discharge_battery () { # discharge battery
+    # $1: battery
+    # global param: $_tpacpi, $_tpsmapi
+    # rc: 0=ok/1=error
+
+    local bat en ef pn rc wt
+    # $_bat_str is global for cancel_force_discharge() trap
+
+    # check params
+    bat=$1
+    bat=${bat:=DEF}
+    bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
+
+    # check if selected battery is present
+    battery_present $bat
+    case $? in
+        0) ;; # battery present
+
+        255) # no method
+            echo "Error: battery feature not available." 1>&2
+            echo_debug "bat" "discharge_battery.no_method"
+            return 1
+            ;;
+
+        *) # not present
+            echo "Error: battery $bat not present." 1>&2
+            echo_debug "bat" "discharge_battery.not_present($bat)"
+            return 1
+            ;;
+    esac
+
+    # start discharge
+    set_force_discharge $_bat_str 1; rc=$?
+    if [ $rc -ne 0 ]; then
+        echo_debug "bat" "discharge_battery.force_discharge_not_available($_bat_str)"
+        echo "Error: discharge function not available for this laptop." 1>&2
+        return 1
+    fi
+
+    trap cancel_force_discharge INT # enable ^C hook
+
+    # wait for start == while status not "discharging" -- 5.0 sec timeout
+    wt=10
+    while ! battery_discharging $_bat_str && [ $wt -gt 0 ] ; do sleep 0.5; wt=$((wt - 1)); done
+
+    if battery_discharging $_bat_str; then
+        # discharge initiated sucessfully --> wait for completion == while status "discharging"
+        echo_debug "bat" "discharge_battery.running($_bat_str)"
+
+        while battery_discharging $_bat_str; do
+            clear
+            echo "Currently discharging battery $_bat_str:"
+
+            # show current battery state
+            case $_bm_read in
+                natacpi|tpacpi) # use ACPI sysfiles
+                    perl -e 'printf ("voltage            = %6d [mV]\n", '$(cat_sysfd $_bd_read/voltage_now 0 2> /dev/null)' / 1000.0);'
+
+                    en=$(cat_sysfd $_bd_read/energy_now 0 2> /dev/null)
+                    perl -e 'printf ("remaining capacity = %6d [mWh]\n", '$en' / 1000.0);'
+
+                    ef=$(cat_sysfd $_bd_read/energy_full 0 2> /dev/null)
+                    if [ "$ef" != "0" ]; then
+                        perl -e 'printf ("remaining percent  = %6d [%%]\n", 100.0 * '$en' / '$ef' );'
+                    else
+                        printf "remaining percent  = not available [%]\n"
+                    fi
+
+                    pn=$(cat_sysfd $_bd_read/power_now 0 2> /dev/null)
+                    if [ "$pn" != "0" ]; then
+                        perl -e 'printf ("remaining time     = %6d [min]\n", 60.0 * '$en' / '$pn');'
+                        perl -e 'printf ("power              = %6d [mW]\n", '$pn' / 1000.0);'
+                    else
+                        printf "remaining time     = not discharging [min]\n"
+                    fi
+                    printf "state              = %s\n"  "$(cat $_bd_read/status 2> /dev/null)"
+                    ;; # natacpi, tpsmapi
+
+                tpsmapi) # use tp-smapi sysfiles
+                    printf "voltage            = %6s [mV]\n"  "$(cat $_bd_read/voltage 2> /dev/null)"
+                    printf "remaining capacity = %6s [mWh]\n" "$(cat $_bd_read/remaining_capacity 2> /dev/null)"
+                    printf "remaining percent  = %6s [%%]\n"  "$(cat $_bd_read/remaining_percent 2> /dev/null)"
+                    printf "remaining time     = %6s [min]\n" "$(cat $_bd_read/remaining_running_time_now 2> /dev/null)"
+                    printf "power              = %6s [mW]\n"  "$(cat $_bd_read/power_avg 2> /dev/null)"
+                    printf "state              = %s\n"  "$(cat $_bd_read/state 2> /dev/null)"
+                    ;; # tpsmapi
+
+            esac
+            get_force_discharge $_bat_str; printf "force discharge    = %s\n"  "$?"
+
+            echo "Press Ctrl+C to cancel."
+            sleep 5
+        done
+    else
+        # discharge malfunction --> cancel discharge and abort
+        set_force_discharge $_bat_str 0;
+        echo_debug "bat" "discharge_battery.malfunction($_bat_str)"
+        echo "Error: discharge $_bat_str malfunction." 1>&2
+        trap - INT # remove ^C hook
+        return 1
+    fi
+
+    trap - INT # remove ^C hook
+
+    # ThinkPad E-series firmware may keep force_discharge active --> cancel it
+    ! get_force_discharge $_bat_str && set_force_discharge $_bat_str 0
+
+    echo
+    echo "Done: battery $_bat_str was completely discharged."
+    echo_debug "bat" "discharge_battery.complete($_bat_str)"
+    return 0
+}

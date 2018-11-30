@@ -1,0 +1,190 @@
+#!/bin/sh
+# tlp-func-bay - Bay Functions
+#
+# Copyright (c) 2018 Thomas Koch <linrunner at gmx.net> and others.
+# This software is licensed under the GPL v2 or later.
+
+# Needs: tlp-func-base
+
+# ----------------------------------------------------------------------------
+# Constants
+
+readonly UDEVADM=udevadm
+
+readonly DOCKGLOB="/sys/devices/platform/dock.?"
+
+readonly RFSTATEFILE=$RUNDIR/rfkill_saved
+readonly BAYSTATEFILE=$RUNDIR/bay_saved
+
+# ----------------------------------------------------------------------------
+# Functions
+
+# --- Drive Bay
+
+get_drivebay_device () { # Find generic dock interface for drive bay
+                         # rc: 0; retval: $dock
+    dock=$(grep -l ata_bay $DOCKGLOB/type 2> /dev/null)
+    dock=${dock%%/type}
+    if [ ! -d "$dock" ]; then
+        dock=""
+    fi
+
+    return 0
+}
+
+check_is_docked() { # check if $dock is docked;
+                    # rc: 0 if docked, else 1
+
+   local dock_status dock_info_file
+
+   # return 0 if any sysfs file indicates "docked"
+   for dock_info_file in docked firmware_node/status; do
+        if [ -f $dock/$dock_info_file ] && \
+            read -r dock_status < $dock/$dock_info_file 2>/dev/null; then
+            # catch empty $dock_status (safety check, unlikely case)
+            [ "${dock_status:-0}" != "0" ] && return 0
+        fi
+   done
+
+   # otherwise assume "not docked"
+   return 1
+}
+
+poweroff_drivebay () { # power off optical drive in drive bay
+    # $1: 0=ac mode, 1=battery mode
+    # $2: 0=conditional+quiet mode, 1=force+verbose mode
+    # Some code adapted from http://www.thinkwiki.org/wiki/How_to_hotswap_UltraBay_devices
+
+    local pwr optdrv syspath
+
+    if [ "$1" = "1" ]; then
+        pwr=${BAY_POWEROFF_ON_BAT:-0}
+    else
+        pwr=${BAY_POWEROFF_ON_AC:-0}
+    fi
+
+    # Run only if either explicitly enabled or forced
+    [ "$pwr" = "1" ] || [ "$2" = "1" ] || return 0
+
+    get_drivebay_device
+    if [ -z "$dock" ] || [ ! -d "$dock" ]; then
+        echo_debug "pm" "poweroff_drivebay($1).no_bay_device"
+        [ "$2" = "1" ] && echo "Error: cannot locate bay device." 1>&2
+        return 1
+    fi
+    echo_debug "pm" "poweroff_drivebay($1): dock=$dock"
+
+    # Check if bay is occupied
+    if ! check_is_docked; then
+        echo_debug "pm" "poweroff_drivebay($1).drive_already_off"
+        [ "$2" = "1" ] && echo "No drive in bay (or power already off)."
+    else
+        # Check for optical drive
+        optdrv=/dev/${BAY_DEVICE:=sr0}
+        if [ ! -b "$optdrv" ]; then
+            echo_debug "pm" "poweroff_drivebay($1).no_opt_drive: $optdrv"
+            [ "$2" = "1" ] && echo "No optical drive in bay ($optdrv)."
+            return 0
+        else
+            echo_debug "pm" "poweroff_drivebay($1): optdrv=$optdrv"
+
+            echo -n "Powering off drive bay..."
+
+            # Unmount media
+            umount -l $optdrv > /dev/null 2>&1
+
+            # Sync drive
+            sync
+            sleep 1
+
+            # Power off drive
+            $HDPARM -Y $optdrv > /dev/null 2>&1
+            sleep 5
+
+            # Unregister scsi device
+            if syspath="$($UDEVADM info --query=path --name=$optdrv)"; then
+                syspath="/sys${syspath%/block/*}"
+
+                if [ "$syspath" != "/sys" ]; then
+                    echo_debug "pm" "poweroff_drivebay($1): syspath=$syspath"
+                    { printf '%s\n' "1" > $syspath/delete; } 2> /dev/null
+                else
+                    echo_debug "pm" "poweroff_drivebay($1): got empty/invalid syspath for $optdrv"
+                fi
+            else
+                echo_debug "pm" "poweroff_drivebay($1): failed to get syspath (udevadm returned $?)"
+            fi
+
+            # Turn power off
+            { printf '%s\n' "1" > $dock/undock; } 2> /dev/null
+            [ "$2" = "1" ] && echo "done."
+            echo_debug "pm" "poweroff_drivebay($1).bay_powered_off"
+        fi
+    fi
+
+    return 0
+}
+
+suspend_drivebay () { # Save power state of drive bay before suspend
+                      # $1: 0=ac mode, 1=battery mode
+
+    if [ "$1" = "1" ] && [ "$BAY_POWEROFF_ON_BAT" = "1" ] || \
+       [ "$1" = "0" ] && [ "$BAY_POWEROFF_ON_AC"  = "1" ]; then
+        # setting corresponding to mode is active -> save state
+        get_drivebay_device
+
+        if [ -n "$dock" ]; then
+            create_rundir
+
+            if ! check_is_docked; then
+                { printf '%s\n' "off" > $BAYSTATEFILE; } 2> /dev/null
+                echo_debug "pm" "suspend_drivebay($1): bay=off"
+            else
+                { printf '%s\n' "on" > $BAYSTATEFILE; } 2> /dev/null
+                echo_debug "pm" "suspend_drivebay($1): bay=on"
+            fi
+        fi
+    else
+        # setting not active -> remove state file
+        rm -f $BAYSTATEFILE 2> /dev/null
+    fi
+
+    return 0
+}
+
+resume_drivebay () { #
+    # $1: 0=ac mode, 1=battery mode
+
+    local cnt rc
+
+    if [ "$(cat $BAYSTATEFILE 2> /dev/null)" = "off" ]; then
+        # saved state = off
+        get_drivebay_device
+
+        if [ -n "$dock" ]; then
+            if check_is_docked; then
+                # device active -> deactivate
+                if [ -e $dock/undock ]; then
+                    cnt=5
+                    rc=1
+                    until [ $rc = 0 -o $cnt = 0 ]; do
+                        cnt=$((cnt - 1))
+                        { printf '%s\n' "1" > $dock/undock; } 2> /dev/null
+                        rc=$?
+                        [ $rc = 0 ] || sleep 0.5
+                    done
+                    echo_debug "pm" "resume_drivebay.bay_off: rc=$rc"
+                fi
+            else
+                echo_debug "pm" "resume_drivebay.already_off"
+            fi
+        fi
+    else
+        # No saved state or state != off --> apply settings
+        poweroff_drivebay $1 0
+    fi
+
+    rm -f $BAYSTATEFILE 2> /dev/null
+
+    return 0
+}

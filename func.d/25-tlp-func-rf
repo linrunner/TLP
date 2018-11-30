@@ -1,0 +1,214 @@
+#!/bin/sh
+# tlp-func-rf - Radio Functions
+#
+# Copyright (c) 2018 Thomas Koch <linrunner at gmx.net> and others.
+# This software is licensed under the GPL v2 or later.
+
+# Needs: tlp-func-base
+
+# ----------------------------------------------------------------------------
+# Constants
+
+readonly IWC=iwconfig
+readonly IW=iw
+
+readonly BLUETOOTHD=/sys/class/bluetooth
+
+# ----------------------------------------------------------------------------
+# Functions
+
+# --- Wifi Device Checks
+
+get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
+    local wi wiu
+    wifaces=""
+
+    for wiu in $NETD/*/uevent; do
+        if grep -q -s "DEVTYPE=wlan" $wiu ; then
+            wi=${wiu%/uevent}; wi=${wi##*/}
+            wifaces="$wifaces $wi"
+        fi
+    done
+
+    wifaces="${wifaces# }"
+    return 0
+}
+
+get_wifi_driver () { # get driver associated with interface
+                     # $1: iface; retval: $wifidrv
+    local drvl
+
+    wifidrv=""
+    if [ -d $NETD/$1 ]; then
+        drvl=$(readlink $NETD/$1/device/driver)
+        [ -n "$drvl" ] && wifidrv=${drvl##*/}
+    fi
+
+    return 0
+}
+
+wireless_in_use () { # check if wifi or wwan device is in use -- $1: iface
+    if [ -f $NETD/$1/carrier ]; then
+        if [ "$(cat $NETD/$1/carrier 2>/dev/null)" = "1" ]; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+any_wifi_in_use () { # check if any wifi device is in use
+    local iface
+
+    get_wifi_ifaces
+    for iface in $wifaces; do
+        wireless_in_use $iface && return 0
+    done
+
+    return 1
+}
+
+# --- Wifi Power Management
+
+set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery mode
+    local pwr iface
+    local rc=0
+    local cmdx=0
+
+    if [ "$1" = "1" ]; then
+        pwr=${WIFI_PWR_ON_BAT:-}
+    else
+        pwr=${WIFI_PWR_ON_AC:-}
+    fi
+
+    # check values, translate obsolete syntax
+    case "$pwr" in
+        off|on)      ;;
+        0|1|N)       pwr="off" ;;
+        2|3|4|5|6|Y) pwr="on"  ;;
+        *)           pwr=""    ;; # invalid input --> unconfigured
+    esac
+
+    if [ -z "$pwr" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_wifi_power_mode($1).not_configured"
+        return 0
+    fi
+
+    get_wifi_ifaces
+    if [ -z "$wifaces" ]; then
+        echo_debug "pm" "set_wifi_power_mode($1).no_ifaces"
+        return 0
+    fi
+
+    for iface in $wifaces; do
+        if [ -n "$iface" ]; then
+            if  [ "$X_DONT_USE_IW" != "1" ] && cmd_exists $IW; then
+                # try with iw first
+                $IW dev $iface set power_save $pwr > /dev/null 2>&1
+                rc=$?
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr; rc=$rc"
+                cmdx=1 # set flag: iw found and called
+            fi
+            if cmd_exists $IWC; then
+                if [ $rc -ne 0 ] || [ $cmdx -eq 0 ]; then
+                    # iw did not succeed or iw not installed -> try with iwconfig
+                    $IWC $iface power $pwr > /dev/null 2>&1
+                    rc=$?
+                    echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig: $pwr; rc=$rc"
+                    cmdx=1 # set flag: iwconfig found and called
+                fi
+            fi
+            if [ $cmdx -eq 0 ]; then
+                # flag not set: neither iw nor iwconfig installed --> no way
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).no_tool"
+            fi
+        fi
+    done
+
+    return 0
+}
+
+# --- WWAN Device Checks
+
+get_wwan_ifaces () { # get all wwan devices -- retval: $wanifaces
+    local wi wiu
+    wanifaces=""
+
+    for wiu in $NETD/*/uevent; do
+        if grep -q -s "DEVTYPE=wwan" $wiu ; then
+            wi=${wiu%/uevent}; wi=${wi##*/}
+            wanifaces="$wanifaces $wi"
+        fi
+    done
+
+    wanifaces="${wanifaces# }"
+    return 0
+}
+
+any_wwan_in_use () { # check if any wwan device is in use
+    local iface
+
+    get_wwan_ifaces
+    for iface in $wanifaces; do
+        wireless_in_use $iface && return 0
+    done
+
+    return 1
+}
+
+get_wwan_driver () { # get driver associated with interface
+                     # $1: iface; retval: $wwandrv
+    local drvl
+
+    wwandrv=""
+    if [ -d $NETD/$1 ]; then
+        drvl=$(readlink $NETD/$1/device/driver)
+        [ -n "$drvl" ] && wwandrv=${drvl##*/}
+    fi
+
+    return 0
+}
+
+# --- Bluetooth Device Checks
+
+get_bluetooth_ifaces () { # get all bluetooth interfaces -- retval: $bifaces
+    # enumerate symlinks only
+    bifaces="$(for i in $BLUETOOTHD/*; do [ -h $i ] && echo ${i##/*/}; done | grep -v ':')"
+    return 0
+}
+
+get_bluetooth_driver () { # get driver associated with interface -- $1: iface; retval: $bluetoothdrv
+    local drvl
+
+    bluetoothdrv=""
+    if [ -d $BLUETOOTHD/$1 ]; then
+        drvl=$(readlink $BLUETOOTHD/$1/device/driver)
+        [ -n "$drvl" ] && bluetoothdrv=${drvl##*/}
+    fi
+
+    return 0
+}
+
+bluetooth_in_use () { # check if bluetooth interface is in use -- $1: iface
+    local uev
+
+    # when devices are connected to an interface its sysdir is populated with
+    # subdevices like <iface>:<number> where the uevent file contains a line
+    # "DEVTYPE=link"
+    for uev in $BLUETOOTHD/$1/$1:*/uevent; do
+        grep -qs "DEVTYPE=link" $uev && return 0
+    done
+
+    return 1
+}
+
+any_bluetooth_in_use () { # check if any bluetooth interface is in use
+    local i
+
+    get_bluetooth_ifaces
+    for i in $bifaces; do
+        bluetooth_in_use "$i" && return 0
+    done
+
+    return 1
+}

@@ -1,16 +1,23 @@
 #!/bin/sh
-# tlp - rf switch functions
+# tlp-func-rdw - RDW Functions
 #
-# Copyright (c) 2018 Thomas Koch <linrunner at gmx.net>
+# Copyright (c) 2018 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
+
+# Needs: tlp-func-base, tlp-func-rf
 
 # ----------------------------------------------------------------------------
 # Constants
 
+readonly NMCLI=nmcli
 readonly RFKILL="rfkill"
 readonly RFKD="/dev/rfkill"
 
 readonly ALLDEV="bluetooth wifi wwan"
+
+readonly RDW_NM_LOCK="rdw_nm"
+readonly RDW_DOCK_LOCK="rdw_dock"
+readonly RDW_LOCKTIME=2
 
 # ----------------------------------------------------------------------------
 # Functions

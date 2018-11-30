@@ -1,44 +1,46 @@
 #!/bin/sh
-# tlp - display power save and usb autosuspend status
+# tlp-stat - display power saving details
 #
 # Copyright (c) 2018 Thomas Koch <linrunner at gmx.net>
 # This software is licensed under the GPL v2 or later.
 
-# --- Constants
+# --- Source libraries
 
-readonly LIBDIR="@TLP_TLIB@"
-readonly LIBS="tlp-functions tlp-rf-func"
+for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/[0-9][0-9]* @TLP_FLIB@/tlp-func-stat; do
+    . $lib
+done
+
+# --- Constants
 
 readonly TLPUSB=tlp-usblist
 readonly TLPPCI=tlp-pcilist
 
-readonly SMARTCTL=smartctl
 readonly LSBREL=lsb_release
+readonly JOURNALCTL=journalctl
+readonly SMARTCTL=smartctl
 
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
+readonly EFID=/sys/firmware/efi
+readonly I915D='/sys/module/i915*/parameters'
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
 readonly WQPE=/sys/module/workqueue/parameters/power_efficient
 
-readonly IBMTHERMAL=/proc/acpi/ibm/thermal
 readonly CORETEMP_DIRS="
 /sys/devices/platform/coretemp.0
 /sys/devices/platform/coretemp.0/hwmon/hwmon*"
-readonly IBMFAN=/proc/acpi/ibm/fan
 readonly HWMONFAN_DIRS="
 /sys/class/hwmon/hwmon*/device
 /sys/class/hwmon/hwmon*"
+readonly IBMFAN=/proc/acpi/ibm/fan
+readonly IBMTHERMAL=/proc/acpi/ibm/thermal
 
-readonly JOURNALCTL=journalctl
 readonly DEBUGLOG=/var/log/debug
 
 readonly SYSTEMD_SERVICES="tlp.service tlp-sleep.service"
 readonly RFKILL_SERVICES="systemd-rfkill.service systemd-rfkill.socket"
 
-readonly EFID=/sys/firmware/efi
-
-readonly RE_ATA_ERROR='ata[0-9]+: SError: {.*CommWake }'
-
 # --- Variables
+
 needs_root_priv=
 show_all=1
 show_bat=0
@@ -60,321 +62,6 @@ show_warn=0
 no_runtimepm=0
 
 # --- Functions
-
-printparm () { # formatted output of sysfile - general
-    # $1: format, $2: sysfile, $3: namsg, $4: cutoff
-    local format="$1"
-    local sysf="$2"
-    local namsg="$3"
-    local cutoff="$4"
-    local val=""
-
-    if [ -f $sysf ]; then
-        # sysfile exists
-        val=$(cat $sysf 2> /dev/null)
-        if [ $? = 0 ]; then
-            # sysfile read successful
-            if [ -n "$cutoff" ]; then
-                val=${val%$cutoff}
-            fi
-        fi
-    fi
-
-    if [ -z "$val" ]; then
-        # replace empty value with n/a text
-        if [ -n "$namsg" ]; then
-            if [ "$namsg" != "_" ]; then
-                # use specific n/a text
-                format=$( echo $format | sed -r "s/##(.*)##/($namsg)/" | sed -r "s/\[.*\]//" )
-            else
-                # _ = skip
-                sysf=""
-            fi
-        else
-            # empty n/a text, use default text
-            format=$( echo $format | sed -r "s/##(.*)##/(not available)/" | sed -r "s/\[.*\]//" )
-        fi
-        # output n/a text or skip
-        [ -n "$sysf" ] && printf "$format\n" "$sysf"
-    else
-        # non empty value: strip delimiters from format str
-        format=$( echo $format | sed -r "s/##(.*)##/\1/" )
-        printf "$format\n" "$sysf" "$val"
-    fi
-
-    return 0
-}
-
-printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
-    # $1: sysfile; $2: alternative; $3: 1=psr/0=other
-    local sysf val
-
-    # Check if sysfile or alternative exist
-    if [ -f $1 ]; then
-        sysf=$1
-    elif [ -f $2 ]; then
-        sysf=$2
-    else
-        sysf=""
-    fi
-
-    if [ -n "$sysf" ]; then
-        # sysfile exists, get content
-        val=$(cat $sysf 2> /dev/null)
-        if [ $? = 0 ]; then
-            # sysfile was readable, output content
-            printf "%-44s = %2d " "$sysf" "$val"
-            # Explain content
-            if [ "$val" = "-1" ]; then
-                echo "(use per-chip default)"
-            else
-                echo -n "("
-                if [ "$3" = "1" ]; then
-                    # enable_psr
-                    case $val in
-                        0) echo -n "disabled" ;;
-                        1) echo -n "enabled" ;;
-                        2) echo -n "force link-standby mode" ;;
-                        3) echo -n "force link-off mode" ;;
-                        *) echo -n "unknown" ;;
-                    esac
-                else
-                    # other parms
-                    if [ $(( $val & 1 )) -ne 0 ]; then
-                        echo -n "enabled"
-                    else
-                        echo -n "disabled"
-                    fi
-                    [ $(( $val & 2 )) -ne 0 ] && echo -n " + deep"
-                    [ $(( $val & 4 )) -ne 0 ] && echo -n " + deepest"
-                fi
-                echo ")"
-            fi
-        else
-            # sysfile was not readable
-            printf "%-44s = (not available)\n" "$sysf"
-        fi
-    fi
-
-    return 0
-}
-
-print_sysf () { # output a sysfile
-    # $1: format; $2: sysfile
-    local val
-
-    val=$(cat $2 2> /dev/null)
-    if [ $? = 0 ]; then
-         # sysfile readable
-        printf "$1" "$val"
-    else
-        # sysfile not readable
-        printf "$1" "(not available)"
-    fi
-
-    return 0
-}
-
-print_batstate () { # print battery charging state with
-    # an explanation when a threshold inhibits charging
-    # $1: sysfile
-    local sysf val
-
-    # check if bat state sysfile exists
-    if [ -f $1 ]; then
-        sysf=$1
-    else
-        sysf=""
-    fi
-
-    if [ -n "$sysf" ]; then
-        # bat state sysfile exists, get content
-        val=$(cat $sysf 2> /dev/null)
-        if [ $? = 0 ]; then
-            # sysfile was readable, output content
-            printf "%-59s = %s" "$sysf" "$val"
-            # Explain content if necessary
-            case $val in
-                "Unknown"|"Not charging") # a threshold forbids charging
-                    printf " (threshold effective)\n"
-                    ;;
-
-                *) # Nothing to do
-                    printf "\n"
-                    ;;
-            esac
-        else
-            # sysfile was not readable
-            printf "%-59s = (not available)\n" "$sysf"
-        fi
-    else
-        # sysfile nonexistent
-        printf "%-59s = (not available)\n" "$1"
-    fi
-
-    return 0
-}
-
-print_thresholds () { # formatted output of ThinkPad charging thresholds
-    # $1: BAT0/BAT1
-    # global param: $_bm_thresh, $_bat_idx, $_bf_start, $_bf_stop
-    local bsys sp thresh
-
-    for sp in start stop; do
-        get_threshold $sp; thresh=$?
-
-        case $sp in
-            start) bsys=$_bf_start ;;
-            stop)  bsys=$_bf_stop ;;
-        esac
-
-        if [ $thresh -ne 255 ]; then
-            # valid threshold read
-            case $_bm_thresh in
-                natacpi|tpsmapi)
-                    printf "%-59s = %6d [%%]\n" "$bsys" "$thresh"
-                    ;;
-
-                tpacpi)
-                    printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.${sp}Threshold" "$thresh"
-                    ;;
-
-                none) ;; # nothing to show
-            esac
-        else
-            # threshold read failed
-            case $_bm_thresh in
-                natacpi|tpsmapi)
-                    printf "%-59s = (not available)\n" "$bsys"
-                    ;;
-
-                tpacpi)
-                    printf "%-59s = (not available)\n" "tpacpi-bat.${1}.${sp}Threshold"
-                    ;;
-
-                none) ;; # nothing to show
-            esac
-        fi
-    done # for sp
-
-    return 0
-}
-
-print_discharge () { # formatted output of ThinkPad force_discharge
-    # $1: BAT0/BAT1
-    # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
-    local force
-
-    get_force_discharge $1; force=$?
-
-    if [ $force -lt 2 ]; then
-        # valid force_discharge read
-        case $_bm_dischg in
-            natacpi|tpsmapi)
-                printf "%-59s = %6d\n" "$_bf_dischg" "$force"
-                ;;
-
-            tpacpi)
-                printf "%-59s = %6d\n" "tpacpi-bat.${1}.forceDischarge" "$force"
-                ;;
-
-            none) ;; # nothing to show
-        esac
-    else
-        # force_discharge read failed
-        case $_bm_dischg in
-            natacpi|tpsmapi)
-                printf "%-59s = >(not available)\n" "$_bf_dischg"
-                ;;
-
-            tpacpi)
-                printf "%-59s = %6d\n" "tpacpi-bat.${1}.forceDischarge" "(not available)"
-                ;;
-
-            none) ;; # nothing to show
-        esac
-    fi
-
-    return 0
-}
-
-print_methods_per_driver () { # show features provided by a battery driver
-    # $1: driver = natacpi, tpacpi, tpsmapi
-    local bm m mlist=""
-
-    for bm in _bm_read _bm_thresh _bm_dischg; do
-        if [ "$(eval echo \$$bm)" = "$1" ]; then
-            # method matches driver
-            case $bm in
-                _bm_read)   m="data" ;;
-                _bm_thresh) m="thresholds" ;;
-                _bm_dischg) m="discharge" ;;
-            esac
-            # concat method to output
-            if [ -n "$mlist" ]; then
-                mlist="$mlist, $m"
-            else
-                mlist="$m"
-            fi
-        fi
-    done
-
-    if [ -n "$mlist" ]; then
-        printf "(%s)\n" "$mlist"
-    else
-        printf "(none)\n"
-    fi
-
-    return 0
-}
-
-print_file_modtime_and_age () { # show a file's last modification time
-    #  and age in secs -- $1: file
-    local mtime age
-
-    if [ -f $1 ]; then
-        mtime=$(date +%X -r $1)
-        age=$(( $(date +%s) - $(date +%s -r $1) ))
-        printf '%s, %6d sec(s) ago' "$mtime" "$age"
-    else
-        printf "unknown"
-    fi
-}
-
-print_saved_powerstate () { # read and print saved state
-    case "$(cat $PWRRUNFILE 2> /dev/null)" in
-        0) printf "AC" ;;
-        1) printf "battery" ;;
-        *) printf "unknown" ;;
-    esac
-
-    # add manual mode
-    get_manual_mode
-    case "$_manual_mode" in
-        0|1) printf " (manual)\n" ;;
-        *)   printf "\n" ;;
-    esac
-
-    return 0
-}
-
-check_ata_errors () { # check kernel log for ata errors
-    # (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
-    # stdout: error count
-
-    if wordinlist $SATA_LINKPWR_ON_BAT "min_power medium_power" || \
-       wordinlist $SATA_LINKPWR_ON_AC "min_power medium_power"; then
-        # config values != max_performance exist --> check kernel log
-
-        # count matching error lines
-        echo $( dmesg | egrep -c "${RE_ATA_ERROR}" 2> /dev/null )
-    else
-        # no values in question configured
-        echo "0"
-    fi
-
-    return 0
-}
 
 # @stdout glob_files ( glob_pattern, dir[, dir...] )
 #
@@ -500,16 +187,8 @@ read_args () { # read command line arguments
     done
 }
 
-# --- Source libraries
-for lib in $LIBS; do
-    if [ ! -f $LIBDIR/$lib ]; then
-        echo "Error: missing function library \'$LIBDIR/$lib\'." 1>&2
-        exit 1
-    fi
-    . $LIBDIR/$lib
-done
-
 # --- MAIN
+
 add_sbin2path
 
 read_args $*

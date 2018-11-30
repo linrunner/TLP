@@ -4,6 +4,7 @@
 TLP_SBIN   ?= /usr/sbin
 TLP_BIN    ?= /usr/bin
 TLP_TLIB   ?= /usr/share/tlp
+TLP_FLIB   ?= /usr/share/tlp/func.d
 TLP_ULIB   ?= /lib/udev
 TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
 TLP_CONF   ?= /etc/default/tlp
@@ -18,6 +19,7 @@ TLP_RUN    ?= /run/tlp
 _SBIN  = $(DESTDIR)$(TLP_SBIN)
 _BIN   = $(DESTDIR)$(TLP_BIN)
 _TLIB  = $(DESTDIR)$(TLP_TLIB)
+_FLIB  = $(DESTDIR)$(TLP_FLIB)
 _ULIB  = $(DESTDIR)$(TLP_ULIB)
 _NMDSP = $(DESTDIR)$(TLP_NMDSP)
 _CONF  = $(DESTDIR)$(TLP_CONF)
@@ -31,13 +33,14 @@ _RUN   = $(DESTDIR)$(TLP_RUN)
 SED = sed \
 	-e "s|@TLP_SBIN@|$(TLP_SBIN)|g" \
 	-e "s|@TLP_TLIB@|$(TLP_TLIB)|g" \
+	-e "s|@TLP_FLIB@|$(TLP_FLIB)|g" \
 	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
 	-e "s|@TLP_CONF@|$(TLP_CONF)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"
 
 INFILES = \
 	tlp \
-	tlp-functions \
+	tlp-func-base \
 	tlp-rdw-nm \
 	tlp-rdw.rules \
 	tlp-rdw-udev \
@@ -67,10 +70,10 @@ MANFILES8 = \
 
 SHFILES = \
 	tlp.in \
-	tlp-functions.in \
+	tlp-func-base.in \
+	func.d/* \
 	tlp-rdw-nm.in \
 	tlp-rdw-udev.in \
-	tlp-rf-func \
 	tlp-rf.in \
 	tlp-run-on.in \
 	tlp-stat.in \
@@ -99,8 +102,8 @@ install-tlp: all
 ifneq ($(TLP_NO_TPACPI),1)
 	install -D -m 755 tpacpi-bat $(_TLIB)/tpacpi-bat
 endif
-	install -D -m 755 tlp-functions $(_TLIB)/tlp-functions
-	install -m 755 tlp-rf-func $(_TLIB)/
+	install -D -m 755 tlp-func-base $(_TLIB)/tlp-func-base
+	install -D -m 755 --target-directory $(_TLIB)/func.d func.d/*
 	install -D -m 755 tlp-usb-udev $(_ULIB)/tlp-usb-udev
 	install -D -m 644 tlp.rules $(_ULIB)/rules.d/85-tlp.rules
 	[ -f $(_CONF) ] || install -D -m 644 default $(_CONF)
@@ -146,10 +149,7 @@ uninstall-tlp:
 	rm $(_BIN)/tlp-stat
 	rm $(_BIN)/tlp-usblist
 	rm $(_BIN)/tlp-pcilist
-	rm -f $(_TLIB)/tpacpi-bat
-	rm $(_TLIB)/tlp-functions
-	rm $(_TLIB)/tlp-rf-func
-	rmdir $(_TLIB)
+	rm -r $(_TLIB)
 	rm $(_ULIB)/tlp-usb-udev
 	rm $(_ULIB)/rules.d/85-tlp.rules
 	rm -f $(DESTDIR)/etc/init.d/tlp

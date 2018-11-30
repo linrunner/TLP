@@ -1,0 +1,374 @@
+#!/bin/sh
+# tlp-func-disk - Storage Device and Filesystem Functions
+#
+# Copyright (c) 2018 Thomas Koch <linrunner at gmx.net> and others.
+# This software is licensed under the GPL v2 or later.
+
+# Needs: tlp-func-base
+
+# ----------------------------------------------------------------------------
+# Constants
+
+readonly AHCID=$PCID'/*/ata*'
+readonly BLOCKD='/sys/block/sd*'
+
+readonly DEFAULT_DISK_DEVICES="sda"
+readonly DEFAULT_DISK_IO_SCHEDULER="cfq"
+
+readonly DISK_NOP_WORDS="_ keep"
+
+# ----------------------------------------------------------------------------
+# Functions
+
+# --- Device Helpers
+
+check_disk_hdparm_cap () { # check if relevant disk device
+    # $1: dev; rc: 0=yes/1=no
+
+    if [ -z "$($HDPARM -I /dev/$1 2>&1 | \
+               egrep 'Invalid argument|Invalid exchange|missing sense data|No such device')" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+get_disk_dev () { # translate disk id to device (sdX)
+    # $1: id or dev; retval: $disk_dev, $disk_id
+
+    if [ -h /dev/disk/by-id/$1 ]; then
+        # $1 is disk id
+        disk_id=$1
+        disk_dev=$(printf '%s' "$disk_id" | sed -r 's/-part[1-9][0-9]*$//')
+        disk_dev=$(readlink /dev/disk/by-id/$disk_dev)
+        disk_dev=${disk_dev##*/}
+    else
+        # $1 is disk dev
+        disk_dev=$1
+        disk_id=""
+    fi
+}
+
+# --- Disk APM Features
+
+set_disk_apm_level () { # set disk apm level
+    # $1: 0=ac mode, 1=battery mode
+
+    local pwrmode="$1"
+    local dev log_message
+
+    # when undefined use default
+    : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
+
+    # set @argv := apmlist (blanks removed - relying on a sane $IFS)
+    if [ "$pwrmode" = "1" ]; then
+        set -- $DISK_APM_LEVEL_ON_BAT
+    else
+        set -- $DISK_APM_LEVEL_ON_AC
+    fi
+
+    # exit if empty apmlist
+    [ $# -gt 0 ] || return 0
+
+    # pairwise iteration DISK_DEVICES[1,n], apmlist[1,m]; m > 0
+    #  for j in [1,n]: disk_dev[j], apmlist[min(j,m)]
+    #
+    for dev in $DISK_DEVICES; do
+        : ${1:?BUG: broken DISK_APM_LEVEL list handling}
+
+        get_disk_dev $dev
+        log_message="set_disk_apm_level($pwrmode): $disk_dev [$disk_id] $1"
+
+        if [ ! -b /dev/$disk_dev ]; then
+            echo_debug "disk" "${log_message} -- missing"
+        elif ! check_disk_hdparm_cap $disk_dev; then
+            echo_debug "disk" "${log_message} -- not supported"
+        elif wordinlist "$1" "$DISK_NOP_WORDS"; then
+            echo_debug "disk" "${log_message} -- keep as is"
+        else
+            echo_debug "disk" "${log_message}"
+            $HDPARM -B $1 /dev/$disk_dev > /dev/null 2>&1
+        fi
+
+        # last entry in apmlist applies to all remaining disks
+        [ $# -lt 2 ] || shift
+    done
+
+    return 0
+}
+
+set_disk_spindown_timeout () { # set disk spindown timeout
+    # $1: 0=ac mode, 1=battery mode
+
+    local pwrmode="$1"
+    local dev log_message
+
+    # when undefined use default
+    : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
+
+    # set @argv := timeoutlist
+    if [ "$pwrmode" = "1" ]; then
+        set -- $DISK_SPINDOWN_TIMEOUT_ON_BAT
+    else
+        set -- $DISK_SPINDOWN_TIMEOUT_ON_AC
+    fi
+
+    # exit if empty timeoutlist
+    [ $# -gt 0 ] || return 0
+
+    # pairwise iteration DISK_DEVICES[1,n], timeoutlist[1,m]; m > 0
+    #  for j in [1,n]: disk_dev[j], timeoutlist[min(j,m)]
+    #
+    for dev in $DISK_DEVICES; do
+        : ${1:?BUG: broken DISK_SPINDOWN_TIMEOUT list handling}
+
+        get_disk_dev $dev
+        log_message="set_disk_spindown_timeout($pwrmode): $disk_dev [$disk_id] $1"
+
+        if [ ! -b /dev/$disk_dev ]; then
+            echo_debug "disk" "${log_message} -- missing"
+        elif ! check_disk_hdparm_cap $disk_dev; then
+            echo_debug "disk" "${log_message} -- not supported"
+        elif wordinlist "$1" "$DISK_NOP_WORDS"; then
+            echo_debug "disk" "${log_message} -- keep as is"
+        else
+            echo_debug "disk" "${log_message}"
+            $HDPARM -S $1 /dev/$disk_dev > /dev/null 2>&1
+        fi
+
+        # last entry in timeoutlist applies to all remaining disks
+        [ $# -lt 2 ] || shift
+    done
+
+    return 0
+}
+
+spindown_disk () { # stop spindle motor -- $1: dev
+    $HDPARM -y /dev/$1 > /dev/null 2>&1
+
+    return 0
+}
+
+set_disk_io_sched () { # set disk io scheduler
+    local dev sched schedctrl log_message
+
+    # when undefined use default
+    : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
+
+    # set @argv := schedlist
+    set -- $DISK_IOSCHED
+
+    # exit if empty timeoutlist
+    [ $# -gt 0 ] || return 0
+
+    # pairwise iteration DISK_DEVICES[1,n], schedlist[1,m]; m > 0
+    #  for j in [1,min(n,m)]   : disk_dev[j], schedlistj]
+    #  for j in [min(n,m)+1,n] : disk_dev[j], %DEFAULT_DISK_IO_SCHEDULER
+    for dev in $DISK_DEVICES; do
+        get_disk_dev $dev
+
+        # get sched from argv, use default scheduler when list is too short
+        sched=${1:-${DEFAULT_DISK_IO_SCHEDULER}}
+        schedctrl="/sys/block/$disk_dev/queue/scheduler"
+        log_message="set_disk_io_sched: $disk_dev [$disk_id] $sched"
+
+        if [ ! -b /dev/$disk_dev ]; then
+            echo_debug "disk" "${log_message} -- missing"
+        elif [ ! -f $schedctrl ]; then
+            echo_debug "disk" "${log_message} -- not supported"
+        elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
+            echo_debug "disk" "${log_message} -- keep as is"
+        else
+            echo_debug "disk" "${log_message}"
+            { printf '%s' "$sched" > $schedctrl; } 2> /dev/null
+        fi
+
+        # using %DEFAULT_DISK_IO_SCHEDULER when argv is empty
+        [ $# -eq 0 ] || shift
+    done
+
+    return 0
+}
+
+# --- Power Saving
+
+set_sata_link_power () { # set ahci link power management
+    # $1: 0=ac mode, 1=battery mode
+
+    local pm="$1"
+    local host host_bl hostid linkpol pwr rc
+    local pwrlist=""
+    local pwr_bl=""
+    local ctrl_avail="0"
+
+    if [ "$pm" = "1" ]; then
+        pwrlist=${SATA_LINKPWR_ON_BAT:-}
+    else
+        pwrlist=${SATA_LINKPWR_ON_AC:-}
+    fi
+
+    if [ -z "$pwrlist" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_sata_link_power($pm).not_configured"
+        return 0
+    fi
+
+    # ALPM blacklist
+    host_bl=${SATA_LINKPWR_BLACKLIST:-}
+
+    # copy configured values to args
+    set -- $pwrlist
+    # iterate SATA hosts
+    for host in /sys/class/scsi_host/host* ; do
+        linkpol=$host/link_power_management_policy
+        if [ -f $linkpol ]; then
+            hostid=${host##*/}
+            if wordinlist "$hostid" "$host_bl"; then
+                # host blacklisted --> skip
+                echo_debug "pm" "set_sata_link_power($pm).black: $host"
+                ctrl_avail="1"
+            else
+                # host not blacklisted --> iterate all configured values
+                for pwr in "$@"; do
+                    { printf '%s\n' "$pwr" > $linkpol; } 2> /dev/null; rc=$?
+                    echo_debug "pm" "set_sata_link_power($pm).$pwr: $host; rc=$rc"
+                    if [ $rc -eq 0 ]; then
+                        # write successful --> goto next host
+                        ctrl_avail="1"
+                        break
+                    else
+                        # write failed --> don't use this value for remaining hosts
+                        # and try next value
+                        shift
+                    fi
+                done
+            fi
+        fi
+    done
+
+    [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_sata_link_power($pm).not_available"
+    return 0
+}
+
+set_ahci_runtime_pm () { # set ahci runtime power management
+    # $1: 0=ac mode, 1=battery mode
+
+    local control device timeout rc
+
+    if [ "$1" = "1" ]; then
+        control=${AHCI_RUNTIME_PM_ON_BAT:-}
+    else
+        control=${AHCI_RUNTIME_PM_ON_AC:-}
+    fi
+
+    # calc timeout in millisecs, default to 15000
+    timeout=$((${AHCI_RUNTIME_PM_TIMEOUT:-15} * 1000))
+    [ "$timeout" != "0" ] || timeout=15000
+
+    # check values
+    case "$control" in
+        on|auto)       ;;
+        *) control="" ;; # invalid input --> unconfigured
+    esac
+
+    if [ -z "$control" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_ahci_runtime_pm($1).not_configured"
+        return 0
+    fi
+
+    # iterate ahci devices
+    for device in $AHCID; do
+        if [ -f ${device}/power/control ]; then
+            { printf '%s\n' $control $control > ${device}/power/control; } 2> /dev/null
+            echo_debug "pm" "set_ahci_runtime_pm($1).$control: host=$device"
+        fi
+    done
+
+    # iterate block devices
+    for device in $BLOCKD; do
+        if [ -f ${device}/device/power/control ]; then
+            # write timeout first because writing "auto" with the default
+            # timeout -1 still active will lockup the machine!
+            rc=0
+
+            if { printf '%s\n' "$timeout" > ${device}/device/power/autosuspend_delay_ms; } 2> /dev/null; then
+                # writing timeout was successful --> proceed with activation;
+                # rc=2 when unsuccessful
+                { printf '%s\n' $control > ${device}/device/power/control; } 2> /dev/null || rc=2
+            else
+                # writing timeout was successful
+                rc=1
+            fi
+
+            echo_debug "pm" "set_ahci_runtime_pm($1).$control: disk=$device timeout=$timeout; rc=$rc"
+        fi
+    done
+
+    return 0
+}
+
+# --- Filesystem Parameters
+
+set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
+    check_sysfs "set_laptopmode" "/proc/sys/vm/laptop_mode"
+
+    local isec
+
+    if [ "$1" = "1" ]; then
+        isec=${DISK_IDLE_SECS_ON_BAT:-}
+    else
+        isec=${DISK_IDLE_SECS_ON_AC:-}
+    fi
+    # replace with empty string if non-numeric chars are contained
+    isec=$(printf '%s' "$isec" | egrep '^[0-9]+$')
+
+    if [ -z "$isec" ]; then
+        # do nothing if unconfigured or non numeric value
+        echo_debug "pm" "set_laptopmode($1).not_configured"
+        return 0
+    fi
+
+    echo_debug "pm" "set_laptopmode($1): $isec"
+    { printf '%s\n' "$isec" > /proc/sys/vm/laptop_mode; } 2> /dev/null
+
+    return 0
+}
+
+set_dirty_parms () { # set filesystem buffer params
+    # $1: 0=ac mode, 1=battery mode
+    # concept from laptop-mode-tools
+
+    local age cage df
+
+    check_sysfs "set_dirty_parms" "/proc/sys/vm"
+
+    if [ "$1" = "1" ]; then
+        age=${MAX_LOST_WORK_SECS_ON_BAT:-0}
+    else
+        age=${MAX_LOST_WORK_SECS_ON_AC:-0}
+    fi
+
+    # calc age in centisecs, non numeric values result in "0"
+    cage=$(($age * 100))
+
+    if [ "$cage" = "0" ]; then
+        # do nothing if unconfigured or invalid age
+        echo_debug "pm" "set_dirty_parms($1).not_configured"
+        return 0
+    fi
+
+    echo_debug "pm" "set_dirty_parms($1): $cage"
+
+    for df in /proc/sys/vm/dirty_writeback_centisecs \
+             /proc/sys/vm/dirty_expire_centisecs \
+             /proc/sys/fs/xfs/age_buffer_centisecs \
+             /proc/sys/fs/xfs/xfssyncd_centisecs; do
+        [ -w $df ] && { printf '%s\n' "$cage" > $df; } 2> /dev/null
+    done
+
+    [ -w /proc/sys/fs/xfs/xfsbufd_centisecs ] \
+        && { printf '%s\n' "3000" > /proc/sys/fs/xfs/xfsbufd_centisecs; } 2> /dev/null
+
+    return 0
+}
