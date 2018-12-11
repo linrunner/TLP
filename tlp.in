@@ -56,8 +56,11 @@ else
     mode2=""
 fi
 
-# inhibit trace output for tlp stat
-[ "$mode" = "stat" ] && nodebug=1
+# inhibit trace output for tlp stat (unless forced)
+if [ "$mode" = "stat" ]; then
+    [ "$X_TRACE_TLP_STAT" = "1" ] || _nodebug=1
+fi
+
 
 # get current power state
 get_power_state; pwrmode=$?
