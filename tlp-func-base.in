@@ -364,10 +364,10 @@ check_thinkpad () { # check for ThinkPad hardware and save model string,
         pv="$( read_dmi product_version | tr -C -d '[a-zA-Z0-9 ]' )"
 
         # check DMI product string for occurrence of "ThinkPad"
-        if printf '%s' "$pv" | grep -q "ThinkPad"; then
+        if printf '%s' "$pv" | grep -q "Think[Pp]ad"; then
             # it's a real ThinkPad --> save model substring
             if [ -z "$X_SIMULATE_MODEL" ]; then
-                _tpmodel=${pv#ThinkPad }
+                _tpmodel=$(echo $pv | sed -r 's/^Think[Pp]ad //')
             else
                 # debug aid: simulate model via X_SIMULATE_MODEL config
                 _tpmodel="$X_SIMULATE_MODEL"

@@ -1,4 +1,4 @@
-+++ 1.2 --- 04.10.2018 +++
++++ 1.2 --- 11.12.2018 +++
 
 *** Development version ***
 
@@ -23,6 +23,7 @@
     - Issue #332: zsh parse error in tlp diskid
     - Issue #344: keep ASPM default to enable deeper C-states on AC
     - Issue #356: fix writing sequence for start/stop charge thresholds
+    - Issue #368: recognize Think*p*ad P50
     - tlp-stat: filter HWP lines from x86_energy_perf_policy output
 
 +++ 1.1 --- 24.01.2018 +++
