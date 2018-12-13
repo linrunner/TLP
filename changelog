@@ -8,6 +8,9 @@
     General:
       - tlp bat/ac: keep manual power settings until tlp start (Issue #349)
       - Remove all pm-utils scripts (Issue #363)
+    Graphics:
+      - INTEL_GPU_MIN_FREQ_ON_AC/BAT, INTEL_GPU_MAX_FREQ_ON_AC/BAT,
+        INTEL_GPU_BOOST_FREQ_ON_AC/BAT: Intel GPU frequency limits
     ThinkPad Battery:
       - New native kernel API for battery features "natacpi" (Issue #321);
         requires kernel 4.17; disabled by default
@@ -17,6 +20,7 @@
       - Detect ThinkPad *80 models (Coffee Lake)
     tlp-stat:
       - Check systemd-rfkill.socket masked status
+      - Intel GPU: show frequency limits
 
   * Bugfixes
     - Issue #319: get_disk_dev logic is not compatible with NVMe devices

@@ -45,7 +45,7 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #CPU_SCALING_GOVERNOR_ON_BAT=powersave
 
 # Set the min/max frequency available for the scaling governor.
-# Possible values strongly depend on your CPU. For available frequencies see
+# Possible values depend on your CPU. For available frequencies see
 # the output of tlp-stat -p.
 #CPU_SCALING_MIN_FREQ_ON_AC=0
 #CPU_SCALING_MAX_FREQ_ON_AC=0
@@ -149,6 +149,16 @@ AHCI_RUNTIME_PM_TIMEOUT=15
 # (*) keeps BIOS ASPM defaults (recommended)
 #PCIE_ASPM_ON_AC=default
 #PCIE_ASPM_ON_BAT=default
+
+# Set the min/max/turbo frequency for the Intel GPU.
+# Possible values depend on your hardware. For available frequencies see
+# the output of tlp-stat -g.
+#INTEL_GPU_MIN_FREQ_ON_AC=0
+#INTEL_GPU_MIN_FREQ_ON_BAT=0
+#INTEL_GPU_MAX_FREQ_ON_AC=0
+#INTEL_GPU_MAX_FREQ_ON_BAT=0
+#INTEL_GPU_BOOST_FREQ_ON_AC=0
+#INTEL_GPU_BOOST_FREQ_ON_BAT=0
 
 # Radeon graphics clock speed (profile method): low, mid, high, auto, default;
 # auto = mid on BAT, high on AC; default = use hardware defaults.
@@ -284,16 +294,6 @@ RESTORE_DEVICE_STATE_ON_STARTUP=0
 NATACPI_ENABLE=0
 TPACPI_ENABLE=1
 TPSMAPI_ENABLE=1
-
-# Set the min/max/turbo frequency available for the intel GPU.
-# Possible values strongly depend on your hardware. For available '
-# frequencies see the output of tlp-stat -g.
-#GPU_MIN_FREQ_ON_AC=0
-#GPU_MAX_FREQ_ON_AC=0
-#GPU_BOOST_FREQ_ON_AC=0
-#GPU_MIN_FREQ_ON_BAT=0
-#GPU_MAX_FREQ_ON_BAT=0
-#GPU_BOOST_FREQ_ON_BAT=0
 
 # ------------------------------------------------------------------------------
 # tlp-rdw - Parameters for the radio device wizard

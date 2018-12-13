@@ -575,7 +575,7 @@ if [ "$show_all" = "1" ]; then
 fi # show_all
 
 if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
-    # --- show i915 power mgmt
+    # --- show Intel GPU power mgmt
     for card in $I915D; do
         if [ -d $card ]; then
             echo "+++ Intel Graphics"
@@ -591,14 +591,12 @@ if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     done
 
-    # --- show intel gpu freq info
-        check_intel_gpu
-
-    if [ $intel_gpu -eq 1 ]; then
-        # show Intel P-state info
-        printparm "%-40s = ##%4d## MHz" $GPU_MIN_FREQ
-        printparm "%-40s = ##%4d## MHz" $GPU_MAX_FREQ
-        printparm "%-40s = ##%4d## MHz" $GPU_BOOST_FREQ
+    # --- show Intel GPU freq parameters
+    if check_intel_gpu; then
+        printparm "%-44s = ##%5d## MHz" $IGPU_MIN_FREQ
+        printparm "%-44s = ##%5d## MHz" $IGPU_MAX_FREQ
+        printparm "%-44s = ##%5d## MHz" $IGPU_BOOST_FREQ
+        echo
     fi
 
     # --- show radeon power profile or dpm state
