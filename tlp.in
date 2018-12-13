@@ -364,15 +364,8 @@ case "$mode" in
         exitcode=$?
         ;;
 
-    diskid) # show disk-by-id
-        {
-        for dev in $(ls /dev/disk/by-id/ | egrep '^ata' | egrep -v '\-part[1-9]+'); do
-            if [ -n "$dev" ]; then
-                get_disk_dev $dev
-                echo "$disk_dev: $disk_id"
-            fi
-        done
-        } | sort
+    diskid) # show disk id's
+        show_disk_ids
         ;;
 
     *)

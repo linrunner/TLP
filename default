@@ -100,7 +100,7 @@ ENERGY_PERF_POLICY_ON_BAT=power
 
 # Disk devices; separate multiple devices with spaces (default: sda).
 # Devices can be specified by disk ID also (lookup with: tlp diskid).
-DISK_DEVICES="sda sdb"
+DISK_DEVICES="nvme0n1 sda sdb"
 
 # Disk advanced power management level: 1..254, 255 (max saving, min, off).
 # Levels 1..127 may spin down the disk; 255 allowable on most drives.

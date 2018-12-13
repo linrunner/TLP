@@ -1,8 +1,10 @@
-+++ 1.2 --- 11.12.2018 +++
++++ 1.2 --- 13.12.2018 +++
 
 *** Development version ***
 
   * Features
+    Disks:
+      - Complete support for NVME devices
     General:
       - tlp bat/ac: keep manual power settings until tlp start (Issue #349)
       - Remove all pm-utils scripts (Issue #363)
@@ -29,7 +31,7 @@
 +++ 1.1 --- 24.01.2018 +++
 
   * Features
-   Disks:
+    Disks:
       - SATA_LINKPWR_ON_AC/BAT: try multiple values to support new recommended
         ALPM policy "med_power_with_dipm" in kernel 4.15
     Processor:

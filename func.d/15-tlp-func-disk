@@ -12,7 +12,7 @@
 readonly AHCID=$PCID'/*/ata*'
 readonly BLOCKD='/sys/block/sd*'
 
-readonly DEFAULT_DISK_DEVICES="sda"
+readonly DEFAULT_DISK_DEVICES="nvme0n1 sda"
 readonly DEFAULT_DISK_IO_SCHEDULER="cfq"
 
 readonly DISK_NOP_WORDS="_ keep"
@@ -21,6 +21,22 @@ readonly DISK_NOP_WORDS="_ keep"
 # Functions
 
 # --- Device Helpers
+
+get_disk_dev () { # translate disk id to device (sdX)
+    # $1: id or dev; retval: $_disk_dev, $_disk_id
+
+    if [ -h /dev/disk/by-id/$1 ]; then
+        # $1 is disk id
+        _disk_id=$1
+        _disk_dev=$(printf '%s' "$_disk_id" | sed -r 's/-part[1-9][0-9]*$//')
+        _disk_dev=$(readlink /dev/disk/by-id/$_disk_dev)
+        _disk_dev=${_disk_dev##*/}
+    else
+        # $1 is disk dev
+        _disk_dev=$1
+        _disk_id=""
+    fi
+}
 
 check_disk_hdparm_cap () { # check if relevant disk device
     # $1: dev; rc: 0=yes/1=no
@@ -33,20 +49,28 @@ check_disk_hdparm_cap () { # check if relevant disk device
     fi
 }
 
-get_disk_dev () { # translate disk id to device (sdX)
-    # $1: id or dev; retval: $disk_dev, $disk_id
+check_disk_nvme () { # check if nvme disk device
+   # $1: dev; rc: 0=yes/1=no
 
-    if [ -h /dev/disk/by-id/$1 ]; then
-        # $1 is disk id
-        disk_id=$1
-        disk_dev=$(printf '%s' "$disk_id" | sed -r 's/-part[1-9][0-9]*$//')
-        disk_dev=$(readlink /dev/disk/by-id/$disk_dev)
-        disk_dev=${disk_dev##*/}
-    else
-        # $1 is disk dev
-        disk_dev=$1
-        disk_id=""
-    fi
+    case $1 in
+        nvme*) return 0 ;;
+        *)     return 1 ;;
+    esac
+}
+
+show_disk_ids () { # show disk id's
+    local dev
+
+    { # iterate SATA and NVME disks
+        for dev in $(ls /dev/disk/by-id/ | egrep '^(ata|nvme)' | egrep -v '(^nvme-eui|\-part[1-9]+)'); do
+            if [ -n "$dev" ]; then
+                get_disk_dev $dev
+                echo "$_disk_dev: $_disk_id"
+            fi
+        done
+    } | sort
+
+    return 0
 }
 
 # --- Disk APM Features
@@ -77,17 +101,17 @@ set_disk_apm_level () { # set disk apm level
         : ${1:?BUG: broken DISK_APM_LEVEL list handling}
 
         get_disk_dev $dev
-        log_message="set_disk_apm_level($pwrmode): $disk_dev [$disk_id] $1"
+        log_message="set_disk_apm_level($pwrmode): $_disk_dev [$_disk_id] $1"
 
-        if [ ! -b /dev/$disk_dev ]; then
+        if [ ! -b /dev/$_disk_dev ]; then
             echo_debug "disk" "${log_message} -- missing"
-        elif ! check_disk_hdparm_cap $disk_dev; then
+        elif ! check_disk_hdparm_cap $_disk_dev; then
             echo_debug "disk" "${log_message} -- not supported"
         elif wordinlist "$1" "$DISK_NOP_WORDS"; then
             echo_debug "disk" "${log_message} -- keep as is"
         else
             echo_debug "disk" "${log_message}"
-            $HDPARM -B $1 /dev/$disk_dev > /dev/null 2>&1
+            $HDPARM -B $1 /dev/$_disk_dev > /dev/null 2>&1
         fi
 
         # last entry in apmlist applies to all remaining disks
@@ -123,17 +147,17 @@ set_disk_spindown_timeout () { # set disk spindown timeout
         : ${1:?BUG: broken DISK_SPINDOWN_TIMEOUT list handling}
 
         get_disk_dev $dev
-        log_message="set_disk_spindown_timeout($pwrmode): $disk_dev [$disk_id] $1"
+        log_message="set_disk_spindown_timeout($pwrmode): $_disk_dev [$_disk_id] $1"
 
-        if [ ! -b /dev/$disk_dev ]; then
+        if [ ! -b /dev/$_disk_dev ]; then
             echo_debug "disk" "${log_message} -- missing"
-        elif ! check_disk_hdparm_cap $disk_dev; then
+        elif ! check_disk_hdparm_cap $_disk_dev; then
             echo_debug "disk" "${log_message} -- not supported"
         elif wordinlist "$1" "$DISK_NOP_WORDS"; then
             echo_debug "disk" "${log_message} -- keep as is"
         else
             echo_debug "disk" "${log_message}"
-            $HDPARM -S $1 /dev/$disk_dev > /dev/null 2>&1
+            $HDPARM -S $1 /dev/$_disk_dev > /dev/null 2>&1
         fi
 
         # last entry in timeoutlist applies to all remaining disks
@@ -169,10 +193,10 @@ set_disk_io_sched () { # set disk io scheduler
 
         # get sched from argv, use default scheduler when list is too short
         sched=${1:-${DEFAULT_DISK_IO_SCHEDULER}}
-        schedctrl="/sys/block/$disk_dev/queue/scheduler"
-        log_message="set_disk_io_sched: $disk_dev [$disk_id] $sched"
+        schedctrl="/sys/block/$_disk_dev/queue/scheduler"
+        log_message="set_disk_io_sched: $_disk_dev [$_disk_id] $sched"
 
-        if [ ! -b /dev/$disk_dev ]; then
+        if [ ! -b /dev/$_disk_dev ]; then
             echo_debug "disk" "${log_message} -- missing"
         elif [ ! -f $schedctrl ]; then
             echo_debug "disk" "${log_message} -- not supported"

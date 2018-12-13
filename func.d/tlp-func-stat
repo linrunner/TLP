@@ -10,6 +10,7 @@
 # Constants
 
 readonly INITCTL=initctl
+readonly SMARTCTL=smartctl
 readonly SYSTEMCTL=systemctl
 readonly SYSTEMD=systemd
 
@@ -35,88 +36,10 @@ check_openrc () { # check if openrc is the active init system (PID 1)
     [ -e /run/openrc/softlevel ]
 }
 
-# --- Storage Devices
-
-echo_disk_model () { # print disk model -- $1: dev
-    local model
-
-    model=$($HDPARM -I /dev/$1 2>&1 | grep 'Model Number' | \
-      cut -f2 -d: | sed -r 's/^ *//' )
-    printf '%s\n' "$model"
-
-    return 0
-}
-
-echo_disk_firmware () { # print firmware version --- $1: dev
-    local firmware
-
-    firmware=$($HDPARM -I /dev/$1 2>&1 | grep 'Firmware Revision' | \
-      cut -f2 -d: | sed -r 's/^ *//' )
-    printf '%s\n' "$firmware"
-
-    return 0
-}
-
-get_disk_state () { # get disk power state -- $1: dev; retval: $disk_state
-    disk_state=$($HDPARM -C /dev/$1 2>&1 | awk -F ':' '/drive state is/ { gsub(/ /,"",$2); print $2; }')
-    [ -z "$disk_state" ] && disk_state="(not available)"
-
-    return 0
-}
-
-get_disk_apm_level () { # get disk apm level -- $1: dev; rc: apm
-    local apm
-
-    apm=$($HDPARM -I /dev/$1 2>&1 | grep 'Advanced power management level' | \
-          cut -f2 -d: | egrep "^ *[0-9]+ *$")
-    if [ -n "$apm" ]; then
-        return $apm
-    else
-        return 0
-    fi
-
-}
-
-get_disk_trim_capability () { # check for trim capability
-    # $1: dev; rc: 0=no, 1=yes, 254=no ssd device
-
-    local trim
-
-    if [ -n "$($HDPARM -I /dev/$1 2>&1 | grep 'Solid State Device')" ]; then
-        if [ -n "$($HDPARM -I /dev/$1 2>&1 | grep 'TRIM supported')" ]; then
-            trim=1
-        else
-            trim=0
-        fi
-    else
-        trim=255
-    fi
-
-    return $trim
-}
-
-check_ata_errors () { # check kernel log for ata errors
-    # (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
-    # stdout: error count
-
-    if wordinlist $SATA_LINKPWR_ON_BAT "min_power medium_power" || \
-       wordinlist $SATA_LINKPWR_ON_AC "min_power medium_power"; then
-        # config values != max_performance exist --> check kernel log
-
-        # count matching error lines
-        echo $( dmesg | egrep -c "${RE_ATA_ERROR}" 2> /dev/null )
-    else
-        # no values in question configured
-        echo "0"
-    fi
-
-    return 0
-}
-
-# --- Formatted output
+# --- Formatted Output
 
 printparm () { # formatted output of sysfile - general
-    # $1: format, $2: sysfile, $3: namsg, $4: cutoff
+    # $1: format, $2: sysfile, $3: n/a message, $4: cutoff
     local format="$1"
     local sysf="$2"
     local namsg="$3"
@@ -229,36 +152,6 @@ print_sysf () { # output a sysfile
     return 0
 }
 
-print_methods_per_driver () { # show features provided by a battery driver
-    # $1: driver = natacpi, tpacpi, tpsmapi
-    local bm m mlist=""
-
-    for bm in _bm_read _bm_thresh _bm_dischg; do
-        if [ "$(eval echo \$$bm)" = "$1" ]; then
-            # method matches driver
-            case $bm in
-                _bm_read)   m="data" ;;
-                _bm_thresh) m="thresholds" ;;
-                _bm_dischg) m="discharge" ;;
-            esac
-            # concat method to output
-            if [ -n "$mlist" ]; then
-                mlist="$mlist, $m"
-            else
-                mlist="$m"
-            fi
-        fi
-    done
-
-    if [ -n "$mlist" ]; then
-        printf "(%s)\n" "$mlist"
-    else
-        printf "(none)\n"
-    fi
-
-    return 0
-}
-
 print_file_modtime_and_age () { # show a file's last modification time
     #  and age in secs -- $1: file
     local mtime age
@@ -285,6 +178,226 @@ print_saved_powerstate () { # read and print saved state
         0|1) printf " (manual)\n" ;;
         *)   printf "\n" ;;
     esac
+
+    return 0
+}
+
+# --- Storage Devices
+
+echo_disk_model () { # print disk model -- $1: dev
+    local model
+
+    model=$($HDPARM -I /dev/$1 2>&1 | grep 'Model Number' | \
+      cut -f2 -d: | sed -r 's/^ *//' )
+    printf '%s\n' "${model:-unknown}"
+
+    return 0
+}
+
+echo_disk_firmware () { # print firmware version --- $1: dev
+    local firmware
+
+    firmware=$($HDPARM -I /dev/$1 2>&1 | grep 'Firmware Revision' | \
+      cut -f2 -d: | sed -r 's/^ *//' )
+    printf '%s\n' "${firmware:-unknown}"
+
+    return 0
+}
+
+get_disk_state () { # get disk power state -- $1: dev; retval: $_disk_state
+    _disk_state=$($HDPARM -C /dev/$1 2>&1 | awk -F ':' '/drive state is/ { gsub(/ /,"",$2); print $2; }')
+    [ -z "$_disk_state" ] && _disk_state="(not available)"
+
+    return 0
+}
+
+get_disk_apm_level () { # get disk apm level -- $1: dev; rc: apm
+    local apm
+
+    apm=$($HDPARM -I /dev/$1 2>&1 | grep 'Advanced power management level' | \
+          cut -f2 -d: | egrep "^ *[0-9]+ *$")
+    if [ -n "$apm" ]; then
+        return $apm
+    else
+        return 0
+    fi
+
+}
+
+get_disk_trim_capability () { # check for trim capability
+    # $1: dev; rc: 0=no, 1=yes, 254=no ssd device
+
+    local trim
+
+    if [ -n "$($HDPARM -I /dev/$1 2>&1 | grep 'Solid State Device')" ]; then
+        if [ -n "$($HDPARM -I /dev/$1 2>&1 | grep 'TRIM supported')" ]; then
+            trim=1
+        else
+            trim=0
+        fi
+    else
+        trim=255
+    fi
+
+    return $trim
+}
+
+check_ata_errors () { # check kernel log for ata errors
+    # (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
+    # stdout: error count
+
+    if wordinlist $SATA_LINKPWR_ON_BAT "min_power medium_power" || \
+       wordinlist $SATA_LINKPWR_ON_AC "min_power medium_power"; then
+        # config values != max_performance exist --> check kernel log
+
+        # count matching error lines
+        echo $( dmesg | egrep -c "${RE_ATA_ERROR}" 2> /dev/null )
+    else
+        # no values in question configured
+        echo "0"
+    fi
+
+    return 0
+}
+
+print_disk_data () { # formatted output of NVME / SATA disk data
+    # $1: disk device
+    local apm pdev sched trim
+
+    # translate disk name
+    get_disk_dev $1
+
+    # check if block device and hdparm capable
+    [ -b /dev/$_disk_dev ] && check_disk_hdparm_cap $_disk_dev || return 0
+
+    # --- show general data
+    if check_disk_nvme $_disk_dev; then
+        # NVME disk
+        printf     "/dev/$_disk_dev:\n"
+        printf     "  Type      = NVME\n"
+        [ -n "$_disk_id" ] && printf "  Disk ID   = $_disk_id"
+        print_sysf "  Model     = %s\n" /sys/block/$_disk_dev/device/model
+        print_sysf "  Firmware  = %s\n" /sys/block/$_disk_dev/device/firmware_rev
+
+        # TODO: more features ...
+
+    else
+        # SATA disk
+        printf "/dev/$_disk_dev:"
+        [ -n "$_disk_id" ] && printf "  Disk ID   = $_disk_id"
+
+        # save spindle state
+        get_disk_state $_disk_dev
+
+        printf "  Model     = "
+        echo_disk_model $_disk_dev
+
+        printf "  Firmware  = "
+        echo_disk_firmware $_disk_dev
+
+        get_disk_apm_level $_disk_dev; apm=$?
+        printf "  APM Level = "
+        case $apm in
+            0|255) echo "none/disabled" ;;
+            *)     echo $apm ;;
+        esac
+
+        printf "  Status    = $_disk_state\n"
+
+        get_disk_trim_capability $_disk_dev; trim=$?
+        case $trim in
+            0) printf "  TRIM      = not supported\n" ;;
+            1) printf "  TRIM      = supported\n" ;;
+        esac
+
+        # restore standby state
+        [ "$_disk_state" = "standby" ] && spindown_disk $_disk_dev
+
+    fi # SATA
+
+    if [ -f /sys/block/$_disk_dev/queue/scheduler ]; then
+        sched="$(cat /sys/block/$_disk_dev/queue/scheduler 2> /dev/null | sed -r 's/.*\[(.*)\].*/\1/')"
+        if [ "$sched" = "none" ] && [ -d /sys/block/$_disk_dev/mq ]; then
+            sched="blk-mq"
+        fi
+        printf "  Scheduler = %s\n" "$sched"
+    fi
+
+    pdev=/sys/block/$_disk_dev/device/power
+    if [ -f $pdev/control ]; then
+        echo
+        print_sysf "  Runtime PM: control = %s, " $pdev/control
+        print_sysf "autosuspend_delay_ms = %4s\n"    $pdev/autosuspend_delay_ms
+    fi
+
+    # --- show SMART data
+    cmd_exists $SMARTCTL || return 0
+
+    printf "\n  SMART info:\n"
+    if check_disk_nvme $_disk_dev; then
+        # NVME disk
+        $SMARTCTL -A /dev/$_disk_dev | \
+            egrep -e '^(Critical Warning|Temperature:|Available Spare)' \
+                  -e '^(Percentage Used:|Data Units Written:|Power|Unsafe)' \
+                  -e 'Integrity Errors' | \
+            sed 's/^/    /'
+    else
+        # SATA disk
+        $SMARTCTL -A /dev/$_disk_dev | grep -v '<==' | \
+          awk -F ' ' '$2 ~ /Power_Cycle_Count|Start_Stop_Count|Load_Cycle_Count|Reallocated_Sector_Ct/ \
+                            { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
+                      $2 ~ /Used_Rsvd_Blk_Cnt_Chip|Used_Rsvd_Blk_Cnt_Tot|Unused_Rsvd_Blk_Cnt_Tot/ \
+                            { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
+                      $2 ~ /Power_On_Hours/ \
+                            { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[h]" } ; \
+                      $2 ~ /Temperature_Celsius/ \
+                            { printf "    %3d %-25s = %8d %s %s %s %s\n", $1, $2, $10, $11, $12, $13, "[°C]" } ; \
+                      $2 ~ /Airflow_Temperature_Cel/ \
+                            { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[°C]" } ; \
+                      $2 ~ /G-Sense_Error_Rate/ \
+                            { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
+                      $2 ~ /Host_Writes/ \
+                            { printf "    %3d %-25s = %8.3f %s\n", $1, $2, $10 / 32768.0, "[TB]" } ; \
+                      $2 ~ /Total_LBAs_Written/ \
+                            { printf "    %3d %-25s = %8.3f %s\n", $1, $2, $10 / 2147483648.0, "[TB]" } ; \
+                      $2 ~ /NAND_Writes_1GiB/ \
+                            { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[GB]" } ; \
+                      $2 ~ /Available_Reservd_Space|Media_Wearout_Indicator|Wear_Leveling_Count/ \
+                            { printf "    %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
+        echo
+    fi # SATA
+
+    return 0
+}
+
+# --- Battery Features
+
+print_methods_per_driver () { # show features provided by a battery driver
+    # $1: driver = natacpi, tpacpi, tpsmapi
+    local bm m mlist=""
+
+    for bm in _bm_read _bm_thresh _bm_dischg; do
+        if [ "$(eval echo \$$bm)" = "$1" ]; then
+            # method matches driver
+            case $bm in
+                _bm_read)   m="data" ;;
+                _bm_thresh) m="thresholds" ;;
+                _bm_dischg) m="discharge" ;;
+            esac
+            # concat method to output
+            if [ -n "$mlist" ]; then
+                mlist="$mlist, $m"
+            else
+                mlist="$m"
+            fi
+        fi
+    done
+
+    if [ -n "$mlist" ]; then
+        printf "(%s)\n" "$mlist"
+    else
+        printf "(none)\n"
+    fi
 
     return 0
 }
@@ -411,3 +524,4 @@ print_discharge () { # formatted output of ThinkPad force_discharge
 
     return 0
 }
+
