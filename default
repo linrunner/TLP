@@ -285,6 +285,16 @@ NATACPI_ENABLE=0
 TPACPI_ENABLE=1
 TPSMAPI_ENABLE=1
 
+# Set the min/max/turbo frequency available for the intel GPU.
+# Possible values strongly depend on your hardware. For available '
+# frequencies see the output of tlp-stat -g.
+#GPU_MIN_FREQ_ON_AC=0
+#GPU_MAX_FREQ_ON_AC=0
+#GPU_BOOST_FREQ_ON_AC=0
+#GPU_MIN_FREQ_ON_BAT=0
+#GPU_MAX_FREQ_ON_BAT=0
+#GPU_BOOST_FREQ_ON_BAT=0
+
 # ------------------------------------------------------------------------------
 # tlp-rdw - Parameters for the radio device wizard
 # Possible devices: bluetooth, wifi, wwan.

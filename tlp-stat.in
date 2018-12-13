@@ -591,6 +591,16 @@ if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     done
 
+    # --- show intel gpu freq info
+        check_intel_gpu
+
+    if [ $intel_gpu -eq 1 ]; then
+        # show Intel P-state info
+        printparm "%-40s = ##%4d## MHz" $GPU_MIN_FREQ
+        printparm "%-40s = ##%4d## MHz" $GPU_MAX_FREQ
+        printparm "%-40s = ##%4d## MHz" $GPU_BOOST_FREQ
+    fi
+
     # --- show radeon power profile or dpm state
     if [ -d $RADD ]; then
         for card in /sys/class/drm/card[0-9]/device ; do
