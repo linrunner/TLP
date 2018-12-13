@@ -1,0 +1,57 @@
+#!/bin/sh
+# tlp-func-gpu - Intel GPU Functions
+#
+# Copyright (c) 2018 Thomas Koch <linrunner at gmx.net> and others.
+# This software is licensed under the GPL v2 or later.
+
+# Needs: tlp-func-base
+
+# ----------------------------------------------------------------------------
+# Constants
+
+readonly INTEL_GPUD=/sys/class/drm/card0
+readonly GPU_MIN_FREQ=$INTEL_GPUD/gt_min_freq_mhz
+readonly GPU_MAX_FREQ=$INTEL_GPUD/gt_max_freq_mhz
+readonly GPU_BOOST_FREQ=$INTEL_GPUD/gt_boost_freq_mhz
+
+# ----------------------------------------------------------------------------
+# Functions
+
+check_intel_gpu () { # detect intel GPU presense -- retval: $intel_gpu
+    intel_gpu=0
+
+    [ -d $INTEL_GPUD ] && intel_gpu=1
+    return 0
+}
+
+set_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mode, 1=battery mode
+    local minfreq maxfreq boost
+
+    if [ "$1" = "1" ]; then
+        minfreq=$GPU_MIN_FREQ_ON_BAT
+        maxfreq=$GPU_MAX_FREQ_ON_BAT
+        boostfreq=$GPU_BOOST_FREQ_ON_BAT
+    else
+        minfreq=$GPU_MIN_FREQ_ON_AC
+        maxfreq=$GPU_MAX_FREQ_ON_AC
+        boostfreq=$GPU_BOOST_FREQ_ON_AC
+    fi
+
+    if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
+        echo_debug "pm" "set_min_max_boost_freq($1).min: $minfreq"
+        [ -f $GPU_MIN_FREQ ] && { printf '%s\n' "$minfreq" > $GPU_MIN_FREQ; } 2> /dev/null
+    fi
+
+    if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
+        echo_debug "pm" "set_min_max_boost_freq($1).max: $maxfreq"
+        [ -f $GPU_MAX_FREQ ] && { printf '%s\n' "$maxfreq" > $GPU_MAX_FREQ; } 2> /dev/null
+    fi
+
+    if [ -n "$boostfreq" ] && [ "$boostfreq" != "0" ]; then
+        echo_debug "pm" "set_min_max_boost_freq($1).boost: $boostfreq"
+        [ -f $GPU_BOOST_FREQ ] && { printf '%s\n' "$boostfreq" > $GPU_BOOST_FREQ; } 2> /dev/null
+    fi
+
+    return 0
+}
+
