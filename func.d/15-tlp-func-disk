@@ -61,7 +61,7 @@ check_disk_nvme () { # check if nvme disk device
 show_disk_ids () { # show disk id's
     local dev
 
-    { # iterate SATA and NVME disks
+    { # iterate SATA and NVMe disks
         for dev in $(ls /dev/disk/by-id/ | egrep '^(ata|nvme)' | egrep -v '(^nvme-eui|\-part[1-9]+)'); do
             if [ -n "$dev" ]; then
                 get_disk_dev $dev

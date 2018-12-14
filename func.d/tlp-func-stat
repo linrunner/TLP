@@ -260,7 +260,7 @@ check_ata_errors () { # check kernel log for ata errors
     return 0
 }
 
-print_disk_data () { # formatted output of NVME / SATA disk data
+print_disk_data () { # formatted output of NVMe / SATA disk data
     # $1: disk device
     local apm pdev sched trim
 
@@ -272,9 +272,9 @@ print_disk_data () { # formatted output of NVME / SATA disk data
 
     # --- show general data
     if check_disk_nvme $_disk_dev; then
-        # NVME disk
+        # NVMe disk
         printf     "/dev/$_disk_dev:\n"
-        printf     "  Type      = NVME\n"
+        printf     "  Type      = NVMe\n"
         [ -n "$_disk_id" ] && printf "  Disk ID   = $_disk_id"
         print_sysf "  Model     = %s\n" /sys/block/$_disk_dev/device/model
         print_sysf "  Firmware  = %s\n" /sys/block/$_disk_dev/device/firmware_rev
@@ -335,7 +335,7 @@ print_disk_data () { # formatted output of NVME / SATA disk data
 
     printf "\n  SMART info:\n"
     if check_disk_nvme $_disk_dev; then
-        # NVME disk
+        # NVMe disk
         $SMARTCTL -A /dev/$_disk_dev | \
             egrep -e '^(Critical Warning|Temperature:|Available Spare)' \
                   -e '^(Percentage Used:|Data Units Written:|Power|Unsafe)' \
