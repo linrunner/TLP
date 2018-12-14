@@ -1,5 +1,5 @@
 #!/bin/sh
-# tlp-func-rf - Radio Functions
+# tlp-func-rf - Radio Device Checks and PM Functions
 #
 # Copyright (c) 2018 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.

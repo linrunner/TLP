@@ -11,6 +11,8 @@
     Graphics:
       - INTEL_GPU_MIN_FREQ_ON_AC/BAT, INTEL_GPU_MAX_FREQ_ON_AC/BAT,
         INTEL_GPU_BOOST_FREQ_ON_AC/BAT: Intel GPU frequency limits
+    Radio Devices:
+       - Retire compatibility with Network Manager 0.9.8 (Ubuntu 14.04 EOL)
     ThinkPad Battery:
       - New native kernel API for battery features "natacpi" (Issue #321);
         requires kernel 4.17; disabled by default

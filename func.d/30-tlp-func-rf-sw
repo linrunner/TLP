@@ -1,5 +1,5 @@
 #!/bin/sh
-# tlp-func-rdw - RDW Functions
+# tlp-func-rf-sw - Radio Switch Functions
 #
 # Copyright (c) 2018 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
@@ -123,13 +123,8 @@ invoke_nmcli () { # call nmcli with radio option according to the program versio
 
     check_nm || return 0 # return if NetworkManager not running
 
-    $NMCLI nm $1 $2 > /dev/null 2>&1; rc=$?
-    echo_debug "rf" "invoke_nmcli($1, $2).nm: rc=$rc"
-    if [ $rc -eq 2 ]; then
-        # option "nm" is invalid for this NM version, try "radio" instead
-        $NMCLI radio $1 $2 > /dev/null 2>&1; rc=$?
-        echo_debug "rf" "invoke_nmcli($1, $2).radio: rc=$rc"
-    fi
+    $NMCLI radio $1 $2 > /dev/null 2>&1; rc=$?
+    echo_debug "rf" "invoke_nmcli($1, $2).radio: rc=$rc"
 
     return $rc
 }
