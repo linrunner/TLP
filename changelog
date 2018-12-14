@@ -4,7 +4,7 @@
 
   * Features
     Disks:
-      - Complete support for NVMe devices
+      - Support for NVMe devices
     General:
       - tlp bat/ac: keep manual power settings until tlp start (Issue #349)
       - Remove all pm-utils scripts (Issue #363)
