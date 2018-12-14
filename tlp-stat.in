@@ -110,7 +110,7 @@ read_args () { # read command line arguments
             "-g"|"--graphics")
                 show_all=0
                 show_graf=1
-                : ${needs_root_priv:=0}
+                needs_root_priv=1
                 ;;
 
             "-p"|"--processor")
@@ -593,9 +593,10 @@ if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show Intel GPU freq parameters
     if check_intel_gpu; then
-        printparm "%-44s = ##%5d## MHz" $IGPU_MIN_FREQ
-        printparm "%-44s = ##%5d## MHz" $IGPU_MAX_FREQ
-        printparm "%-44s = ##%5d## MHz" $IGPU_BOOST_FREQ
+        printparm "%-44s = ##%5d## [MHz]" $IGPU_MIN_FREQ
+        printparm "%-44s = ##%5d## [MHz]" $IGPU_MAX_FREQ
+        printparm "%-44s = ##%5d## [MHz]" $IGPU_BOOST_FREQ
+        print_intel_gpu_freqs
         echo
     fi
 

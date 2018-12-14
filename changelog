@@ -1,4 +1,4 @@
-+++ 1.2 --- 13.12.2018 +++
++++ 1.2 --- 14.12.2018 +++
 
 *** Development version ***
 
@@ -20,7 +20,7 @@
       - Detect ThinkPad *80 models (Coffee Lake)
     tlp-stat:
       - Check systemd-rfkill.socket masked status
-      - Intel GPU: show frequency limits
+      - Intel GPU: show frequency limits and available frequencies
 
   * Bugfixes
     - Issue #319: get_disk_dev logic is not compatible with NVMe devices
