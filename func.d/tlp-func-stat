@@ -380,7 +380,7 @@ print_intel_gpu_freqs () { # show available frequencies for the Intel GPU
     [ -f $IGPU_FREQ_TABLE ] || return 0
 
     printf "%s: " $IGPU_FREQ_TABLE
-    awk -F ' ' '{ printf "%d ", $1 }; ' $IGPU_FREQ_TABLE
+    awk -F ' ' '{ if (NR >= 2) { printf "%d ", $1 } }; ' $IGPU_FREQ_TABLE
     printf "[MHz] \n"
 }
 
