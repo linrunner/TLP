@@ -1,4 +1,4 @@
-TLP README - 25.01.2018
+TLP README - 16.12.2018
 
 TLP brings you the benefits of advanced power management for Linux without the need
 to understand every technical detail. TLP comes with a default configuration already
@@ -19,6 +19,7 @@ Separate settings profiles depending on the power source AC/battery:
 - AHCI runtime power management for host controllers and disks *EXPERIMENTAL*
 - PCIe active state power management (PCIe ASPM)
 - Runtime power management for PCI(e) bus devices
+- Intel GPU frequency limits
 - Radeon graphics power management (KMS and DPM)
 - Wifi power saving mode
 - Enable/disable integrated radio devices (excluding connected devices)
