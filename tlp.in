@@ -44,15 +44,16 @@ apply_common_settings () { # apply settings common to all modes
 # --- MAIN
 
 read_defaults
+args_to_config $@
 check_tlp_enabled || exit 1
 add_sbin2path
 
 check_laptop_mode_tools
 
 # get cmd line args
-mode=$(echo $1 | tr "[:upper:]" "[:lower:]")
+mode=$(tolower $1)
 if [ "$mode" = "init" ]; then
-    mode2=$(echo $2 | tr "[:upper:]" "[:lower:]")
+    mode2=$(tolower $2)
 else
     mode2=""
 fi
@@ -61,7 +62,6 @@ fi
 if [ "$mode" = "stat" ]; then
     [ "$X_TRACE_TLP_STAT" = "1" ] || _nodebug=1
 fi
-
 
 # get current power state
 get_power_state; pwrmode=$?

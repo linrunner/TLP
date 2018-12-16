@@ -86,7 +86,11 @@ get_sysval () { # read numeric contents of a sysfile, return 0 if contents
     return $val
 }
 
-# --- Tests
+# --- Strings
+
+tolower () { # echo string in lowercase -- $1: string
+    printf "%s" $1 | tr "[:upper:]" "[:lower:]"
+}
 
 wordinlist () { # test if word in list
                 # $1: word, $2: whitespace-separated list of words
@@ -100,6 +104,8 @@ wordinlist () { # test if word in list
 
     return 1 # no match
 }
+
+# --- Tests
 
 cmd_exists () { # test if command exists -- $1: command
     command -v $1 > /dev/null 2>&1
@@ -308,6 +314,26 @@ read_defaults () { # read config file
     else
         return 1
     fi
+}
+
+args_to_config () { # make config values from all args after the delimiter "--"
+    local dflag=0
+
+    # iterate all args
+    while [ $# -gt 0 ]; do
+        if [ $dflag -eq 1 ]; then
+            # delimiter was passed --> evaluate arg,
+            # filter for correct format: PPPPPP=vvvvvvv
+            eval $(printf "%s\n" $1 | egrep '^[A-Z_]+\=.*$')
+        elif [ "$1" = "--" ]; then
+            # delimiter reached
+           dflag=1
+        fi
+
+        shift
+    done
+
+    return 0
 }
 
 # --- Kernel Modules

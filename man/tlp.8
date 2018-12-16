@@ -1,10 +1,10 @@
-.TH tlp 8 2018-07-29 "TLP 1.2" "Power Management"
+.TH tlp 8 2018-12-16 "TLP 1.2" "Power Management"
 .
 .SH NAME
 tlp \- apply laptop power saving settings
 .
 .SH SYNOPSIS
-.B tlp \fIcommand\fR \fR[\fIparameter\fR] "..."
+.B tlp \fIcommand\fR \fR[\fIparameters\fR] [-- <config> "..."]
 .
 .SH DESCRIPTION
 Apply power saving settings manually and control ThinkPad battery features.
@@ -77,6 +77,11 @@ Same as tlp\-stat.
 .TP
 .B diskid
 Show disk ids for configuration.
+.
+.TP
+.B \-- PARAM=value "..."
+Add parameters to temporarily overwrite the system configuration
+(for this program invocation only).
 .
 .SH NOTES
 For ThinkPads with more than one battery the selection works as follows:

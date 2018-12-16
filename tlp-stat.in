@@ -171,6 +171,10 @@ read_args () { # read command line arguments
                 needs_root_priv=1
                 ;;
 
+            "--") # config values follow --> quit loop
+                break
+                ;;
+
             *)
                 echo "Usage: tlp-stat [ -b | --battery   | -c | --config    |"
                 echo "                  -d | --disk      | -e | --pcie      |"
@@ -194,8 +198,8 @@ read_args $*
 : ${needs_root_priv:=1}
 
 # check for and read conffile
-read_defaults
-conf_present=$?
+read_defaults; conf_present=$?
+args_to_config $@
 
 # inhibit trace output (unless forced)
 [ "$X_TRACE_TLP_STAT" = "1" ] || _nodebug=1

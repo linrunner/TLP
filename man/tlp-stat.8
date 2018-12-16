@@ -1,10 +1,10 @@
-.TH tlp\-stat 8 2017-01-29 "TLP 1.0" "Power Management"
+.TH tlp\-stat 8 2018-12-16 "TLP 1.2" "Power Management"
 .
 .SH NAME
 tlp\-stat \- show power saving settings
 .
 .SH SYNOPSIS
-.B tlp\-stat \fI[option]\fR "..."
+.B tlp\-stat \fI[options]\fR [-- <config> "..."]
 .
 .SH DESCRIPTION
 Show configuration, system information, active power saving settings and battery
@@ -72,6 +72,11 @@ Show trace output.
 .B \-v, \-\-verbose
 Be more verbose.
 .
+.TP
+.B \-- PARAM=value "..."
+Add parameters to temporarily overwrite the system configuration
+(for this program invocation only).
+.
 .SH FILES
 .I /etc/default/tlp
 .RS
@@ -81,4 +86,4 @@ System configuration file containing all power saving settings.
 .BR tlp (8).
 .
 .SH AUTHOR
-(c) 2017 Thomas Koch <linrunner at gmx.net>
+(c) 2018 Thomas Koch <linrunner at gmx.net>
