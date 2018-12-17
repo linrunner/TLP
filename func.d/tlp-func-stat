@@ -38,6 +38,10 @@ check_openrc () { # check if openrc is the active init system (PID 1)
     [ -e /run/openrc/softlevel ]
 }
 
+file_readable () { #check if file is actually readable -- $1: file
+    cat $1 > /dev/null 2>&1
+}
+
 # --- Formatted Output
 
 printparm () { # formatted output of sysfile - general
@@ -377,7 +381,7 @@ print_disk_data () { # formatted output of NVMe / SATA disk data
 
 print_intel_gpu_freqs () { # show available frequencies for the Intel GPU
 
-    [ -f $IGPU_FREQ_TABLE ] || return 0
+    file_readable $IGPU_FREQ_TABLE ] || return 0
 
     printf "%s: " $IGPU_FREQ_TABLE
     awk -F ' ' '{ if (NR >= 2) { printf "%d ", $1 } }; ' $IGPU_FREQ_TABLE

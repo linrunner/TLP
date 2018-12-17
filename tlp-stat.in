@@ -597,11 +597,13 @@ if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show Intel GPU freq parameters
     if check_intel_gpu; then
-        printparm "%-44s = ##%5d## [MHz]" $IGPU_MIN_FREQ
-        printparm "%-44s = ##%5d## [MHz]" $IGPU_MAX_FREQ
-        printparm "%-44s = ##%5d## [MHz]" $IGPU_BOOST_FREQ
-        print_intel_gpu_freqs
-        echo
+        if file_readable $IGPU_MIN_FREQ; then
+            printparm "%-44s = ##%5d## [MHz]" $IGPU_MIN_FREQ
+            printparm "%-44s = ##%5d## [MHz]" $IGPU_MAX_FREQ
+            printparm "%-44s = ##%5d## [MHz]" $IGPU_BOOST_FREQ
+            print_intel_gpu_freqs
+            echofi
+        fi
     fi
 
     # --- show radeon power profile or dpm state
