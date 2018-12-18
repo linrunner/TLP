@@ -13,39 +13,10 @@ readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIBATDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
 
-readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T23|T[346][0123][p]?|T[45][01]0[s]?|W[57]0[01]|X[346][012][s]?( Tablet)?|X1[02]0e|X[23]0[01][s]?( Tablet)?|Z6[01][mpt])$'
-readonly RE_TPACPI_ONLY='^(13.*|25|(Edge )?E[1345][2345678][05][ps]?|Helix.*|L[45][345678]0|P[75][012][s]?|S2|(Edge )?S[245][345][01]*|T[45][345678][01][psu]?|W5[345][01][s]?|X1 Carbon.*|X2[345678]0[s]?( Tablet)?|.*Yoga.*)$'
-readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
-readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
-
 # ----------------------------------------------------------------------------
 # Functions
 
 # --- Battery Feature Support
-
-supports_tpsmapi_only () {
-    # rc: 0=ThinkPad supports tpsmapi only/1=false
-    # prerequisite: check_thinkpad()
-    printf '%s' "$_tpmodel" | egrep -q "${RE_TPSMAPI_ONLY}"
-}
-
-supports_tpacpi_only () {
-    # rc: 0=ThinkPad supports tpacpi-bat only/1=false
-    # prerequisite: check_thinkpad()
-    printf '%s' "$_tpmodel" | egrep -q "${RE_TPACPI_ONLY}"
-}
-
-supports_tpsmapi_and_tpacpi () {
-    # rc: 0=ThinkPad supports tpsmapi and tpacpi-bat/1=false
-    # prerequisite: check_thinkpad()
-    printf '%s' "$_tpmodel" | egrep -q "${RE_TPSMAPI_AND_TPACPI}"
-}
-
-supports_no_tp_bat_funcs () {
-    # rc: 0=ThinkPad doesn't support battery features/1=false
-    # prerequisite: check_thinkpad()
-    printf '%s' "$_tpmodel" | egrep -q "${RE_TP_NONE}"
-}
 
 check_battery_features () { # determine which battery feature APIs/tools are
     # supported by hardware and running kernel.
@@ -64,6 +35,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
     #       0=supported/
     #       32=disabled/
     #       64=acpi_call module not loaded/
+    #       127=tpacpi-bat not installed/
     #       128=acpi_call module not installed/
     #       254=ThinkPad not supported/
     #       255=superseded by natacpi
@@ -71,6 +43,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
     # 3. check for tp-smapi external kernel module [ThinkPads only]
     #    --> retval $_tpsmapi:
     #       0=supported/
+    #       1=readonly/
     #       32=disabled/
     #       64=tp_smapi module not loaded/
     #       128=tp_smapi module not installed/
@@ -121,15 +94,23 @@ check_battery_features () { # determine which battery feature APIs/tools are
             break # exit loop on first battery detected
         fi
     done
+
+    if [ $_tpacpi -lt 1 ] && is_thinkpad && ! supports_tpacpi; then
+        # exclude not natacpi/tpacpi-bat capable ThinkPad models; prevents kernel error messages
+        _natacpi=254
+        echo_debug "bat" "check_battery_features.natacpi.old_thinkpad"
+    fi
     echo_debug "bat" "check_battery_features.natacpi: $_natacpi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
 
     # when not a Thinkpad --> we're done
     is_thinkpad || return 0
 
     # --- 2. check for acpi-call external kernel module and test with integrated tpacpi-bat [ThinkPads only]
-    if supports_tpsmapi_only || supports_no_tp_bat_funcs; then
-        # not tpacpi-bat capable models
+    if ! supports_tpacpi; then
         _tpacpi=254
+    elif [ $_natacpi -eq 0 ]; then
+        # tpacpi-bat superseded by natacpi: _tpacpi=255 from above
+        :
     elif [ ! -e /proc/acpi/call ]; then
         if [ -z "$(modinfo acpi_call 2> /dev/null)" ]; then
             # module neither installed nor builtin
@@ -142,7 +123,6 @@ check_battery_features () { # determine which battery feature APIs/tools are
         # module present --> try tpacpi-bat
         $TPACPIBAT -g FD 1 > /dev/null 2>&1
         _tpacpi=$?
-        # TODO: handle tpacpi-bat errors (rc=127 when $TPACPIBAT non-existent)
 
         if [ $_tpacpi -eq 0 ] && [ "${TPACPI_ENABLE:-1}" = "0" ]; then
             # tpacpi disabled by configuration
@@ -173,19 +153,21 @@ check_battery_features () { # determine which battery feature APIs/tools are
         if [ "${TPSMAPI_ENABLE:-1}" = "0" ]; then
             # tpsmapi disabled by configuration
             _tpsmapi=32
+        elif supports_tpsmapi_and_tpacpi; then
+            # readonly
+            _tpsmapi=1
         else
             # enabled (default)
             _tpsmapi=0
-
-            # reading battery data via tpsmapi is preferred over natacpi
-            # because it provides cycle count and more
-            _bm_read="tpsmapi"
-
             # fill in missing methods
             [ "$_bm_thresh" = "none" ] && _bm_thresh="tpsmapi"
             [ "$_bm_dischg" = "none" ] && _bm_dischg="tpsmapi"
         fi
-    elif supports_tpacpi_only || supports_no_tp_bat_funcs; then
+
+        # reading battery data via tpsmapi is preferred over natacpi
+        # because it provides cycle count and more
+        _bm_read="tpsmapi"
+    elif ! supports_tpsmapi_only && ! supports_tpsmapi_and_tpacpi || supports_no_tp_bat_funcs; then
         # not tp-smapi capable models
         _tpsmapi=254
     elif [ -n "$(modinfo tp_smapi 2> /dev/null)" ]; then

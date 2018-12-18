@@ -33,6 +33,10 @@ readonly MOD_TPACPI="acpi_call"
 readonly DMID=/sys/class/dmi/id/
 readonly NETD=/sys/class/net
 
+readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T23|T[346][0123][p]?|T[45][01]0[s]?|W[57]0[01]|X[346][012][s]?( Tablet)?|X1[02]0e|X[23]0[01][s]?( Tablet)?|Z6[01][mpt])$'
+readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
+readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
+
 # ----------------------------------------------------------------------------
 # Control
 
@@ -375,6 +379,32 @@ read_dmi () { # read DMI data -- $*: keywords; stdout: dmi strings
 
 # --- ThinkPad Checks
 
+supports_tpsmapi_only () {
+    # rc: 0=ThinkPad supports tpsmapi only/1=false
+    # prerequisite: check_thinkpad()
+    printf '%s' "$_tpmodel" | egrep -q "${RE_TPSMAPI_ONLY}"
+}
+
+supports_tpsmapi_and_tpacpi () {
+    # rc: 0=ThinkPad supports tpsmapi, tpacpi-bat, natacpi/1=false
+    # prerequisite: check_thinkpad()
+    printf '%s' "$_tpmodel" | egrep -q "${RE_TPSMAPI_AND_TPACPI}"
+}
+
+supports_no_tp_bat_funcs () {
+    # rc: 0=ThinkPad doesn't support battery features/1=false
+    # prerequisite: check_thinkpad()
+    printf '%s' "$_tpmodel" | egrep -q "${RE_TP_NONE}"
+}
+
+supports_tpacpi () {
+    # rc: 0=ThinkPad does support tpacpi-bat, natacpi/1=false
+    # prerequisite: check_thinkpad()
+    # assumption: all newer models support tpapaci-bat/natacapi except
+    # explicitly unsupported or older tpsmapi only models
+    ! supports_no_tp_bat_funcs && ! supports_tpsmapi_only
+}
+
 check_thinkpad () { # check for ThinkPad hardware and save model string,
                  # load ThinkPad specific kernel modules
                  # rc: 0=ThinkPad, 1=other hardware
@@ -402,14 +432,15 @@ check_thinkpad () { # check for ThinkPad hardware and save model string,
     fi
 
     if [ -n "$_tpmodel" ]; then
-        # load tp-smapi when not explicitly unsupported only;
-        # prevents kernel error messages
-        if ! supports_tpacpi_only && ! supports_no_tp_bat_funcs; then
+        # load tp-smapi for supported models only; prevents kernel messages
+        if supports_tpsmapi_only || supports_tpsmapi_and_tpacpi; then
             load_modules $MOD_TPSMAPI
         fi
 
-        # load acpi-call unconditionally
-        load_modules $MOD_TPACPI
+        # load acpi-call for supported models only; prevents kernel messages
+        if supports_tpacpi; then
+            load_modules $MOD_TPACPI
+        fi
 
         echo_debug "bat" "check_thinkpad: _tpmodel=$_tpmodel"
         return 0

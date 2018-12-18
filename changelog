@@ -1,4 +1,4 @@
-+++ 1.2 --- 16.12.2018 +++
++++ 1.2 --- 18.12.2018 +++
 
 *** Development version ***
 
@@ -17,11 +17,10 @@
        - Retire compatibility with Network Manager 0.9.8 (Ubuntu 14.04 EOL)
     ThinkPad Battery:
       - New native kernel API for battery features "natacpi" (Issue #321);
-        requires kernel 4.17; disabled by default
+        requires kernel 4.17; enabled by default
       - NATACPI_ENABLE, TPACPI_ENABLE, TPSMAPI_ENABLE: make all battery feature
         drivers switchable
-      - Detect ThinkPad 25 (Issue #326)
-      - Detect ThinkPad *80 models (Coffee Lake)
+      - Support ThinkPad 25, *80 (Coffee Lake) and all newer models
     tlp-stat:
       - Check systemd-rfkill.socket masked status
       - Intel GPU: show frequency limits and available frequencies

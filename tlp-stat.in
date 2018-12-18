@@ -602,7 +602,7 @@ if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
             printparm "%-44s = ##%5d## [MHz]" $IGPU_MAX_FREQ
             printparm "%-44s = ##%5d## [MHz]" $IGPU_BOOST_FREQ
             print_intel_gpu_freqs
-            echofi
+            echo
         fi
     fi
 
@@ -814,6 +814,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         0)   printf "tpacpi-bat = active "; print_methods_per_driver "tpacpi" ;;
         32)  echo "tpacpi-bat = inactive (disabled by configuration)" ;;
         64)  echo "tpacpi-bat = inactive (kernel module 'acpi_call' load error)" ;;
+        127) echo "tpacpi-bat = inactive (program 'tpacpi-bat' not installed)" ;;
         128) echo "tpacpi-bat = inactive (kernel module 'acpi_call' not installed)" ;;
         254) echo "tpacpi-bat = inactive (ThinkPad not supported)" ;;
         255) echo "tpacpi-bat = inactive (superseded by natacpi)" ;;
@@ -821,6 +822,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     esac
     case $_tpsmapi in
         0)   printf "tp-smapi   = active "; print_methods_per_driver "tpsmapi" ;;
+        1)   printf "tp-smapi   = readonly "; print_methods_per_driver "tpsmapi" ;;
         32)  echo "tp-smapi   = inactive (disabled by configuration)" ;;
         64)  echo "tp-smapi   = inactive (kernel module 'tp_smapi' load error)" ;;
         128) echo "tp-smapi   = inactive (kernel module 'tp_smapi' not installed)" ;;
@@ -1004,42 +1006,28 @@ if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; th
 
 fi # show_warn
 
-if [ "$show_all" = "1" ]; then
+if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show suggestions
     suout=""
 
-    if [ "$no_runtimepm" = "1" ]; then
+    if [ "$show_all" = "1" ] && [ "$no_runtimepm" = "1" ]; then
         suout="${suout}Reconfigure your Linux kernel with PM_RUNTIME=y to reduce your laptop's power consumption.\n"
     fi
 
     if is_thinkpad; then
-        # add ThinkPad specific suggestions -- $_tpmodel preset by check_thinkpad()
-        if supports_tpsmapi_only; then
-            # tp-smapi only capable models
-            [ $_tpsmapi -eq 128 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
-
-        elif supports_tpacpi_only; then
-            # tpacpi-bat only capable models
-            [ $_tpacpi -eq 128 ] && suout="${suout}Install acpi-call kernel module for ThinkPad battery features\n"
-
-        elif supports_tpsmapi_and_tpacpi; then
-            # tp-smapi and tpacpi-bat capable models
-            [ $_tpsmapi -eq 128 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
-            [ $_tpacpi -eq 128 ]  && suout="${suout}Install acpi-call kernel module for ThinkPad battery features\n"
-
-        elif supports_no_tp_bat_funcs; then
-            : # models that are neither tp_smapi nor tpacpi-bat capable
-
-        else
-            # all others assumed tpacpi-bat capable ...
-            [ $_tpsmapi -eq 128 ] && suout="${suout}Install acpi-call kernel modules for ThinkPad battery features\n"
-
-        fi
+        # add ThinkPad specific suggestions
+        [ $_tpsmapi -eq 128 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
+        case $_tpacpi in
+            127) suout="${suout}Install tpacpi-bat program for ThinkPad battery features\n" ;;
+            128) suout="${suout}Install acpi-call kernel module for ThinkPad battery features\n" ;;
+        esac
     fi # if ThinkPad
 
-    # add other suggestions
-    cmd_exists ethtool || suout="${suout}Install ethtool to disable Wake On LAN (WOL)\n"
-    cmd_exists smartctl || suout="${suout}Install smartmontools for disk drive health info\n"
+    if [ "$show_all" = "1" ]; then
+        # add other suggestions
+        cmd_exists ethtool || suout="${suout}Install ethtool to disable Wake On LAN (WOL)\n"
+        cmd_exists smartctl || suout="${suout}Install smartmontools for disk drive health info\n"
+    fi
 
     if [ -n "$suout" ]; then
         echo "+++ Suggestions"
