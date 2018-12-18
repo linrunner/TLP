@@ -24,6 +24,7 @@
     tlp-stat:
       - Check systemd-rfkill.socket masked status
       - Intel GPU: show frequency limits and available frequencies
+      - Rename "Suggestions" section to "Recommendations"
 
   * Bugfixes
     - Issue #319: get_disk_dev logic is not compatible with NVMe devices

@@ -1007,31 +1007,31 @@ if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; th
 fi # show_warn
 
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
-    # -- show suggestions
-    suout=""
+    # -- show recommendations
+    reout=""
 
     if [ "$show_all" = "1" ] && [ "$no_runtimepm" = "1" ]; then
-        suout="${suout}Reconfigure your Linux kernel with PM_RUNTIME=y to reduce your laptop's power consumption.\n"
+        reout="${reout}Reconfigure your Linux kernel with PM_RUNTIME=y to reduce your laptop's power consumption.\n"
     fi
 
     if is_thinkpad; then
-        # add ThinkPad specific suggestions
+        # add ThinkPad specific recommendations
         [ $_tpsmapi -eq 128 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
         case $_tpacpi in
-            127) suout="${suout}Install tpacpi-bat program for ThinkPad battery features\n" ;;
-            128) suout="${suout}Install acpi-call kernel module for ThinkPad battery features\n" ;;
+            127) reout="${suout}Install tpacpi-bat program for ThinkPad battery features\n" ;;
+            128) reout="${suout}Install acpi-call kernel module for ThinkPad battery features\n" ;;
         esac
     fi # if ThinkPad
 
     if [ "$show_all" = "1" ]; then
-        # add other suggestions
-        cmd_exists ethtool || suout="${suout}Install ethtool to disable Wake On LAN (WOL)\n"
-        cmd_exists smartctl || suout="${suout}Install smartmontools for disk drive health info\n"
+        # add other recommendations
+        cmd_exists ethtool  || reout="${suout}Install ethtool to disable Wake On LAN (WOL)\n"
+        cmd_exists smartctl || reout="${suout}Install smartmontools for disk drive health info\n"
     fi
 
-    if [ -n "$suout" ]; then
-        echo "+++ Suggestions"
-        printf "$suout" | sed -r 's/^/\* /'
+    if [ -n "$reout" ]; then
+        echo "+++ Recommendations"
+        printf "$reout" | sed -r 's/^/\* /'
         echo
     fi
 
