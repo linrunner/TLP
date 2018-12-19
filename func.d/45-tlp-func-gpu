@@ -9,20 +9,55 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly INTEL_GPUD=/sys/class/drm/card0
-readonly IGPU_MIN_FREQ=$INTEL_GPUD/gt_min_freq_mhz
-readonly IGPU_MAX_FREQ=$INTEL_GPUD/gt_max_freq_mhz
-readonly IGPU_BOOST_FREQ=$INTEL_GPUD/gt_boost_freq_mhz
+readonly BASE_MODD=/sys/module
+readonly BASE_DRMD=/sys/class/drm
+readonly BASE_DEBUGD=/sys/kernel/debug/dri
+
+readonly IGPU_MIN_FREQ=gt_min_freq_mhz
+readonly IGPU_MAX_FREQ=gt_max_freq_mhz
+readonly IGPU_BOOST_FREQ=gt_boost_freq_mhz
+readonly IGPU_FREQ_TABLE=i915_ring_freq_table
 
 # ----------------------------------------------------------------------------
 # Functions
 
-check_intel_gpu () { # detect Intel GPU presense -- rc: 1=present/0=absent
-    [ -d $INTEL_GPUD ]
+# --- Intel GPU
+
+check_intel_gpu () { # detect Intel GPU presence and determine sysdirs
+    # rc: 0=present/1=absent
+    # retval: $_intel_gpu_parm: card parameter sysdir;
+    #         $_intel_gpu_drm:  card drm sysdir;
+    #         $_intel_gpu_dbg:  card debug sysdir
+    local cardno driver gpu
+
+    _intel_gpu_parm=""
+    _intel_gpu_drm=""
+    _intel_gpu_dbg=""
+
+    for gpu in ${BASE_DRMD}/card?; do
+        driver=$(readlink ${gpu}/device/driver)
+        driver=${driver##*/}
+        case $driver in
+            i915*) # Intel GPU found
+                cardno=${gpu##${BASE_DRMD}/card}
+                _intel_gpu_parm=${BASE_MODD}/${driver}/parameters
+                _intel_gpu_drm=${gpu}
+                _intel_gpu_dbg=${BASE_DEBUGD}/${cardno}
+                echo_debug "pm" "check_intel_gpu: parm=$_intel_gpu_parm; drm=$_intel_gpu_drm; dbg=$_intel_gpu_dbg"
+                return 0
+                ;;
+        esac
+    done
+
+    # no Intel GPU found
+    echo_debug "pm" "check_intel_gpu.no_card"
+    return 1
 }
 
 set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mode, 1=battery mode
     local minfreq maxfreq boostfreq
+
+    check_intel_gpu || return 0
 
     if [ "$1" = "1" ]; then
         minfreq=$INTEL_GPU_MIN_FREQ_ON_BAT
@@ -35,7 +70,7 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
     fi
 
     if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
-        if { printf '%s\n' "$minfreq" > $IGPU_MIN_FREQ; } 2> /dev/null; then
+        if { printf '%s\n' "$minfreq" > $_intel_gpu_drm/$IGPU_MIN_FREQ; } 2> /dev/null; then
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: $minfreq"
         else
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min.write_error"
@@ -43,7 +78,7 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
     fi
 
     if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
-        if { printf '%s\n' "$maxfreq" > $IGPU_MAX_FREQ; } 2> /dev/null; then
+        if { printf '%s\n' "$maxfreq" > $_intel_gpu_drm/$IGPU_MAX_FREQ; } 2> /dev/null; then
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: $maxfreq"
         else
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max.write_error"
@@ -51,7 +86,7 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
     fi
 
     if [ -n "$boostfreq" ] && [ "$boostfreq" != "0" ]; then
-        if { printf '%s\n' "$boostfreq" > $IGPU_BOOST_FREQ; } 2> /dev/null; then
+        if { printf '%s\n' "$boostfreq" > $_intel_gpu_drm/$IGPU_BOOST_FREQ; } 2> /dev/null; then
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: $boostfreq"
         else
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost.write_error"

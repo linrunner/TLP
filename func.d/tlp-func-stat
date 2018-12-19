@@ -16,8 +16,6 @@ readonly SYSTEMD=systemd
 
 readonly RE_ATA_ERROR='ata[0-9]+: SError: {.*CommWake }'
 
-readonly IGPU_FREQ_TABLE=/sys/kernel/debug/dri/0/i915_ring_freq_table
-
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -381,10 +379,10 @@ print_disk_data () { # formatted output of NVMe / SATA disk data
 
 print_intel_gpu_freqs () { # show available frequencies for the Intel GPU
 
-    file_readable $IGPU_FREQ_TABLE ] || return 0
+    file_readable $_intel_gpu_dbg/$IGPU_FREQ_TABLE ] || return 0
 
-    printf "%s: " $IGPU_FREQ_TABLE
-    awk -F ' ' '{ if (NR >= 2) { printf "%d ", $1 } }; ' $IGPU_FREQ_TABLE
+    printf "%s: " $_intel_gpu_dbg/$IGPU_FREQ_TABLE
+    awk -F ' ' '{ if (NR >= 2) { printf "%d ", $1 } }; ' $_intel_gpu_dbg/$IGPU_FREQ_TABLE
     printf "[MHz] \n"
 }
 

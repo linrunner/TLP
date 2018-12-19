@@ -20,7 +20,6 @@ readonly JOURNALCTL=journalctl
 
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly EFID=/sys/firmware/efi
-readonly I915D='/sys/module/i915*/parameters'
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
 readonly WQPE=/sys/module/workqueue/parameters/power_efficient
 
@@ -579,32 +578,28 @@ if [ "$show_all" = "1" ]; then
 fi # show_all
 
 if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
-    # --- show Intel GPU power mgmt
-    for card in $I915D; do
-        if [ -d $card ]; then
-            echo "+++ Intel Graphics"
-            printparm_i915 $card/powersave
-            printparm_i915 $card/enable_rc6 $card/i915_enable_rc6
-            printparm_i915 $card/enable_dc
-            printparm_i915 $card/enable_fbc $card/i915_enable_fbc
-            printparm_i915 $card/enable_psr "" 1
-            printparm_i915 $card/lvds_downclock
-            printparm_i915 $card/modeset
-            printparm_i915 $card/semaphores
-            echo
-        fi
-    done
-
-    # --- show Intel GPU freq parameters
     if check_intel_gpu; then
-        if file_readable $IGPU_MIN_FREQ; then
-            printparm "%-44s = ##%5d## [MHz]" $IGPU_MIN_FREQ
-            printparm "%-44s = ##%5d## [MHz]" $IGPU_MAX_FREQ
-            printparm "%-44s = ##%5d## [MHz]" $IGPU_BOOST_FREQ
+        # --- show Intel GPU power mgmt
+        echo "+++ Intel Graphics"
+        printparm_i915 $_intel_gpu_parm/powersave
+        printparm_i915 $_intel_gpu_parm/enable_rc6 $_intel_gpu_parm/i915_enable_rc6
+        printparm_i915 $_intel_gpu_parm/enable_dc
+        printparm_i915 $_intel_gpu_parm/enable_fbc $_intel_gpu_parm/i915_enable_fbc
+        printparm_i915 $_intel_gpu_parm/enable_psr "" 1
+        printparm_i915 $_intel_gpu_parm/lvds_downclock
+        printparm_i915 $_intel_gpu_parm/modeset
+        printparm_i915 $_intel_gpu_parm/semaphores
+        echo
+
+        # --- show Intel GPU freq parameters
+        if file_readable $_intel_gpu_drm/$IGPU_MIN_FREQ; then
+            printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_MIN_FREQ
+            printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_MAX_FREQ
+            printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_BOOST_FREQ
             print_intel_gpu_freqs
             echo
         fi
-    fi
+    fi # check_intel_gpu
 
     # --- show radeon power profile or dpm state
     if [ -d $RADD ]; then
