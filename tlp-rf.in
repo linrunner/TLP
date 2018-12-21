@@ -13,13 +13,14 @@ done
 # --- MAIN
 
 read_defaults
-args_to_config $@
+carg1=$1
+parse_args4config $@
 add_sbin2path
 self=${0##*/}
 
 case $self in
     bluetooth|wifi|wwan)
-        case $1 in
+        case $carg1 in
             on)
                 device_switch $self on
                 echo_device_state $self $devs

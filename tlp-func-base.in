@@ -320,22 +320,27 @@ read_defaults () { # read config file
     fi
 }
 
-args_to_config () { # make config values from all args after the delimiter "--"
+parse_args4config () { # parse command-line arguments: everything after the
+                       # delimiter '--' is interpreted as a config parameter
+    # retval: config parameters
     local dflag=0
 
-    # iterate all args
+    # iterate arguments
     while [ $# -gt 0 ]; do
         if [ $dflag -eq 1 ]; then
-            # delimiter was passed --> evaluate arg,
-            # filter for correct format: PPPPPP=vvvvvvv
-            eval $(printf "%s\n" $1 | egrep '^[A-Z_]+\=.*$')
+            # delimiter was passed --> evaluate argument
+            # sanitize input:
+            #   format is PARAMETER=value
+            #   parameter name allows 'A'..'Z' and '_' only
+            #   value allows  'A'..'Z', 'a'..'z', '0'..'9', '_', ' ', '"'
+            #   eval itself provides filtering of unpaired quotes ('"')
+            eval $(printf "%s" "$1" | egrep '^[A-Z_]+\=[0-9a-zA-Z _"]*$') 2> /dev/null
         elif [ "$1" = "--" ]; then
-            # delimiter reached
+            # delimiter reached --> begin interpretation
            dflag=1
         fi
-
-        shift
-    done
+        shift # next argument
+    done # while arguments
 
     return 0
 }

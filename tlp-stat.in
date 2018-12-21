@@ -79,9 +79,11 @@ glob_files () {
     done
 }
 
-read_args () { # read command line arguments
-    for a in $*; do
-        case $a in
+parse_args () { # parse command-line -- $@: arguments to parse
+
+    # iterate arguments until delimiter '--' reached
+    while [ $# -gt 0 ]; do
+        case "$1" in
             "-b"|"--battery")
                 show_all=0
                 show_bat=1
@@ -186,19 +188,23 @@ read_args () { # read command line arguments
                 exit 3
                 ;;
         esac
-    done
+
+        shift # next argument
+    done # while arguments
+
+    return 0
 }
 
 # --- MAIN
 
 add_sbin2path
 
-read_args $*
-: ${needs_root_priv:=1}
 
 # check for and read conffile
 read_defaults; conf_present=$?
-args_to_config $@
+parse_args $@
+parse_args4config $@
+: ${needs_root_priv:=1}
 
 # inhibit trace output (unless forced)
 [ "$X_TRACE_TLP_STAT" = "1" ] || _nodebug=1

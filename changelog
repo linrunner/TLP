@@ -1,4 +1,4 @@
-+++ 1.2 --- 18.12.2018 +++
++++ 1.2 --- 21.12.2018 +++
 
 *** Development version ***
 
@@ -25,7 +25,7 @@
       - Check systemd-rfkill.socket masked status
       - Intel GPU: show frequency limits and available frequencies
       - Rename "Suggestions" section to "Recommendations"
-
+      - Remove invocation via 'tlp stat'
   * Bugfixes
     - Issue #319: get_disk_dev logic is not compatible with NVMe devices
     - Issue #320: AC mode not detected with USB charger

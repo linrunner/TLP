@@ -41,35 +41,142 @@ apply_common_settings () { # apply settings common to all modes
     return 0
 }
 
+show_usage () {
+    echo "Usage: tlp start|true|bat|false|ac|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid" 1>&2
+}
+
+parse_args () { # parse command-line arguments
+    # $@:       arguments to parse
+    # retval:   $_cmd:  command;
+    #           $_cmd2: subcommand;
+    #           $_carg1,
+    #           $_carg2,
+    #           $_carg3: command arguments
+    local i subc=0 argc=0
+
+    # parsing control: 'nil' means that the element is still expected
+    _cmd="nil"
+    _cmd2="nil"
+    _carg1="nil"
+    _carg2="nil"
+    _carg3="nil"
+
+    # iterate arguments until exhausted or delimiter '--' reached
+    while [ $# -gt 0 ]; do
+        if [ "$1" = "--" ]; then
+            break;
+
+        elif [ "$_cmd" = "nil" ]; then
+            # command
+            case $1 in
+                start|true|bat|false|ac|usb|bayoff|diskid)
+                    # commands without further arguments
+                    _cmd="$1"
+                    _cmd2=""
+                    _carg1=""
+                    _carg2=""
+                    _carg3=""
+                    ;;
+
+                discharge|fullcharge|recalibrate)
+                    # commands with one or no arguments
+                    _cmd="$1"
+                    _cmd2=""
+                    _carg2=""
+                    _carg3=""
+                    ;;
+
+                setcharge)
+                    # command with up to three arguments
+                    _cmd="$1"
+                    _cmd2=""
+                    ;;
+
+                init)
+                    # command with subcommand and no arguments
+                    _cmd="$1"
+                    _carg1=""
+                    _carg2=""
+                    _carg3=""
+                    ;;
+
+                stat)
+                    # unsupported command
+                    echo "Error: 'tlp stat' no longer supported, use 'tlp-stat' instead."  1>&2
+                    exit 3
+                    ;;
+
+                *)
+                    # unknown command
+                    echo "Error: unknown command \"$1\"."  1>&2
+                    show_usage
+                    exit 3
+                    ;;
+            esac
+
+        elif [ "$_cmd2" = "nil" ]; then
+            # subcommand
+            case $1 in
+                start|stop|restart|force-reload)
+                    _cmd2="$1"
+                    ;;
+
+                *) # unknown subcommand
+                    echo "Usage: tlp init {start|stop|restart|force-reload}" >&2
+                    exit 3
+                    ;;
+            esac
+
+        elif [ "$_carg1" = "nil" ]; then
+            # first command argument
+            _carg1="$1"
+
+        elif [ "$_carg2" = "nil" ]; then
+            # second command argument
+            _carg2="$1"
+
+        elif [ "$_carg3" = "nil" ]; then
+            # third command argument
+            _carg3="$1"
+
+        fi
+
+        shift # next argument
+    done # while arguments
+
+    if  [ "$_cmd" = "nil" ]; then
+        # no command parsed
+        show_usage
+        exit 3
+    fi
+
+    # clear missing arguments
+    [ "$_carg1" = "nil" ] && _carg1=""
+    [ "$_carg2" = "nil" ] && _carg2=""
+    [ "$_carg3" = "nil" ] && _carg3=""
+
+    return 0
+}
+
 # --- MAIN
 
 read_defaults
-args_to_config $@
+parse_args $@
+parse_args4config $@
 check_tlp_enabled || exit 1
 add_sbin2path
 
 check_laptop_mode_tools
 
-# get cmd line args
-mode=$(tolower $1)
-if [ "$mode" = "init" ]; then
-    mode2=$(tolower $2)
-else
-    mode2=""
-fi
-
-# inhibit trace output for tlp stat (unless forced)
-if [ "$mode" = "stat" ]; then
-    [ "$X_TRACE_TLP_STAT" = "1" ] || _nodebug=1
-fi
-
 # get current power state
 get_power_state; pwrmode=$?
 get_manual_mode
 
-mode_debug=$mode
-[ -n "$mode2" ] && modedebug="$mode_debug $mode2"
-echo_debug "run" "+++ mode=$mode_debug ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
+if [ -z "$_cmd2" ]; then
+    echo_debug "run" "+++ $_cmd ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
+else
+    echo_debug "run" "+++ $_cmd $_cmd2 ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
+fi
 
 if [ -n "$addpath" ]; then
     echo_debug "path" "PATH=$oldpath[$addpath]"
@@ -78,7 +185,7 @@ else
 fi
 
 # determine new power state
-case "$mode" in
+case "$_cmd" in
     init|start)
         # discard manual mode
         clear_manual_mode
@@ -120,7 +227,7 @@ esac
 
 exitcode=0
 
-case "$mode" in
+case "$_cmd" in
     init) # system initialization/shutdown: sysv, upstart, systemd, ...
         check_root
 
@@ -133,7 +240,7 @@ case "$mode" in
         fi
 
         # do init business ...
-        case $mode2 in
+        case $_cmd2 in
             start)
                 # apply power save settings
                 compare_and_save_power_state $pwrmode
@@ -303,14 +410,14 @@ case "$mode" in
 
     setcharge) # set charge thresholds (temporarily)
         check_root
-        setcharge_battery $2 $3 $4
+        setcharge_battery $_carg1 $_carg2 $_carg3
         exitcode=$?
         ;;
 
     fullcharge) # charge battery to 100% (temporarily)
         if check_ac_power fullcharge; then
             check_root
-            setcharge_battery 96 100 $2
+            setcharge_battery 96 100 $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
                 echo "Charging starts now, keep AC connected."
@@ -323,7 +430,7 @@ case "$mode" in
     chargeonce) # charge battery to stop threshold once
         if check_ac_power chargeonce; then
             check_root
-            chargeonce_battery $2
+            chargeonce_battery $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
                 echo "Charging starts now, keep AC connected."
@@ -336,7 +443,7 @@ case "$mode" in
     discharge) # discharge battery completely (to recalibrate)
         if check_ac_power discharge; then
             check_root
-            discharge_battery $2
+            discharge_battery $_carg1
             exitcode=$?
         else
             exitcode=2
@@ -346,9 +453,9 @@ case "$mode" in
     recalibrate) # recalibrate battery, i.e. discharge and charge to 100%
         if check_ac_power recalibrate; then
             check_root
-            setcharge_battery 96 100 $2
+            setcharge_battery 96 100 $_carg1
             sleep 1
-            discharge_battery $2
+            discharge_battery $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
                 echo "Charging starts now, for a complete recalibration"
@@ -359,21 +466,10 @@ case "$mode" in
         fi
         ;;
 
-    stat) # show status
-        shift
-        tlp-stat $*
-        exitcode=$?
-        ;;
-
     diskid) # show disk id's
         show_disk_ids
         ;;
 
-    *)
-        echo "Error: unknown command \"$mode\"."  1>&2
-        echo "Usage: tlp start|true|bat|false|ac|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|stat|diskid" 1>&2
-        exitcode=3
-        ;;
 esac
 
 exit $exitcode
