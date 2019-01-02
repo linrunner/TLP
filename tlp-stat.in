@@ -499,7 +499,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Storage Devices"
     : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
     for dev in $DISK_DEVICES; do # iterate all devices
-        print_disk_data  $dev
+        show_disk_data $dev
     done
     echo
 
@@ -584,28 +584,8 @@ if [ "$show_all" = "1" ]; then
 fi # show_all
 
 if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
-    if check_intel_gpu; then
-        # --- show Intel GPU power mgmt
-        echo "+++ Intel Graphics"
-        printparm_i915 $_intel_gpu_parm/powersave
-        printparm_i915 $_intel_gpu_parm/enable_rc6 $_intel_gpu_parm/i915_enable_rc6
-        printparm_i915 $_intel_gpu_parm/enable_dc
-        printparm_i915 $_intel_gpu_parm/enable_fbc $_intel_gpu_parm/i915_enable_fbc
-        printparm_i915 $_intel_gpu_parm/enable_psr "" 1
-        printparm_i915 $_intel_gpu_parm/lvds_downclock
-        printparm_i915 $_intel_gpu_parm/modeset
-        printparm_i915 $_intel_gpu_parm/semaphores
-        echo
-
-        # --- show Intel GPU freq parameters
-        if file_readable $_intel_gpu_drm/$IGPU_MIN_FREQ; then
-            printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_MIN_FREQ
-            printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_MAX_FREQ
-            printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_BOOST_FREQ
-            print_intel_gpu_freqs
-            echo
-        fi
-    fi # check_intel_gpu
+    # --- show Intel GPU power mgmt and frequencies
+    show_intel_gpu_data
 
     # --- show radeon power profile or dpm state
     if [ -d $RADD ]; then

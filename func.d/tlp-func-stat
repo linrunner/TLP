@@ -264,7 +264,7 @@ check_ata_errors () { # check kernel log for ata errors
     return 0
 }
 
-print_disk_data () { # formatted output of NVMe / SATA disk data
+show_disk_data () { # formatted output of NVMe / SATA disk data
     # $1: disk device
     local apm pdev sched trim
 
@@ -377,13 +377,37 @@ print_disk_data () { # formatted output of NVMe / SATA disk data
 
 # --- Graphics
 
-print_intel_gpu_freqs () { # show available frequencies for the Intel GPU
+show_intel_gpu_data () { # show Intel GPU data
 
-    file_readable $_intel_gpu_dbg/$IGPU_FREQ_TABLE ] || return 0
+    check_intel_gpu || return 0
 
-    printf "%s: " $_intel_gpu_dbg/$IGPU_FREQ_TABLE
-    awk -F ' ' '{ if (NR >= 2) { printf "%d ", $1 } }; ' $_intel_gpu_dbg/$IGPU_FREQ_TABLE
-    printf "[MHz] \n"
+    # power managment data
+    echo "+++ Intel Graphics"
+    printparm_i915 $_intel_gpu_parm/powersave
+    printparm_i915 $_intel_gpu_parm/enable_rc6 $_intel_gpu_parm/i915_enable_rc6
+    printparm_i915 $_intel_gpu_parm/enable_dc
+    printparm_i915 $_intel_gpu_parm/enable_fbc $_intel_gpu_parm/i915_enable_fbc
+    printparm_i915 $_intel_gpu_parm/enable_psr "" 1
+    printparm_i915 $_intel_gpu_parm/lvds_downclock
+    printparm_i915 $_intel_gpu_parm/modeset
+    printparm_i915 $_intel_gpu_parm/semaphores
+    echo
+
+    # frequency parameters
+    if file_readable $_intel_gpu_drm/$IGPU_MIN_FREQ; then
+        printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_MIN_FREQ
+        printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_MAX_FREQ
+        printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_BOOST_FREQ
+        if file_readable $_intel_gpu_dbg/$IGPU_FREQ_TABLE ]; then
+            # available frequencies
+            printf "%s: " $_intel_gpu_dbg/$IGPU_FREQ_TABLE
+            awk -F ' ' '{ if (NR >= 2) { printf "%d ", $1 } }; ' $_intel_gpu_dbg/$IGPU_FREQ_TABLE
+            printf "[MHz] \n"
+        fi
+        echo
+    fi
+
+    return 0
 }
 
 # --- Battery Features
