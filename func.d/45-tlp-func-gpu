@@ -48,7 +48,7 @@ check_intel_gpu () { # detect Intel GPU presence and determine sysdirs
                 _intel_gpu_parm=${BASE_MODD}/${driver}/parameters
                 _intel_gpu_drm=${gpu}
                 _intel_gpu_dbg=${BASE_DEBUGD}/${cardno}
-                echo_debug "pm" "check_intel_gpu: parm=$_intel_gpu_parm; drm=$_intel_gpu_drm; dbg=$_intel_gpu_dbg"
+                echo_debug "pm" "check_intel_gpu.present: parm=$_intel_gpu_parm; drm=$_intel_gpu_drm; dbg=$_intel_gpu_dbg"
                 return 0
                 ;;
         esac
@@ -61,6 +61,7 @@ check_intel_gpu () { # detect Intel GPU presence and determine sysdirs
 
 set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mode, 1=battery mode
     local minfreq maxfreq boostfreq
+    local conf=0
 
     check_intel_gpu || return 0
 
@@ -80,6 +81,7 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
         else
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min.write_error"
         fi
+        conf=1
     fi
 
     if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
@@ -88,6 +90,7 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
         else
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max.write_error"
         fi
+        conf=1
     fi
 
     if [ -n "$boostfreq" ] && [ "$boostfreq" != "0" ]; then
@@ -96,8 +99,10 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
         else
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost.write_error"
         fi
+        conf=1
     fi
 
+    [ $conf -eq 1 ] ||  echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_configured"
     return 0
 }
 

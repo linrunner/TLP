@@ -32,7 +32,7 @@ apply_common_settings () { # apply settings common to all modes
     set_energy_perf_policy $1
     set_disk_apm_level $1
     set_disk_spindown_timeout $1
-    set_disk_io_sched
+    set_disk_iosched
     set_sata_link_power $1
     set_ahci_runtime_pm $1
     set_pcie_aspm $1

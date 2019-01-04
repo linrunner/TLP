@@ -67,8 +67,23 @@ poweroff_drivebay () { # power off optical drive in drive bay
         pwr=${BAY_POWEROFF_ON_AC:-${DEFAULT_BAY_POWEROFF_ON_AC}}
     fi
 
-    # Run only if either explicitly enabled or forced
-    [ "$pwr" = "1" ] || [ "$2" = "1" ] || return 0
+    # Run only if forced or enabled
+    if [ "$2" != "1" ]; then
+        case "$pwr" in
+            1) # enabled --> proceed
+                ;;
+
+            0) # disabled
+                echo_debug "pm" "poweroff_drivebay($1).disabled"
+                return 0
+                ;;
+
+            *) # not configured or invalid parameter
+                echo_debug "pm" "poweroff_drivebay($1).not_configured"
+                return 0
+                ;;
+        esac
+    fi
 
     get_drivebay_device
     if [ -z "$dock" ] || [ ! -d "$dock" ]; then

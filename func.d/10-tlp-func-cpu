@@ -44,6 +44,8 @@ set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mod
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
             [ -f $cpu ] && { printf '%s\n' "$gov" > $cpu; } 2> /dev/null
         done
+    else
+        echo_debug "pm" "set_scaling_governor($1).not_configured"
     fi
 
     return 0
@@ -51,6 +53,7 @@ set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mod
 
 set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery mode
     local minfreq maxfreq cpu
+    local conf=0
 
     if [ "$1" = "1" ]; then
         minfreq=${CPU_SCALING_MIN_FREQ_ON_BAT:-}
@@ -65,6 +68,7 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
             [ -f $cpu ] && { printf '%s\n' "$minfreq" > $cpu; } 2> /dev/null
         done
+        conf=1
     fi
 
     if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
@@ -72,8 +76,10 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
             [ -f $cpu ] && { printf '%s\n' "$maxfreq" > $cpu; } 2> /dev/null
         done
+        conf=1
     fi
 
+    [ $conf -eq 1 ] || echo_debug "pm" "set_scaling_min_max_freq($1).not_configured"
     return 0
 }
 

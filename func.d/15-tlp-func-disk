@@ -95,7 +95,10 @@ set_disk_apm_level () { # set disk apm level
     fi
 
     # exit if empty apmlist
-    [ $# -gt 0 ] || return 0
+    if [ $# -eq 0 ]; then
+        echo_debug "disk" "set_disk_apm_level($pwrmode).not_configured"
+        return 0
+    fi
 
     # pairwise iteration DISK_DEVICES[1,n], apmlist[1,m]; m > 0
     #  for j in [1,n]: disk_dev[j], apmlist[min(j,m)]
@@ -141,7 +144,10 @@ set_disk_spindown_timeout () { # set disk spindown timeout
     fi
 
     # exit if empty timeoutlist
-    [ $# -gt 0 ] || return 0
+    if [ $# -eq 0 ]; then
+        echo_debug "disk" "set_disk_spindown_timeout($pwrmode).not_configured"
+        return 0
+    fi
 
     # pairwise iteration DISK_DEVICES[1,n], timeoutlist[1,m]; m > 0
     #  for j in [1,n]: disk_dev[j], timeoutlist[min(j,m)]
@@ -176,7 +182,7 @@ spindown_disk () { # stop spindle motor -- $1: dev
     return 0
 }
 
-set_disk_io_sched () { # set disk io scheduler
+set_disk_iosched () { # set disk io scheduler
     local dev sched schedctrl log_message
 
     # when undefined use default
@@ -185,8 +191,11 @@ set_disk_io_sched () { # set disk io scheduler
     # set @argv := schedlist
     set -- $DISK_IOSCHED
 
-    # exit if empty timeoutlist
-    [ $# -gt 0 ] || return 0
+    # exit if empty schedlist
+    if [ $# -eq 0 ]; then
+        echo_debug "disk" "set_disk_iosched($pwrmode).not_configured"
+        return 0
+    fi
 
     # pairwise iteration DISK_DEVICES[1,n], schedlist[1,m]; m > 0
     #  for j in [1,min(n,m)]   : disk_dev[j], schedlistj]
@@ -197,7 +206,7 @@ set_disk_io_sched () { # set disk io scheduler
         # get sched from argv, use default scheduler when list is too short
         sched=${1:-${DEFAULT_DISK_IOSCHED}}
         schedctrl="/sys/block/$_disk_dev/queue/scheduler"
-        log_message="set_disk_io_sched: $_disk_dev [$_disk_id] $sched"
+        log_message="set_disk_iosched: $_disk_dev [$_disk_id] $sched"
 
         if [ ! -b /dev/$_disk_dev ]; then
             echo_debug "disk" "${log_message} -- missing"

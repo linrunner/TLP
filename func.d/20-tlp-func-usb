@@ -258,8 +258,11 @@ set_usb_suspend () { # enable/disable usb autosuspend for all devices
         done
 
         [ "$1" = "1" ] && echo "USB autosuspend settings applied."
+        echo_debug "usb" "set_usb_suspend.done"
     else
-        [ "$1" = "1" ] && echo "Error: USB autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $DEFAULT_FILE." 1>&2
+        [ "$1" = "1" ] && echo "Error: USB autosuspend is disabled. Set USB_AUTOSUSPEND=1 in $CONFFILE." 1>&2
+        echo_debug "usb" "set_usb_suspend.not_configured"
+
     fi
 
     # set "startup completion" flag for tlp-usb-udev
