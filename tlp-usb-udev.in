@@ -19,7 +19,8 @@ done
 read_defaults
 
 # exit if TLP or autosuspend disabled
-[ "$TLP_ENABLE" = "1" ] && [ "$USB_AUTOSUSPEND" = "1" ] || exit 0
+: ${USB_AUTOSUSPEND:=${DEFAULT_USB_AUTOSUSPEND}}
+check_tlp_enabled 0 && [ "$USB_AUTOSUSPEND" = "1" ] || exit 0
 
 # USB autosuspend has two principal operation modes:
 #

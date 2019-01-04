@@ -37,6 +37,11 @@ readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T
 readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
 readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
 
+readonly DEBUG_TAGS="bat disk lock nm path pm rf run sysfs udev usb"
+
+readonly DEFAULT_TLP_ENABLE=0
+readonly DEFAULT_TLP_PERSISTENT_DEFAULT=0
+
 # ----------------------------------------------------------------------------
 # Control
 
@@ -126,14 +131,17 @@ check_root () { # show error message and exit when root privilege missing
     fi
 }
 
-check_tlp_enabled () { # check if TLP is enabled in config file
+check_tlp_enabled () { # check if TLP is enabled in config file --
+    # $1: 1=verbose
     # rc: 0=disabled/1=enabled
 
-    if [ ! "$TLP_ENABLE" = "1" ]; then
-        echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in $CONFFILE." 1>&2
-        return 1
-    else
+    : ${TLP_ENABLE:=${DEFAULT_TLP_ENABLE}}
+
+    if [ "$TLP_ENABLE" = "1" ]; then
         return 0
+    else
+        [ "$1" = "1" ] && echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in $CONFFILE." 1>&2
+        return 1
     fi
 }
 
@@ -511,6 +519,9 @@ get_power_state () { # get current power mode -- rc: 0=ac, 1=battery
 
     get_sys_power_supply
     local rc=$?
+
+    : ${TLP_DEFAULT_MODE:=}
+    : ${TLP_PERSISTENT_DEFAULT:=${DEFAULT_TLP_PERSISTENT_DEFAULT}}
 
     if [ -n "$TLP_DEFAULT_MODE" ] \
         && [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then

@@ -20,6 +20,9 @@ readonly IGPU_FREQ_TABLE=i915_ring_freq_table
 
 readonly RADD=/sys/module/radeon
 
+readonly DEFAULT_RADEON_DPM_PERF_LEVEL_ON_AC=auto
+readonly DEFAULT_RADEON_DPM_PERF_LEVEL_ON_BAT=auto
+
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -62,13 +65,13 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
     check_intel_gpu || return 0
 
     if [ "$1" = "1" ]; then
-        minfreq=$INTEL_GPU_MIN_FREQ_ON_BAT
-        maxfreq=$INTEL_GPU_MAX_FREQ_ON_BAT
-        boostfreq=$INTEL_GPU_BOOST_FREQ_ON_BAT
+        minfreq=${INTEL_GPU_MIN_FREQ_ON_BAT:-}
+        maxfreq=${INTEL_GPU_MAX_FREQ_ON_BAT:-}
+        boostfreq=${INTEL_GPU_BOOST_FREQ_ON_BAT:-}
     else
-        minfreq=$INTEL_GPU_MIN_FREQ_ON_AC
-        maxfreq=$INTEL_GPU_MAX_FREQ_ON_AC
-        boostfreq=$INTEL_GPU_BOOST_FREQ_ON_AC
+        minfreq=${INTEL_GPU_MIN_FREQ_ON_AC:-}
+        maxfreq=${INTEL_GPU_MAX_FREQ_ON_AC:-}
+        boostfreq=${INTEL_GPU_BOOST_FREQ_ON_AC:-}
     fi
 
     if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
@@ -117,10 +120,10 @@ set_radeon_profile () { # set radeon power profile
             # Use new radeon dynamic power management method (dpm)
             if [ "$1" = "1" ]; then
                 pwr=${RADEON_DPM_STATE_ON_BAT:-}
-                level=${RADEON_DPM_PERF_LEVEL_ON_BAT:-auto}
+                level=${RADEON_DPM_PERF_LEVEL_ON_BAT:-${DEFAULT_RADEON_DPM_PERF_LEVEL_ON_BAT}}
             else
                 pwr=${RADEON_DPM_STATE_ON_AC:-}
-                level=${RADEON_DPM_PERF_LEVEL_ON_AC:-auto}
+                level=${RADEON_DPM_PERF_LEVEL_ON_AC:-${DEFAULT_RADEON_DPM_PERF_LEVEL_ON_AC}}
             fi
 
             if [ -z "$pwr" ]; then

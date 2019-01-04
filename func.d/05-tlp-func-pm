@@ -14,7 +14,9 @@ readonly ETHTOOL=ethtool
 readonly PCID=/sys/bus/pci/devices
 readonly PCIDRV=/sys/bus/pci/drivers
 
-readonly DEFAULT_PM_DRIVER_BLACKLIST="amdgpu nouveau nvidia radeon"
+readonly DEFAULT_RUNTIME_PM_DRIVER_BLACKLIST="amdgpu nouveau nvidia radeon"
+readonly DEFAULT_SOUND_POWER_SAVE_CONTROLLER=Y
+readonly DEFAULT_WOL_DISABLE=N
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -41,7 +43,7 @@ set_runtime_pm () { # set runtime power management
     # driver specific blacklist:
     # - undefined = use internal default from $DEFAULT_PM_DRIVER_BLACKLIST
     # - empty     = disable feature
-    drv_bl="${RUNTIME_PM_DRIVER_BLACKLIST-${DEFAULT_PM_DRIVER_BLACKLIST}}"
+    drv_bl="${RUNTIME_PM_DRIVER_BLACKLIST-${DEFAULT_RUNTIME_PM_DRIVER_BLACKLIST}}"
 
     # pci id blacklist
     pci_bl=${RUNTIME_PM_BLACKLIST:-}
@@ -138,8 +140,6 @@ set_pcie_aspm () { # set pcie active state power management
     return 0
 }
 
-# --- Graphics Devices
-
 # -- Audio Devices
 
 set_sound_power_mode () { # set sound chip power modes
@@ -163,7 +163,7 @@ set_sound_power_mode () { # set sound chip power modes
         return 0
     fi
 
-    cpwr=${SOUND_POWER_SAVE_CONTROLLER:-Y}
+    cpwr=${SOUND_POWER_SAVE_CONTROLLER:-${DEFAULT_SOUND_POWER_SAVE_CONTROLLER}}
 
     check_sysfs "set_sound_power_mode" "/sys/module"
 
@@ -208,7 +208,7 @@ get_eth_ifaces () { # get all eth devices -- retval: $ethifaces
 disable_wake_on_lan () {  # disable WOL
     local ei
 
-    WOL_DISABLE=${WOL_DISABLE:-N}
+    WOL_DISABLE=${WOL_DISABLE:-${DEFAULT_WOL_DISABLE}}
 
     if [ "$WOL_DISABLE" = "Y" ]; then
         get_eth_ifaces

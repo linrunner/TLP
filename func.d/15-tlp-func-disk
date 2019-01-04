@@ -13,7 +13,10 @@ readonly AHCID=$PCID'/*/ata*'
 readonly BLOCKD='/sys/block/sd*'
 
 readonly DEFAULT_DISK_DEVICES="nvme0n1 sda"
-readonly DEFAULT_DISK_IO_SCHEDULER="cfq"
+readonly DEFAULT_DISK_IDLE_SECS_ON_AC=0
+readonly DEFAULT_DISK_IDLE_SECS_ON_BAT=2
+readonly DEFAULT_DISK_IOSCHED="keep"
+readonly DEFAULT_MAX_LOST_WORK_SECS=15
 
 readonly DISK_NOP_WORDS="_ keep"
 
@@ -192,7 +195,7 @@ set_disk_io_sched () { # set disk io scheduler
         get_disk_dev $dev
 
         # get sched from argv, use default scheduler when list is too short
-        sched=${1:-${DEFAULT_DISK_IO_SCHEDULER}}
+        sched=${1:-${DEFAULT_DISK_IOSCHED}}
         schedctrl="/sys/block/$_disk_dev/queue/scheduler"
         log_message="set_disk_io_sched: $_disk_dev [$_disk_id] $sched"
 
@@ -340,9 +343,9 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
     local isec
 
     if [ "$1" = "1" ]; then
-        isec=${DISK_IDLE_SECS_ON_BAT:-}
+        isec=${DISK_IDLE_SECS_ON_BAT:-${DEFAULT_DISK_IDLE_SECS_ON_BAT}}
     else
-        isec=${DISK_IDLE_SECS_ON_AC:-}
+        isec=${DISK_IDLE_SECS_ON_AC:-${DEFAULT_DISK_IDLE_SECS_ON_AC}}
     fi
     # replace with empty string if non-numeric chars are contained
     isec=$(printf '%s' "$isec" | egrep '^[0-9]+$')
@@ -368,9 +371,9 @@ set_dirty_parms () { # set filesystem buffer params
     check_sysfs "set_dirty_parms" "/proc/sys/vm"
 
     if [ "$1" = "1" ]; then
-        age=${MAX_LOST_WORK_SECS_ON_BAT:-0}
+        age=${MAX_LOST_WORK_SECS_ON_BAT:-${DEFAULT_MAX_LOST_WORK_SECS}}
     else
-        age=${MAX_LOST_WORK_SECS_ON_AC:-0}
+        age=${MAX_LOST_WORK_SECS_ON_AC:-${DEFAULT_MAX_LOST_WORK_SECS}}
     fi
 
     # calc age in centisecs, non numeric values result in "0"

@@ -19,6 +19,8 @@ readonly RDW_NM_LOCK="rdw_nm"
 readonly RDW_DOCK_LOCK="rdw_dock"
 readonly RDW_LOCKTIME=2
 
+readonly DEFAULT_RESTORE_DEVICE_STATE_ON_STARTUP=0
+
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -370,7 +372,7 @@ set_radio_device_states () { # set/initialize all radio states
 
     # save/restore mode is disabled by default
     if [ "$1" != "radiosw" ]; then
-        restore=${RESTORE_DEVICE_STATE_ON_STARTUP:-0}
+        restore=${RESTORE_DEVICE_STATE_ON_STARTUP:-${DEFAULT_RESTORE_DEVICE_STATE_ON_STARTUP}}
     else
         restore=0
     fi

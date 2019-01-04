@@ -13,6 +13,10 @@ readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIBATDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
 
+readonly DEFAULT_NATACPI_ENABLE=1
+readonly DEFAULT_TPACPI_ENABLE=1
+readonly DEFAULT_TPSMAPI_ENABLE=1
+
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -78,7 +82,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
 
                 if [ -n "$(cat $ps/charge_start_threshold 2> /dev/null)" ]; then
                     # charge_start_threshold exists and is actually readable
-                    if [ "${NATACPI_ENABLE:-0}" = "1" ]; then
+                    if [ "${NATACPI_ENABLE:-${DEFAULT_NATACPI_ENABLE}}" = "1" ]; then
                         _natacpi=1
                         _bm_thresh="natacpi"
                     else
@@ -124,7 +128,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
         $TPACPIBAT -g FD 1 > /dev/null 2>&1
         _tpacpi=$?
 
-        if [ $_tpacpi -eq 0 ] && [ "${TPACPI_ENABLE:-1}" = "0" ]; then
+        if [ $_tpacpi -eq 0 ] && [ "${TPACPI_ENABLE:-${DEFAULT_TPACPI_ENABLE}}" = "0" ]; then
             # tpacpi disabled by configuration
             _tpacpi=32
         fi
@@ -150,7 +154,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
     # --- 3. check for tp-smapi external kernel module [ThinkPads only]
     if [ -d $SMAPIBATDIR ]; then
         # module loaded --> tp-smapi available
-        if [ "${TPSMAPI_ENABLE:-1}" = "0" ]; then
+        if [ "${TPSMAPI_ENABLE:-${DEFAULT_TPSMAPI_ENABLE}}" = "0" ]; then
             # tpsmapi disabled by configuration
             _tpsmapi=32
         elif supports_tpsmapi_and_tpacpi; then

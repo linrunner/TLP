@@ -10,6 +10,11 @@ for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/[0-9][0-9]*; do
     . $lib
 done
 
+# --- Constants
+
+readonly DEFAULT_USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN=0
+readonly DEFAULT_RESTORE_THRESHOLDS_ON_BAT=0
+
 # --- Subroutines
 
 apply_common_settings () { # apply settings common to all modes
@@ -163,7 +168,7 @@ parse_args () { # parse command-line arguments
 read_defaults
 parse_args $@
 parse_args4config $@
-check_tlp_enabled || exit 1
+check_tlp_enabled 1 || exit 1
 add_sbin2path
 
 check_laptop_mode_tools
@@ -288,7 +293,7 @@ case "$_cmd" in
                 echo "done."
 
                 # disable usb autosuspend if configured
-                if [ "$USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN" = "1" ]; then
+                if [ "${USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN:-${DEFAULT_USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN}}" = "1" ]; then
                     echo -n "Disabling usb autosuspend..."
                     set_usb_suspend 0 on
                     echo "done."
@@ -318,7 +323,8 @@ case "$_cmd" in
                 apply_common_settings $pwrmode
                 poweroff_drivebay $pwrmode 0
                 set_radio_device_states $pwrmode
-                if [ "$RESTORE_THRESHOLDS_ON_BAT" = "1" ] && [ "$pwrmode" = "1" ]; then
+                if [ "${RESTORE_THRESHOLDS_ON_BAT:-${DEFAULT_RESTORE_THRESHOLDS_ON_BAT}}" = "1" ] \
+                    && [ "$pwrmode" = "1" ]; then
                     set_charge_thresholds
                 fi
             fi
