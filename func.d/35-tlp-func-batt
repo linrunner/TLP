@@ -200,7 +200,7 @@ battery_present () { # check battery presence and return tpacpi-bat index
     #         $_bf_dischg: sysfile for force discharge
 
     # defaults
-    local rc=255 # no threshold API available
+    local rc=255  # no threshold API available
     _bat_idx=0    # no index
     _bat_str=""   # no bat
     _bd_read=""   # no directories
@@ -289,7 +289,12 @@ battery_present () { # check battery presence and return tpacpi-bat index
         esac
     fi
 
-    echo_debug "bat" "battery_present($1): bm_read=$_bm_read; bat_str=$_bat_str; bat_idx=$_bat_idx; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg; rc=$rc"
+    case $rc in
+        0)   echo_debug "bat" "battery_present($1): bm_read=$_bm_read; bat_str=$_bat_str; bat_idx=$_bat_idx; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg; rc=$rc" ;;
+        1)   echo_debug "bat" "battery_present($1).not_detected: bm_read=$_bm_read; rc=$rc" ;;
+        255) echo_debug "bat" "battery_present($1).no_api" ;;
+    esac
+
     return $rc
 }
 
@@ -473,7 +478,7 @@ set_thresholds () { # write both charge thresholds for a battery,
                 if [ $steprc -eq 0 ]; then
                     printf "  %-5s = %3d\n" $step $new_thresh
                 else
-                    printf "  %-5s => Error: cannot set threshold.\n" $step $new_thresh 1>&2
+                    printf "  %-5s = %3d (Error: cannot set threshold)\n" $step $new_thresh 1>&2
                 fi
             fi
         else
@@ -527,26 +532,31 @@ normalize_thresholds () { # check values and enforce start <= stop - 4
         [ $_start_thresh -gt $(($_stop_thresh - 4)) ] && _start_thresh=$(($_stop_thresh - 4))
     fi
 
-    echo_debug "bat" "normalize_thresholds($1, $2): start=$_start_thresh; stop=$_stop_thresh"
-
-    return 0
+    # catch unconfigured thresholds
+    if [ $_start_thresh -ne -1 ] || [ $_stop_thresh -ne -1 ]; then
+        # at least one valid threshold
+        echo_debug "bat" "normalize_thresholds($1, $2): start=$_start_thresh; stop=$_stop_thresh"
+        return 0
+    else
+        # no valid threshold --> unconfigured
+        echo_debug "bat" "normalize_thresholds.not_configured"
+        return 1
+    fi
 }
 
 set_charge_thresholds () { # write all charge thresholds from configuration
     # rc: 0
 
     if battery_present BAT0; then
-        # validate thresholds
-        normalize_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0"
-        # write thresholds (quiet mode)
-        set_thresholds BAT0 $_start_thresh $_stop_thresh 0
+        # validate thresholds and if ok write them (quiet mode)
+        normalize_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1" \
+            && set_thresholds BAT0 $_start_thresh $_stop_thresh 0
     fi
 
     if battery_present BAT1; then
-        # validate thresholds
-        normalize_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1"
-        # write thresholds (quiet mode)
-        set_thresholds BAT1 $_start_thresh $_stop_thresh 0
+        # validate thresholds and if ok write them (quiet mode)
+        normalize_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1" \
+            && set_thresholds BAT1 $_start_thresh $_stop_thresh 0
     fi
 
     return 0
@@ -613,10 +623,21 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     esac
 
     # validate thresholds
-    normalize_thresholds $start_thresh $stop_thresh
-    # write thresholds (verbose mode)
-    set_thresholds $_bat_str $_start_thresh $_stop_thresh 1
-    rc=$?
+    if normalize_thresholds $start_thresh $stop_thresh; then
+        # ok --> write them (verbose mode)
+        set_thresholds $_bat_str $_start_thresh $_stop_thresh 1
+        rc=$?
+    elif [ $use_cfg -eq 1 ]; then
+        # thresholds unconfigured
+        echo "Error: no battery thresholds configured." 1>&2
+        echo_debug "bat" "setcharge_battery.not_configured"
+        rc=1
+    else
+        # invalid threshold parameters
+        echo "Error: invalid threshold parameters given." 1>&2
+        echo_debug "bat" "setcharge_battery.invalid_param"
+        rc=1
+    fi
 
     return $rc
 }
