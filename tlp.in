@@ -74,7 +74,7 @@ parse_args () { # parse command-line arguments
         elif [ "$_cmd" = "nil" ]; then
             # command
             case $1 in
-                start|true|bat|false|ac|usb|bayoff|diskid)
+                ac|auto|bat|bayoff|false|diskid|resume|suspend|start|true|usb)
                     # commands without further arguments
                     _cmd="$1"
                     _cmd2=""
