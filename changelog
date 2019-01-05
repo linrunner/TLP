@@ -29,6 +29,7 @@
       - Rename "Suggestions" section to "Recommendations"
       - Remove invocation via 'tlp stat'
   * Bugfixes
+    - Issue #193: do not try to start NetwokManager (systemd)
     - Issue #319: get_disk_dev logic is not compatible with NVMe devices
     - Issue #320: AC mode not detected with USB charger
     - Issue #331: Process '/usr/bin/tlp auto' failed with exit code 4
