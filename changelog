@@ -1,10 +1,11 @@
-+++ 1.2 --- 04.01.2019 +++
++++ 1.2 --- 05.01.2019 +++
 
 *** Development version ***
 
   * Features
     Disks:
       - Support for NVMe devices
+      - Improve support for multiqueue io schedulers (blk-mq)
     General:
       - tlp bat/ac: keep manual power settings until tlp start (Issue #349)
       - Remove all pm-utils scripts (Issue #363)
