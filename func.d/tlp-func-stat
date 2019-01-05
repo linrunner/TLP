@@ -279,7 +279,7 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
         # NVMe disk
         printf     "/dev/$_disk_dev:\n"
         printf     "  Type      = NVMe\n"
-        [ -n "$_disk_id" ] && printf "  Disk ID   = $_disk_id"
+        [ -n "$_disk_id" ] && printf "  Disk ID   = %s\n" $_disk_id
         print_sysf "  Model     = %s\n" /sys/block/$_disk_dev/device/model
         print_sysf "  Firmware  = %s\n" /sys/block/$_disk_dev/device/firmware_rev
 
