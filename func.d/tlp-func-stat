@@ -324,9 +324,9 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
         iosched="$(cat /sys/block/$_disk_dev/queue/scheduler 2> /dev/null | sed -r 's/.*\[(.+)\].*/\1/')"
         iosched_list="$(cat /sys/block/$_disk_dev/queue/scheduler 2> /dev/null | sed -r 's/\[(.+)\]/\1/' | sed -r 's/ $//')"
         if [ -d /sys/block/$_disk_dev/mq ]; then
-            printf "  Scheduler = %s (multiqueue, available: %s)\n" "$iosched" "$iosched_list"
+            printf "  Scheduler = %s (multiqueue); available: %s\n" "$iosched" "$iosched_list"
         else
-            printf "  Scheduler = %s (non-multiqueue, available: %s)\n" "$iosched" "$iosched_list"
+            printf "  Scheduler = %s (non-multiqueue); available: %s\n" "$iosched" "$iosched_list"
         fi
     fi
 
