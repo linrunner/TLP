@@ -340,9 +340,9 @@ parse_args4config () { # parse command-line arguments: everything after the
             # sanitize input:
             #   format is PARAMETER=value
             #   parameter name allows 'A'..'Z' and '_' only
-            #   value allows  'A'..'Z', 'a'..'z', '0'..'9', '_', ' ', '"'
+            #   value allows  'A'..'Z', 'a'..'z', '0'..'9', ' ', '_', '-', '"'
             #   eval itself provides filtering of unpaired quotes ('"')
-            eval $(printf "%s" "$1" | egrep '^[A-Z_]+\=[0-9a-zA-Z _"]*$') 2> /dev/null
+            eval $(printf "%s" "$1" | egrep '^[A-Z_]+\=[0-9a-zA-Z _-"]*$') 2> /dev/null
         elif [ "$1" = "--" ]; then
             # delimiter reached --> begin interpretation
            dflag=1
