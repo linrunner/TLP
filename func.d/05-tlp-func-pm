@@ -14,7 +14,7 @@ readonly ETHTOOL=ethtool
 readonly PCID=/sys/bus/pci/devices
 readonly PCIDRV=/sys/bus/pci/drivers
 
-readonly DEFAULT_RUNTIME_PM_DRIVER_BLACKLIST="amdgpu nouveau nvidia radeon"
+readonly DEFAULT_RUNTIME_PM_DRIVER_BLACKLIST="amdgpu mei_me nouveau nvidia pcieport radeon"
 readonly DEFAULT_SOUND_POWER_SAVE_CONTROLLER=Y
 readonly DEFAULT_WOL_DISABLE=N
 

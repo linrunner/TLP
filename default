@@ -258,8 +258,8 @@ RUNTIME_PM_ON_BAT=auto
 # Default when unconfigured is "amdgpu nouveau nvidia radeon" which
 # prevents accidential power-on of dGPU in hybrid graphics setups.
 # Separate multiple drivers with spaces.
-# Default: "amdgpu nouveau nvidia radeon", use "" to disable completely.
-#RUNTIME_PM_DRIVER_BLACKLIST="amdgpu nouveau nvidia radeon"
+# Default: "amdgpu mei_me nouveau nvidia pcieport radeon", use "" to disable completely.
+#RUNTIME_PM_DRIVER_BLACKLIST="amdgpu mei_me nouveau nvidia pcieport radeon"
 
 # Set to 0 to disable, 1 to enable USB autosuspend feature.
 # Default: 0
