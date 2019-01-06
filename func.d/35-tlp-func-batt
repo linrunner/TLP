@@ -31,7 +31,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
     #       1=thresholds only/
     #       32=disabled/
     #       128=no kernel support/
-    #       254=laptop not supported
+    #       253=laptop not supported
     #
     # 2. check for acpi-call external kernel module and test with integrated
     #    tpacpi-bat [ThinkPads only]
@@ -41,6 +41,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
     #       64=acpi_call module not loaded/
     #       127=tpacpi-bat not installed/
     #       128=acpi_call module not installed/
+    #       253=laptop not supported/
     #       254=ThinkPad not supported/
     #       255=superseded by natacpi
     #
@@ -51,6 +52,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
     #       32=disabled/
     #       64=tp_smapi module not loaded/
     #       128=tp_smapi module not installed/
+    #       253=laptop not supported/
     #       254=ThinkPad not supported/
     #       255=superseded by natacpi
     #
@@ -78,7 +80,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
             # battery detected
             if [ -f $ps/charge_start_threshold ]; then
                 # kernel with native acpi support detected
-                _natacpi=254
+                _natacpi=253
 
                 if [ -n "$(cat $ps/charge_start_threshold 2> /dev/null)" ]; then
                     # charge_start_threshold exists and is actually readable
@@ -101,13 +103,18 @@ check_battery_features () { # determine which battery feature APIs/tools are
 
     if [ $_tpacpi -lt 1 ] && is_thinkpad && ! supports_tpacpi; then
         # exclude not natacpi/tpacpi-bat capable ThinkPad models; prevents kernel error messages
-        _natacpi=254
+        _natacpi=253
         echo_debug "bat" "check_battery_features.natacpi.old_thinkpad"
     fi
     echo_debug "bat" "check_battery_features.natacpi: $_natacpi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
 
-    # when not a Thinkpad --> we're done
-    is_thinkpad || return 0
+    # when not a Thinkpad --> we're done here
+    if ! is_thinkpad; then
+        # laptop not supported
+        _tpacpi=253
+        _tpsmapi=253
+        return 0
+    fi
 
     # --- 2. check for acpi-call external kernel module and test with integrated tpacpi-bat [ThinkPads only]
     if ! supports_tpacpi; then

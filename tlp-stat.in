@@ -786,7 +786,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         0|1) printf "natacpi    = active "; print_methods_per_driver "natacpi" ;;
         32)  echo "natacpi    = inactive (disabled by configuration)" ;;
         128) echo "natacpi    = inactive (no kernel support)" ;;
-        254) echo "natacpi    = inactive (laptop not supported)" ;;
+        253) echo "natacpi    = inactive (laptop not supported)" ;;
         *)   echo "natacpi    = unknown status" ;;
     esac
 
@@ -797,6 +797,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         64)  echo "tpacpi-bat = inactive (kernel module 'acpi_call' load error)" ;;
         127) echo "tpacpi-bat = inactive (program 'tpacpi-bat' not installed)" ;;
         128) echo "tpacpi-bat = inactive (kernel module 'acpi_call' not installed)" ;;
+        253) echo "tpacpi-bat = inactive (laptop not supported)" ;;
         254) echo "tpacpi-bat = inactive (ThinkPad not supported)" ;;
         255) echo "tpacpi-bat = inactive (superseded by natacpi)" ;;
         *)   echo "tpacpi-bat = unknown status" ;;
@@ -807,6 +808,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         32)  echo "tp-smapi   = inactive (disabled by configuration)" ;;
         64)  echo "tp-smapi   = inactive (kernel module 'tp_smapi' load error)" ;;
         128) echo "tp-smapi   = inactive (kernel module 'tp_smapi' not installed)" ;;
+        253) echo "tp-smapi   = inactive (laptop not supported)" ;;
         254) echo "tp-smapi   = inactive (ThinkPad not supported)" ;;
         255) echo "tp-smapi   = inactive (superseded by natacpi)" ;;
         *)   echo "tp-smapi   = unknown status" ;;
