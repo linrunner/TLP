@@ -718,7 +718,8 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show runtime pm
     echo "+++ Runtime Power Management"
     echo "Device blacklist = ${RUNTIME_PM_BLACKLIST:=(not configured)}"
-    pmdbl="${RUNTIME_PM_DRIVER_BLACKLIST-${DEFAULT_PM_DRIVER_BLACKLIST} (default)}"
+    # add "(default)" when unset, "(disabled)" when empty
+    pmdbl="${RUNTIME_PM_DRIVER_BLACKLIST-${DEFAULT_RUNTIME_PM_DRIVER_BLACKLIST} (default)}"
     echo "Driver blacklist = ${pmdbl:-(disabled)}"
     echo
 
