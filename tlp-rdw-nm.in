@@ -90,10 +90,10 @@ if [ "$action" = "down" ]; then
 fi
 
 echo_debug "nm" "+++ rdw_nm($iface).$action"
-if [ -n "$addpath" ]; then
-    echo_debug "path" "PATH=$oldpath[$addpath]"
+if [ -n "$_addpath" ]; then
+    echo_debug "path" "PATH=$_oldpath[$_addpath]"
 else
-    echo_debug "path" "PATH=$oldpath"
+    echo_debug "path" "PATH=$_oldpath"
 fi
 
 # Determine interface type

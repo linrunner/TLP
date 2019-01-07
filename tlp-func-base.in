@@ -286,11 +286,11 @@ check_timed_lock () { # check if active timestamp exists
 
 # --- PATH
 add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
-                   # retval: $PATH, $oldpath, $addpath
+                   # retval: $PATH, $_oldpath, $_addpath
     local sp
 
-    oldpath="$PATH"
-    addpath=""
+    _oldpath="$PATH"
+    _addpath=""
 
     for sp in /usr/sbin /sbin; do
         if [ -d $sp ] && [ ! -h $sp ]; then
@@ -300,14 +300,14 @@ add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
                     ;;
 
                 *) # $sp not in $PATH, add it
-                    addpath="$addpath:$sp"
+                    _addpath="$_addpath:$sp"
                     ;;
             esac
         fi
     done
 
-    if [ -n "$addpath" ]; then
-      export PATH="${PATH}${addpath}"
+    if [ -n "$_addpath" ]; then
+      export PATH="${PATH}${_addpath}"
     fi
 
     return 0

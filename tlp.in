@@ -183,10 +183,10 @@ else
     echo_debug "run" "+++ $_cmd $_cmd2 ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
 fi
 
-if [ -n "$addpath" ]; then
-    echo_debug "path" "PATH=$oldpath[$addpath]"
+if [ -n "$_addpath" ]; then
+    echo_debug "path" "PATH=$_oldpath[$_addpath]"
 else
-    echo_debug "path" "PATH=$oldpath"
+    echo_debug "path" "PATH=$_oldpath"
 fi
 
 # determine new power state
