@@ -186,7 +186,7 @@ lock_tlp () { # get exclusive lock: blocking with timeout
     # open file for writing and attach fd 9
     { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null
     # fopen/attach successful --> lock fd 9 exclusive and blocking,
-    # wait $LOCKTIME secs to obtain the lock
+    # wait $LOCKTIMEOUT secs to obtain the lock
     if [ $? -eq 0 ] && $FLOCK -x -w $LOCKTIMEOUT 9 ; then
         echo_debug "lock" "lock_tlp.success"
         return 0
@@ -226,7 +226,7 @@ unlock_tlp () { # free exclusive lock
 }
 
 echo_tlp_locked () { # print "locked" message
-    echo "TLP is locked by another operation."
+    echo "Error: TLP is locked by another operation." 1>&2
     return 0
 }
 

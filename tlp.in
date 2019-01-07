@@ -449,8 +449,13 @@ case "$_cmd" in
     discharge) # discharge battery completely (to recalibrate)
         if check_ac_power discharge; then
             check_root
-            discharge_battery $_carg1
-            exitcode=$?
+            if lock_tlp_nb tlp_discharge; then
+                discharge_battery $_carg1
+                exitcode=$?
+                unlock_tlp
+            else
+                echo_discharge_locked
+            fi
         else
             exitcode=2
         fi
@@ -459,13 +464,18 @@ case "$_cmd" in
     recalibrate) # recalibrate battery, i.e. discharge and charge to 100%
         if check_ac_power recalibrate; then
             check_root
-            setcharge_battery 96 100 $_carg1
-            sleep 1
-            discharge_battery $_carg1
-            exitcode=$?
-            if [ $exitcode -eq 0 ]; then
-                echo "Charging starts now, for a complete recalibration"
-                echo "keep AC connected until the battery is fully charged."
+            if lock_tlp_nb tlp_discharge; then
+                setcharge_battery 96 100 $_carg1
+                sleep 1
+                discharge_battery $_carg1
+                exitcode=$?
+                if [ $exitcode -eq 0 ]; then
+                    echo "Charging starts now, for a complete recalibration"
+                    echo "keep AC connected until the battery is fully charged."
+                fi
+                unlock_tlp
+            else
+                echo_discharge_locked
             fi
         else
             exitcode=2

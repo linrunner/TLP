@@ -1,4 +1,4 @@
-+++ 1.2 --- 05.01.2019 +++
++++ 1.2 --- 07.01.2019 +++
 
 *** Development version ***
 
@@ -24,6 +24,7 @@
         requires kernel 4.17; enabled by default
       - NATACPI_ENABLE, TPACPI_ENABLE, TPSMAPI_ENABLE: make all battery feature
         drivers switchable
+      - tlp discharge/recalibrate: exclude multiple simultaneous invocations
       - Support ThinkPad 25, *80 (Coffee Lake) and all newer models
     tlp-stat:
       - Check systemd-rfkill.socket masked status

@@ -746,6 +746,11 @@ chargeonce_battery () { # charge battery to upper threshold once
 
 # --- Battery Forced Discharge
 
+echo_discharge_locked () { # print "locked" message
+    echo "Error: another discharge/recalibrate operation is pending." 1>&2
+    return 0
+}
+
 get_force_discharge () { # $1: BAT0/BAT1,
     # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
     # rc: 0=off/1=on/2=discharge not present/255=no thresh api
