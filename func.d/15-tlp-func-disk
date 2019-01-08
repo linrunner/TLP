@@ -44,11 +44,11 @@ get_disk_dev () { # translate disk id to device (sdX)
 check_disk_hdparm_cap () { # check if relevant disk device
     # $1: dev; rc: 0=yes/1=no
 
-    if [ -z "$($HDPARM -I /dev/$1 2>&1 | \
-               egrep 'Invalid argument|Invalid exchange|missing sense data|No such device')" ]; then
-        return 0
-    else
+    if $HDPARM -I /dev/$1 2>&1 |  \
+            grep -E -q 'Inappropriate ioctl|Invalid argument|Invalid exchange|missing sense data|No such device'; then
         return 1
+    else
+        return 0
     fi
 }
 
