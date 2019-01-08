@@ -5,6 +5,8 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
+# shellcheck disable=SC1090,SC2086,SC2154
+
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/25-tlp-func-rf @TLP_FLIB@/30-tlp-func-rf-sw; do
@@ -111,7 +113,7 @@ elif cmd_exists $NMCLI ; then
         # different devices for control and the actual network connection
         # --> check if interface matches a WWAN device
         get_wwan_ifaces
-        if wordinlist "$iface" "$wanifaces"; then
+        if wordinlist "$iface" "$_wanifaces"; then
             itype="wwan"
         else
             # fallback:

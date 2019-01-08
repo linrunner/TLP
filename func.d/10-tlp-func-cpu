@@ -6,6 +6,8 @@
 
 # Needs: tlp-func-base
 
+# shellcheck disable=SC2086
+
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -188,7 +190,7 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
     if [ $intel_pstate -eq 1 ]; then
         # use intel_pstate sysfiles
         if [ -f $CPU_TURBO_PSTATE ]; then
-            ival=$(($val ^ 1))
+            ival=$((val ^ 1))
             { printf '%s\n' "$ival" > $CPU_TURBO_PSTATE; } 2> /dev/null
             echo_debug "pm" "set_cpu_boost_all($1).intel_pstate: $val"
         else
@@ -292,8 +294,7 @@ set_nmi_watchdog () { # enable/disable nmi watchdog
     fi
 
     if [ -f /proc/sys/kernel/nmi_watchdog ]; then
-        { printf '%s\n' "$nmiwd" > /proc/sys/kernel/nmi_watchdog; } 2> /dev/null
-        if [ $? = 0 ]; then
+        if { printf '%s\n' "$nmiwd" > /proc/sys/kernel/nmi_watchdog; } 2> /dev/null; then
             echo_debug "pm" "set_nmi_watchdog: $nmiwd"
         else
             echo_debug "pm" "set_nmi_watchdog.disabled_by_kernel: $nmiwd"

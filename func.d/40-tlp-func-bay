@@ -6,6 +6,8 @@
 
 # Needs: tlp-func-base
 
+# shellcheck disable=SC2086
+
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -173,7 +175,6 @@ suspend_drivebay () { # Save power state of drive bay before suspend
 
 resume_drivebay () { #
     # $1: 0=ac mode, 1=battery mode
-
     local cnt rc
 
     if [ "$(cat $BAYSTATEFILE 2> /dev/null)" = "off" ]; then
@@ -186,7 +187,7 @@ resume_drivebay () { #
                 if [ -e $dock/undock ]; then
                     cnt=5
                     rc=1
-                    until [ $rc = 0 -o $cnt = 0 ]; do
+                    until [ $rc = 0 ] || [ $cnt = 0 ]; do
                         cnt=$((cnt - 1))
                         { printf '%s\n' "1" > $dock/undock; } 2> /dev/null
                         rc=$?

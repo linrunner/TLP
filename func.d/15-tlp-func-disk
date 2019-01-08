@@ -6,6 +6,8 @@
 
 # Needs: tlp-func-base
 
+# shellcheck disable=SC2086
+
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -65,7 +67,7 @@ show_disk_ids () { # show disk id's
     local dev
 
     { # iterate SATA and NVMe disks
-        for dev in $(ls /dev/disk/by-id/ | egrep '^(ata|nvme)' | egrep -v '(^nvme-eui|\-part[1-9]+)'); do
+        for dev in $(ls /dev/disk/by-id/ | grep -E '^(ata|nvme)' | grep -Ev '(^nvme-eui|\-part[1-9]+)'); do
             if [ -n "$dev" ]; then
                 get_disk_dev $dev
                 echo "$_disk_dev: $_disk_id"
@@ -183,7 +185,7 @@ spindown_disk () { # stop spindle motor -- $1: dev
 }
 
 set_disk_iosched () { # set disk io scheduler
-    local dev sched schedctrl log_message
+    local dev log_message
 
     # when undefined use default
     : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
@@ -201,6 +203,7 @@ set_disk_iosched () { # set disk io scheduler
     #  for j in [1,min(n,m)]   : disk_dev[j], schedlistj]
     #  for j in [min(n,m)+1,n] : disk_dev[j], %DEFAULT_DISK_IO_SCHEDULER
     for dev in $DISK_DEVICES; do
+        local sched schedctrl
         get_disk_dev $dev
 
         # get sched from argv, use default scheduler when list is too short
@@ -234,7 +237,6 @@ set_sata_link_power () { # set ahci link power management
     local pm="$1"
     local host host_bl hostid linkpol pwr rc
     local pwrlist=""
-    local pwr_bl=""
     local ctrl_avail="0"
 
     if [ "$pm" = "1" ]; then
@@ -357,7 +359,7 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
         isec=${DISK_IDLE_SECS_ON_AC:-${DEFAULT_DISK_IDLE_SECS_ON_AC}}
     fi
     # replace with empty string if non-numeric chars are contained
-    isec=$(printf '%s' "$isec" | egrep '^[0-9]+$')
+    isec=$(printf '%s' "$isec" | grep -E '^[0-9]+$')
 
     if [ -z "$isec" ]; then
         # do nothing if unconfigured or non numeric value
@@ -386,7 +388,7 @@ set_dirty_parms () { # set filesystem buffer params
     fi
 
     # calc age in centisecs, non numeric values result in "0"
-    cage=$(($age * 100))
+    cage=$((age * 100))
 
     if [ "$cage" = "0" ]; then
         # do nothing if unconfigured or invalid age

@@ -6,6 +6,8 @@
 
 # Needs: tlp-func-base
 
+# shellcheck disable=SC2086
+
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -127,8 +129,7 @@ set_pcie_aspm () { # set pcie active state power management
     fi
 
     if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
-        { printf '%s\n' "$pwr" > /sys/module/pcie_aspm/parameters/policy; } 2> /dev/null
-        if [ $? = 0 ]; then
+        if { printf '%s\n' "$pwr" > /sys/module/pcie_aspm/parameters/policy; } 2> /dev/null; then
             echo_debug "pm" "set_pcie_aspm($1): $pwr"
         else
             echo_debug "pm" "set_pcie_aspm($1).disabled_by_kernel"
@@ -193,7 +194,7 @@ get_eth_ifaces () { # get all eth devices -- retval: $ethifaces
     ethifaces=""
 
     for eic in $NETD/*/device/class; do
-        if [ "$(cat $eic 2> /dev/null)" = "0x020000" ] \
+        if [ "$(cat "$eic" 2> /dev/null)" = "0x020000" ] \
             && [ ! -d "${eic%/class}/ieee80211" ]; then
 
             ei=${eic%/device/class}; ei=${ei##*/}
@@ -215,7 +216,7 @@ disable_wake_on_lan () {  # disable WOL
 
         for ei in $ethifaces; do
             echo_debug "pm" "disable_wake_on_lan: $ei"
-            $ETHTOOL -s $ei wol d > /dev/null 2>&1
+            $ETHTOOL -s "$ei" wol d > /dev/null 2>&1
         done
     fi
 

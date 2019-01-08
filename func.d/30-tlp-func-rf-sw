@@ -6,6 +6,8 @@
 
 # Needs: tlp-func-base, tlp-func-rf
 
+# shellcheck disable=SC2034,SC2086,SC2119,SC2120,SC2162
+
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -91,7 +93,7 @@ get_devs () { # get radio device state -- $1: rftype; retval $devs: 0=off/1=on
         devs=$(cat $devc 2> /dev/null)
         case "$devs" in
             0|1) # invert state when not a rfkill device
-                [ "$rfkdev" = "0" ] && devs=$(($devs ^ $devoff))
+                [ "$rfkdev" = "0" ] && devs=$((devs ^ devoff))
                 ;;
             2) ;; # hard blocked device
             *) devs=3 # invalid state
@@ -180,7 +182,7 @@ device_switch () { # switch radio type state
     case $2 in
         1|on)     newst=1 ;;
         0|off)    newst=0 ;;
-        toggle) newst=$(($curst ^ 1)) ;;
+        toggle) newst=$((curst ^ 1)) ;;
     esac
 
     # wifi, wwan: before rfkill (only if X_configured) -- notify NM of desired state
@@ -327,7 +329,7 @@ echo_device_state () { # print radio type state -- $1: rftype, $2: state
     return 0
 }
 
-save_device_states () { # save radio states  -- $1: list of rftypes
+save_device_states () { # save radio states -- $1: list of rftypes
     local dev
     local devlist="${1:-$ALLDEV}" # when arg empty -> use all
 
@@ -382,8 +384,7 @@ set_radio_device_states () { # set/initialize all radio states
         echo_debug "rf" "set_radio_device_states($1).restore"
         case $1 in
             start)
-                restore_device_states
-                if [ $? = 0 ]; then
+                if restore_device_states; then
                     echo "Radio device states restored."
                 else
                     echo "No saved radio device states found."
@@ -430,13 +431,12 @@ set_radio_device_states () { # set/initialize all radio states
 
                 # check configured list for connected devices
                 for dev in ${DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE:-}; do
-                    case $dev in
+                     # if device is not connected and not in list yet --> add to disable list
+                    { case $dev in
                         bluetooth) any_bluetooth_in_use ;;
                         wifi) any_wifi_in_use ;;
                         wwan) any_wwan_in_use ;;
-                    esac
-                    # if device is not connected and not in list yet --> add to disable list
-                    [ $? = 0 ] || wordinlist $dev "$devs2disable" || devs2disable="$dev $devs2disable"
+                    esac } || wordinlist $dev "$devs2disable" || devs2disable="$dev $devs2disable"
                 done
                 devs2disable="${devs2disable# }"
                 ;;

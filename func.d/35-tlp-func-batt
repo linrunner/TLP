@@ -6,6 +6,8 @@
 
 # Needs: tlp-func-base
 
+# shellcheck disable=SC2086
+
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -340,7 +342,7 @@ get_threshold () { # read and echo charge threshold
                 if [ $tprc -eq 0 ] && [ -n "$rc" ]; then
                     if [ $rc -ge 128 ]; then
                         # Remove offset of 128 for Edge S430 et al.
-                        rc=$(($rc - 128))
+                        rc=$((rc - 128))
                     fi
                     if [ $rc -eq 0 ]; then
                         # replace 0 with factory default values
@@ -407,7 +409,7 @@ set_thresholds () { # write both charge thresholds for a battery,
     # - tpsmapi: start <= stop - 4 (changes value for compliance)
     local tseq
 
-    if [ $new_start -gt $(($old_stop - 4)) ]; then
+    if [ $new_start -gt $((old_stop - 4)) ]; then
         tseq="stop start"
     else
         tseq="start stop"
@@ -515,7 +517,7 @@ normalize_thresholds () { # check values and enforce start <= stop - 4
         esac
 
         # check for 1..3 digits, replace with empty string if non-numeric chars are contained
-        thresh=$(echo "$thresh" | egrep '^[0-9]{1,3}$')
+        thresh=$(echo "$thresh" | grep -E '^[0-9]{1,3}$')
         # replace empty string with -1
         [ -z "$thresh" ] && thresh=-1
 
@@ -536,7 +538,7 @@ normalize_thresholds () { # check values and enforce start <= stop - 4
 
     # enforce start <= stop - 4
     if [ $_start_thresh -ne -1 ] && [ $_stop_thresh -ne -1 ]; then
-        [ $_start_thresh -gt $(($_stop_thresh - 4)) ] && _start_thresh=$(($_stop_thresh - 4))
+        [ $_start_thresh -gt $((_stop_thresh - 4)) ] && _start_thresh=$((_stop_thresh - 4))
     fi
 
     # catch unconfigured thresholds
@@ -708,7 +710,7 @@ chargeonce_battery () { # charge battery to upper threshold once
             fi
 
             if [ $efull -ne 0 ]; then
-                ccharge=$(( 100 * $enow / $efull ))
+                ccharge=$(( 100 * enow / efull ))
             else
                 ccharge=-1
             fi
@@ -731,7 +733,7 @@ chargeonce_battery () { # charge battery to upper threshold once
         echo_debug "bat" "chargeonce_battery($_bat_str).charge_level: enow=$enow; efull=$efull; ccharge=$ccharge"
     fi
 
-    temp_start_thresh=$(( $stop_thresh - 4 ))
+    temp_start_thresh=$(( stop_thresh - 4 ))
     if [ $temp_start_thresh -le $ccharge ] ; then
         echo_debug "bat" "chargeonce_battery($_bat_str).charge_level_too_high: $temp_start_thresh $stop_thresh"
         echo "Error: current charge level ($ccharge) of $_bat_str is higher than stop charge threshold - 4 ($temp_start_thresh)." 1>&2
@@ -796,7 +798,7 @@ set_force_discharge () { # write force discharge state
         natacpi|tpsmapi)
             if [ -f "$_bf_dischg" ]; then
                 # write force_discharge
-                { printf '%s\n' $2 > $_bf_dischg; } 2> /dev/null; rc=$?
+                { printf '%s\n' "$2" > $_bf_dischg; } 2> /dev/null; rc=$?
             else
                 # sysfile non-existent, possibly invalid bat argument
                 rc=2
@@ -915,7 +917,7 @@ discharge_battery () { # discharge battery
             # show current battery state
             case $_bm_read in
                 natacpi|tpacpi) # use ACPI sysfiles
-                    perl -e 'printf ("voltage            = %6d [mV]\n", '$(cat_sysfd $_bd_read/voltage_now 0 2> /dev/null)' / 1000.0);'
+                    perl -e 'printf ("voltage            = %6d [mV]\n", '"$(cat_sysfd $_bd_read/voltage_now 0 2> /dev/null)"' / 1000.0);'
 
                     en=$(cat_sysfd $_bd_read/energy_now 0 2> /dev/null)
                     perl -e 'printf ("remaining capacity = %6d [mWh]\n", '$en' / 1000.0);'
@@ -924,7 +926,7 @@ discharge_battery () { # discharge battery
                     if [ "$ef" != "0" ]; then
                         perl -e 'printf ("remaining percent  = %6d [%%]\n", 100.0 * '$en' / '$ef' );'
                     else
-                        printf "remaining percent  = not available [%]\n"
+                        printf "remaining percent  = not available [%%]\n"
                     fi
 
                     pn=$(cat_sysfd $_bd_read/power_now 0 2> /dev/null)

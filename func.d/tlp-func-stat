@@ -6,6 +6,8 @@
 
 # Needs: tlp-func-base
 
+# shellcheck disable=SC1004,SC2059,SC2086,SC2154,SC2155
+
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -52,8 +54,7 @@ printparm () { # formatted output of sysfile - general
 
     if [ -f $sysf ]; then
         # sysfile exists
-        val=$(cat $sysf 2> /dev/null)
-        if [ $? = 0 ]; then
+        if val=$(cat $sysf 2> /dev/null); then
             # sysfile read successful
             if [ -n "$cutoff" ]; then
                 val=${val%$cutoff}
@@ -66,20 +67,20 @@ printparm () { # formatted output of sysfile - general
         if [ -n "$namsg" ]; then
             if [ "$namsg" != "_" ]; then
                 # use specific n/a text
-                format=$( echo $format | sed -r "s/##(.*)##/($namsg)/" | sed -r "s/\[.*\]//" )
+                format=$(echo $format | sed -r "s/##(.*)##/($namsg)/" | sed -r "s/\[.*\]//")
             else
                 # _ = skip
                 sysf=""
             fi
         else
             # empty n/a text, use default text
-            format=$( echo $format | sed -r "s/##(.*)##/(not available)/" | sed -r "s/\[.*\]//" )
+            format=$(echo $format | sed -r "s/##(.*)##/(not available)/" | sed -r "s/\[.*\]//")
         fi
         # output n/a text or skip
         [ -n "$sysf" ] && printf "$format\n" "$sysf"
     else
         # non empty value: strip delimiters from format str
-        format=$( echo $format | sed -r "s/##(.*)##/\1/" )
+        format=$(echo $format | sed -r "s/##(.*)##/\1/")
         printf "$format\n" "$sysf" "$val"
     fi
 
@@ -101,8 +102,7 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
 
     if [ -n "$sysf" ]; then
         # sysfile exists, get content
-        val=$(cat $sysf 2> /dev/null)
-        if [ $? = 0 ]; then
+        if val=$(cat $sysf 2> /dev/null); then
             # sysfile was readable, output content
             printf "%-44s = %2d " "$sysf" "$val"
             # Explain content
@@ -121,13 +121,13 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
                     esac
                 else
                     # other parms
-                    if [ $(( $val & 1 )) -ne 0 ]; then
+                    if [ $((val & 1)) -ne 0 ]; then
                         echo -n "enabled"
                     else
                         echo -n "disabled"
                     fi
-                    [ $(( $val & 2 )) -ne 0 ] && echo -n " + deep"
-                    [ $(( $val & 4 )) -ne 0 ] && echo -n " + deepest"
+                    [ $((val & 2)) -ne 0 ] && echo -n " + deep"
+                    [ $((val & 4)) -ne 0 ] && echo -n " + deepest"
                 fi
                 echo ")"
             fi
@@ -144,8 +144,7 @@ print_sysf () { # output a sysfile
     # $1: format; $2: sysfile
     local val
 
-    val=$(cat $2 2> /dev/null)
-    if [ $? = 0 ]; then
+    if val=$(cat $2 2> /dev/null); then
          # sysfile readable
         printf "$1" "$val"
     else
@@ -219,7 +218,7 @@ get_disk_apm_level () { # get disk apm level -- $1: dev; rc: apm
     local apm
 
     apm=$($HDPARM -I /dev/$1 2>&1 | grep 'Advanced power management level' | \
-          cut -f2 -d: | egrep "^ *[0-9]+ *$")
+          cut -f2 -d: | grep -E "^ *[0-9]+ *$")
     if [ -n "$apm" ]; then
         return $apm
     else
@@ -233,8 +232,8 @@ get_disk_trim_capability () { # check for trim capability
 
     local trim
 
-    if [ -n "$($HDPARM -I /dev/$1 2>&1 | grep 'Solid State Device')" ]; then
-        if [ -n "$($HDPARM -I /dev/$1 2>&1 | grep 'TRIM supported')" ]; then
+    if $HDPARM -I /dev/$1 2>&1 | grep -q 'Solid State Device'; then
+        if $HDPARM -I /dev/$1 2>&1 | grep -q 'TRIM supported'; then
             trim=1
         else
             trim=0
@@ -255,7 +254,7 @@ check_ata_errors () { # check kernel log for ata errors
         # config values != max_performance exist --> check kernel log
 
         # count matching error lines
-        echo $( dmesg | egrep -c "${RE_ATA_ERROR}" 2> /dev/null )
+        dmesg | grep -E -c "${RE_ATA_ERROR}" 2> /dev/null
     else
         # no values in question configured
         echo "0"
@@ -266,7 +265,6 @@ check_ata_errors () { # check kernel log for ata errors
 
 show_disk_data () { # formatted output of NVMe / SATA disk data
     # $1: disk device
-    local apm pdev sched trim
 
     # translate disk name
     get_disk_dev $1
@@ -277,7 +275,7 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
     # --- show general data
     if check_disk_nvme $_disk_dev; then
         # NVMe disk
-        printf     "/dev/$_disk_dev:\n"
+        printf     "%s:\n" /dev/$_disk_dev
         printf     "  Type      = NVMe\n"
         [ -n "$_disk_id" ] && printf "  Disk ID   = %s\n" $_disk_id
         print_sysf "  Model     = %s\n" /sys/block/$_disk_dev/device/model
@@ -287,8 +285,8 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
 
     elif check_disk_hdparm_cap $_disk_dev; then
         # SATA disk
-        printf "/dev/$_disk_dev:\n"
-        [ -n "$_disk_id" ] && printf "  Disk ID   = $_disk_id\n"
+        printf     "%s:\n" /dev/$_disk_dev
+        [ -n "$_disk_id" ] && printf "  Disk ID   = %s\n" $_disk_id
         printf     "  Type      = (S)ATA\n"
 
         # save spindle state
@@ -300,16 +298,16 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
         printf "  Firmware  = "
         echo_disk_firmware $_disk_dev
 
-        get_disk_apm_level $_disk_dev; apm=$?
+        get_disk_apm_level $_disk_dev; local apm=$?
         printf "  APM Level = "
         case $apm in
             0|255) echo "none/disabled" ;;
             *)     echo $apm ;;
         esac
 
-        printf "  Status    = $_disk_state\n"
+        printf "  Status    = %s\n" $_disk_state
 
-        get_disk_trim_capability $_disk_dev; trim=$?
+        get_disk_trim_capability $_disk_dev; local trim=$?
         case $trim in
             0) printf "  TRIM      = not supported\n" ;;
             1) printf "  TRIM      = supported\n" ;;
@@ -321,8 +319,8 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
     fi # SATA
 
     if [ -f /sys/block/$_disk_dev/queue/scheduler ]; then
-        iosched="$(cat /sys/block/$_disk_dev/queue/scheduler 2> /dev/null | sed -r 's/.*\[(.+)\].*/\1/')"
-        iosched_list="$(cat /sys/block/$_disk_dev/queue/scheduler 2> /dev/null | sed -r 's/\[(.+)\]/\1/' | sed -r 's/ $//')"
+        local iosched="$(sed -r 's/.*\[(.+)\].*/\1/' /sys/block/$_disk_dev/queue/scheduler 2> /dev/null)"
+        local iosched_list="$(sed -r 's/\[(.+)\]/\1/' /sys/block/$_disk_dev/queue/scheduler 2> /dev/null)"
         if [ -d /sys/block/$_disk_dev/mq ]; then
             printf "  Scheduler = %s (multiqueue); available: %s\n" "$iosched" "$iosched_list"
         else
@@ -330,7 +328,7 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
         fi
     fi
 
-    pdev=/sys/block/$_disk_dev/device/power
+    local pdev=/sys/block/$_disk_dev/device/power
     if [ -f $pdev/control ]; then
         echo
         print_sysf "  Runtime PM: control = %s, " $pdev/control
@@ -344,9 +342,9 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
     if check_disk_nvme $_disk_dev; then
         # NVMe disk
         $SMARTCTL -A /dev/$_disk_dev | \
-            egrep -e '^(Critical Warning|Temperature:|Available Spare)' \
-                  -e '^(Percentage Used:|Data Units Written:|Power|Unsafe)' \
-                  -e 'Integrity Errors' | \
+            grep -E -e '^(Critical Warning|Temperature:|Available Spare)' \
+                    -e '^(Percentage Used:|Data Units Written:|Power|Unsafe)' \
+                    -e 'Integrity Errors' | \
             sed 's/^/    /'
     else
         # SATA disk
@@ -400,7 +398,7 @@ show_intel_gpu_data () { # show Intel GPU data
         printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_MIN_FREQ
         printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_MAX_FREQ
         printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_BOOST_FREQ
-        if file_readable $_intel_gpu_dbg/$IGPU_FREQ_TABLE ]; then
+        if file_readable $_intel_gpu_dbg/$IGPU_FREQ_TABLE; then
             # available frequencies
             printf "%s: " $_intel_gpu_dbg/$IGPU_FREQ_TABLE
             awk -F ' ' '{ if (NR >= 2) { printf "%d ", $1 } }; ' $_intel_gpu_dbg/$IGPU_FREQ_TABLE
@@ -458,8 +456,7 @@ print_batstate () { # print battery charging state with
 
     if [ -n "$sysf" ]; then
         # bat state sysfile exists, get content
-        val=$(cat $sysf 2> /dev/null)
-        if [ $? = 0 ]; then
+        if val=$(cat $sysf 2> /dev/null); then
             # sysfile was readable, output content
             printf "%-59s = %s" "$sysf" "$val"
             # Explain content if necessary

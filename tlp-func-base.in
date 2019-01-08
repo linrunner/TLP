@@ -4,6 +4,8 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
+# shellcheck disable=SC1090,SC2002,SC2034,SC2048,SC2068,SC2086,SC2154,SC2155
+
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -90,7 +92,7 @@ get_sysval () { # read numeric contents of a sysfile, return 0 if contents
     [ -f $sysf ] && val=$(cat $sysf 2> /dev/null)
 
     # replace with 0 if empty string or non-numeric chars are contained
-    [ -z "$(printf '%s' "$val" | egrep '^[0-9]+$')" ] && val=0
+    printf '%s' "$val" | grep -E -q '^[0-9]+$' && val=0
 
     return $val
 }
@@ -184,10 +186,9 @@ lock_tlp () { # get exclusive lock: blocking with timeout
 
     create_rundir
     # open file for writing and attach fd 9
-    { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null
-    # fopen/attach successful --> lock fd 9 exclusive and blocking,
+    # when successful lock fd 9 exclusive and blocking
     # wait $LOCKTIMEOUT secs to obtain the lock
-    if [ $? -eq 0 ] && $FLOCK -x -w $LOCKTIMEOUT 9 ; then
+    if { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null && $FLOCK -x -w $LOCKTIMEOUT 9 ; then
         echo_debug "lock" "lock_tlp.success"
         return 0
     else
@@ -202,9 +203,8 @@ lock_tlp_nb () { # get exclusive lock: non-blocking
 
     create_rundir
     # open file for writing and attach fd 9
-    { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null
-    # fopen/attach successful --> lock fd 9 exclusive and non-blocking
-    if [ $? -eq 0 ] && $FLOCK -x -n 9 ; then
+    # when successful lock fd 9 exclusive and non-blocking
+    if { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null && $FLOCK -x -n 9 ; then
         echo_debug "lock" "lock_tlp_nb.success"
         return 0
     else
@@ -263,7 +263,7 @@ check_timed_lock () { # check if active timestamp exists
     for lockfile in $RUNDIR/${1}_timed_lock_*; do
         if [ -f $lockfile ]; then
             locktime=${lockfile#${RUNDIR}/${1}_timed_lock_}
-            if [ $time -lt $(( $locktime - 120 )) ]; then
+            if [ $time -lt $(( locktime - 120 )) ]; then
                 # timestamp is more than 120 secs in the future,
                 # something weird has happened -> remove it
                 rm -f $lockfile
@@ -342,7 +342,7 @@ parse_args4config () { # parse command-line arguments: everything after the
             #   parameter name allows 'A'..'Z' and '_' only
             #   value allows  'A'..'Z', 'a'..'z', '0'..'9', ' ', '_', '-', '"'
             #   eval itself provides filtering of unpaired quotes ('"')
-            eval $(printf "%s" "$1" | egrep '^[A-Z_]+\=[0-9a-zA-Z _-"]*$') 2> /dev/null
+            eval "$(printf "%s" "$1" | grep -E '^[A-Z_]+\=[0-9a-zA-Z _-"]*$')" 2> /dev/null
         elif [ "$1" = "--" ]; then
             # delimiter reached --> begin interpretation
            dflag=1
@@ -377,8 +377,8 @@ read_dmi () { # read DMI data -- $*: keywords; stdout: dmi strings
 
     outr=""
     for key in $*; do
-        ds="$( cat ${DMID}/$key 2> /dev/null | \
-                egrep -iv 'not available|to be filled|DMI table is broken' )"
+        ds="$(cat ${DMID}/$key 2> /dev/null | \
+                grep -E -iv 'not available|to be filled|DMI table is broken')"
         if [ -n "$outr" ]; then
             [ -n "$ds" ] && outr="$outr $ds"
         else
@@ -395,19 +395,19 @@ read_dmi () { # read DMI data -- $*: keywords; stdout: dmi strings
 supports_tpsmapi_only () {
     # rc: 0=ThinkPad supports tpsmapi only/1=false
     # prerequisite: check_thinkpad()
-    printf '%s' "$_tpmodel" | egrep -q "${RE_TPSMAPI_ONLY}"
+    printf '%s' "$_tpmodel" | grep -E -q "${RE_TPSMAPI_ONLY}"
 }
 
 supports_tpsmapi_and_tpacpi () {
     # rc: 0=ThinkPad supports tpsmapi, tpacpi-bat, natacpi/1=false
     # prerequisite: check_thinkpad()
-    printf '%s' "$_tpmodel" | egrep -q "${RE_TPSMAPI_AND_TPACPI}"
+    printf '%s' "$_tpmodel" | grep -E -q "${RE_TPSMAPI_AND_TPACPI}"
 }
 
 supports_no_tp_bat_funcs () {
     # rc: 0=ThinkPad doesn't support battery features/1=false
     # prerequisite: check_thinkpad()
-    printf '%s' "$_tpmodel" | egrep -q "${RE_TP_NONE}"
+    printf '%s' "$_tpmodel" | grep -E -q "${RE_TP_NONE}"
 }
 
 supports_tpacpi () {
@@ -430,7 +430,7 @@ check_thinkpad () { # check for ThinkPad hardware and save model string,
         # kernel module thinkpad_acpi is loaded
 
         # get DMI product string and sanitize it
-        pv="$( read_dmi product_version | tr -C -d '[a-zA-Z0-9 ]' )"
+        pv="$(read_dmi product_version | tr -C -d 'a-zA-Z0-9 ')"
 
         # check DMI product string for occurrence of "ThinkPad"
         if printf '%s' "$pv" | grep -q "Think[Pp]ad"; then

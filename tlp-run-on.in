@@ -4,6 +4,8 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
+# shellcheck disable=SC1090,SC2068
+
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base; do
@@ -18,7 +20,7 @@ if [ -z "$cmd" ]; then
     echo "Usage: $self command [arg(s)]" 1>&2
     exit 1
 fi
-if ! cmd_exists $cmd; then
+if ! cmd_exists "$cmd"; then
     echo "Error: \"$cmd\" not found." 1>&2
     exit 2
 fi

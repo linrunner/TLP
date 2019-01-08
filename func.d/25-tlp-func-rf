@@ -6,6 +6,8 @@
 
 # Needs: tlp-func-base
 
+# shellcheck disable=SC2034,SC2086
+
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -19,29 +21,29 @@ readonly BLUETOOTHD=/sys/class/bluetooth
 
 # --- Wifi Device Checks
 
-get_wifi_ifaces () { # get all wifi devices -- retval: $wifaces
+get_wifi_ifaces () { # get all wifi devices -- retval: $_wifaces
     local wi wiu
-    wifaces=""
+    _wifaces=""
 
     for wiu in $NETD/*/uevent; do
         if grep -q -s "DEVTYPE=wlan" $wiu ; then
             wi=${wiu%/uevent}; wi=${wi##*/}
-            wifaces="$wifaces $wi"
+            _wifaces="$_wifaces $wi"
         fi
     done
 
-    wifaces="${wifaces# }"
+    _wifaces="${_wifaces# }"
     return 0
 }
 
 get_wifi_driver () { # get driver associated with interface
-                     # $1: iface; retval: $wifidrv
+                     # $1: iface; retval: $_wifidrv
     local drvl
 
-    wifidrv=""
+    _wifidrv=""
     if [ -d $NETD/$1 ]; then
         drvl=$(readlink $NETD/$1/device/driver)
-        [ -n "$drvl" ] && wifidrv=${drvl##*/}
+        [ -n "$drvl" ] && _wifidrv=${drvl##*/}
     fi
 
     return 0
@@ -60,7 +62,7 @@ any_wifi_in_use () { # check if any wifi device is in use
     local iface
 
     get_wifi_ifaces
-    for iface in $wifaces; do
+    for iface in $_wifaces; do
         wireless_in_use $iface && return 0
     done
 
@@ -95,12 +97,12 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
     fi
 
     get_wifi_ifaces
-    if [ -z "$wifaces" ]; then
+    if [ -z "$_wifaces" ]; then
         echo_debug "pm" "set_wifi_power_mode($1).no_ifaces"
         return 0
     fi
 
-    for iface in $wifaces; do
+    for iface in $_wifaces; do
         if [ -n "$iface" ]; then
             if  [ "$X_DONT_USE_IW" != "1" ] && cmd_exists $IW; then
                 # try with iw first
@@ -130,18 +132,18 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
 
 # --- WWAN Device Checks
 
-get_wwan_ifaces () { # get all wwan devices -- retval: $wanifaces
+get_wwan_ifaces () { # get all wwan devices -- retval: $_wanifaces
     local wi wiu
-    wanifaces=""
+    _wanifaces=""
 
     for wiu in $NETD/*/uevent; do
         if grep -q -s "DEVTYPE=wwan" $wiu ; then
             wi=${wiu%/uevent}; wi=${wi##*/}
-            wanifaces="$wanifaces $wi"
+            _wanifaces="$_wanifaces $wi"
         fi
     done
 
-    wanifaces="${wanifaces# }"
+    _wanifaces="${_wanifaces# }"
     return 0
 }
 
@@ -149,7 +151,7 @@ any_wwan_in_use () { # check if any wwan device is in use
     local iface
 
     get_wwan_ifaces
-    for iface in $wanifaces; do
+    for iface in $_wanifaces; do
         wireless_in_use $iface && return 0
     done
 
@@ -157,13 +159,13 @@ any_wwan_in_use () { # check if any wwan device is in use
 }
 
 get_wwan_driver () { # get driver associated with interface
-                     # $1: iface; retval: $wwandrv
+                     # $1: iface; retval: $_wwandrv
     local drvl
 
-    wwandrv=""
+    _wwandrv=""
     if [ -d $NETD/$1 ]; then
         drvl=$(readlink $NETD/$1/device/driver)
-        [ -n "$drvl" ] && wwandrv=${drvl##*/}
+        [ -n "$drvl" ] && _wwandrv=${drvl##*/}
     fi
 
     return 0
@@ -171,19 +173,19 @@ get_wwan_driver () { # get driver associated with interface
 
 # --- Bluetooth Device Checks
 
-get_bluetooth_ifaces () { # get all bluetooth interfaces -- retval: $bifaces
+get_bluetooth_ifaces () { # get all bluetooth interfaces -- retval: $_bifaces
     # enumerate symlinks only
-    bifaces="$(for i in $BLUETOOTHD/*; do [ -h $i ] && echo ${i##/*/}; done | grep -v ':')"
+    _bifaces="$(for i in $BLUETOOTHD/*; do [ -h $i ] && echo ${i##/*/}; done | grep -v ':')"
     return 0
 }
 
-get_bluetooth_driver () { # get driver associated with interface -- $1: iface; retval: $bluetoothdrv
+get_bluetooth_driver () { # get driver associated with interface -- $1: iface; retval: $_bluetoothdrv
     local drvl
 
-    bluetoothdrv=""
+    _bluetoothdrv=""
     if [ -d $BLUETOOTHD/$1 ]; then
         drvl=$(readlink $BLUETOOTHD/$1/device/driver)
-        [ -n "$drvl" ] && bluetoothdrv=${drvl##*/}
+        [ -n "$drvl" ] && _bluetoothdrv=${drvl##*/}
     fi
 
     return 0
@@ -206,7 +208,7 @@ any_bluetooth_in_use () { # check if any bluetooth interface is in use
     local i
 
     get_bluetooth_ifaces
-    for i in $bifaces; do
+    for i in $_bifaces; do
         bluetooth_in_use "$i" && return 0
     done
 

@@ -6,6 +6,8 @@
 
 # Needs: tlp-func-base
 
+# shellcheck disable=SC2086,SC2155
+
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -49,7 +51,7 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
         # trace only: get drivers for all subdevices
         if [ "$X_USB_DRIVER_TRACE" = "1" ]; then
             local dl
-            drvlist=$(for dl in $usbdev/*:*/driver; do readlink $dl | \
+            drvlist=$(for dl in $usbdev/*:*/driver; do readlink "$dl" | \
                 sed -r 's/.+\///'; done | sort -u | tr '\n' ' ')
             drvlist="(${drvlist% })"
         fi

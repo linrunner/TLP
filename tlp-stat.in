@@ -4,6 +4,8 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
+# shellcheck disable=SC1090,SC2002,SC2013,SC2046,SC2063,SC2068,SC2086,SC2154
+
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/[0-9][0-9]* @TLP_FLIB@/tlp-func-stat; do
@@ -224,7 +226,7 @@ echo
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
     if [ $conf_present -eq 0 ]; then
         echo "+++ Configured Settings: $CONFFILE"
-        egrep -v '^#|^\s*$' $CONFFILE
+        grep -E -v '^#|^\s*$' $CONFFILE
         echo
     else
         echo "Error: config file $CONFFILE not present." 1>&2
@@ -236,8 +238,8 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # --- show system info
     echo "+++ System Info"
 
-    echo "System         = $( read_dmi sys_vendor product_version product_name )"
-    echo "BIOS           = $( read_dmi bios_version )"
+    echo "System         = $(read_dmi sys_vendor product_version product_name)"
+    echo "BIOS           = $(read_dmi bios_version)"
 
     # --- show release & kernel info
     cmd_exists $LSBREL && echo "Release        = $($LSBREL -d -s)"
@@ -571,8 +573,7 @@ if [ "$show_all" = "1" ]; then
     echo "+++ PCIe Active State Power Management"
     if [ -f $ASPM ]; then
         pol=$(cat $ASPM 2> /dev/null | sed -r 's/.*\[(.*)\].*/\1/')
-        { printf '%s' "$pol" > $ASPM; } 2> /dev/null
-        if [ $? = 0 ]; then
+        if { printf '%s' "$pol" > $ASPM; } 2> /dev/null; then
             echo "$ASPM = $pol"
         else
             echo "$ASPM = $pol (using bios preferences)"
@@ -624,13 +625,13 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show bluetooth
     get_bluetooth_ifaces
-    for iface in $bifaces; do
+    for iface in $_bifaces; do
         if [ -n "$iface" ]; then
             ifshown=1
 
             # get bluetooth driver
             get_bluetooth_driver $iface
-            printf "%-30s: bluetooth, " "$iface($bluetoothdrv)"
+            printf "%-30s: bluetooth, " "$iface($_bluetoothdrv)"
             if bluetooth_in_use $iface; then
                 echo "connected"
             else
@@ -641,7 +642,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show wifi data
     get_wifi_ifaces
-    for iface in $wifaces; do
+    for iface in $_wifaces; do
         if [ -n "$iface" ]; then
             ifshown=1
 
@@ -664,7 +665,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
             # get wifi driver
             get_wifi_driver $iface
-            printf "%-30s: wifi, " "$iface($wifidrv)"
+            printf "%-30s: wifi, " "$iface($_wifidrv)"
             if wireless_in_use $iface; then
                 printf "connected, "
             else
@@ -672,7 +673,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
             fi
             printf "power management = "
             case $wifipm in
-                on|off) printf "$wifipm" ;;
+                on|off) printf "%s" "$wifipm" ;;
                 *)      printf "unknown" ;;
             esac
             printf "\n"
@@ -681,14 +682,14 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show wwan data
     get_wwan_ifaces
-    for iface in $wanifaces; do
+    for iface in $_wanifaces; do
         if [ -n "$iface" ]; then
             ifshown=1
 
             # get wwan driver
             get_wwan_driver $iface
 
-            printf "%-30s: wwan, " "$iface($wwandrv)"
+            printf "%-30s: wwan, " "$iface($_wwandrv)"
             if wireless_in_use $iface; then
                 printf "connected"
             else
@@ -845,8 +846,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 printparm "%-59s = ##%s##" $batd/manufacturer
                 printparm "%-59s = ##%s##" $batd/model_name
 
-                cc=$(cat $batd/cycle_count 2> /dev/null)
-                if [ $? -eq 0 ] && [ -n "$cc" ] && [ $cc -gt 0 ]; then
+                if cc=$(cat $batd/cycle_count 2> /dev/null) && [ -n "$cc" ] && [ $cc -gt 0 ]; then
                     printf "%-59s = %6d\n" "$batd/cycle_count" "$cc"
                 else
                     printf "%-59s = (not supported)\n" "$batd/cycle_count"
@@ -862,8 +862,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     ed=$(cat_sysfd $batd/energy_full_design 0)
                     ef=$(cat_sysfd $batd/energy_full 0)
                     en=$(cat_sysfd $batd/energy_now 0)
-                    efsum=$(($efsum + $ef))
-                    ensum=$(($ensum + $en))
+                    efsum=$((efsum + ef))
+                    ensum=$((ensum + en))
 
                 elif [ -f $batd/charge_full ]; then
                     printparm "%-59s = ##%6d## [mAh]" $batd/charge_full_design "" 000
@@ -875,8 +875,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     ed=$(cat_sysfd $batd/charge_full_design 0)
                     ef=$(cat_sysfd $batd/charge_full 0)
                     en=$(cat_sysfd $batd/charge_now 0)
-                    efsum=$(($efsum + $ef))
-                    ensum=$(($ensum + $en))
+                    efsum=$((efsum + ef))
+                    ensum=$((ensum + en))
 
                 else
                     ed=0
@@ -929,8 +929,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 ed=$(cat_sysfd $batd/design_capacity 0)
                 ef=$(cat_sysfd $batd/last_full_capacity 0)
                 en=$(cat_sysfd $batd/remaining_capacity 0)
-                efsum=$(($efsum + $ef))
-                ensum=$(($ensum + $en))
+                efsum=$((efsum + ef))
+                ensum=$((ensum + en))
                 ;; # tp-smapi
 
         esac # $_bm_read
@@ -946,15 +946,15 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         lcnt=0
         if [ $ef -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'
-            lcnt=$(($lcnt+1))
+            lcnt=$((lcnt+1))
         fi
         if [ $ed -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '$ef' / '$ed');'
-            lcnt=$(($lcnt+1))
+            lcnt=$((lcnt+1))
         fi
         [ $lcnt -gt 0 ] && echo
 
-        bcnt=$(($bcnt+1))
+        bcnt=$((bcnt+1))
 
     done # for batd
 
@@ -973,7 +973,7 @@ fi # show_bat
 if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show warnings
     # ata errors (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
-    ecnt=$( check_ata_errors )
+    ecnt=$(check_ata_errors)
     if [ $ecnt -ne 0 ]; then
         echo "+++ Warnings"
         printf "* Kernel log shows ata errors (%d) possibly caused by the configuration\n" $ecnt
@@ -981,7 +981,7 @@ if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; th
         printf "  Consider using medium_power or max_performance instead.\n"
         printf "  See the FAQ: http://linrunner.de/en/tlp/docs/tlp-faq.html#warnings\n"
         printf "  Details:\n"
-        dmesg | egrep -A 5 "${RE_ATA_ERROR}"
+        dmesg | grep -E -A 5 "${RE_ATA_ERROR}"
         echo
     elif [ "$show_warn" = "1" ]; then
         echo "No warnings detected."
@@ -1015,7 +1015,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
     if [ -n "$reout" ]; then
         echo "+++ Recommendations"
-        printf "$reout" | sed -r 's/^/\* /'
+        printf "%s" "$reout" | sed -r 's/^/\* /'
         echo
     fi
 
@@ -1046,10 +1046,8 @@ if [ "$show_trace" = "1" ]; then
     # check for systemd journal
     jdone=0
     if cmd_exists $JOURNALCTL; then
-        # retrieve trace output from journal
-        $JOURNALCTL -p debug --no-pager SYSLOG_IDENTIFIER=tlp 2> /dev/null
-        # check result -- rc=1 if journald has no data available
-        [ $? -eq 0 ] && jdone=1
+        # retrieve trace output from journal, rc=1 if journald has no data available
+        $JOURNALCTL -p debug --no-pager SYSLOG_IDENTIFIER=tlp 2> /dev/null && jdone=1
     fi
 
     if [ "$jdone" = "0"  ]; then

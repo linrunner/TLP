@@ -4,6 +4,8 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
+# shellcheck disable=SC1090,SC2068,SC2086,SC2154
+
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/[0-9][0-9]*; do
@@ -57,7 +59,6 @@ parse_args () { # parse command-line arguments
     #           $_carg1,
     #           $_carg2,
     #           $_carg3: command arguments
-    local i subc=0 argc=0
 
     # parsing control: 'nil' means that the element is still expected
     _cmd="nil"

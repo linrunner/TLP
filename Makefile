@@ -177,3 +177,6 @@ uninstall: uninstall-tlp uninstall-rdw
 
 checkbashisms:
 	checkbashisms $(SHFILES) || true
+
+shellcheck:
+	shellcheck -s dash $(SHFILES) || true
