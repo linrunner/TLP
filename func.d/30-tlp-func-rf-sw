@@ -28,9 +28,9 @@ readonly DEFAULT_RESTORE_DEVICE_STATE_ON_STARTUP=0
 
 get_devc () { # get control device for radio type
               # $1: rftype bluetooth/wifi/wwan
-              # retval $devc: sysdev,
-              #     $rfkdev: 1/0=is/is not an rfkill device,
-              #     $devon, $devoff: value to write directly to the sysdev
+              # retval $_devc: sysdev, $_devs: device state
+              #     $_rfkdev: 1/0=is/is not an rfkill device,
+              #     $_devon, $_devoff: value to write directly to the sysdev
               #     to achieve the desired switch state
 
     local i
@@ -38,18 +38,18 @@ get_devc () { # get control device for radio type
     check_sysfs "get_devc" "/sys/class/rfkill"
 
     # preset retvals
-    devc=""
-    devs=254
-    rfkdev="1"
-    devon="1"
-    devoff="0"
+    _devc=""
+    _devs=254
+    _rfkdev="1"
+    _devon="1"
+    _devoff="0"
 
     case $1 in
         wwan|bluetooth)
             for i in /sys/class/rfkill/rfkill* ; do
                 if [ "$(cat $i/type 2> /dev/null)" = "$1" ]; then
-                    devc="$i/state"
-                    echo_debug "rf" "get_devc($1) = $devc"
+                    _devc="$i/state"
+                    echo_debug "rf" "get_devc($1) = $_devc="
                     return 0
                 fi
             done
@@ -58,19 +58,19 @@ get_devc () { # get control device for radio type
         wifi)
             for i in /sys/bus/pci/drivers/ipw2?00/*/rf_kill; do
                 if [ -f $i ]; then
-                    devc="$i"
-                    rfkdev="0"
-                    devon="0"
-                    devoff="1"
-                    echo_debug "rf" "get_devc($1) = $devc"
+                    _devc="$i"
+                    _rfkdev="0"
+                    _devon="0"
+                    _devoff="1"
+                    echo_debug "rf" "get_devc($1) = $_devc="
                     return 0
                 fi
             done
 
             for i in /sys/class/rfkill/rfkill* ; do
                 if [ "$(cat $i/type 2> /dev/null)" = "wlan" ]; then
-                    devc="$i/state"
-                    echo_debug "rf" "get_devc($1) = $devc"
+                    _devc="$i/state"
+                    echo_debug "rf" "get_devc($1) = $_devc="
                     return 0
                 fi
             done
@@ -88,19 +88,19 @@ get_devc () { # get control device for radio type
     return 0
 }
 
-get_devs () { # get radio device state -- $1: rftype; retval $devs: 0=off/1=on
-    if [ -n "$devc" ]; then
-        devs=$(cat $devc 2> /dev/null)
-        case "$devs" in
+get_devs () { # get radio device state -- $1: rftype; retval $_devs: 0=off/1=on
+    if [ -n "$_devc" ]; then
+        _devs=$(cat $_devc 2> /dev/null)
+        case "$_devs" in
             0|1) # invert state when not a rfkill device
-                [ "$rfkdev" = "0" ] && devs=$((devs ^ devoff))
+                [ "$_rfkdev" = "0" ] && _devs=$((_devs ^ _devoff))
                 ;;
             2) ;; # hard blocked device
-            *) devs=3 # invalid state
+            *) _devs=3 # invalid state
         esac
     fi
 
-    echo_debug "rf" "get_devs($1) = $devs"
+    echo_debug "rf" "get_devs($1) = $_devs"
 
     return 0
 }
@@ -133,7 +133,7 @@ invoke_nmcli () { # call nmcli with radio option according to the program versio
     return $rc
 }
 
-device_state () { # get radio type state -- $1: rftype; retval $devc, $devs: 0=off/1=on
+device_state () { # get radio type state -- $1: rftype; retval $_devc, $_devs: 0=off/1=on
     echo_debug "rf" "device_state($1)"
 
     get_devc $1
@@ -145,7 +145,7 @@ device_switch () { # switch radio type state
                    # $3: lock id, $4: lock duration
                    # rc: 0=switched/1=invalid device or operation/
                    #     2=hard blocked/3=invalid state/4=no change
-                   # retval $devc, $devs: 0=off/1=on
+                   # retval $_devc, $_devs: 0=off/1=on
 
     local curst newst devn
 
@@ -154,7 +154,7 @@ device_switch () { # switch radio type state
     get_devc $1
 
     # quit if no device
-    if [ -z "$devc" ]; then
+    if [ -z "$_devc" ]; then
         echo_debug "rf" "device_switch($1, $2).no_device: rc=1"
         return 1
     fi
@@ -167,15 +167,15 @@ device_switch () { # switch radio type state
 
     # get current device state
     get_devs $1
-    curst=$devs
+    curst=$_devs
 
     # quit if device state is hard blocked or invalid
-    if [ $devs -ge 2 ]; then
-        case $devs in
-            2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$devs" ;;
-            *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$devs" ;;
+    if [ $_devs -ge 2 ]; then
+        case $_devs in
+            2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$_devs" ;;
+            *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$_devs" ;;
         esac
-        return $devs
+        return $_devs
     fi
 
     # determine desired device state
@@ -194,15 +194,15 @@ device_switch () { # switch radio type state
         # record device state after nmcli
         get_devs $1
         # update current state
-        curst=$devs
+        curst=$_devs
 
         # quit if device state is hard blocked or invalid
-        if [ $devs -ge 2 ]; then
-            case $devs in
-                2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$devs" ;;
-                *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$devs" ;;
+        if [ $_devs -ge 2 ]; then
+            case $_devs in
+                2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$_devs" ;;
+                *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$_devs" ;;
             esac
-            return $devs
+            return $_devs
         fi
     fi
 
@@ -220,14 +220,14 @@ device_switch () { # switch radio type state
 
         # determine value for direct write
         case $newst in
-            1) devn=$devon  ;;
-            0) devn=$devoff ;;
+            1) devn=$_devon  ;;
+            0) devn=$_devoff ;;
         esac
 
         # switch device state when either rfkill isn't disabled
         # or it's a bluetooth device
         if [ "$X_USE_RFKILL" != "0" ] || [ "$1" != "bluetooth" ]; then
-            if [ "$rfkdev" = "1" ] && cmd_exists $RFKILL ; then
+            if [ "$_rfkdev" = "1" ] && cmd_exists $RFKILL ; then
                 if test_rfkill_perms ; then
                     # use rfkill
                     echo_debug "rf" "device_switch($1, $2).rfkill"
@@ -246,7 +246,7 @@ device_switch () { # switch radio type state
                 # use direct write
                 if test_root ; then
                     echo_debug "rf" "device_switch($1, $2).devc"
-                    { printf '%s' $devn > $devc; } 2> /dev/null
+                    { printf '%s' $devn > $_devc=; } 2> /dev/null
                     # record device state after direct write
                     get_devs $1
                 else
@@ -267,16 +267,16 @@ device_switch () { # switch radio type state
     fi
 
     # quit if device state is hard blocked or invalid
-    if [ $devs -ge 2 ]; then
-        case $devs in
-            2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$devs" ;;
-            *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$devs" ;;
+    if [ $_devs -ge 2 ]; then
+        case $_devs in
+            2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$_devs" ;;
+            *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$_devs" ;;
         esac
-        return $devs
+        return $_devs
     fi
 
     # compare old and new device state
-    if [ "$curst" = "$devs" ]; then
+    if [ "$curst" = "$_devs" ]; then
         # state did not change
         echo_debug "rf" "device_switch($1, $2).no_change: rc=4"
         return 4
@@ -342,7 +342,7 @@ save_device_states () { # save radio states -- $1: list of rftypes
     # iterate over all possible devices -> save state in file
     for dev in $devlist; do
         device_state $dev
-        { printf '%s\n' "$dev $devs" >> $RFSTATEFILE; } 2> /dev/null
+        { printf '%s\n' "$dev $_devs" >> $RFSTATEFILE; } 2> /dev/null
     done
 
     return 0

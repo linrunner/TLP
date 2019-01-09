@@ -189,20 +189,20 @@ set_sound_power_mode () { # set sound chip power modes
 
 # --- LAN Devices
 
-get_eth_ifaces () { # get all eth devices -- retval: $ethifaces
+get_ethifaces () { # get all eth devices -- retval: $_ethifaces
     local ei eic
-    ethifaces=""
+    _ethifaces=""
 
     for eic in $NETD/*/device/class; do
         if [ "$(cat "$eic" 2> /dev/null)" = "0x020000" ] \
             && [ ! -d "${eic%/class}/ieee80211" ]; then
 
             ei=${eic%/device/class}; ei=${ei##*/}
-            ethifaces="$ethifaces $ei"
+            _ethifaces="$_ethifaces $ei"
         fi
     done
 
-    ethifaces="${ethifaces# }"
+    _ethifaces="${_ethifaces# }"
     return 0
 }
 
@@ -214,7 +214,7 @@ disable_wake_on_lan () {  # disable WOL
     if [ "$WOL_DISABLE" = "Y" ]; then
         get_eth_ifaces
 
-        for ei in $ethifaces; do
+        for ei in $_ethifaces; do
             echo_debug "pm" "disable_wake_on_lan: $ei"
             $ETHTOOL -s "$ei" wol d > /dev/null 2>&1
         done

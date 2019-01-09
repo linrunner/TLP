@@ -25,22 +25,22 @@ case $self in
         case $carg1 in
             on)
                 device_switch $self on
-                echo_device_state $self $devs
+                echo_device_state $self $_devs
                 ;;
 
             off)
                 device_switch $self off
-                echo_device_state $self $devs
+                echo_device_state $self $_devs
                 ;;
 
             toggle)
                 device_switch $self toggle
-                echo_device_state $self $devs
+                echo_device_state $self $_devs
                 ;;
 
             *)
                 device_state $self
-                echo_device_state $self $devs
+                echo_device_state $self $_devs
                 ;;
         esac
         ;;

@@ -350,9 +350,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     done
 
-    check_intel_pstate
-
-    if [ $intel_pstate -eq 1 ]; then
+    if check_intel_pstate; then
         # show Intel P-state info
         printparm "%-54s = ##%3d## [%%]" $CPU_MIN_PERF_PCT
         printparm "%-54s = ##%3d## [%%]" $CPU_MAX_PERF_PCT
@@ -617,7 +615,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
     for i in bluetooth wifi wwan; do
         get_devc $i
         get_devs $i
-        echo_device_state $i $devs
+        echo_device_state $i $_devs
     done
     echo
 
@@ -631,7 +629,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
             # get bluetooth driver
             get_bluetooth_driver $iface
-            printf "%-30s: bluetooth, " "$iface($_bluetoothdrv)"
+            printf "%-30s: bluetooth, " "$iface($_btdrv)"
             if bluetooth_in_use $iface; then
                 echo "connected"
             else

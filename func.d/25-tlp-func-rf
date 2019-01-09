@@ -179,13 +179,13 @@ get_bluetooth_ifaces () { # get all bluetooth interfaces -- retval: $_bifaces
     return 0
 }
 
-get_bluetooth_driver () { # get driver associated with interface -- $1: iface; retval: $_bluetoothdrv
+get_bluetooth_driver () { # get driver associated with interface -- $1: iface; retval: $_btdrv
     local drvl
 
-    _bluetoothdrv=""
+    _btdrv=""
     if [ -d $BLUETOOTHD/$1 ]; then
         drvl=$(readlink $BLUETOOTHD/$1/device/driver)
-        [ -n "$drvl" ] && _bluetoothdrv=${drvl##*/}
+        [ -n "$drvl" ] && _btdrv=${drvl##*/}
     fi
 
     return 0
