@@ -566,22 +566,6 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     [ $cnt -gt 0 ] && echo
 fi # show_disk
 
-if [ "$show_all" = "1" ]; then
-    # --- show pcie aspm state
-    echo "+++ PCIe Active State Power Management"
-    if [ -f $ASPM ]; then
-        pol=$(cat $ASPM 2> /dev/null | sed -r 's/.*\[(.*)\].*/\1/')
-        if { printf '%s' "$pol" > $ASPM; } 2> /dev/null; then
-            echo "$ASPM = $pol"
-        else
-            echo "$ASPM = $pol (using bios preferences)"
-        fi
-    else
-        echo "$ASPM = (not available)"
-    fi
-    echo
-fi # show_all
-
 if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show Intel GPU power mgmt and frequencies
     show_intel_gpu_data
@@ -714,6 +698,20 @@ if [ "$show_all" = "1" ]; then
 fi # show_all
 
 if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
+    # --- show pcie aspm state
+    echo "+++ PCIe Active State Power Management"
+    if [ -f $ASPM ]; then
+        pol=$(cat $ASPM 2> /dev/null | sed -r 's/.*\[(.*)\].*/\1/')
+        if { printf '%s' "$pol" > $ASPM; } 2> /dev/null; then
+            echo "$ASPM = $pol"
+        else
+            echo "$ASPM = $pol (using bios preferences)"
+        fi
+    else
+        echo "$ASPM = (not available)"
+    fi
+    echo
+
     # -- show runtime pm
     echo "+++ Runtime Power Management"
     echo "Device blacklist = ${RUNTIME_PM_BLACKLIST:=(not configured)}"
@@ -729,7 +727,6 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
         echo "Error: missing subcommand $TLPPCI." 1>&2
     fi
     echo
-
 fi # show_pcie
 
 if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
