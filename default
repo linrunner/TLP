@@ -198,9 +198,9 @@ AHCI_RUNTIME_PM_TIMEOUT=15
 
 # Radeon graphics clock speed (profile method): low, mid, high, auto, default;
 # auto = mid on BAT, high on AC.
-# Default: <none>
-RADEON_POWER_PROFILE_ON_AC=high
-RADEON_POWER_PROFILE_ON_BAT=low
+# Default: default
+RADEON_POWER_PROFILE_ON_AC=default
+RADEON_POWER_PROFILE_ON_BAT=default
 
 # Radeon dynamic power management method (DPM): battery, performance.
 # Default: <none>

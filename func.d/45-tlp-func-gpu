@@ -22,6 +22,8 @@ readonly IGPU_FREQ_TABLE=i915_ring_freq_table
 
 readonly RADD=/sys/module/radeon
 
+readonly DEFAULT_RADEON_POWER_PROFILE_ON_AC=default
+readonly DEFAULT_RADEON_POWER_PROFILE_ON_BAT=default
 readonly DEFAULT_RADEON_DPM_PERF_LEVEL_ON_AC=auto
 readonly DEFAULT_RADEON_DPM_PERF_LEVEL_ON_BAT=auto
 
@@ -150,9 +152,9 @@ set_radeon_profile () { # set radeon power profile
         elif [ -f $card/power_method ] && [ -f $card/power_profile ]; then
             # Use old radeon power profile method
             if [ "$1" = "1" ]; then
-                pwr=${RADEON_POWER_PROFILE_ON_BAT:-}
+                pwr=${RADEON_POWER_PROFILE_ON_BAT:-${DEFAULT_RADEON_POWER_PROFILE_ON_BAT}}
             else
-                pwr=${RADEON_POWER_PROFILE_ON_AC:-}
+                pwr=${RADEON_POWER_PROFILE_ON_AC:-${DEFAULT_RADEON_POWER_PROFILE_ON_AC}}
             fi
 
             if [ -z "$pwr" ]; then
