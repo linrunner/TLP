@@ -218,7 +218,7 @@ get_disk_apm_level () { # get disk apm level -- $1: dev; rc: apm
     local apm
 
     apm=$($HDPARM -I /dev/$1 2>&1 | grep 'Advanced power management level' | \
-          cut -f2 -d: | grep -E "^ *[0-9]+ *$")
+          cut -f2 -d: | grep -E '^ *[0-9]+ *$')
     if [ -n "$apm" ]; then
         return $apm
     else

@@ -26,7 +26,7 @@ get_wifi_ifaces () { # get all wifi devices -- retval: $_wifaces
     _wifaces=""
 
     for wiu in $NETD/*/uevent; do
-        if grep -q -s "DEVTYPE=wlan" $wiu ; then
+        if grep -q -s 'DEVTYPE=wlan' $wiu ; then
             wi=${wiu%/uevent}; wi=${wi##*/}
             _wifaces="$_wifaces $wi"
         fi
@@ -137,7 +137,7 @@ get_wwan_ifaces () { # get all wwan devices -- retval: $_wanifaces
     _wanifaces=""
 
     for wiu in $NETD/*/uevent; do
-        if grep -q -s "DEVTYPE=wwan" $wiu ; then
+        if grep -q -s 'DEVTYPE=wwan' $wiu ; then
             wi=${wiu%/uevent}; wi=${wi##*/}
             _wanifaces="$_wanifaces $wi"
         fi
@@ -198,7 +198,7 @@ bluetooth_in_use () { # check if bluetooth interface is in use -- $1: iface
     # subdevices like <iface>:<number> where the uevent file contains a line
     # "DEVTYPE=link"
     for uev in $BLUETOOTHD/$1/$1:*/uevent; do
-        grep -qs "DEVTYPE=link" $uev && return 0
+        grep -q -s 'DEVTYPE=link' $uev && return 0
     done
 
     return 1
