@@ -444,17 +444,17 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         for sens in $(glob_files '/temp?*_input' $CORETEMP_DIRS); do
             if grep -q -- 'Physical' ${sens%input}label 2>/dev/null; then
                 # package info is available -> ignore remaining sensors
-                read -r cmax < $sens
+                cmax=$(isinteger "$(cat $sens 2> /dev/null)")
                 break
             else
                 # core info -> find max value
-                read -r ctemp < $sens && [ $ctemp -gt $cmax ] && cmax=$ctemp
+                ctemp=$(isinteger "$(cat $sens 2> /dev/null)")
+                [ $ctemp -gt $cmax ] && cmax=$ctemp
             fi
         done
         if [ $cmax -gt 0 ]; then
             perl -e 'printf ("CPU temp               = %5d [°C]\n", '$cmax' / 1000.0);'
         fi
-
     fi
 
     # --- show fan speed
@@ -465,7 +465,8 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         # use hwmon
         have_any_fan=
         for fan in $(glob_files '/fan?*_input' $HWMONFAN_DIRS); do
-            if read -r fan_speed < $fan; then
+            if fan_speed=$(cat $fan 2> /dev/null); then
+                fan_speed=$(isinteger $fan_speed)
                 fan_name="${fan##*/}"; fan_name="${fan_name%_input}"
                 have_any_fan=y
 
