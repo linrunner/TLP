@@ -19,6 +19,7 @@ readonly DEFAULT_DISK_IDLE_SECS_ON_AC=0
 readonly DEFAULT_DISK_IDLE_SECS_ON_BAT=2
 readonly DEFAULT_DISK_IOSCHED="keep"
 readonly DEFAULT_MAX_LOST_WORK_SECS=15
+readonly DEFAULT_AHCI_RUNTIME_PM_TIMEOUT="15"
 
 readonly DISK_NOP_WORDS="_ keep"
 
@@ -317,9 +318,9 @@ set_ahci_runtime_pm () { # set ahci runtime power management
         control=${AHCI_RUNTIME_PM_ON_AC:-}
     fi
 
-    # calc timeout in millisecs, default to 15000
-    timeout=$((${AHCI_RUNTIME_PM_TIMEOUT:-15} * 1000))
-    [ "$timeout" != "0" ] || timeout=15000
+    # calc timeout in millisecs
+    timeout="${AHCI_RUNTIME_PM_TIMEOUT-${DEFAULT_AHCI_RUNTIME_PM_TIMEOUT}}"
+    [ -z "$timeout" ] || timeout=$((timeout * 15000))
 
     # check values
     case "$control" in
@@ -340,6 +341,12 @@ set_ahci_runtime_pm () { # set ahci runtime power management
             echo_debug "pm" "set_ahci_runtime_pm($1).$control: host=$device"
         fi
     done
+
+    # when timeout is unconfigured we're done here
+    if [ -z "$timeout" ]; then
+        echo_debug "pm" "set_ahci_runtime_pm($1).timeout_not_configured"
+        return 0
+    fi
 
     # iterate block devices
     for device in $BLOCKD; do

@@ -6,7 +6,8 @@
 # - Some parameters are disabled, remove the leading '#' to enable # them;
 #   shown values are suggestions not defaults
 # - Default *: intrinsic default that is effective when the parameter is missing
-#   or disabled by a leading #; use PARAM="" to disable an intrinsic default
+#   or disabled by a leading '#'; use PARAM="" to disable intrinsic defaults for
+#   parameters with text string values
 # - Default <none>: do nothing or use kernel/hardware defaults
 
 # Set to 0 to disable, 1 to enable TLP.
@@ -224,7 +225,7 @@ WOL_DISABLE=Y
 
 # Enable audio power saving for Intel HDA, AC97 devices (timeout in secs).
 # A value of 0 disables, >=1 enables power saving (recommended: 1).
-# Default: none
+# Default: <none>
 SOUND_POWER_SAVE_ON_AC=0
 SOUND_POWER_SAVE_ON_BAT=1
 
@@ -258,7 +259,8 @@ RUNTIME_PM_ON_BAT=auto
 # Default when unconfigured is "amdgpu nouveau nvidia radeon" which
 # prevents accidential power-on of dGPU in hybrid graphics setups.
 # Separate multiple drivers with spaces.
-# Default: "amdgpu mei_me nouveau nvidia pcieport radeon", use "" to disable completely.
+# Default: "amdgpu mei_me nouveau nvidia pcieport radeon", use "" to disable
+# completely.
 #RUNTIME_PM_DRIVER_BLACKLIST="amdgpu mei_me nouveau nvidia pcieport radeon"
 
 # Set to 0 to disable, 1 to enable USB autosuspend feature.

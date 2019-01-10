@@ -101,10 +101,14 @@ poweroff_drivebay () { # power off optical drive in drive bay
         [ "$2" = "1" ] && echo "No drive in bay (or power already off)."
     else
         # Check for optical drive
-        optdrv=/dev/${BAY_DEVICE:-${DEFAULT_BAY_DEVICE}}
-        if [ ! -b "$optdrv" ]; then
-            echo_debug "pm" "poweroff_drivebay($1).no_opt_drive: $optdrv"
-            [ "$2" = "1" ] && echo "No optical drive in bay ($optdrv)."
+        optdrv=${BAY_DEVICE-${DEFAULT_BAY_DEVICE}}
+        if [ -z "$optdrv" ]; then
+            echo_debug "pm" "poweroff_drivebay($1).opt_drive_not_configured"
+            [ "$2" = "1" ] && echo "Error: no optical drive configured (BAY_DEVICE=\"\")." 1>&2
+            return 1
+        elif [ ! -b "/dev/$optdrv" ]; then
+            echo_debug "pm" "poweroff_drivebay($1).no_opt_drive: /dev/$optdrv"
+            [ "$2" = "1" ] && echo "No optical drive in bay (/dev/$optdrv)."
             return 0
         else
             echo_debug "pm" "poweroff_drivebay($1): optdrv=$optdrv"
