@@ -269,23 +269,26 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
     # translate disk name
     get_disk_dev $1
 
-    # check if block device and hdparm capable
-    [ -b /dev/$_disk_dev ] || return 0
+    # check if block device
+    if [ ! -b /dev/$_disk_dev ]; then
+        # no block device for disk name --> we're done
+        printf     "\n%s: not present.\n" /dev/$_disk_dev
+        return 1
+    fi
 
     # --- show general data
     if check_disk_nvme $_disk_dev; then
         # NVMe disk
-        printf     "%s:\n" /dev/$_disk_dev
+        printf     "\n%s:\n" /dev/$_disk_dev
         printf     "  Type      = NVMe\n"
         [ -n "$_disk_id" ] && printf "  Disk ID   = %s\n" $_disk_id
         print_sysf "  Model     = %s\n" /sys/block/$_disk_dev/device/model
         print_sysf "  Firmware  = %s\n" /sys/block/$_disk_dev/device/firmware_rev
 
         # TODO: more features ...
-
     elif check_disk_hdparm_cap $_disk_dev; then
         # SATA disk
-        printf     "%s:\n" /dev/$_disk_dev
+        printf     "\n%s:\n" /dev/$_disk_dev
         [ -n "$_disk_id" ] && printf "  Disk ID   = %s\n" $_disk_id
         printf     "  Type      = (S)ATA\n"
 
@@ -315,8 +318,10 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
 
         # restore standby state
         [ "$_disk_state" = "standby" ] && spindown_disk $_disk_dev
-
-    fi # SATA
+    else
+        printf     "\n%s: unknown type.\n" /dev/$_disk_dev
+        return 1
+    fi
 
     if [ -f /sys/block/$_disk_dev/queue/scheduler ]; then
         local iosched="$(sed -r 's/.*\[(.+)\].*/\1/' /sys/block/$_disk_dev/queue/scheduler 2> /dev/null)"

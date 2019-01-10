@@ -496,12 +496,23 @@ if [ "$show_all" = "1" ]; then
 fi # show_all
 
 if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
-    # --- show disk info form hdparm
+    # --- show storage device info
     echo "+++ Storage Devices"
-    : ${DISK_DEVICES:=${DEFAULT_DISK_DEVICES}}
-    for dev in $DISK_DEVICES; do # iterate all devices
-        show_disk_data $dev
-    done
+    # list for storage device iteration: use default when undefined
+    disklist="${DISK_DEVICES-${DEFAULT_DISK_DEVICES}}"
+    # list for output: add "(default)" when unset, "(disabled)" when empty
+    diskstat="${DISK_DEVICES-${DEFAULT_DISK_DEVICES} (default)}"
+    diskstat="${diskstat:-(disabled)}"
+    printf "Devices = %s\n" "$diskstat"
+
+    # iterate over list
+    if [ -n "$disklist" ]; then
+        # add "(default)" when unset, "(disabled)" when empty
+        cnt=0
+        for dev in $disklist; do # iterate all devices
+            show_disk_data $dev && cnt=$((cnt+1))
+        done
+    fi
     echo
 
     # --- show sata alpm mode

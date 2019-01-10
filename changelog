@@ -1,4 +1,4 @@
-+++ 1.2 --- 07.01.2019 +++
++++ 1.2 --- 10.01.2019 +++
 
 *** Development version ***
 
@@ -28,6 +28,7 @@
       - Support ThinkPad 25, *80 (Coffee Lake) and all newer models
     tlp-stat:
       - Check systemd-rfkill.socket masked status
+      - Disks: show all configured devices (consider default)
       - Intel GPU: show frequency limits and available frequencies
       - Rename "Suggestions" section to "Recommendations"
       - Remove invocation via 'tlp stat'
