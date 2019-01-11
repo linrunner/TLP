@@ -51,7 +51,7 @@ get_wifi_driver () { # get driver associated with interface
 
 wireless_in_use () { # check if wifi or wwan device is in use -- $1: iface
     if [ -f $NETD/$1/carrier ]; then
-        if [ "$(cat $NETD/$1/carrier 2>/dev/null)" = "1" ]; then
+        if [ "$(read_sysf $NETD/$1/carrier)" = "1" ]; then
             return 0
         fi
     fi

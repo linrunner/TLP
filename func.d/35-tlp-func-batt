@@ -78,13 +78,13 @@ check_battery_features () { # determine which battery feature APIs/tools are
     # --- 1. check for native kernel ACPI (Linux 4.17 or higher required)
     local ps
     for ps in $ACPIBATDIR/*; do
-        if [ "$(cat $ps/present 2> /dev/null)" = "1" ]; then
+        if [ "$(read_sysf $ps/present)" = "1" ]; then
             # battery detected
             if [ -f $ps/charge_start_threshold ]; then
                 # kernel with native acpi support detected
                 _natacpi=253
 
-                if [ -n "$(cat $ps/charge_start_threshold 2> /dev/null)" ]; then
+                if readable_sysf $ps/charge_start_threshold; then
                     # charge_start_threshold exists and is actually readable
                     if [ "${NATACPI_ENABLE:-${DEFAULT_NATACPI_ENABLE}}" = "1" ]; then
                         _natacpi=1
@@ -93,7 +93,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
                         _natacpi=32
                     fi
                 fi
-                if [ $_natacpi != 32 ] && [ -n "$(cat $ps/force_discharge 2> /dev/null)" ]; then
+                if [ $_natacpi != 32 ] && readable_sysf $ps/force_discharge; then
                     # force_discharge exists and is actually readable
                     _natacpi=0
                     _bm_dischg="natacpi"
@@ -236,8 +236,8 @@ battery_present () { # check battery presence and return tpacpi-bat index
                 bsd="$ACPIBATDIR/$bs"
 
                 # check acpi name space
-                if [ "$(cat $bsd/present 2> /dev/null)" = "1" ] \
-                   && [ "$(cat $bsd/type 2> /dev/null)" = "Battery" ]; then
+                if [ "$(read_sysf $bsd/present)" = "1" ] \
+                   && [ "$(read_sysf $bsd/type)" = "Battery" ]; then
                     rc=0 # battery detected
                     # determine tpacpi-bat index
                     case $bs in
@@ -268,7 +268,7 @@ battery_present () { # check battery presence and return tpacpi-bat index
                 bsd="$SMAPIBATDIR/$bs"
 
                 # check tp-smapi name space
-                if [ "$(cat $bsd/installed 2> /dev/null)" = "1" ]; then
+                if [ "$(read_sysf $bsd/installed)" = "1" ]; then
                     rc=0 # battery detected
                     case $bs in
                         BAT0) _bat_str="$bs"; _bd_read="$bsd" ; _bat_idx=1 ;;
@@ -321,17 +321,8 @@ get_threshold () { # read and echo charge threshold
                 start) bsys=$_bf_start ;;
                 stop)  bsys=$_bf_stop ;;
             esac
-            if [ -f "$bsys" ]; then
-                # get effective threshold
-                rc=$(cat $bsys 2> /dev/null)
-                if [ -z "$rc" ]; then
-                    # can't determine effective threshold
-                    rc=255
-                fi
-            else
-                # sysfile non-existent, probably invalid bat argument
-                rc=255
-            fi
+            # get effective threshold, 255 if not readable/non-existent
+            rc=$(read_sysf $bsys "255")
             ;; # natacpi, tpsmapi
 
         tpacpi) # use tpacpi-bat
@@ -444,8 +435,8 @@ set_thresholds () { # write both charge thresholds for a battery,
             case $_bm_thresh in
                 natacpi|tpsmapi)
                     case $step in
-                        start) { printf '%s\n' $new_thresh > $_bf_start; } 2> /dev/null ;;
-                        stop)  { printf '%s\n' $new_thresh > $_bf_stop;  } 2> /dev/null ;;
+                        start) write_sysf "$new_thresh" $_bf_start ;;
+                        stop)  write_sysf "$new_thresh" $_bf_stop  ;;
                     esac
                     steprc=$?; [ $rc -eq 0 ] && rc=$steprc
                     ;; # natacpi, tpsmapi
@@ -705,8 +696,8 @@ chargeonce_battery () { # charge battery to upper threshold once
     case $_bm_read in
         natacpi|tpacpi) # use ACPI sysfiles
             if [ -f $_bd_read/energy_full ]; then
-                get_sysval $_bd_read/energy_full; efull=$?
-                get_sysval $_bd_read/energy_now; enow=$?
+                read_sysval $_bd_read/energy_full; efull=$?
+                read_sysval $_bd_read/energy_now; enow=$?
             fi
 
             if [ $efull -ne 0 ]; then
@@ -717,7 +708,7 @@ chargeonce_battery () { # charge battery to upper threshold once
             ;; # natacpi, tpacpi
 
         tpsmapi) # use tp-smapi sysfiles
-            get_sysval $_bd_read/remaining_percent; ccharge=$?
+            read_sysval $_bd_read/remaining_percent; ccharge=$?
             ;; # tpsmapi
 
         *) # invalid read method
@@ -761,13 +752,8 @@ get_force_discharge () { # $1: BAT0/BAT1,
 
     case $_bm_dischg in
         natacpi|tpsmapi)
-            if [ -f "$_bf_dischg" ]; then
-                # read sysfile
-                rc=$(cat $_bf_dischg 2> /dev/null)
-            else
-                # sysfile non-existent
-                rc=2
-            fi
+            # read sysfile, 2 if non-existent
+            rc=$(read_sysf $_bf_dischg 2)
             ;; # natacpi, tpsmapi
 
         tpacpi) # read via tpacpi-bat
@@ -798,7 +784,7 @@ set_force_discharge () { # write force discharge state
         natacpi|tpsmapi)
             if [ -f "$_bf_dischg" ]; then
                 # write force_discharge
-                { printf '%s\n' "$2" > $_bf_dischg; } 2> /dev/null; rc=$?
+                write_sysf "$2" $_bf_dischg; rc=$?
             else
                 # sysfile non-existent, possibly invalid bat argument
                 rc=2
@@ -851,7 +837,7 @@ battery_discharging () { # check if battery is discharging -- $1: BAT0/BAT1,
 
     # get battery state
     if [ -f "$bsys" ]; then
-        case "$(cat $bsys 2> /dev/null)" in
+        case "$(read_sysf $bsys)" in
             [Dd]ischarging) rc=0 ;;
             *) rc=1 ;;
         esac
@@ -917,35 +903,35 @@ discharge_battery () { # discharge battery
             # show current battery state
             case $_bm_read in
                 natacpi|tpacpi) # use ACPI sysfiles
-                    perl -e 'printf ("voltage            = %6d [mV]\n", '"$(cat_sysfd $_bd_read/voltage_now 0 2> /dev/null)"' / 1000.0);'
+                    perl -e 'printf ("voltage            = %6d [mV]\n", '"$(read_sysval $_bd_read/voltage_now)"' / 1000.0);'
 
-                    en=$(cat_sysfd $_bd_read/energy_now 0 2> /dev/null)
+                    en=$(read_sysval $_bd_read/energy_now)
                     perl -e 'printf ("remaining capacity = %6d [mWh]\n", '$en' / 1000.0);'
 
-                    ef=$(cat_sysfd $_bd_read/energy_full 0 2> /dev/null)
+                    ef=$(read_sysval $_bd_read/energy_full)
                     if [ "$ef" != "0" ]; then
                         perl -e 'printf ("remaining percent  = %6d [%%]\n", 100.0 * '$en' / '$ef' );'
                     else
                         printf "remaining percent  = not available [%%]\n"
                     fi
 
-                    pn=$(cat_sysfd $_bd_read/power_now 0 2> /dev/null)
+                    pn=$(read_sysval $_bd_read/power_now)
                     if [ "$pn" != "0" ]; then
                         perl -e 'printf ("remaining time     = %6d [min]\n", 60.0 * '$en' / '$pn');'
                         perl -e 'printf ("power              = %6d [mW]\n", '$pn' / 1000.0);'
                     else
                         printf "remaining time     = not discharging [min]\n"
                     fi
-                    printf "state              = %s\n"  "$(cat $_bd_read/status 2> /dev/null)"
+                    printf "state              = %s\n"  "$(read_sysf $_bd_read/status)"
                     ;; # natacpi, tpsmapi
 
                 tpsmapi) # use tp-smapi sysfiles
-                    printf "voltage            = %6s [mV]\n"  "$(cat $_bd_read/voltage 2> /dev/null)"
-                    printf "remaining capacity = %6s [mWh]\n" "$(cat $_bd_read/remaining_capacity 2> /dev/null)"
-                    printf "remaining percent  = %6s [%%]\n"  "$(cat $_bd_read/remaining_percent 2> /dev/null)"
-                    printf "remaining time     = %6s [min]\n" "$(cat $_bd_read/remaining_running_time_now 2> /dev/null)"
-                    printf "power              = %6s [mW]\n"  "$(cat $_bd_read/power_avg 2> /dev/null)"
-                    printf "state              = %s\n"  "$(cat $_bd_read/state 2> /dev/null)"
+                    printf "voltage            = %6s [mV]\n"  "$(read_sysf $_bd_read/voltage)"
+                    printf "remaining capacity = %6s [mWh]\n" "$(read_sysf $_bd_read/remaining_capacity)"
+                    printf "remaining percent  = %6s [%%]\n"  "$(read_sysf $_bd_read/remaining_percent)"
+                    printf "remaining time     = %6s [min]\n" "$(read_sysf $_bd_read/remaining_running_time_now)"
+                    printf "power              = %6s [mW]\n"  "$(read_sysf $_bd_read/power_avg)"
+                    printf "state              = %s\n"  "$(read_sysf $_bd_read/state)"
                     ;; # tpsmapi
 
             esac

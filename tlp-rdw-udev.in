@@ -28,10 +28,10 @@ devtype=$2
 case $devtype in
     dock)
         # check if type is "dock_station", exit if not
-        type=$(cat $ddev/type 2> /dev/null)
+        type=$(read_sysf $ddev/type)
         [ "$type" = "dock_station" ] || exit 0
 
-        docked=$(cat $ddev/docked 2> /dev/null)
+        docked=$(read_sysf $ddev/docked)
         action=$EVENT
 
         echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev type=$type docked=$docked syspwr=$_syspwr"

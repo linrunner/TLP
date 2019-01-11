@@ -112,8 +112,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
             return 0
         else
             echo_debug "pm" "poweroff_drivebay($1): optdrv=$optdrv"
-
-            echo -n "Powering off drive bay..."
+            [ "$2" = "1" ] && echo -n "Powering off drive bay..."
 
             # Unmount media
             umount -l $optdrv > /dev/null 2>&1
@@ -131,8 +130,8 @@ poweroff_drivebay () { # power off optical drive in drive bay
                 syspath="/sys${syspath%/block/*}"
 
                 if [ "$syspath" != "/sys" ]; then
-                    echo_debug "pm" "poweroff_drivebay($1): syspath=$syspath"
-                    { printf '%s\n' "1" > $syspath/delete; } 2> /dev/null
+                    write_sysf "1" $syspath/delete
+                    echo_debug "pm" "poweroff_drivebay($1): syspath=$syspath; rc=$?"
                 else
                     echo_debug "pm" "poweroff_drivebay($1): got empty/invalid syspath for $optdrv"
                 fi
@@ -141,9 +140,9 @@ poweroff_drivebay () { # power off optical drive in drive bay
             fi
 
             # Turn power off
-            { printf '%s\n' "1" > $dock/undock; } 2> /dev/null
+            write_sysf "1" $dock/undock
+            echo_debug "pm" "poweroff_drivebay($1).bay_powered_off: rc=$?"
             [ "$2" = "1" ] && echo "done."
-            echo_debug "pm" "poweroff_drivebay($1).bay_powered_off"
         fi
     fi
 
@@ -160,13 +159,12 @@ suspend_drivebay () { # Save power state of drive bay before suspend
 
         if [ -n "$dock" ]; then
             create_rundir
-
             if ! check_is_docked; then
-                { printf '%s\n' "off" > $BAYSTATEFILE; } 2> /dev/null
-                echo_debug "pm" "suspend_drivebay($1): bay=off"
+                write_sysf "off" $BAYSTATEFILE
+                echo_debug "pm" "suspend_drivebay($1): bay=off; rc=$?"
             else
-                { printf '%s\n' "on" > $BAYSTATEFILE; } 2> /dev/null
-                echo_debug "pm" "suspend_drivebay($1): bay=on"
+                write_sysf "on" $BAYSTATEFILE
+                echo_debug "pm" "suspend_drivebay($1): bay=on; rc=$?"
             fi
         fi
     else
@@ -181,7 +179,7 @@ resume_drivebay () { #
     # $1: 0=ac mode, 1=battery mode
     local cnt rc
 
-    if [ "$(cat $BAYSTATEFILE 2> /dev/null)" = "off" ]; then
+    if [ "$(read_sysf $BAYSTATEFILE)" = "off" ]; then
         # saved state = off
         get_drivebay_device
 

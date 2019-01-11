@@ -72,7 +72,7 @@ set_runtime_pm () { # set runtime power management
             if [ -f $device/power/control ]; then
                 # get short device address, class
                 address=${device##/*/0000:}
-                class=$(cat $device/class 2> /dev/null)
+                class=$(read_sysf $device/class)
 
                 if wordinlist "$address" "$pci_bl"; then
                     # device is in address blacklist
@@ -85,7 +85,7 @@ set_runtime_pm () { # set runtime power management
                     if wordinlist "nouveau" "$drv_bl" || wordinlist "nvidia" "$drv_bl"; then
                         # driver nouveau or nvidia is in blacklist
                         # --> blacklist depending on vendor and class
-                        vendor=$(cat $device/vendor 2> /dev/null)
+                        vendor=$(read_sysf $device/vendor)
 
                         if [ "$vendor" = "0x10de" ]; then
                             # vendor nvidia
@@ -98,7 +98,7 @@ set_runtime_pm () { # set runtime power management
                     fi # if nouveau | nvidia blacklisted
 
                     case $control in
-                        auto|on) { printf '%s\n' $control > $device/power/control; } 2> /dev/null ;;
+                        auto|on) write_sysf $control $device/power/control ;;
                         *) ;; # do nothing
                     esac
                 fi #
@@ -129,7 +129,7 @@ set_pcie_aspm () { # set pcie active state power management
     fi
 
     if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
-        if { printf '%s\n' "$pwr" > /sys/module/pcie_aspm/parameters/policy; } 2> /dev/null; then
+        if write_sysf "$pwr" /sys/module/pcie_aspm/parameters/policy; then
             echo_debug "pm" "set_pcie_aspm($1): $pwr"
         else
             echo_debug "pm" "set_pcie_aspm($1).disabled_by_kernel"
@@ -169,19 +169,19 @@ set_sound_power_mode () { # set sound chip power modes
     check_sysfs "set_sound_power_mode" "/sys/module"
 
     if [ -d /sys/module/snd_hda_intel ]; then
-        echo_debug "pm" "set_sound_power_mode($1).hda: $pwr controller=$cpwr"
-        { printf '%s\n' "$pwr" > /sys/module/snd_hda_intel/parameters/power_save; } 2> /dev/null
+        write_sysf "$pwr" /sys/module/snd_hda_intel/parameters/power_save
+        echo_debug "pm" "set_sound_power_mode($1).hda: $pwr controller=$cpwr; rc=$?"
 
         if [ "$pwr" = "0" ]; then
-            { printf '%s\n' "N" >  /sys/module/snd_hda_intel/parameters/power_save_controller; } 2> /dev/null
+            write_sysf "N" /sys/module/snd_hda_intel/parameters/power_save_controller
         else
-            { printf '%s\n' "$cpwr" > /sys/module/snd_hda_intel/parameters/power_save_controller; } 2> /dev/null
+            write_sysf "$cpwr" /sys/module/snd_hda_intel/parameters/power_save_controller
         fi
     fi
 
     if [ -d /sys/module/snd_ac97_codec ]; then
-        echo_debug "pm" "set_sound_power_mode($1).ac97: $pwr"
-        { printf '%s\n' "$pwr"  > /sys/module/snd_ac97_codec/parameters/power_save; } 2> /dev/null
+        write_sysf"$pwr" /sys/module/snd_ac97_codec/parameters/power_save
+        echo_debug "pm" "set_sound_power_mode($1).ac97: $pwr; rc=$?"
     fi
 
     return 0
@@ -194,7 +194,7 @@ get_ethifaces () { # get all eth devices -- retval: $_ethifaces
     _ethifaces=""
 
     for eic in $NETD/*/device/class; do
-        if [ "$(cat "$eic" 2> /dev/null)" = "0x020000" ] \
+        if [ "$(read_sysf "$eic")" = "0x020000" ] \
             && [ ! -d "${eic%/class}/ieee80211" ]; then
 
             ei=${eic%/device/class}; ei=${ei##*/}

@@ -324,16 +324,16 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
             printparm "%s = ##%s##" $cpuf/scaling_available_governors _
 
             if [ -f $cpuf/scaling_min_freq ]; then
-                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(cat $cpuf/scaling_min_freq 2> /dev/null)"
+                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(read_sysf $cpuf/scaling_min_freq)"
             fi
 
             if [ -f $cpuf/scaling_max_freq ]; then
-                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(cat $cpuf/scaling_max_freq 2> /dev/null)"
+                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(read_sysf $cpuf/scaling_max_freq)"
             fi
 
             if [ -f $cpuf/scaling_available_frequencies ]; then
                 printf "%s = " "$cpuf/scaling_available_frequencies"
-                for freq in $(cat $cpuf/scaling_available_frequencies 2> /dev/null); do
+                for freq in $(read_sysf $cpuf/scaling_available_frequencies); do
                     printf "%s " "$freq"
                 done
                 printf "[kHz]\n"
@@ -363,7 +363,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         get_sysval $CPU_BOOST_ALL_CTRL; boost=$?
 
         # simple test for attribute "w" doesn't work, so actually write
-        if { printf '%s\n' "$boost" > $CPU_BOOST_ALL_CTRL; } 2> /dev/null; then
+        if write_sysf "$boost" $CPU_BOOST_ALL_CTRL; then
             printparm "%-54s = ##%d##" $CPU_BOOST_ALL_CTRL
         else
             printparm "%-54s = ##%d## (cpu not supported)" $CPU_BOOST_ALL_CTRL
@@ -437,18 +437,18 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Temperatures"
     if [ -f $IBMTHERMAL ]; then
         # use thinkpad-specific sysfile
-        echo "$IBMTHERMAL = $(cat $IBMTHERMAL 2> /dev/null | cut -f2  ) [°C]"
+        echo "$IBMTHERMAL = $(read_sysf $IBMTHERMAL | cut -f2  ) [°C]"
     else
         # use sensors
         cmax=0
         for sens in $(glob_files '/temp?*_input' $CORETEMP_DIRS); do
             if grep -q -- 'Physical' ${sens%input}label 2>/dev/null; then
                 # package info is available -> ignore remaining sensors
-                cmax=$(isinteger "$(cat $sens 2> /dev/null)")
+                cmax=$(read_sysval $sens)
                 break
             else
                 # core info -> find max value
-                ctemp=$(isinteger "$(cat $sens 2> /dev/null)")
+                ctemp=$(read_sysval $sens)
                 [ $ctemp -gt $cmax ] && cmax=$ctemp
             fi
         done
@@ -465,8 +465,7 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         # use hwmon
         have_any_fan=
         for fan in $(glob_files '/fan?*_input' $HWMONFAN_DIRS); do
-            if fan_speed=$(cat $fan 2> /dev/null); then
-                fan_speed=$(isinteger $fan_speed)
+            if fan_speed=$(read_sysval $fan); then
                 fan_name="${fan##*/}"; fan_name="${fan_name%_input}"
                 have_any_fan=y
 
@@ -713,8 +712,8 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show pcie aspm state
     echo "+++ PCIe Active State Power Management"
     if [ -f $ASPM ]; then
-        pol=$(cat $ASPM 2> /dev/null | sed -r 's/.*\[(.*)\].*/\1/')
-        if { printf '%s' "$pol" > $ASPM; } 2> /dev/null; then
+        pol=$(read_sysf $ASPM | sed -r 's/.*\[(.*)\].*/\1/')
+        if write_sysf "$pol" $ASPM; then
             echo "$ASPM = $pol"
         else
             echo "$ASPM = $pol (using bios preferences)"
@@ -853,7 +852,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 printparm "%-59s = ##%s##" $batd/manufacturer
                 printparm "%-59s = ##%s##" $batd/model_name
 
-                if cc=$(cat $batd/cycle_count 2> /dev/null) && [ -n "$cc" ] && [ $cc -gt 0 ]; then
+                if cc=$(read_sysval $batd/cycle_count) && [ $cc -gt 0 ]; then
                     printf "%-59s = %6d\n" "$batd/cycle_count" "$cc"
                 else
                     printf "%-59s = (not supported)\n" "$batd/cycle_count"
@@ -866,9 +865,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mW]" $batd/power_now "" 000
 
                     # store values for charge / capacity calculation below
-                    ed=$(cat_sysfd $batd/energy_full_design 0)
-                    ef=$(cat_sysfd $batd/energy_full 0)
-                    en=$(cat_sysfd $batd/energy_now 0)
+                    ed=$(read_sysval $batd/energy_full_design)
+                    ef=$(read_sysval $batd/energy_full)
+                    en=$(read_sysval $batd/energy_now)
                     efsum=$((efsum + ef))
                     ensum=$((ensum + en))
 
@@ -879,9 +878,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                     printparm "%-59s = ##%6d## [mA]" $batd/current_now "" 000
 
                     # store values for charge / capacity calculation below
-                    ed=$(cat_sysfd $batd/charge_full_design 0)
-                    ef=$(cat_sysfd $batd/charge_full 0)
-                    en=$(cat_sysfd $batd/charge_now 0)
+                    ed=$(read_sysval $batd/charge_full_design)
+                    ef=$(read_sysval $batd/charge_full)
+                    en=$(read_sysval $batd/charge_now)
                     efsum=$((efsum + ef))
                     ensum=$((ensum + en))
 
@@ -909,7 +908,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 printparm "%-59s = ##%6d##" $batd/cycle_count
 
                 if [ -f $batd/temperature ]; then
-                    perl -e 'printf ("%-59s = %6d [°C]\n", "'$batd/temperature'", '$(cat_sysfd $batd/temperature 0)' / 1000.0);'
+                    perl -e 'printf ("%-59s = %6d [°C]\n", "'$batd/temperature'", '$(read_sysval $batd/temperature)' / 1000.0);'
                 fi
 
                 printparm "%-59s = ##%6d## [mWh]" $batd/design_capacity
@@ -933,9 +932,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 fi
 
                 # store values for charge / capacity calculation below
-                ed=$(cat_sysfd $batd/design_capacity 0)
-                ef=$(cat_sysfd $batd/last_full_capacity 0)
-                en=$(cat_sysfd $batd/remaining_capacity 0)
+                ed=$(read_sysval $batd/design_capacity)
+                ef=$(read_sysval $batd/last_full_capacity)
+                en=$(read_sysval $batd/remaining_capacity)
                 efsum=$((efsum + ef))
                 ensum=$((ensum + en))
                 ;; # tp-smapi

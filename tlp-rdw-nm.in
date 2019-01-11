@@ -47,7 +47,7 @@ get_iface_type () { # get saved interface type -- $1: interface
     # retval: $itype
     local rc
 
-    itype=$(cat $RUNDIR/${1}.itype 2> /dev/null); rc=$?
+    itype=$(read_sysf $RUNDIR/${1}.itype); rc=$?
     rm -f $RUNDIR/${1}.itype
     return $rc
 }

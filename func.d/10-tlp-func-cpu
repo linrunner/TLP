@@ -41,7 +41,7 @@ set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mod
     if [ -n "$gov" ]; then
         echo_debug "pm" "set_scaling_governor($1): $gov"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-            [ -f $cpu ] && { printf '%s\n' "$gov" > $cpu; } 2> /dev/null
+            write_sysf "$gov" $cpu
         done
     else
         echo_debug "pm" "set_scaling_governor($1).not_configured"
@@ -65,7 +65,7 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
     if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
         echo_debug "pm" "set_scaling_min_max_freq($1).min: $minfreq"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
-            [ -f $cpu ] && { printf '%s\n' "$minfreq" > $cpu; } 2> /dev/null
+            write_sysf "$minfreq" $cpu
         done
         conf=1
     fi
@@ -73,7 +73,7 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
     if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
         echo_debug "pm" "set_scaling_min_max_freq($1).max: $maxfreq"
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
-            [ -f $cpu ] && { printf '%s\n' "$maxfreq" > $cpu; } 2> /dev/null
+            write_sysf "$maxfreq" $cpu
         done
         conf=1
     fi
@@ -101,10 +101,7 @@ set_cpu_hwp_pref () { # set HWP energy performance hints -- $1: 0=ac mode, 1=bat
 
     if [ -n "$hwpp" ]; then
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
-            if [ -f $cpu ]; then
-                { printf '%s\n' "$hwpp" > $cpu; } 2> /dev/null
-                avail=1
-            fi
+            write_sysf "$hwpp" $cpu && avail=1
         done
         if [ "$avail" = "1" ]; then
             echo_debug "pm" "set_cpu_hwp_pref($1): $hwpp"
@@ -139,8 +136,8 @@ set_cpu_perf_pct () { # set Intel P-state performance
     if [ ! -f $CPU_MIN_PERF_PCT ]; then
         echo_debug "pm" "set_cpu_perf_pct($1).min.not_supported"
     elif [ -n "$min" ]; then
-        { printf '%s\n' "$min" > $CPU_MIN_PERF_PCT; } 2> /dev/null
-        echo_debug "pm" "set_cpu_perf_pct($1).min: $min"
+        write_sysf "$min" $CPU_MIN_PERF_PCT
+        echo_debug "pm" "set_cpu_perf_pct($1).min: $min; rc=$?"
     else
         echo_debug "pm" "set_cpu_perf_pct($1).min.not_configured"
     fi
@@ -148,8 +145,8 @@ set_cpu_perf_pct () { # set Intel P-state performance
     if [ ! -f $CPU_MAX_PERF_PCT ]; then
         echo_debug "pm" "set_cpu_perf_pct($1).max.not_supported"
     elif [ -n "$max" ]; then
-        { printf '%s\n' "$max" > $CPU_MAX_PERF_PCT; } 2> /dev/null
-        echo_debug "pm" "set_cpu_perf_pct($1).max: $max"
+        write_sysf "$max" $CPU_MAX_PERF_PCT
+        echo_debug "pm" "set_cpu_perf_pct($1).max: $max; rc=$?"
     else
         echo_debug "pm" "set_cpu_perf_pct($1).max.not_configured"
     fi
@@ -167,7 +164,7 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
     #     (linux-2.6 tree), "Add support for disabling dynamic overclocking",
     #    => requires Linux 3.7 or later
 
-    local val ival
+    local val
 
     if [ "$1" = "1" ]; then
         val=${CPU_BOOST_ON_BAT:-}
@@ -182,10 +179,8 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
     fi
 
     if check_intel_pstate; then
-        # use intel_pstate sysfiles
-        if [ -f $CPU_TURBO_PSTATE ]; then
-            ival=$((val ^ 1))
-            { printf '%s\n' "$ival" > $CPU_TURBO_PSTATE; } 2> /dev/null
+        # use intel_pstate sysfiles, invert value
+        if write_sysf "$((val ^ 1))" $CPU_TURBO_PSTATE; then
             echo_debug "pm" "set_cpu_boost_all($1).intel_pstate: $val"
         else
             echo_debug "pm" "set_cpu_boost_all($1).intel_pstate.cpu_not_supported"
@@ -193,7 +188,7 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
     elif [ -f $CPU_BOOST_ALL_CTRL ]; then
         # use acpi_cpufreq sysfiles
         # simple test for attribute "w" doesn't work, so actually write
-        if { printf '%s\n' "$val" > $CPU_BOOST_ALL_CTRL; } 2> /dev/null; then
+        if write_sysf "$val" $CPU_BOOST_ALL_CTRL; then
             echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq: $val"
         else
             echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq.cpu_not_supported"
@@ -226,8 +221,8 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
         if [ -f $sdev ]; then
-            echo_debug "pm" "set_sched_powersave($1): ${sdev##/*/} $pwr"
-            { printf '%s\n' "$pwr" > "$sdev"; } 2> /dev/null
+            write_sysf "$pwr" $sdev
+            echo_debug "pm" "set_sched_powersave($1): ${sdev##/*/} $pwr; rc=$?"
             avail=1
         fi
     done
@@ -288,8 +283,8 @@ set_nmi_watchdog () { # enable/disable nmi watchdog
     fi
 
     if [ -f /proc/sys/kernel/nmi_watchdog ]; then
-        if { printf '%s\n' "$nmiwd" > /proc/sys/kernel/nmi_watchdog; } 2> /dev/null; then
-            echo_debug "pm" "set_nmi_watchdog: $nmiwd"
+        if write_sysf "$nmiwd" /proc/sys/kernel/nmi_watchdog; then
+            echo_debug "pm" "set_nmi_watchdog: $nmiwd; rc=$?"
         else
             echo_debug "pm" "set_nmi_watchdog.disabled_by_kernel: $nmiwd"
         fi
@@ -315,7 +310,7 @@ set_phc_controls () { # set core voltages
     for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do
         if [ -f $control ]; then
             echo_debug "pm" "set_phc_controls: $control $phc_controls"
-            { printf '%s\n' "$phc_controls" > $control; } 2> /dev/null
+            write_sysf "$phc_controls" $control
             ctrl_avail="1"
         fi
     done

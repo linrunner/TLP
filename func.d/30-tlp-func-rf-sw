@@ -47,9 +47,9 @@ get_devc () { # get control device for radio type
     case $1 in
         wwan|bluetooth)
             for i in /sys/class/rfkill/rfkill* ; do
-                if [ "$(cat $i/type 2> /dev/null)" = "$1" ]; then
+                if [ "$(read_sysf $i/type)" = "$1" ]; then
                     _devc="$i/state"
-                    echo_debug "rf" "get_devc($1) = $_devc="
+                    echo_debug "rf" "get_devc($1) = $_devc"
                     return 0
                 fi
             done
@@ -62,15 +62,15 @@ get_devc () { # get control device for radio type
                     _rfkdev="0"
                     _devon="0"
                     _devoff="1"
-                    echo_debug "rf" "get_devc($1) = $_devc="
+                    echo_debug "rf" "get_devc($1) = $_devc"
                     return 0
                 fi
             done
 
             for i in /sys/class/rfkill/rfkill* ; do
-                if [ "$(cat $i/type 2> /dev/null)" = "wlan" ]; then
+                if [ "$(read_sysf $i/type)" = "wlan" ]; then
                     _devc="$i/state"
-                    echo_debug "rf" "get_devc($1) = $_devc="
+                    echo_debug "rf" "get_devc($1) = $_devc"
                     return 0
                 fi
             done
@@ -90,7 +90,7 @@ get_devc () { # get control device for radio type
 
 get_devs () { # get radio device state -- $1: rftype; retval $_devs: 0=off/1=on
     if [ -n "$_devc" ]; then
-        _devs=$(cat $_devc 2> /dev/null)
+        _devs="$(read_sysf $_devc)"
         case "$_devs" in
             0|1) # invert state when not a rfkill device
                 [ "$_rfkdev" = "0" ] && _devs=$((_devs ^ _devoff))
@@ -245,8 +245,8 @@ device_switch () { # switch radio type state
             else
                 # use direct write
                 if test_root ; then
-                    echo_debug "rf" "device_switch($1, $2).devc"
-                    { printf '%s' $devn > $_devc=; } 2> /dev/null
+                    write_sysf "$devn" $_devc
+                    echo_debug "rf" "device_switch($1, $2).devc: rc=$?"
                     # record device state after direct write
                     get_devs $1
                 else

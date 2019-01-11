@@ -80,7 +80,7 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
     fi
 
     if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
-        if { printf '%s\n' "$minfreq" > $_intel_gpu_drm/$IGPU_MIN_FREQ; } 2> /dev/null; then
+        if write_sysf "$minfreq" $_intel_gpu_drm/$IGPU_MIN_FREQ; then
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: $minfreq"
         else
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min.write_error"
@@ -89,7 +89,7 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
     fi
 
     if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
-        if { printf '%s\n' "$maxfreq" > $_intel_gpu_drm/$IGPU_MAX_FREQ; } 2> /dev/null; then
+        if write_sysf "$maxfreq" $_intel_gpu_drm/$IGPU_MAX_FREQ; then
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: $maxfreq"
         else
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max.write_error"
@@ -98,7 +98,7 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
     fi
 
     if [ -n "$boostfreq" ] && [ "$boostfreq" != "0" ]; then
-        if { printf '%s\n' "$boostfreq" > $_intel_gpu_drm/$IGPU_BOOST_FREQ; } 2> /dev/null; then
+        if write_sysf "$boostfreq" $_intel_gpu_drm/$IGPU_BOOST_FREQ; then
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: $boostfreq"
         else
             echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost.write_error"
@@ -142,8 +142,8 @@ set_radeon_profile () { # set radeon power profile
             fi
 
             if [ -n "$pwr" ]; then
-                { printf '%s\n' "$pwr" > $card/power_dpm_state; } 2> /dev/null; rc1=$?
-                { printf '%s\n' "$level" > $card/power_dpm_force_performance_level; } 2> /dev/null; rc2=$?
+                write_sysf "$pwr" $card/power_dpm_state; rc1=$?
+                write_sysf "$level" $card/power_dpm_force_performance_level; rc2=$?
                 echo_debug "pm" "set_radeon_profile($1): $card state=$pwr [rc=$rc1] perf=$level [rc=$rc2]"
             fi
 
@@ -165,8 +165,8 @@ set_radeon_profile () { # set radeon power profile
 
             if [ -n "$pwr" ]; then
                 echo_debug "pm" "set_radeon_profile($1): $card profile=$pwr"
-                { printf '%s\n' "profile" > $card/power_method; } 2> /dev/null
-                { printf '%s\n' "$pwr" > $card/power_profile; } 2> /dev/null
+                write_sysf "profile" $card/power_method
+                write_sysf "$pwr" $card/power_profile
             fi
 
             sdone=1

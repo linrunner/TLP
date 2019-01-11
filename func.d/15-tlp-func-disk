@@ -237,8 +237,8 @@ set_disk_iosched () { # set disk io scheduler
         elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
             echo_debug "disk" "${log_message} -- keep as is"
         else
-            echo_debug "disk" "${log_message}"
-            { printf '%s' "$sched" > $schedctrl; } 2> /dev/null
+            write_sysf "$sched" $schedctrl
+            echo_debug "disk" "${log_message}; rc=$?"
         fi
 
         # using %DEFAULT_DISK_IO_SCHEDULER when argv is empty
@@ -287,7 +287,7 @@ set_sata_link_power () { # set ahci link power management
             else
                 # host not blacklisted --> iterate all configured values
                 for pwr in "$@"; do
-                    { printf '%s\n' "$pwr" > $linkpol; } 2> /dev/null; rc=$?
+                    write_sysf "$pwr" $linkpol; rc=$?
                     echo_debug "pm" "set_sata_link_power($pm).$pwr: $host; rc=$rc"
                     if [ $rc -eq 0 ]; then
                         # write successful --> goto next host
@@ -336,10 +336,8 @@ set_ahci_runtime_pm () { # set ahci runtime power management
 
     # iterate ahci devices
     for device in $AHCID; do
-        if [ -f ${device}/power/control ]; then
-            { printf '%s\n' $control $control > ${device}/power/control; } 2> /dev/null
-            echo_debug "pm" "set_ahci_runtime_pm($1).$control: host=$device"
-        fi
+        write_sysf "$control" ${device}/power/control
+        echo_debug "pm" "set_ahci_runtime_pm($1).$control: host=$device; rc=$?"
     done
 
     # when timeout is unconfigured we're done here
@@ -355,10 +353,10 @@ set_ahci_runtime_pm () { # set ahci runtime power management
             # timeout -1 still active will lockup the machine!
             rc=0
 
-            if { printf '%s\n' "$timeout" > ${device}/device/power/autosuspend_delay_ms; } 2> /dev/null; then
+            if write_sysf "$timeout" ${device}/device/power/autosuspend_delay_ms; then
                 # writing timeout was successful --> proceed with activation;
                 # rc=2 when unsuccessful
-                { printf '%s\n' $control > ${device}/device/power/control; } 2> /dev/null || rc=2
+                write_sysf "$control" ${device}/device/power/control || rc=2
             else
                 # writing timeout was successful
                 rc=1
@@ -392,8 +390,8 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
         return 0
     fi
 
-    echo_debug "pm" "set_laptopmode($1): $isec"
-    { printf '%s\n' "$isec" > /proc/sys/vm/laptop_mode; } 2> /dev/null
+    write_sysf "$isec" /proc/sys/vm/laptop_mode
+    echo_debug "pm" "set_laptopmode($1): $isec; rc=$?"
 
     return 0
 }
@@ -427,11 +425,10 @@ set_dirty_parms () { # set filesystem buffer params
              /proc/sys/vm/dirty_expire_centisecs \
              /proc/sys/fs/xfs/age_buffer_centisecs \
              /proc/sys/fs/xfs/xfssyncd_centisecs; do
-        [ -w $df ] && { printf '%s\n' "$cage" > $df; } 2> /dev/null
+        write_sysf "$cage" $df
     done
 
-    [ -w /proc/sys/fs/xfs/xfsbufd_centisecs ] \
-        && { printf '%s\n' "3000" > /proc/sys/fs/xfs/xfsbufd_centisecs; } 2> /dev/null
+    write_sysf "3000" /proc/sys/fs/xfs/xfsbufd_centisecs
 
     return 0
 }
