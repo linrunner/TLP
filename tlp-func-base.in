@@ -99,13 +99,13 @@ read_sysf () { # read and echo contents of sysfile
 
 readable_sysf () { # check if file is actually readable -- $1: file
     # rc: 0=readable/1=error
-    read_sysf "$1" > /dev/null
+    read_sysf $1 > /dev/null
 }
 
 read_sysval () { # read and echo contents of sysfile
     # echo '0' if file is non-existent, read fails or is non-numeric
     # $1: sysfile; rc: 0=ok/1=error
-    printf "%d" "$(read_sysf ""$1"")" 2> /dev/null
+    printf "%d" "$(read_sysf $1)" 2> /dev/null
 }
 
 write_sysf () { # write string to a sysfile

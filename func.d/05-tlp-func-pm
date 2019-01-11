@@ -194,7 +194,7 @@ get_ethifaces () { # get all eth devices -- retval: $_ethifaces
     _ethifaces=""
 
     for eic in $NETD/*/device/class; do
-        if [ "$(read_sysf "$eic")" = "0x020000" ] \
+        if [ "$(read_sysf $eic)" = "0x020000" ] \
             && [ ! -d "${eic%/class}/ieee80211" ]; then
 
             ei=${eic%/device/class}; ei=${ei##*/}
