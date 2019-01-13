@@ -29,13 +29,13 @@ shift
 case $self in
     run-on-ac)
         if get_power_state; then
-            $cmd $@
+            $cmd "$@"
         fi
         ;;
 
     run-on-bat)
         if ! get_power_state; then
-            $cmd $@
+            $cmd "$@"
         fi
         ;;
 

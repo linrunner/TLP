@@ -112,6 +112,12 @@ parse_args () { # parse command-line arguments
                     exit 3
                     ;;
 
+                noop)
+                    # no operation
+                    _cmd="$1"
+                    _cmd2=""
+                    ;;
+
                 *)
                     # unknown command
                     echo "Error: unknown command \"$1\"."  1>&2
@@ -167,8 +173,8 @@ parse_args () { # parse command-line arguments
 # --- MAIN
 
 read_defaults
-parse_args $@
-parse_args4config $@
+parse_args "$@"
+parse_args4config "$@"
 check_tlp_enabled 1 || exit 1
 add_sbin2path
 
@@ -487,6 +493,10 @@ case "$_cmd" in
         show_disk_ids
         ;;
 
+    noop) # Debug: no operation
+        check_thinkpad
+        echo "Debug: no operation performed."
+        ;;
 esac
 
 exit $exitcode

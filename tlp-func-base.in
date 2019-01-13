@@ -39,6 +39,8 @@ readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T
 readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
 readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
 
+readonly RE_PARAM='^[A-Z_]+\=([0-9a-zA-Z _-]*|\"[0-9a-zA-Z _-]*\"|''[0-9a-zA-Z _-]*'')$'
+
 readonly DEBUG_TAGS="bat disk lock nm path pm rf run sysfs udev usb"
 
 readonly DEFAULT_TLP_ENABLE=0
@@ -329,21 +331,27 @@ read_defaults () { # read config file
 parse_args4config () { # parse command-line arguments: everything after the
                        # delimiter '--' is interpreted as a config parameter
     # retval: config parameters
-    local dflag=0
+    local dflag=0 param value
 
+    echo_debug "arg" "parse_args4config: ${0##/*/} $*"
     # iterate arguments
     while [ $# -gt 0 ]; do
         if [ $dflag -eq 1 ]; then
-            # delimiter was passed --> evaluate argument
-            # sanitize input:
-            #   format is PARAMETER=value
+            # delimiter was passed --> sanitize and parse argument:
+            #   format is PARAMETER=value|"value"|'value'
             #   parameter name allows 'A'..'Z' and '_' only
-            #   value allows  'A'..'Z', 'a'..'z', '0'..'9', ' ', '_', '-', '"'
-            #   eval itself provides filtering of unpaired quotes ('"')
-            eval "$(printf "%s" "$1" | grep -E '^[A-Z_]+\=[0-9a-zA-Z _-"]*$')" 2> /dev/null
+            #   parameter value allows  'A'..'Z', 'a'..'z', '0'..'9', ' ', '_', '-'
+            # remark: piping output to 'read -r' won't work
+            IFS='=' read -r param value << EOF
+$(printf "%s" "$1" | grep -E "$RE_PARAM")
+EOF
+            if [ -n "$param" ] && [ -n "$value" ]; then
+                echo_debug "arg" "parse_args4config.param: $param=$value"
+                eval "$param=\"$value\"" 2> /dev/null
+            fi
         elif [ "$1" = "--" ]; then
             # delimiter reached --> begin interpretation
-           dflag=1
+            dflag=1
         fi
         shift # next argument
     done # while arguments
