@@ -548,7 +548,7 @@ print_discharge () { # formatted output of ThinkPad force_discharge
         # force_discharge read failed
         case $_bm_dischg in
             natacpi|tpsmapi)
-                printf "%-59s = >(not available)\n" "$_bf_dischg"
+                printf "%-59s = (not available)\n" "$_bf_dischg"
                 ;;
 
             tpacpi)
