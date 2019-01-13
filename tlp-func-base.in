@@ -435,18 +435,18 @@ check_thinkpad () { # check for ThinkPad hardware and save model string,
     if [ -d $TPACPIDIR ]; then
         # kernel module thinkpad_acpi is loaded
 
-        # get DMI product string and sanitize it
-        pv="$(read_dmi product_version | tr -C -d 'a-zA-Z0-9 ')"
+        if [ -z "$X_SIMULATE_MODEL" ]; then
+            # get DMI product string and sanitize it
+            pv="$(read_dmi product_version | tr -C -d 'a-zA-Z0-9 ')"
+        else
+            # simulate arbitrary model
+            pv="$X_SIMULATE_MODEL"
+        fi
 
         # check DMI product string for occurrence of "ThinkPad"
         if printf '%s' "$pv" | grep -E -q 'Think[Pp]ad'; then
             # it's a real ThinkPad --> save model substring
-            if [ -z "$X_SIMULATE_MODEL" ]; then
-                _tpmodel=$(echo $pv | sed -r 's/^Think[Pp]ad //')
-            else
-                # debug aid: simulate model via X_SIMULATE_MODEL config
-                _tpmodel="$X_SIMULATE_MODEL"
-            fi
+            _tpmodel=$(echo $pv | sed -r 's/^Think[Pp]ad //')
         fi
     fi
 
@@ -461,12 +461,12 @@ check_thinkpad () { # check for ThinkPad hardware and save model string,
             load_modules $MOD_TPACPI
         fi
 
-        echo_debug "bat" "check_thinkpad: _tpmodel=$_tpmodel"
+        echo_debug "bat" "check_thinkpad: tpmodel=$_tpmodel"
         return 0
     fi
 
     # not a ThinkPad
-    echo_debug "bat" "check_thinkpad.not_a_thinkpad"
+    echo_debug "bat" "check_thinkpad.not_a_thinkpad: model=$pv"
     return 1
 }
 

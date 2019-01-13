@@ -236,8 +236,15 @@ fi # show_conf
 
 if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # --- show system info
+    # simulate arbitrary model
+    if [ -z "$X_SIMULATE_MODEL" ]; then
+        model="$(read_dmi product_version)"
+    else
+        model="$X_SIMULATE_MODEL"
+    fi
+    echo $model
     echo "+++ System Info"
-    echo "System         = $(read_dmi sys_vendor product_version read_dmi product_name)"
+    echo "System         = $(read_dmi sys_vendor) $model $(read_dmi product_name)"
     echo "BIOS           = $(read_dmi bios_version)"
 
     # --- show release & kernel info
@@ -283,6 +290,9 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         1) printf "Power source   = battery\n" ;;
         *) printf "Power source   = unknown\n" ;;
     esac
+    if check_ac_quirk "$model"; then
+        echo "Notice: system may not detect AC/charger -- see: https://linrunner.de/en/tlp/docs/tlp-faq.html#acquirk"
+    fi
     echo
 
     # -- check systemd service units status
@@ -984,7 +994,7 @@ if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; th
         printf "* Kernel log shows ata errors (%d) possibly caused by the configuration\n" $ecnt
         printf "  SATA_LINKPWR_ON_AC/BAT=min_power or medium_power.\n"
         printf "  Consider using medium_power or max_performance instead.\n"
-        printf "  See the FAQ: http://linrunner.de/en/tlp/docs/tlp-faq.html#warnings\n"
+        printf "  See the FAQ: https://linrunner.de/en/tlp/docs/tlp-faq.html#warnings\n"
         printf "  Details:\n"
         dmesg | grep -E -A 5 "${RE_ATA_ERROR}"
         echo

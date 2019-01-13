@@ -1,4 +1,4 @@
-+++ 1.2 --- 10.01.2019 +++
++++ 1.2 --- 13.01.2019 +++
 
 *** Development version ***
 
@@ -30,6 +30,7 @@
       - Check systemd-rfkill.socket masked status
       - Disks: show all configured devices (consider default)
       - Intel GPU: show frequency limits and available frequencies
+      - Show systems that do not detect AC/charger (Dell XPS 15 9550/60)
       - Rename "Suggestions" section to "Recommendations"
       - Remove invocation via 'tlp stat'
   * Bugfixes
