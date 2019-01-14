@@ -212,12 +212,13 @@ disable_wake_on_lan () {  # disable WOL
     WOL_DISABLE=${WOL_DISABLE:-${DEFAULT_WOL_DISABLE}}
 
     if [ "$WOL_DISABLE" = "Y" ]; then
-        get_eth_ifaces
-
+        get_ethifaces
         for ei in $_ethifaces; do
-            echo_debug "pm" "disable_wake_on_lan: $ei"
             $ETHTOOL -s "$ei" wol d > /dev/null 2>&1
+            echo_debug "pm" "disable_wake_on_lan: $ei; rc=$?"
         done
+    else
+        echo_debug "pm" "disable_wake_on_lan.disabled"
     fi
 
     return 0
