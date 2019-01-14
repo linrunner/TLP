@@ -1,0 +1,14 @@
+#!/bin/sh
+case "${1-}" in
+    'pre')
+        exec tlp suspend
+	;;
+
+    'post')
+        exec tlp resume
+	;;
+
+    *)
+        exit 64
+	;;
+esac
