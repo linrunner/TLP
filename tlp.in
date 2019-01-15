@@ -494,7 +494,8 @@ case "$_cmd" in
         ;;
 
     noop) # Debug: no operation
-        check_thinkpad
+        check_root
+        battery_present DEF
         echo "Debug: no operation performed."
         ;;
 esac
