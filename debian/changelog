@@ -4,9 +4,11 @@ tlp (1.1.903-1) unstable; urgency=low
   * Track development version
   * Remove all pm-utils related stuff
   * Demote linux-tools Recommends to Suggests and prefer generic (LP: #1783455)
-  * debian/install: reflect func.d changes
+  * debian/tlp.install: reflect func.d changes
+  * debian/tlp-rdw.install: new command tlp-rdw
+  * debian/tlp-rdw.manpages: tlp-rdw.8
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 27 Nov 2018 19:42:49 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 16 Jan 2019 21:28:42 +0100
 
 tlp (1.1-2) unstable; urgency=medium
 
