@@ -152,6 +152,21 @@ print_sysf () { # formatted output of a sysfile
     return 0
 }
 
+print_sysf_trim () { # formatted output of a sysfile, trim leading and trailing
+    # blanks -- $1: format; $2: sysfile
+    local val
+
+    if val=$(read_sysf $2); then
+         # sysfile readable
+        printf "$1" "$(printf "%s" "$val" | sed -r 's/^[[:blank:]]*//;s/[[:blank:]]*$//')"
+    else
+        # sysfile not readable
+        printf "$1" "(not available)"
+    fi
+
+    return 0
+}
+
 print_file_modtime_and_age () { # show a file's last modification time
     #  and age in secs -- $1: file
     local mtime age
@@ -321,12 +336,10 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
     fi
 
     if [ -f /sys/block/$_disk_dev/queue/scheduler ]; then
-        local iosched="$(sed -r 's/.*\[(.+)\].*/\1/' /sys/block/$_disk_dev/queue/scheduler 2> /dev/null)"
-        local iosched_list="$(sed -r 's/\[(.+)\]/\1/' /sys/block/$_disk_dev/queue/scheduler 2> /dev/null)"
         if [ -d /sys/block/$_disk_dev/mq ]; then
-            printf "  Scheduler = %s (multiqueue); available: %s\n" "$iosched" "$iosched_list"
+            print_sysf_trim "  Scheduler = %s (multiqueue)\n" /sys/block/$_disk_dev/queue/scheduler
         else
-            printf "  Scheduler = %s (non-multiqueue); available: %s\n" "$iosched" "$iosched_list"
+            print_sysf_trim "  Scheduler = %s (non-multiqueue)\n" /sys/block/$_disk_dev/queue/scheduler
         fi
     fi
 
