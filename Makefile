@@ -46,6 +46,7 @@ INFILES = \
 	tlp-rdw-nm \
 	tlp-rdw.rules \
 	tlp-rdw-udev \
+	tlp-rdw \
 	tlp-rf \
 	tlp.rules \
 	tlp-run-on \
@@ -70,10 +71,14 @@ MANFILES8 = \
 	tlp.service.8 \
 	tlp-sleep.service.8
 
+MANFILESRDW8 = \
+	tlp-rdw.8
+
 SHFILES = \
 	tlp.in \
 	tlp-func-base.in \
 	func.d/* \
+	tlp-rdw.in \
 	tlp-rdw-nm.in \
 	tlp-rdw-udev.in \
 	tlp-rf.in \
@@ -130,9 +135,11 @@ endif
 
 install-rdw: all
 	# Package tlp-rdw
+	install -m 755 tlp-rdw $(_BIN)/
 	install -D -m 644 tlp-rdw.rules $(_ULIB)/rules.d/85-tlp-rdw.rules
 	install -D -m 755 tlp-rdw-udev $(_ULIB)/tlp-rdw-udev
 	install -D -m 755 tlp-rdw-nm $(_NMDSP)/99tlp-rdw-nm
+	install -D -m 644 tlp-rdw.bash_completion $(_SHCPL)/tlp-rdw
 
 install-man:
 	# manpages
@@ -140,6 +147,11 @@ install-man:
 	cd man && install -m 644 $(MANFILES1) $(_MAN)/man1/
 	install -d 755 $(_MAN)/man8
 	cd man && install -m 644 $(MANFILES8) $(_MAN)/man8/
+
+install-man-rdw:
+	# manpages
+	install -d 755 $(_MAN)/man8
+	cd man-rdw && install -m 644 $(MANFILESRDW8) $(_MAN)/man8/
 
 install: install-tlp install-rdw
 
@@ -170,14 +182,20 @@ uninstall-tlp:
 
 uninstall-rdw:
 	# Package tlp-rdw
+	rm $(_BIN)/tlp-rdw
 	rm $(_ULIB)/rules.d/85-tlp-rdw.rules
 	rm $(_ULIB)/tlp-rdw-udev
 	rm $(_NMDSP)/99tlp-rdw-nm
+	rm -f $(_SHCPL)/tlp-rdw
 
 uninstall-man:
 	# manpages
 	cd $(_MAN)/man1 && rm -f $(MANFILES1)
 	cd $(_MAN)/man8 && rm -f $(MANFILES8)
+
+uninstall-man-rdw:
+	# manpages
+	cd $(_MAN)/man8 && rm -f $(MANFILESRDW8)
 
 uninstall: uninstall-tlp uninstall-rdw
 

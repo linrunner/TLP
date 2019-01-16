@@ -20,6 +20,7 @@ readonly ALLDEV="bluetooth wifi wwan"
 readonly RDW_NM_LOCK="rdw_nm"
 readonly RDW_DOCK_LOCK="rdw_dock"
 readonly RDW_LOCKTIME=2
+readonly RDW_KILL="rdw_kill"
 
 readonly DEFAULT_RESTORE_DEVICE_STATE_ON_STARTUP=0
 

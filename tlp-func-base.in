@@ -41,7 +41,7 @@ readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
 
 readonly RE_PARAM='^[A-Z_]+\=([0-9a-zA-Z _-]*|\"[0-9a-zA-Z _-]*\"|''[0-9a-zA-Z _-]*'')$'
 
-readonly DEBUG_TAGS="bat disk lock nm path pm rf run sysfs udev usb"
+readonly DEBUG_TAGS_ALL="arg bat disk lock nm path pm rf run sysfs udev usb"
 
 readonly DEFAULT_TLP_ENABLE=0
 readonly DEFAULT_TLP_PERSISTENT_DEFAULT=0

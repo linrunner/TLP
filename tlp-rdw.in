@@ -1,0 +1,43 @@
+#!/bin/sh
+# tlp-rdw - enable/disable RDW
+#
+# Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
+# This software is licensed under the GPL v2 or later.
+
+# shellcheck disable=SC1090,SC2068,SC2086,SC2154
+
+# --- Source libraries
+
+for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/25-tlp-func-rf @TLP_FLIB@/30-tlp-func-rf-sw; do
+    . $lib
+done
+
+# --- MAIN
+
+read_defaults
+carg1=$1
+parse_args4config "$@"
+
+case $carg1 in
+    enable)
+        check_root
+        reset_run_flag $RDW_KILL
+        echo "tlp-rdw: enabled."
+        ;;
+
+    disable)
+        check_root
+        set_run_flag $RDW_KILL
+        echo "tlp-rdw: disabled."
+        ;;
+
+    *)
+        if check_run_flag $RDW_KILL; then
+            echo "tlp-rdw: disabled."
+        else
+            echo "tlp-rdw: enabled."
+        fi
+        ;;
+esac
+
+exit 0

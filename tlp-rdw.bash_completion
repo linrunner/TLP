@@ -1,0 +1,14 @@
+# bash completion for TLP-RDW
+
+_tlp_rdw() {
+    local cur prev words cword opts
+    _init_completion || return
+
+    opts="enable disable"
+
+    if [ $cword -eq 1 ]; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+} &&
+complete -F _tlp_rdw tlp-rdw

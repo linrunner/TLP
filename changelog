@@ -1,4 +1,4 @@
-+++ 1.2 --- 13.01.2019 +++
++++ 1.2 --- 16.01.2019 +++
 
 *** Development version ***
 
@@ -17,6 +17,7 @@
         INTEL_GPU_BOOST_FREQ_ON_AC/BAT: Intel GPU frequency limits
     Radio Devices:
        - Retire compatibility with Network Manager 0.9.8 (Ubuntu 14.04 EOL)
+       - tlp-rdw: new command to disable RDW actions temporarily (until reboot)
     PCI(e) devices:
        - RUNTIME_PM_BLACKLIST: add mei_me, pcieport
     ThinkPad Battery:
