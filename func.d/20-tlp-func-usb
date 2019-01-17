@@ -47,7 +47,6 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
         local chg=0
         local drvlist=""
 
-
         # trace only: get drivers for all subdevices
         if [ "$X_USB_DRIVER_TRACE" = "1" ]; then
             local dl
@@ -245,7 +244,7 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
 set_usb_suspend () { # enable/disable usb autosuspend for all devices
     # $1: 0=silent/1=report result; $2: auto=enable/on=disable
 
-    local devices usbd
+    local usbdev
 
     check_sysfs "set_usb_suspend" "$USBD"
 
@@ -253,10 +252,12 @@ set_usb_suspend () { # enable/disable usb autosuspend for all devices
 
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
         # autosuspend is configured --> iterate devices
-        devices=$(ls $USBD 2> /dev/null | grep -v ':')
+        for usbdev in $USBD/*; do
+            case "$usbdev" in
+                *:*) ;; # colon in device name --> do nothing
 
-        for usbd in $devices; do
-            usb_suspend_device "$USBD/$usbd" "batch" $2
+                *) usb_suspend_device "$usbdev" "batch" $2 ;;
+            esac
         done
 
         [ "$1" = "1" ] && echo "USB autosuspend settings applied."

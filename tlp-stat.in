@@ -4,7 +4,7 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC1090,SC2002,SC2013,SC2046,SC2063,SC2068,SC2086,SC2154
+# shellcheck disable=SC1090,SC2002,SC2013,SC2034,SC2046,SC2063,SC2068,SC2086,SC2154
 
 # --- Source libraries
 

@@ -6,7 +6,7 @@
 
 # Needs: tlp-func-base
 
-# shellcheck disable=SC2086
+# shellcheck disable=SC2010,SC2086
 
 # ----------------------------------------------------------------------------
 # Constants
