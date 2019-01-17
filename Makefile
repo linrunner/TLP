@@ -135,7 +135,7 @@ endif
 
 install-rdw: all
 	# Package tlp-rdw
-	install -m 755 tlp-rdw $(_BIN)/
+	install -D -m 755 tlp-rdw $(_BIN)/tlp-rdw
 	install -D -m 644 tlp-rdw.rules $(_ULIB)/rules.d/85-tlp-rdw.rules
 	install -D -m 755 tlp-rdw-udev $(_ULIB)/tlp-rdw-udev
 	install -D -m 755 tlp-rdw-nm $(_NMDSP)/99tlp-rdw-nm
