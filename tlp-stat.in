@@ -16,6 +16,7 @@ done
 
 readonly TLPUSB=tlp-usblist
 readonly TLPPCI=tlp-pcilist
+readonly TLPRDW=tlp-rdw
 
 readonly LSBREL=lsb_release
 readonly JOURNALCTL=journalctl
@@ -275,6 +276,17 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         printf "State          = enabled\n"
     else
         printf "State          = disabled\n"
+    fi
+
+    # --- show RDW status
+    if cmd_exists $TLPRDW; then
+        if check_run_flag $RDWKILL; then
+            printf "RDW state      = disabled\n"
+        else
+            printf "RDW state      = enabled\n"
+        fi
+    else
+        printf "RDW state      = not installed\n"
     fi
 
     # --- show last invocation time
