@@ -524,9 +524,18 @@ get_sys_power_supply () { # get current power supply
                 if [ "$_syspwr" != "1" ] \
                     && echo "${psrc##/*/}" | grep -q -v 'hidpp_battery'; then
                     case "$(read_sysf $psrc/status)" in
-                        Discharging) # discharging means battery
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging"
-                            _syspwr=1
+                        Discharging)
+                            if ! lockpeek_tlp tlp_discharge; then
+                                # discharging means battery ...
+                                _syspwr=1
+                                echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging"
+                            else
+                                # ... unless forced discharge is in progress,
+                                # which means AC and end of iteration
+                                _syspwr=0
+                                echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).forced_discharge"
+                                break
+                            fi
                             ;;
 
                         Unknown) # could mean AC and charge threshold effective,
@@ -535,7 +544,7 @@ get_sys_power_supply () { # get current power supply
                             echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_unknown"
                             ;;
 
-                        *) # everything else hints to AC
+                        *) # everything else means AC
                             echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_idle"
                             _syspwr=0
                             ;;
