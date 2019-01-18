@@ -41,7 +41,7 @@ readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
 
 readonly RE_PARAM='^[A-Z_]+\=([0-9a-zA-Z _-]*|\"[0-9a-zA-Z _-]*\"|''[0-9a-zA-Z _-]*'')$'
 
-readonly DEBUG_TAGS_ALL="arg bat disk lock nm path pm rf run sysfs udev usb"
+readonly DEBUG_TAGS_ALL="arg bat disk lock nm path pm ps rf run sysfs udev usb"
 
 readonly DEFAULT_TLP_ENABLE=0
 readonly DEFAULT_TLP_PERSISTENT_DEFAULT=0
@@ -511,6 +511,7 @@ get_sys_power_supply () { # get current power supply
                 if [ "$(read_sysf $psrc/online)" = "1" ] \
                     && [ "${psrc##/*/}" != "sbs-charger" ]; then
                     _syspwr=0
+                    echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_online"
                     break
                 fi
                 # else AC not online => keep $_syspwr as-is
@@ -524,15 +525,18 @@ get_sys_power_supply () { # get current power supply
                     && echo "${psrc##/*/}" | grep -q -v 'hidpp_battery'; then
                     case "$(read_sysf $psrc/status)" in
                         Discharging) # discharging means battery
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging"
                             _syspwr=1
                             ;;
 
                         Unknown) # could mean AC and charge threshold effective,
                                  # but do not draw any conclusions yet
                                  # => keep $_syspwr as-is
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_unknown"
                             ;;
 
                         *) # everything else hints to AC
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_idle"
                             _syspwr=0
                             ;;
                     esac
@@ -541,7 +545,7 @@ get_sys_power_supply () { # get current power supply
                 ;;
 
             *)
-                echo_debug "pm" "unknown power supply: ${psrc##/*/}"
+                echo_debug "pm" "get_sys_power_supply.unknown: ${psrc##/*/}"
                 ;;
         esac
     done
