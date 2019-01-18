@@ -509,7 +509,8 @@ get_sys_power_supply () { # get current power supply
                 # AC detected, check if online;
                 # exclude MacBook Pro 2017 sbs-charger
                 if [ "$(read_sysf $psrc/online)" = "1" ] \
-                    && [ "${psrc##/*/}" != "sbs-charger" ]; then
+                    && [ "${psrc##/*/}" != "sbs-charger" ] \
+                    && [ "$X_SIMULATE_AC_QUIRK" != "1" ]; then
                     _syspwr=0
                     echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_online"
                     break
@@ -554,7 +555,7 @@ get_sys_power_supply () { # get current power supply
                 ;;
 
             *)
-                echo_debug "pm" "get_sys_power_supply.unknown: ${psrc##/*/}"
+                echo_debug "ps" "get_sys_power_supply.unknown: ${psrc##/*/}"
                 ;;
         esac
     done
