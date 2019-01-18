@@ -539,13 +539,7 @@ get_sys_power_supply () { # get current power supply
                             fi
                             ;;
 
-                        Unknown) # could mean AC and charge threshold effective,
-                                 # but do not draw any conclusions yet
-                                 # => keep $_syspwr as-is
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_unknown"
-                            ;;
-
-                        *) # everything else means AC
+                        *) # everything else including "Unknown" means AC
                             echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_idle"
                             _syspwr=0
                             ;;
