@@ -194,10 +194,10 @@ lock_tlp () { # get exclusive lock: blocking with timeout
     # when successful lock fd 9 exclusive and blocking
     # wait $LOCKTIMEOUT secs to obtain the lock
     if { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null && $FLOCK -x -w $LOCKTIMEOUT 9 ; then
-        echo_debug "lock" "lock_tlp.success"
+        echo_debug "lock" "lock_tlp($1).success"
         return 0
     else
-        echo_debug "lock" "lock_tlp.failed"
+        echo_debug "lock" "lock_tlp($1).failed"
         return 1
     fi
 }
@@ -210,24 +210,37 @@ lock_tlp_nb () { # get exclusive lock: non-blocking
     # open file for writing and attach fd 9
     # when successful lock fd 9 exclusive and non-blocking
     if { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null && $FLOCK -x -n 9 ; then
-        echo_debug "lock" "lock_tlp_nb.success"
+        echo_debug "lock" "lock_tlp_nb($1).success"
         return 0
     else
-        echo_debug "lock" "lock_tlp_nb.failed"
+        echo_debug "lock" "lock_tlp_nb($1).failed"
         return 1
     fi
 }
 
 unlock_tlp () { # free exclusive lock
+                # $1: lock id (default: tlp)
 
     # defer unlock for $X_DEFER_UNLOCK seconds -- debugging only
     [ -n "$X_DEFER_UNLOCK" ] && sleep $X_DEFER_UNLOCK
 
-    # free fd 9
+    # free fd 9 and scrap lockfile
     { exec 9>&- ; } 2> /dev/null
-    echo_debug "lock" "unlock_tlp"
+    rm -f ${LOCKFILE}_${1:-tlp}
+    echo_debug "lock" "unlock_tlp($1)"
 
     return 0
+}
+
+lockpeek_tlp () { # check for pending lock (by looking for the lockfile)
+                  # $1: lock id (default: tlp)
+    if [ -f ${LOCKFILE}_${1:-tlp} ]; then
+        echo_debug "lock" "lockpeek_tlp($1).locked"
+        return 0
+    else
+        echo_debug "lock" "lockpeek_tlp($1).not_locked"
+        return 1
+    fi
 }
 
 echo_tlp_locked () { # print "locked" message

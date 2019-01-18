@@ -807,6 +807,7 @@ set_force_discharge () { # write force discharge state
 
 cancel_force_discharge () { # called from trap -- global param: $_bat_str
     set_force_discharge $_bat_str 0
+    unlock_tlp tlp_discharge
     echo_debug "bat" "force_discharge.cancelled($_bat_str)"
     echo " Cancelled."
 
