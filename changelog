@@ -1,4 +1,4 @@
-+++ 1.2 --- 16.01.2019 +++
++++ 1.2 --- 18.01.2019 +++
 
 *** Development version ***
 
@@ -31,7 +31,7 @@
       - Check systemd-rfkill.socket masked status
       - Disks: show all configured devices (consider default)
       - Intel GPU: show frequency limits and available frequencies
-      - Show systems that do not detect AC/charger (Dell XPS 15 9550/60)
+      - Expose systems with broken AC/charger detection (Dell XPS 15 et al.)
       - Rename "Suggestions" section to "Recommendations"
       - Remove invocation via 'tlp stat'
   * Bugfixes
@@ -40,6 +40,7 @@
     - Issue #320: AC mode not detected with USB charger
     - Issue #331: Process '/usr/bin/tlp auto' failed with exit code 4
     - Issue #332: zsh parse error in tlp diskid
+    - Issue #343, #362, #375: circumvent broken AC/charger detection
     - Issue #344: keep ASPM default to enable deeper C-states on AC
     - Issue #356: fix writing sequence for start/stop charge thresholds
     - Issue #368: recognize Think*p*ad P50

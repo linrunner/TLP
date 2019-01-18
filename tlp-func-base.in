@@ -504,10 +504,26 @@ get_sys_power_supply () { # get current power supply
                 ;;
 
             Battery)
-                # battery detected, exclude hid peripherals
-                if echo "${psrc##/*/}" | grep -q -v 'hidpp_battery'; then
-                    # not hid --> set rc to battery, but don't stop looking for AC
-                    _syspwr=1
+                # battery detected --> inspect unless:
+                # - a discharging battery has been found beforehand; or
+                # - it's a hid device
+                if [ "$_syspwr" != "1" ] \
+                    && echo "${psrc##/*/}" | grep -q -v 'hidpp_battery'; then
+                    case "$(read_sysf $psrc/status)" in
+                        Discharging) # discharging means battery
+                            _syspwr=1
+                            ;;
+
+                        Unknown) # could mean AC and charge threshold effective,
+                                 # but do not draw any conclusions yet
+                                 # => keep $_syspwr as-is
+                            ;;
+
+                        *) # everything else hints to AC
+                            _syspwr=0
+                            ;;
+                    esac
+                    # in any case: don't stop looking for AC and more batteries
                 fi
                 ;;
 
