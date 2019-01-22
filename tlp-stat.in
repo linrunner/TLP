@@ -290,7 +290,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     fi
 
     # --- show last invocation time
-    printf "Last run       = %s\n" "$(print_file_modtime_and_age ${LOCKFILE}_tlp)"
+    printf "Last run       = %s\n" "$(print_file_modtime_and_age $PWRRUNFILE)"
 
     # --- show actual power mode
     printf "Mode           = %s\n" "$(print_saved_powerstate)"

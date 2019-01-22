@@ -616,10 +616,11 @@ compare_and_save_power_state() { # compare $1 to last saved power state,
         # saved state is nonexistent/empty or is different --> save new state
         create_rundir
         write_sysf "$1" $PWRRUNFILE
-
         echo_debug "pm" "compare_and_save_power_state($1).different: old=$lp"
         return 0
     else
+        # touch file for last run
+        touch $PWRRUNFILE
         echo_debug "pm" "compare_and_save_power_state($1).equal"
         return 1
     fi
