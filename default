@@ -291,7 +291,7 @@ USB_BLACKLIST_PRINTER=1
 # WWAN devices are excluded from USB autosuspend:
 #   0=do not exclude, 1=exclude.
 # Default: 1
-USB_BLACKLIST_WWAN=1
+USB_BLACKLIST_WWAN=0
 
 # Include listed devices into USB autosuspend even if already excluded
 # by the blacklists above (separate with spaces). Use lsusb to get the ids.
