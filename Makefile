@@ -139,7 +139,9 @@ install-rdw: all
 	install -D -m 644 tlp-rdw.rules $(_ULIB)/rules.d/85-tlp-rdw.rules
 	install -D -m 755 tlp-rdw-udev $(_ULIB)/tlp-rdw-udev
 	install -D -m 755 tlp-rdw-nm $(_NMDSP)/99tlp-rdw-nm
+ifneq ($(TLP_NO_BASHCOMP),1)
 	install -D -m 644 tlp-rdw.bash_completion $(_SHCPL)/tlp-rdw
+endif
 
 install-man:
 	# manpages
