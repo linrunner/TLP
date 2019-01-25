@@ -42,7 +42,7 @@ All TLP settings are stored in /etc/default/tlp. The default configuration
 provides optimized power saving out of the box.
 
 Read the the full documentation at:
-- http://linrunner.de/tlp
+- https://linrunner.de/tlp
 
 Or take a look at the manpages:
 - tlp

@@ -7,7 +7,7 @@
 Description=TLP suspend/resume
 Before=sleep.target
 StopWhenUnneeded=yes
-Documentation=http://linrunner.de/tlp
+Documentation=https://linrunner.de/tlp
 
 [Service]
 Type=oneshot

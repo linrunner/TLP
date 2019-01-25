@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # tlp - Parameters for power saving
-# See full explanation: http://linrunner.de/en/tlp/docs/tlp-configuration.html
+# See full explanation: https://linrunner.de/en/tlp/docs/tlp-configuration.html
 
 # Notes:
 # - Some parameters are disabled, remove the leading '#' to enable # them;

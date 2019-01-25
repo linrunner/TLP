@@ -7,7 +7,7 @@
 Description=TLP system startup/shutdown
 After=multi-user.target bluetooth.service NetworkManager.service
 Before=shutdown.target
-Documentation=http://linrunner.de/tlp
+Documentation=https://linrunner.de/tlp
 
 [Service]
 Type=oneshot

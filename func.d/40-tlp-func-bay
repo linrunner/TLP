@@ -59,7 +59,7 @@ check_is_docked() { # check if $dock is docked;
 poweroff_drivebay () { # power off optical drive in drive bay
     # $1: 0=ac mode, 1=battery mode
     # $2: 0=conditional+quiet mode, 1=force+verbose mode
-    # Some code adapted from http://www.thinkwiki.org/wiki/How_to_hotswap_UltraBay_devices
+    # Some code adapted from https://www.thinkwiki.org/wiki/How_to_hotswap_UltraBay_devices
 
     local pwr optdrv syspath
 
