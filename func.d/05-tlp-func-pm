@@ -187,7 +187,7 @@ set_sound_power_mode () { # set sound chip power modes
     fi
 
     if [ -d /sys/module/snd_ac97_codec ]; then
-        write_sysf"$pwr" /sys/module/snd_ac97_codec/parameters/power_save
+        write_sysf "$pwr" /sys/module/snd_ac97_codec/parameters/power_save
         echo_debug "pm" "set_sound_power_mode($1).ac97: $pwr; rc=$?"
     fi
 
