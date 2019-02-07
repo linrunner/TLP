@@ -38,7 +38,7 @@
 
   <project_license>GPL-2.0+</project_license>
   <developer_name>Thomas Koch</developer_name>
-  <url type="homepage">http://linrunner.de/tlp</url>
+  <url type="homepage">https://linrunner.de/tlp</url>
 
   <provides>
     <!-- Match "Portable" chassis type -->
