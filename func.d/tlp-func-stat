@@ -4,7 +4,7 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# Needs: tlp-func-base
+# Needs: tlp-func-base, 15-tlp-func-disk, 35-tlp-func-batt
 
 # shellcheck disable=SC1004,SC2059,SC2086,SC2154,SC2155
 
@@ -199,20 +199,29 @@ print_saved_powerstate () { # read and print saved state
 
 # --- Storage Devices
 
-echo_disk_model () { # print disk model -- $1: dev
-    local model
+print_disk_model () { # print disk model -- $1: dev
+    local model vendor
 
-    model=$($HDPARM -I /dev/$1 2>&1 | grep 'Model Number' | \
+    model=$($HDPARM -I /dev/$1 2> /dev/null | grep 'Model Number' | \
       cut -f2 -d: | sed -r 's/^ *//' )
+
+    if [ -z "$model" ]; then
+        # hdparm -I not supported --> try udevadm approach
+        vendor="$($UDEVADM info -n /dev/$1 -q property 2>/dev/null | sed -n 's/^ID_VENDOR=//p' | tr '_' ' ')"
+        model="$($UDEVADM  info -n /dev/$1 -q property 2>/dev/null | sed -n 's/^ID_MODEL=//p'  | tr '_-' '  ')"
+        model="$vendor $model"
+        : ${model%% } # trim trailing blanks
+    fi
+
     printf '%s\n' "${model:-unknown}"
 
     return 0
 }
 
-echo_disk_firmware () { # print firmware version --- $1: dev
+print_disk_firmware () { # print firmware version --- $1: dev
     local firmware
 
-    firmware=$($HDPARM -I /dev/$1 2>&1 | grep 'Firmware Revision' | \
+    firmware=$($HDPARM -I /dev/$1 2> /dev/null | grep 'Firmware Revision' | \
       cut -f2 -d: | sed -r 's/^ *//' )
     printf '%s\n' "${firmware:-unknown}"
 
@@ -220,7 +229,7 @@ echo_disk_firmware () { # print firmware version --- $1: dev
 }
 
 get_disk_state () { # get disk power state -- $1: dev; retval: $_disk_state
-    _disk_state=$($HDPARM -C /dev/$1 2>&1 | awk -F ':' '/drive state is/ { gsub(/ /,"",$2); print $2; }')
+    _disk_state=$($HDPARM -C /dev/$1 2> /dev/null | awk -F ':' '/drive state is/ { gsub(/ /,"",$2); print $2; }')
     [ -z "$_disk_state" ] && _disk_state="(not available)"
 
     return 0
@@ -229,7 +238,7 @@ get_disk_state () { # get disk power state -- $1: dev; retval: $_disk_state
 get_disk_apm_level () { # get disk apm level -- $1: dev; rc: apm
     local apm
 
-    apm=$($HDPARM -I /dev/$1 2>&1 | grep 'Advanced power management level' | \
+    apm=$($HDPARM -I /dev/$1 2> /dev/null | grep 'Advanced power management level' | \
           cut -f2 -d: | grep -E '^ *[0-9]+ *$')
     if [ -n "$apm" ]; then
         return $apm
@@ -244,8 +253,8 @@ get_disk_trim_capability () { # check for trim capability
 
     local trim
 
-    if $HDPARM -I /dev/$1 2>&1 | grep -q 'Solid State Device'; then
-        if $HDPARM -I /dev/$1 2>&1 | grep -q 'TRIM supported'; then
+    if $HDPARM -I /dev/$1 2> /dev/null | grep -q 'Solid State Device'; then
+        if $HDPARM -I /dev/$1 2> /dev/null | grep -q 'TRIM supported'; then
             trim=1
         else
             trim=0
@@ -289,51 +298,66 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
     fi
 
     # --- show general data
-    if check_disk_nvme $_disk_dev; then
-        # NVMe disk
-        printf     "\n%s:\n" /dev/$_disk_dev
-        printf     "  Type      = NVMe\n"
-        [ -n "$_disk_id" ] && printf "  Disk ID   = %s\n" $_disk_id
-        print_sysf "  Model     = %s\n" /sys/block/$_disk_dev/device/model
-        print_sysf "  Firmware  = %s\n" /sys/block/$_disk_dev/device/firmware_rev
+    case "$_disk_type" in
+        nvme) # NVMe disk
+            printf     "\n%s:\n" /dev/$_disk_dev
+            printf     "  Type      = NVMe\n"
+            [ -n "$_disk_id" ] && printf "  Disk ID   = %s\n" $_disk_id
+            print_sysf "  Model     = %s\n" /sys/block/$_disk_dev/device/model
+            print_sysf "  Firmware  = %s\n" /sys/block/$_disk_dev/device/firmware_rev
+            # TODO: more features?
+            ;;
 
-        # TODO: more features ...
-    elif check_disk_hdparm_cap $_disk_dev; then
-        # SATA disk
-        printf     "\n%s:\n" /dev/$_disk_dev
-        [ -n "$_disk_id" ] && printf "  Disk ID   = %s\n" $_disk_id
-        printf     "  Type      = (S)ATA\n"
+        ata|usb|ieee1394)
+            # ATA/USB/IEEE1394 disk
+            printf     "\n%s:\n" /dev/$_disk_dev
+            [ -n "$_disk_id" ] && printf "  Disk ID   = %s\n" $_disk_id
 
-        # save spindle state
-        get_disk_state $_disk_dev
+            printf     "  Type      = %s\n" "$(toupper $_disk_type)"
 
-        printf "  Model     = "
-        echo_disk_model $_disk_dev
+            # save spindle state
+            get_disk_state $_disk_dev
 
-        printf "  Firmware  = "
-        echo_disk_firmware $_disk_dev
+            printf "  Model     = "
+            print_disk_model $_disk_dev
 
-        get_disk_apm_level $_disk_dev; local apm=$?
-        printf "  APM Level = "
-        case $apm in
-            0|255) echo "none/disabled" ;;
-            *)     echo $apm ;;
-        esac
+            printf "  Firmware  = "
+            print_disk_firmware $_disk_dev
 
-        printf "  Status    = %s\n" $_disk_state
+            get_disk_apm_level $_disk_dev; local apm=$?
+            printf "  APM Level = "
+            case $apm in
+                0|255)
+                    printf "none/disabled\n"
+                    ;;
 
-        get_disk_trim_capability $_disk_dev; local trim=$?
-        case $trim in
-            0) printf "  TRIM      = not supported\n" ;;
-            1) printf "  TRIM      = supported\n" ;;
-        esac
+                *)
+                    printf "%s" $apm
+                    if wordinlist "$_disk_type" "$DISK_TYPES_NO_APM_CHANGE"; then
+                        printf " (changes not supported)\n"
+                    else
+                        printf "\n"
+                    fi
+                    ;;
+            esac
 
-        # restore standby state
-        [ "$_disk_state" = "standby" ] && spindown_disk $_disk_dev
-    else
-        printf     "\n%s: unknown type.\n" /dev/$_disk_dev
-        return 1
-    fi
+            printf "  Status    = %s\n" $_disk_state
+
+            get_disk_trim_capability $_disk_dev; local trim=$?
+            case $trim in
+                0) printf "  TRIM      = not supported\n" ;;
+                1) printf "  TRIM      = supported\n" ;;
+            esac
+
+            # restore standby state
+            [ "$_disk_state" = "standby" ] && spindown_disk $_disk_dev
+            ;;
+
+        *)
+            printf     "\n%s: Device type \"%s\" ignored.\n" /dev/$_disk_dev $_disk_type
+            return 1
+            ;;
+    esac
 
     if [ -f /sys/block/$_disk_dev/queue/scheduler ]; then
         if [ -d /sys/block/$_disk_dev/mq ]; then
@@ -351,41 +375,48 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
     fi
 
     # --- show SMART data
-    cmd_exists $SMARTCTL || return 0
+    # skip if smartctl not installed or disk not SMART capable
+    cmd_exists $SMARTCTL && $SMARTCTL /dev/$_disk_dev > /dev/null 2>&1 || return 0
 
-    printf "\n  SMART info:\n"
-    if check_disk_nvme $_disk_dev; then
-        # NVMe disk
-        $SMARTCTL -A /dev/$_disk_dev | \
-            grep -E -e '^(Critical Warning|Temperature:|Available Spare)' \
-                    -e '^(Percentage Used:|Data Units Written:|Power|Unsafe)' \
-                    -e 'Integrity Errors' | \
-            sed 's/^/    /'
-    else
-        # SATA disk
-        $SMARTCTL -A /dev/$_disk_dev | grep -v '<==' | \
-          awk -F ' ' '$2 ~ /Power_Cycle_Count|Start_Stop_Count|Load_Cycle_Count|Reallocated_Sector_Ct/ \
-                            { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
-                      $2 ~ /Used_Rsvd_Blk_Cnt_Chip|Used_Rsvd_Blk_Cnt_Tot|Unused_Rsvd_Blk_Cnt_Tot/ \
-                            { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
-                      $2 ~ /Power_On_Hours/ \
-                            { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[h]" } ; \
-                      $2 ~ /Temperature_Celsius/ \
-                            { printf "    %3d %-25s = %8d %s %s %s %s\n", $1, $2, $10, $11, $12, $13, "[°C]" } ; \
-                      $2 ~ /Airflow_Temperature_Cel/ \
-                            { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[°C]" } ; \
-                      $2 ~ /G-Sense_Error_Rate/ \
-                            { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
-                      $2 ~ /Host_Writes/ \
-                            { printf "    %3d %-25s = %8.3f %s\n", $1, $2, $10 / 32768.0, "[TB]" } ; \
-                      $2 ~ /Total_LBAs_Written/ \
-                            { printf "    %3d %-25s = %8.3f %s\n", $1, $2, $10 / 2147483648.0, "[TB]" } ; \
-                      $2 ~ /NAND_Writes_1GiB/ \
-                            { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[GB]" } ; \
-                      $2 ~ /Available_Reservd_Space|Media_Wearout_Indicator|Wear_Leveling_Count/ \
-                            { printf "    %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
-        echo
-    fi # SATA
+    case "$_disk_type" in
+        nvme)
+            # NVMe disk
+            printf "\n  SMART info:\n"
+            $SMARTCTL -A /dev/$_disk_dev | \
+                grep -E -e '^(Critical Warning|Temperature:|Available Spare)' \
+                        -e '^(Percentage Used:|Data Units Written:|Power|Unsafe)' \
+                        -e 'Integrity Errors' | \
+                    sed 's/^/    /'
+            ;;
+
+        ata|usb)
+            printf "\n  SMART info:\n"
+            $SMARTCTL -A /dev/$_disk_dev | grep -v '<==' | \
+                awk -F ' ' '$2 ~ /Power_Cycle_Count|Start_Stop_Count|Load_Cycle_Count|Reallocated_Sector_Ct/ \
+                                { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
+                          $2 ~ /Used_Rsvd_Blk_Cnt_Chip|Used_Rsvd_Blk_Cnt_Tot|Unused_Rsvd_Blk_Cnt_Tot/ \
+                                { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
+                          $2 ~ /Power_On_Hours/ \
+                                { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[h]" } ; \
+                          $2 ~ /Temperature_Celsius/ \
+                                { printf "    %3d %-25s = %8d %s %s %s %s\n", $1, $2, $10, $11, $12, $13, "[°C]" } ; \
+                          $2 ~ /Airflow_Temperature_Cel/ \
+                                { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[°C]" } ; \
+                          $2 ~ /G-Sense_Error_Rate/ \
+                                { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
+                          $2 ~ /Host_Writes/ \
+                                { printf "    %3d %-25s = %8.3f %s\n", $1, $2, $10 / 32768.0, "[TB]" } ; \
+                          $2 ~ /Total_LBAs_Written/ \
+                                { printf "    %3d %-25s = %8.3f %s\n", $1, $2, $10 / 2147483648.0, "[TB]" } ; \
+                          $2 ~ /NAND_Writes_1GiB/ \
+                                { printf "    %3d %-25s = %8d %s\n", $1, $2, $10, "[GB]" } ; \
+                          $2 ~ /Available_Reservd_Space|Media_Wearout_Indicator|Wear_Leveling_Count/ \
+                                { printf "    %3d %-25s = %8d %s\n", $1, $2, $4, "[%]" }'
+            ;;
+
+        *) # unkown disk type
+            ;;
+    esac
 
     return 0
 }

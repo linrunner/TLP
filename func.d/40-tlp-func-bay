@@ -4,14 +4,12 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# Needs: tlp-func-base
+# Needs: tlp-func-base, 15-tlp-func-disk
 
 # shellcheck disable=SC2086
 
 # ----------------------------------------------------------------------------
 # Constants
-
-readonly UDEVADM=udevadm
 
 readonly DOCKGLOB="/sys/devices/platform/dock.?"
 

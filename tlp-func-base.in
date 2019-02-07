@@ -70,6 +70,10 @@ tolower () { # echo string in lowercase -- $1: string
     printf "%s" "$1" | tr "[:upper:]" "[:lower:]"
 }
 
+toupper () { # echo string in lowercase -- $1: string
+    printf "%s" "$1" | tr "[:lower:]" "[:upper:]"
+}
+
 wordinlist () { # test if word in list
                 # $1: word, $2: whitespace-separated list of words
     local word
