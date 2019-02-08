@@ -190,7 +190,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
         # module installed but not loaded
         _tpsmapi=64
     else
-        # module neither installer nor builtin
+        # module neither installed nor builtin
         _tpsmapi=128
     fi
     echo_debug "bat" "check_battery_features.tpsmapi: $_tpsmapi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
