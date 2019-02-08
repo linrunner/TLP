@@ -207,10 +207,9 @@ print_disk_model () { # print disk model -- $1: dev
 
     if [ -z "$model" ]; then
         # hdparm -I not supported --> try udevadm approach
-        vendor="$($UDEVADM info -n /dev/$1 -q property 2>/dev/null | sed -n 's/^ID_VENDOR=//p' | tr '_' ' ')"
-        model="$($UDEVADM  info -n /dev/$1 -q property 2>/dev/null | sed -n 's/^ID_MODEL=//p'  | tr '_-' '  ')"
-        model="$vendor $model"
-        : ${model%% } # trim trailing blanks
+        vendor="$($UDEVADM info -n /dev/$1 -q property 2>/dev/null | sed -n 's/^ID_VENDOR=//p')"
+        model="$( $UDEVADM info -n /dev/$1 -q property 2>/dev/null | sed -n 's/^ID_MODEL=//p' )"
+        model=$(printf "%s %s" "$vendor" "$model" | sed -r 's/_/ /g; s/-//g; s/[[:space:]]+$//')
     fi
 
     printf '%s\n' "${model:-unknown}"
