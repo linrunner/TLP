@@ -11,6 +11,8 @@
 # ----------------------------------------------------------------------------
 # Constants
 
+readonly MODINFO=modinfo
+
 readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIBATDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
@@ -125,15 +127,16 @@ check_battery_features () { # determine which battery feature APIs/tools are
         # tpacpi-bat superseded by natacpi: _tpacpi=255 from above
         :
     elif [ ! -e /proc/acpi/call ]; then
-        if [ -z "$(modinfo acpi_call 2> /dev/null)" ]; then
+        # call API not present
+        if $MODINFO acpi_call > /dev/null 2>&1; then
+            # module installed but not loaded
+            _tpacpi=64
+        else
             # module neither installed nor builtin
             _tpacpi=128
-        else
-            # module not loaded
-            _tpacpi=64
         fi
     else
-        # module present --> try tpacpi-bat
+        # call API present --> try tpacpi-bat
         $TPACPIBAT -g FD 1 > /dev/null 2>&1
         _tpacpi=$?
 
@@ -183,11 +186,11 @@ check_battery_features () { # determine which battery feature APIs/tools are
     elif ! supports_tpsmapi_only && ! supports_tpsmapi_and_tpacpi || supports_no_tp_bat_funcs; then
         # not tp-smapi capable models
         _tpsmapi=254
-    elif [ -n "$(modinfo tp_smapi 2> /dev/null)" ]; then
+    elif $MODINFO tp_smapi > /dev/null 2>&1; then
         # module installed but not loaded
         _tpsmapi=64
     else
-        # module not installed
+        # module neither installer nor builtin
         _tpsmapi=128
     fi
     echo_debug "bat" "check_battery_features.tpsmapi: $_tpsmapi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
