@@ -4,6 +4,7 @@ tlp (1.1.904-1) unstable; urgency=low
   * Track development version
   * Remove all pm-utils related stuff
   * Demote linux-tools Recommends to Suggests and prefer generic (LP: #1783455)
+  * Standards-Version 4.1.4
   * debian/tlp.install: reflect func.d changes
   * debian/tlp-rdw.install: new command tlp-rdw
   * debian/tlp-rdw.manpages: tlp-rdw.8
