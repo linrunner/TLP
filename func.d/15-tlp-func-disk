@@ -220,7 +220,7 @@ set_disk_iosched () { # set disk io scheduler
 
     # exit when disabled
     if [ -z "$DISK_DEVICES" ]; then
-        echo_debug "disk" "set_disk_iosched($pwrmode).disabled"
+        echo_debug "disk" "set_disk_iosched.disabled"
         return 0
     fi
 
@@ -229,11 +229,11 @@ set_disk_iosched () { # set disk io scheduler
 
     # exit if empty schedlist
     if [ $# -eq 0 ]; then
-        echo_debug "disk" "set_disk_iosched($pwrmode).not_configured"
+        echo_debug "disk" "set_disk_iosched.not_configured"
         return 0
     fi
 
-    echo_debug "disk" "set_disk_iosched($pwrmode)"
+    echo_debug "disk" "set_disk_iosched"
 
     # pairwise iteration DISK_DEVICES[1,n], schedlist[1,m]; m > 0
     #  for j in [1,min(n,m)]   : disk_dev[j], schedlistj]
