@@ -58,7 +58,7 @@ get_devc () { # get control device for radio type
 
         wifi)
             for i in /sys/bus/pci/drivers/ipw2?00/*/rf_kill; do
-                if [ -f $i ]; then
+                if [ -f "$i" ]; then
                     _devc="$i"
                     _rfkdev="0"
                     _devon="0"

@@ -264,7 +264,7 @@ set_timed_lock () { # create timestamp n seconds in the future
     # cleanup obsolete locks
     local time=$(date +%s)
     for lockfile in $RUNDIR/${1}_timed_lock_*; do
-        if [ -f $lockfile ]; then
+        if [ -f "$lockfile" ]; then
             locktime=${lockfile#${RUNDIR}/${1}_timed_lock_}
             if [ $time -ge $locktime ]; then
                 rm -f $lockfile
@@ -283,7 +283,7 @@ check_timed_lock () { # check if active timestamp exists
     local time=$(date +%s)
 
     for lockfile in $RUNDIR/${1}_timed_lock_*; do
-        if [ -f $lockfile ]; then
+        if [ -f "$lockfile" ]; then
             locktime=${lockfile#${RUNDIR}/${1}_timed_lock_}
             if [ $time -lt $(( locktime - 120 )) ]; then
                 # timestamp is more than 120 secs in the future,

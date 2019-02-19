@@ -239,7 +239,7 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
 
     for pool in mc smp smt; do
         sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
-        if [ -f $sdev ]; then
+        if [ -f "$sdev" ]; then
             write_sysf "$pwr" $sdev
             echo_debug "pm" "set_sched_powersave($1): ${sdev##/*/} $pwr; rc=$?"
             avail=1
@@ -327,7 +327,7 @@ set_phc_controls () { # set core voltages
     fi
 
     for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do
-        if [ -f $control ]; then
+        if [ -f "$control" ]; then
             write_sysf "$phc_controls" $control
             echo_debug "pm" "set_phc_controls: $control $phc_controls; rc=$?"
             ctrl_avail="1"

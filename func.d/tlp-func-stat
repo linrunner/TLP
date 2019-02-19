@@ -171,7 +171,7 @@ print_file_modtime_and_age () { # show a file's last modification time
     #  and age in secs -- $1: file
     local mtime age
 
-    if [ -f $1 ]; then
+    if [ -f "$1" ]; then
         mtime=$(date +%X -r $1)
         age=$(( $(date +%s) - $(date +%s -r $1) ))
         printf '%s, %6d sec(s) ago' "$mtime" "$age"
@@ -493,7 +493,7 @@ print_batstate () { # print battery charging state with
     local sysf val
 
     # check if bat state sysfile exists
-    if [ -f $1 ]; then
+    if [ -f "$1" ]; then
         sysf=$1
     else
         # sysfile non-existent
