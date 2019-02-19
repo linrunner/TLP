@@ -80,12 +80,10 @@ set_runtime_pm () { # set runtime power management
 
                 if wordinlist "$address" "$pci_bl_adr"; then
                     # device is in address blacklist
-                    control="black_address"
-
+                    echo_debug "pm" "set_runtime_pm($1).bloack_address: $device [$class]"
                 elif wordinlist "$address" "$pci_bl_drv"; then
                     # device is in driver blacklist
-                    control="black_driver"
-
+                    echo_debug "pm" "set_runtime_pm($1).black_driver: $device [$class]"
                 else
                     control=$ccontrol
 
@@ -105,13 +103,17 @@ set_runtime_pm () { # set runtime power management
                     fi # if nouveau | nvidia blacklisted
 
                     case $control in
-                        auto|on) write_sysf $control $device/power/control ;;
-                        *) ;; # do nothing
-                    esac
-                fi #
+                        auto|on)
+                            write_sysf $control $device/power/control
+                            echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]; rc=$?"
+                            ;;
 
-                echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]"
-            fi # if class && control
+                        *) # black_* --> do nothing
+                            echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]"
+                            ;;
+                    esac
+                fi # if blacklist
+            fi # if control
         done # for device
     done # for type
 
@@ -177,12 +179,14 @@ set_sound_power_mode () { # set sound chip power modes
 
     if [ -d /sys/module/snd_hda_intel ]; then
         write_sysf "$pwr" /sys/module/snd_hda_intel/parameters/power_save
-        echo_debug "pm" "set_sound_power_mode($1).hda: $pwr controller=$cpwr; rc=$?"
+        echo_debug "pm" "set_sound_power_mode($1).hda: $pwr; rc=$?"
 
         if [ "$pwr" = "0" ]; then
             write_sysf "N" /sys/module/snd_hda_intel/parameters/power_save_controller
+            echo_debug "pm" "set_sound_power_mode($1).hda_controller: N controller=$cpwr; rc=$?"
         else
             write_sysf "$cpwr" /sys/module/snd_hda_intel/parameters/power_save_controller
+            echo_debug "pm" "set_sound_power_mode($1).hda_controller: $cpwr; rc=$?"
         fi
     fi
 

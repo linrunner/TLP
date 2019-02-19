@@ -44,7 +44,7 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
         local control="${3:-auto}"
         local caller="$2"
         local exc=""
-        local chg=0
+        local chg=0 rc1=0 rc2=0
         local drvlist=""
 
         # trace only: get drivers for all subdevices
@@ -205,14 +205,14 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
         if [ -f $usbdev/power/control ]; then
             if [ "$(read_sysf $usbdev/power/control)" != "$control" ]; then
                 # Write actual changes only
-                write_sysf "$control" $usbdev/power/control
+                write_sysf "$control" $usbdev/power/control; rc1=$?
                 chg=1
             fi
         else
             # level is deprecated
             if [ "$(read_sysf $usbdev/power/level)" != "$control" ]; then
                 # Write actual changes only
-                write_sysf "$control" $usbdev/power/level
+                write_sysf "$control" $usbdev/power/level; rc1=$?
                 chg=1
             fi
             ctrlf="level"
@@ -221,19 +221,19 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
         if [ "$X_TLP_USB_SET_AUTOSUSPEND_DELAY" = "1" ]; then
             # set autosuspend_delay
             if [ -f $usbdev/power/autosuspend_delay_ms ]; then
-                write_sysf $USB_TIMEOUT_MS $usbdev/power/autosuspend_delay_ms
+                write_sysf $USB_TIMEOUT_MS $usbdev/power/autosuspend_delay_ms; rc2=$?
             else
                 # autosuspend is deprecated
-                write_sysf $USB_TIMEOUT $usbdev/power/autosuspend
+                write_sysf $USB_TIMEOUT $usbdev/power/autosuspend; rc2=$?
                 autof="autosuspend"
             fi
-            echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid $usbdev [$ctrlf $autof] $drvlist"
+            echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid $usbdev [$drvlist]; ${ctrlf}: rc=$rc1; ${autof}: rc=$rc2"
         elif [ $chg -eq 1 ]; then
             # default: change control but not autosuspend_delay, i.e. keep kernel default setting
-            echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid $usbdev [$ctrlf] $drvlist"
+            echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid $usbdev [$drvlist]; ${ctrlf}: rc=$rc1"
         else
             # we didn't change anything actually
-            echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid $usbdev $drvlist"
+            echo_debug "usb" "usb_suspend_device.$caller.$control$exc.no_change: $busdev ID $usbid $usbdev [$drvlist]"
         fi
 
     fi # autosuspendable

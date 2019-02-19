@@ -30,7 +30,7 @@ check_intel_pstate () { # detect intel_pstate driver -- rc: 0=present/1=absent
 }
 
 set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mode
-    local gov cpu
+    local gov cpu ec
 
     if [ "$1" = "1" ]; then
         gov=${CPU_SCALING_GOVERNOR_ON_BAT:-}
@@ -39,10 +39,14 @@ set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mod
     fi
 
     if [ -n "$gov" ]; then
-        echo_debug "pm" "set_scaling_governor($1): $gov"
+        ec=0
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-            write_sysf "$gov" $cpu
+            if [ -f "$cpu" ] && ! write_sysf "$gov" $cpu; then
+                echo_debug "pm" "set_scaling_governor($1).write_error: $cpu $gov; rc=$?"
+                ec=$((ec+1))
+            fi
         done
+        echo_debug "pm" "set_scaling_governor($1): $gov; ec=$?"
     else
         echo_debug "pm" "set_scaling_governor($1).not_configured"
     fi
@@ -51,7 +55,7 @@ set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mod
 }
 
 set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery mode
-    local minfreq maxfreq cpu
+    local minfreq maxfreq cpu ec
     local conf=0
 
     if [ "$1" = "1" ]; then
@@ -63,19 +67,27 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
     fi
 
     if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
-        echo_debug "pm" "set_scaling_min_max_freq($1).min: $minfreq"
-        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
-            write_sysf "$minfreq" $cpu
-        done
         conf=1
+        ec=0
+        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
+            if [ -f "$cpu" ] && ! write_sysf "$minfreq" $cpu; then
+                echo_debug "pm" "set_scaling_min_max_freq($1).min.write_error: $cpu $minfreq; rc=$?"
+                ec=$((ec+1))
+            fi
+        done
+        echo_debug "pm" "set_scaling_min_max_freq($1).min: $minfreq; ec=$ec"
     fi
 
     if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
-        echo_debug "pm" "set_scaling_min_max_freq($1).max: $maxfreq"
-        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
-            write_sysf "$maxfreq" $cpu
-        done
         conf=1
+        ec=0
+        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
+            if [ -f "$cpu" ] && ! write_sysf "$maxfreq" $cpu; then
+                echo_debug "pm" "set_scaling_min_max_freq($1).max.write_error: $cpu $maxfreq; rc=$?"
+                ec=$((ec+1))
+            fi
+            echo_debug "pm" "set_scaling_min_max_freq($1).max: $maxfreq; ec=$ec"
+        done
     fi
 
     [ $conf -eq 1 ] || echo_debug "pm" "set_scaling_min_max_freq($1).not_configured"
@@ -85,8 +97,7 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
 # --- Performance Policies
 
 set_cpu_hwp_pref () { # set HWP energy performance hints -- $1: 0=ac mode, 1=battery mode
-    local hwpp cpu
-    local avail=0
+    local hwpp avail cpu ec
 
     if ! check_intel_pstate; then
         echo_debug "pm" "set_cpu_perf_pct($1).no_intel_pstate"
@@ -100,11 +111,19 @@ set_cpu_hwp_pref () { # set HWP energy performance hints -- $1: 0=ac mode, 1=bat
     fi
 
     if [ -n "$hwpp" ]; then
+        avail=0
+        ec=0
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
-            write_sysf "$hwpp" $cpu && avail=1
+            if [ -f "$cpu" ]; then
+                avail=1
+                if  ! write_sysf "$hwpp" $cpu; then
+                    echo_debug "pm" "set_cpu_hwp_pref($1).write_error: $cpu $hwpp; rc=$"
+                    ec=$((ec+1))
+                fi
+            fi
         done
         if [ "$avail" = "1" ]; then
-            echo_debug "pm" "set_cpu_hwp_pref($1): $hwpp"
+            echo_debug "pm" "set_cpu_hwp_pref($1): $hwpp; ec=$ec"
         else
             echo_debug "pm" "set_cpu_hwp_pref($1).no_hwp"
         fi
@@ -309,8 +328,8 @@ set_phc_controls () { # set core voltages
 
     for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do
         if [ -f $control ]; then
-            echo_debug "pm" "set_phc_controls: $control $phc_controls"
             write_sysf "$phc_controls" $control
+            echo_debug "pm" "set_phc_controls: $control $phc_controls; rc=$?"
             ctrl_avail="1"
         fi
     done
@@ -319,4 +338,3 @@ set_phc_controls () { # set core voltages
 
     return 0
 }
-
