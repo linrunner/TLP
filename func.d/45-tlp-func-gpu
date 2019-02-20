@@ -80,29 +80,20 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
     fi
 
     if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
-        if write_sysf "$minfreq" $_intel_gpu_drm/$IGPU_MIN_FREQ; then
-            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: $minfreq"
-        else
-            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min.write_error"
-        fi
+        write_sysf "$minfreq" $_intel_gpu_drm/$IGPU_MIN_FREQ
+        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: $minfreq; rc=$?"
         conf=1
     fi
 
     if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
-        if write_sysf "$maxfreq" $_intel_gpu_drm/$IGPU_MAX_FREQ; then
-            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: $maxfreq"
-        else
-            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max.write_error"
-        fi
+        write_sysf "$maxfreq" $_intel_gpu_drm/$IGPU_MAX_FREQ
+        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: $maxfreq; rc=$?"
         conf=1
     fi
 
     if [ -n "$boostfreq" ] && [ "$boostfreq" != "0" ]; then
-        if write_sysf "$boostfreq" $_intel_gpu_drm/$IGPU_BOOST_FREQ; then
-            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: $boostfreq"
-        else
-            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost.write_error"
-        fi
+        write_sysf "$boostfreq" $_intel_gpu_drm/$IGPU_BOOST_FREQ
+        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: $boostfreq; rc=$?"
         conf=1
     fi
 
