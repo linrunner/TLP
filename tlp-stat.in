@@ -4,11 +4,12 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC1090,SC2002,SC2013,SC2034,SC2046,SC2063,SC2068,SC2086,SC2154
+# shellcheck disable=SC2086,SC2154
 
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/[0-9][0-9]* @TLP_FLIB@/tlp-func-stat; do
+    # shellcheck disable=SC1090
     . $lib
 done
 
@@ -210,6 +211,7 @@ parse_args4config "$@"
 : ${needs_root_priv:=1}
 
 # inhibit trace output (unless forced)
+# shellcheck disable=SC2034
 [ "$X_TRACE_TLP_STAT" = "1" ] || _nodebug=1
 
 # check prerequisites
@@ -929,6 +931,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 printparm "%-59s = ##%6d##" $batd/cycle_count
 
                 if [ -f $batd/temperature ]; then
+                    # shellcheck disable=SC2046
                     perl -e 'printf ("%-59s = %6d [°C]\n", "'$batd/temperature'", '$(read_sysval $batd/temperature)' / 1000.0);'
                 fi
 
@@ -1063,6 +1066,7 @@ if [ "$show_psup" = "1" ]; then
     # --- show power_supply diagnostic
     echo "+++ Power supply diagnostic"
     for ps in /sys/class/power_supply/*; do
+        # shellcheck disable=SC2063
         grep -s '.*' $ps/type $ps/online $ps/present $ps/status $ps/device/path
     done
 fi # show_sup

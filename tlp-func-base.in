@@ -4,7 +4,7 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC1090,SC2002,SC2034,SC2048,SC2068,SC2086,SC2154,SC2155
+# shellcheck disable=SC2086
 
 # ----------------------------------------------------------------------------
 # Constants
@@ -254,15 +254,14 @@ echo_tlp_locked () { # print "locked" message
 
 set_timed_lock () { # create timestamp n seconds in the future
     # $1: lock id, $2: lock duration [s]
+    local lock rc time
 
-    local rc
-    local lock=${1}_timed_lock_$(date +%s -d "+${2} seconds")
-
+    lock=${1}_timed_lock_$(date +%s -d "+${2} seconds")
     set_run_flag $lock; rc=$?
     echo_debug "lock" "set_timed_lock($1, $2): $lock; rc=$rc"
 
     # cleanup obsolete locks
-    local time=$(date +%s)
+    time=$(date +%s)
     for lockfile in $RUNDIR/${1}_timed_lock_*; do
         if [ -f "$lockfile" ]; then
             locktime=${lockfile#${RUNDIR}/${1}_timed_lock_}
@@ -278,10 +277,9 @@ set_timed_lock () { # create timestamp n seconds in the future
 
 check_timed_lock () { # check if active timestamp exists
     # $1: lock id; rc: 0=locked/1=not locked
+    local lockfile locktime time
 
-    local lockfile locktime
-    local time=$(date +%s)
-
+    time=$(date +%s)
     for lockfile in $RUNDIR/${1}_timed_lock_*; do
         if [ -f "$lockfile" ]; then
             locktime=${lockfile#${RUNDIR}/${1}_timed_lock_}
@@ -311,6 +309,7 @@ add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
                    # retval: $PATH, $_oldpath, $_addpath
     local sp
 
+    # shellcheck disable=SC2034
     _oldpath="$PATH"
     _addpath=""
 
@@ -343,6 +342,7 @@ create_rundir () { # make sure $RUNDIR exists
 
 read_defaults () { # read config file
     if [ -f $CONFFILE ]; then
+        # shellcheck disable=SC1090
         . $CONFFILE
         return 0
     else
@@ -391,6 +391,7 @@ load_modules () { # load kernel module(s) -- $*: modules
     [ "${TLP_LOAD_MODULES:-y}" = "y" ] && [ -e /proc/modules ] || return 0
 
     # load modules, ignore any errors
+    # shellcheck disable=SC2048
     for mod in $*; do
         $MODPRO $mod > /dev/null 2>&1
     done
@@ -404,6 +405,7 @@ read_dmi () { # read DMI data -- $*: keywords; stdout: dmi strings
     local ds key outr
 
     outr=""
+    # shellcheck disable=SC2048
     for key in $*; do
         ds="$(read_sysf ${DMID}/$key | \
                 grep -E -v -i 'not available|to be filled|DMI table is broken')"

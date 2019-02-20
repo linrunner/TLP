@@ -4,11 +4,12 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC1090,SC2086,SC2153,SC2154
+# shellcheck disable=SC2086
 
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/25-tlp-func-rf @TLP_FLIB@/30-tlp-func-rf-sw; do
+        # shellcheck disable=SC1090
     . $lib
 done
 
@@ -35,10 +36,12 @@ case $devtype in
         docked=$(read_sysf $ddev/docked)
         action=$EVENT
 
+        # shellcheck disable=SC2154
         echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev type=$type docked=$docked syspwr=$_syspwr"
         ;;
 
     usb_dock)
+        # shellcheck disable=SC2153
         case $ACTION in
             add)    action="dock"  ;;
             remove) action="undock"  ;;

@@ -6,7 +6,7 @@
 
 # Needs: tlp-func-base
 
-# shellcheck disable=SC2010,SC2034,SC2043,SC2086
+# shellcheck disable=SC2086
 
 # ----------------------------------------------------------------------------
 # Constants
@@ -81,6 +81,7 @@ show_disk_ids () { # show disk id's
     local dev
 
     { # iterate SATA and NVMe disks
+      # shellcheck disable=SC2010
         for dev in $(ls /dev/disk/by-id/ | grep -E '^(ata|ieee1394|nvme|usb)' | grep -E -v '(^nvme-eui|\-part[1-9]+)'); do
             if [ -n "$dev" ]; then
                 get_disk_dev $dev
@@ -446,6 +447,7 @@ set_dirty_parms () { # set filesystem buffer params
             ec=$((ec+1))
         fi
     done
+    # shellcheck disable=SC2043
     for df in /proc/sys/fs/xfs/xfsbufd_centisecs; do
         if [ -f "$df" ] && ! write_sysf "3000" $df; then
             echo_debug "pm" "set_dirty_parms($1).write_error: $df 3000; rc=$?"

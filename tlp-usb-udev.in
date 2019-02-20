@@ -7,11 +7,12 @@
 # Remark: the calling udev rule is triggered for "base" devices only,
 #         not for the corresponding subdevices.
 
-# shellcheck disable=SC1090,SC2086
+# shellcheck disable=SC2086
 
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/20-tlp-func-usb; do
+    # shellcheck disable=SC1090
     . $lib
 done
 

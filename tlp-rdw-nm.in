@@ -5,11 +5,12 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC1090,SC2086,SC2154
+# shellcheck disable=SC2086
 
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/25-tlp-func-rf @TLP_FLIB@/30-tlp-func-rf-sw; do
+    # shellcheck disable=SC1090
     . $lib
 done
 
@@ -93,9 +94,12 @@ if [ "$action" = "down" ]; then
 fi
 
 echo_debug "nm" "+++ rdw_nm($iface).$action"
+# shellcheck disable=SC2154
 if [ -n "$_addpath" ]; then
+    # shellcheck disable=SC2154
     echo_debug "path" "PATH=$_oldpath[$_addpath]"
 else
+    # shellcheck disable=SC2154
     echo_debug "path" "PATH=$_oldpath"
 fi
 
@@ -114,6 +118,7 @@ elif cmd_exists $NMCLI ; then
         # different devices for control and the actual network connection
         # --> check if interface matches a WWAN device
         get_wwan_ifaces
+        # shellcheck disable=SC2154
         if wordinlist "$iface" "$_wanifaces"; then
             itype="wwan"
         else

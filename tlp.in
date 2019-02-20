@@ -4,11 +4,12 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC1090,SC2068,SC2086,SC2154
+# shellcheck disable=SC2086
 
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/[0-9][0-9]*; do
+    # shellcheck disable=SC1090
     . $lib
 done
 
@@ -190,9 +191,12 @@ else
     echo_debug "run" "+++ $_cmd $_cmd2 ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
 fi
 
+# shellcheck disable=SC2154
 if [ -n "$_addpath" ]; then
+    # shellcheck disable=SC2154
     echo_debug "path" "PATH=$_oldpath[$_addpath]"
 else
+    # shellcheck disable=SC2154
     echo_debug "path" "PATH=$_oldpath"
 fi
 
@@ -205,6 +209,7 @@ case "$_cmd" in
 
     auto|resume)
         # if manual mode is set, use instead of current power state
+        # shellcheck disable=SC2154
         [ "$_manual_mode" != "none" ] && pwrmode=$_manual_mode
         ;;
 
@@ -219,6 +224,7 @@ case "$_cmd" in
         ;;
 esac
 
+# shellcheck disable=SC2154
 case "$_syspwr" in
     0) echo_debug "run" "power_source=ac" ;;
     1) echo_debug "run" "power_source=bat" ;;

@@ -6,7 +6,7 @@
 
 # Needs: tlp-func-base
 
-# shellcheck disable=SC2034,SC2086
+# shellcheck disable=SC2086
 
 # ----------------------------------------------------------------------------
 # Constants
@@ -43,6 +43,7 @@ get_wifi_driver () { # get driver associated with interface
     _wifidrv=""
     if [ -d $NETD/$1 ]; then
         drvl=$(readlink $NETD/$1/device/driver)
+        # shellcheck disable=SC2034
         [ -n "$drvl" ] && _wifidrv=${drvl##*/}
     fi
 
@@ -165,6 +166,7 @@ get_wwan_driver () { # get driver associated with interface
     _wwandrv=""
     if [ -d $NETD/$1 ]; then
         drvl=$(readlink $NETD/$1/device/driver)
+        # shellcheck disable=SC2034
         [ -n "$drvl" ] && _wwandrv=${drvl##*/}
     fi
 
@@ -182,9 +184,11 @@ get_bluetooth_ifaces () { # get all bluetooth interfaces -- retval: $_bifaces
 get_bluetooth_driver () { # get driver associated with interface -- $1: iface; retval: $_btdrv
     local drvl
 
+    # shellcheck disable=SC2034
     _btdrv=""
     if [ -d $BLUETOOTHD/$1 ]; then
         drvl=$(readlink $BLUETOOTHD/$1/device/driver)
+        # shellcheck disable=SC2034
         [ -n "$drvl" ] && _btdrv=${drvl##*/}
     fi
 

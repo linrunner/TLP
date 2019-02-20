@@ -6,7 +6,7 @@
 
 # Needs: tlp-func-base, tlp-func-rf
 
-# shellcheck disable=SC2034,SC2086,SC2119,SC2120,SC2162
+# shellcheck disable=SC2086
 
 # ----------------------------------------------------------------------------
 # Constants
@@ -330,6 +330,7 @@ echo_device_state () { # print radio type state -- $1: rftype, $2: state
     return 0
 }
 
+# shellcheck disable=SC2120
 save_device_states () { # save radio states -- $1: list of rftypes
     local dev
     local devlist="${1:-$ALLDEV}" # when arg empty -> use all
@@ -356,6 +357,7 @@ restore_device_states () { # restore radio type states
 
     if [ -f $RFSTATEFILE ]; then
         # read state file
+        # shellcheck disable=SC2162
         while read sline; do
             set -- $sline # read dev, state into $1, $2
             device_switch $1 $2
@@ -393,6 +395,7 @@ set_radio_device_states () { # set/initialize all radio states
                 ;;
 
             stop)
+                # shellcheck disable=SC2119
                 save_device_states
                 echo "Radio device states saved."
                 ;;
