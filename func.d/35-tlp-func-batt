@@ -338,13 +338,6 @@ get_threshold () { # read and echo charge threshold
                         # Remove offset of 128 for Edge S430 et al.
                         rc=$((rc - 128))
                     fi
-                    if [ $rc -eq 0 ]; then
-                        # replace 0 with factory default values
-                        case $1 in
-                            start) rc=96 ;;
-                            stop)  rc=100 ;;
-                        esac
-                    fi
                 else
                     rc=255
                 fi
@@ -358,6 +351,14 @@ get_threshold () { # read and echo charge threshold
             rc=255
             ;;
     esac
+
+    # replace 0 with factory default values
+    if [ $rc -eq 0 ]; then
+        case $1 in
+            start) rc=96 ;;
+            stop)  rc=100 ;;
+        esac
+    fi
 
     echo_debug "bat" "get_threshold($1): bm_thresh=$_bm_thresh; bat_idx=$_bat_idx; thresh=$rc"
     return $rc
