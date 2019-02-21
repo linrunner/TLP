@@ -21,7 +21,7 @@ readonly DEFAULT_USB_AUTOSUSPEND=0
 readonly DEFAULT_USB_BLACKLIST_BTUSB=0
 readonly DEFAULT_USB_BLACKLIST_PHONE=0
 readonly DEFAULT_USB_BLACKLIST_PRINTER=1
-readonly DEFAULT_USB_BLACKLIST_WWAN=1
+readonly DEFAULT_USB_BLACKLIST_WWAN=0
 
 # ----------------------------------------------------------------------------
 # Functions

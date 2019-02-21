@@ -121,7 +121,7 @@ ENERGY_PERF_POLICY_ON_BAT=power
 # Devices can be specified by disk ID also (lookup with: tlp diskid).
 # Note: DISK parameters below are effective only when this option is configured.
 # Default: "nvme0n1 sda"
-DISK_DEVICES="nvme0n1 sda sdb"
+DISK_DEVICES="nvme0n1 sda"
 
 # Disk advanced power management level: 1..254, 255 (max saving, min, off).
 # Levels 1..127 may spin down the disk; 255 allowable on most drives.
@@ -290,7 +290,7 @@ USB_BLACKLIST_PRINTER=1
 
 # WWAN devices are excluded from USB autosuspend:
 #   0=do not exclude, 1=exclude.
-# Default: 1
+# Default: 0
 USB_BLACKLIST_WWAN=0
 
 # Include listed devices into USB autosuspend even if already excluded
