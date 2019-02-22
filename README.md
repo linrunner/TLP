@@ -1,13 +1,18 @@
-TLP README - 08.02.2019
+# TLP - Linux Advanced Power Management
 
-TLP brings you the benefits of advanced power management for Linux without the need
-to understand every technical detail. TLP comes with a default configuration already
-optimized for battery life, so you may just install and forget it. Nevertheless TLP
-is highly customizable to fulfil your specific requirements.
+TLP saves laptop battery power on Linux without the need to understand every
+technical detail.
 
-TLP is a pure command line tool with automated background tasks. It does not contain a GUI.
+TLP comes with a default configuration already optimized for battery life, so
+you may just install and forget it. Nevertheless TLP is highly customizable to
+fulfil your specific requirements.
 
-Separate settings profiles depending on the power source AC/battery:
+TLP is a pure command line tool with automated background tasks. It does not
+contain a GUI.
+
+## Power profiles
+Depending on the power source (AC or battery) the following settings are applied:
+
 - Kernel laptop mode and dirty buffer params
 - Processor frequency scaling including "turbo boost" / "turbo core"
 - Limit max/min P-state to control power dissipation of the CPU - intel_pstate only
@@ -18,7 +23,7 @@ Separate settings profiles depending on the power source AC/battery:
 - AHCI link power management (ALPM) with device blacklist
 - AHCI runtime power management for host controllers and disks *EXPERIMENTAL*
 - PCIe active state power management (PCIe ASPM)
-- Runtime power management for PCI(e) bus devices
+- Runtime power management for PCIe bus devices
 - Intel GPU frequency limits
 - Radeon graphics power management (KMS and DPM)
 - Wifi power saving mode
@@ -26,7 +31,7 @@ Separate settings profiles depending on the power source AC/battery:
 - Power off optical drive in UltraBay/MediaBay
 - Audio power saving mode
 
-Additional functions:
+## Additional features
 - I/O scheduler (per disk)
 - USB autosuspend with device blacklist/whitelist (input devices excluded automatically)
 - Enable or disable integrated radio devices upon system startup and shutdown
@@ -38,13 +43,24 @@ Additional functions:
 - Battery charge thresholds - ThinkPads only
 - Recalibrate battery - ThinkPads only
 
-All TLP settings are stored in /etc/default/tlp. The default configuration
-provides optimized power saving out of the box.
+## Installation
+TLP packages are available for all major Linux distributions; see
+[Installation](https://linrunner.de/en/tlp/docs/tlp-linux-advanced-power-management.html#installation).
 
-Read the the full documentation at:
-- https://linrunner.de/tlp
+## Configuration
+The default configuration provides optimized power saving out of the box.
+
+Settings are stored in `/etc/default/tlp`;
+see [Configuration](https://linrunner.de/en/tlp/docs/tlp-configuration.html) for
+details.
+
+## Documentation
+Read the the full documentation at the website:
+
+- <https://linrunner.de/tlp>
 
 Or take a look at the manpages:
+
 - tlp
 - tlp-stat (display tlp status and active settings)
 - wifi, bluetooth, wwan (switch wireless devices on/off)
