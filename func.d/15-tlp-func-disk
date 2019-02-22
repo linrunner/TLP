@@ -338,7 +338,7 @@ set_ahci_runtime_pm () { # set ahci runtime power management
 
     # calc timeout in millisecs
     timeout="${AHCI_RUNTIME_PM_TIMEOUT-${DEFAULT_AHCI_RUNTIME_PM_TIMEOUT}}"
-    [ -z "$timeout" ] || timeout=$((timeout * 15000))
+    [ -z "$timeout" ] || timeout=$((timeout * 1000))
 
     # check values
     case "$control" in
