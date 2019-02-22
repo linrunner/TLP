@@ -16,7 +16,7 @@ readonly SMARTCTL=smartctl
 readonly SYSTEMCTL=systemctl
 readonly SYSTEMD=systemd
 
-readonly RE_AC_QUIRK='^XPS 15 95[56]0$'
+readonly RE_AC_QUIRK='^UNDEFINED$'
 readonly RE_ATA_ERROR='ata[0-9]+: SError: {.*CommWake }'
 
 # ----------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-+++ 1.2 --- 20.02.2019 +++
++++ 1.2 --- 22.02.2019 +++
 
 *** Beta version ***
 
@@ -13,6 +13,7 @@
       - tlp/tlp-stat: Temporarily overwrite configuration for one program
         invocation only: -- PARAM=value ...
       - Document intrinsic defaults in config file (Issue #353)
+      - Code verified with ShellCheck
     Graphics:
       - INTEL_GPU_MIN_FREQ_ON_AC/BAT, INTEL_GPU_MAX_FREQ_ON_AC/BAT,
         INTEL_GPU_BOOST_FREQ_ON_AC/BAT: Intel GPU frequency limits
@@ -33,14 +34,13 @@
       - Check systemd-rfkill.socket masked status
       - Disks: show all configured devices (consider default)
       - Intel GPU: show frequency limits and available frequencies
-      - Expose systems with broken AC/charger detection (Dell XPS 15 et al.)
       - Rename "Suggestions" section to "Recommendations"
       - Remove invocation via 'tlp stat'
     USB:
       - Remove long deprecated level/autosuspend attributes
 
   * Bugfixes
-    - Issue #193: do not try to start NetwokManager (systemd)
+    - Issue #193: do not try to start NetworkManager (systemd)
     - Issue #319: get_disk_dev logic is not compatible with NVMe devices
     - Issue #320: AC mode not detected with USB charger
     - Issue #331: Process '/usr/bin/tlp auto' failed with exit code 4
