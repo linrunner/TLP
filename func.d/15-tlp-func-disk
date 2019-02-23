@@ -376,7 +376,7 @@ set_ahci_runtime_pm () { # set ahci runtime power management
                 # rc=2 when unsuccessful
                 write_sysf "$control" ${device}/device/power/control || rc=2
             else
-                # writing timeout was successful
+                # writing timeout failed (or file not present)
                 rc=1
             fi
 
