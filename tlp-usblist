@@ -89,7 +89,7 @@ foreach $udev (grep { ! /:/ } glob USBD . "/*") {
     # get attributes
     if ( length (my $asv = catsysf ("$udev/power/autosuspend_delay_ms"))
         && length (my $cnv = catsysf ("$udev/power/control")) ) {
-        $usbv = sprintf ("control = %-5s autosuspend_delay_ms = %2d", $cnv . ",", $asv);
+        $usbv = sprintf ("control = %-5s autosuspend_delay_ms = %4d", $cnv . ",", $asv);
     }
 
     # save formatted result in hash
