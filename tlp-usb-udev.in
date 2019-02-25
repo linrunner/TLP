@@ -13,7 +13,7 @@
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/20-tlp-func-usb; do
     # shellcheck disable=SC1090
-    . $lib
+    . $lib || exit 70
 done
 
 # --- MAIN

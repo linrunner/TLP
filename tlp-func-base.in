@@ -39,7 +39,7 @@ readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T
 readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
 readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
 
-readonly RE_PARAM='^[A-Z_]+\=([0-9a-zA-Z _-]*|\"[0-9a-zA-Z _-]*\"|''[0-9a-zA-Z _-]*'')$'
+readonly RE_PARAM='^[A-Z_]+\=([0-9a-zA-Z _-]*|\"[0-9a-zA-Z _-]*\"|'\''[0-9a-zA-Z _-]*'\'')$'
 
 readonly DEBUG_TAGS_ALL="arg bat disk lock nm path pm ps rf run sysfs udev usb"
 
@@ -363,13 +363,13 @@ parse_args4config () { # parse command-line arguments: everything after the
             #   format is PARAMETER=value|"value"|'value'
             #   parameter name allows 'A'..'Z' and '_' only
             #   parameter value allows  'A'..'Z', 'a'..'z', '0'..'9', ' ', '_', '-'
-            # remark: piping output to 'read -r' won't work
-            IFS='=' read -r param value << EOF
-$(printf "%s" "$1" | grep -E "$RE_PARAM")
-EOF
-            if [ -n "$param" ] && [ -n "$value" ]; then
-                echo_debug "arg" "parse_args4config.param: $param=$value"
-                eval "$param=\"$value\"" 2> /dev/null
+            if printf "%s" "$1" | grep -E -q "$RE_PARAM"; then
+                param="${1%%=*}"
+                value="${1#*=}"
+                if [ -n "$param" ] && [ -n "$value" ]; then
+                    echo_debug "arg" "parse_args4config.param: $param=$value"
+                    eval "$param=\"$value\"" 2> /dev/null
+                fi
             fi
         elif [ "$1" = "--" ]; then
             # delimiter reached --> begin interpretation

@@ -11,7 +11,7 @@
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/25-tlp-func-rf @TLP_FLIB@/30-tlp-func-rf-sw; do
     # shellcheck disable=SC1090
-    . $lib
+    . $lib || exit 70
 done
 
 # --- Functions

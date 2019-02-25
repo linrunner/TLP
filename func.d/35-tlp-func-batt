@@ -58,7 +58,6 @@ check_battery_features () { # determine which battery feature APIs/tools are
     #       128=tp_smapi module not installed/
     #       253=laptop not supported/
     #       254=ThinkPad not supported/
-    #       255=superseded by natacpi
     #
     # 4. determine best method for
     #    reading battery data                   --> retval $_bm_read,
@@ -104,12 +103,6 @@ check_battery_features () { # determine which battery feature APIs/tools are
             break # exit loop on first battery detected
         fi
     done
-
-    if [ $_tpacpi -lt 1 ] && is_thinkpad && ! supports_tpacpi; then
-        # exclude not natacpi/tpacpi-bat capable ThinkPad models; prevents kernel error messages
-        _natacpi=253
-        echo_debug "bat" "check_battery_features.natacpi.old_thinkpad"
-    fi
     echo_debug "bat" "check_battery_features.natacpi: $_natacpi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
 
     # when not a Thinkpad --> we're done here
@@ -148,8 +141,6 @@ check_battery_features () { # determine which battery feature APIs/tools are
         if [ $_tpacpi -eq 0 ]; then
             # tpacpi available --> fill in methods depending on natacpi results
             case $_natacpi in
-                0) ;; # natacpi covers it all
-
                 1) # discharge needed
                     _bm_dischg="tpacpi"
                     ;;

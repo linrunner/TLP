@@ -10,7 +10,7 @@
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/[0-9][0-9]* @TLP_FLIB@/tlp-func-stat; do
     # shellcheck disable=SC1090
-    . $lib
+    . $lib || exit 70
 done
 
 # --- Constants
