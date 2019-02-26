@@ -41,6 +41,9 @@ readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
 
 readonly RE_PARAM='^[A-Z_]+\=([0-9a-zA-Z _-]*|\"[0-9a-zA-Z _-]*\"|'\''[0-9a-zA-Z _-]*'\'')$'
 
+# power supplies: ignore MacBook Pro 2017 sbs-charger and hid devices
+readonly RE_PS_IGNORE='sbs-charger|hidpp_battery'
+
 readonly DEBUG_TAGS_ALL="arg bat disk lock nm path pm ps rf run sysfs udev usb"
 
 readonly DEFAULT_TLP_ENABLE=0
@@ -504,64 +507,90 @@ is_thinkpad () { # check for ThinkPad by saved model string
 get_sys_power_supply () { # get current power supply
                           # retval/rc: $_syspwr (0=ac, 1=battery, 2=unknown)
 
-    local psrc
+    # _syspwr is determined as follows:
+    #
+    #             AC online:  | none | 1    | 0    |
+    #           +------------ +------+------+------+
+    # battery   | none        | 2    | 0    | 1    |
+    # status:   | discharging | 1    | 0    | 1    |
+    #           | idle        | 0    | 0    | 1    |
+    #
+    # Note: existing AC online status has precendence over any battery status
 
+    local psrc
     _syspwr=
 
     for psrc in /sys/class/power_supply/*; do
         # -f $psrc/type not necessary - read_sysf() handles this
+
+        # ignore atypical power supplies
+        echo "$psrc" | grep -E -q "$RE_PS_IGNORE" && continue
+
         case "$(read_sysf $psrc/type)" in
             Mains|USB)
-                # AC detected, check if online;
-                # exclude MacBook Pro 2017 sbs-charger
-                if [ "$(read_sysf $psrc/online)" = "1" ] \
-                    && [ "${psrc##/*/}" != "sbs-charger" ] \
-                    && [ "$X_SIMULATE_AC_QUIRK" != "1" ]; then
+                # AC detected
+                # skip device to simulate broken AC detection
+                [ "$X_SIMULATE_AC_QUIRK" = "1" ] && continue
+
+                # check if online
+                if [ "$(read_sysf $psrc/online)" = "1" ]; then
+                    # AC online
                     _syspwr=0
-                    echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_online"
-                    break
+                    echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_online: syspwr=$_syspwr"
+                else
+                    # AC offline means battery
+                    _syspwr=1
+                    echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_offline: syspwr=$_syspwr"
                 fi
-                # else AC not online => keep $_syspwr as-is
+                break # AC found --> end search
                 ;;
 
             Battery)
-                # battery detected --> inspect unless:
-                # - a discharging battery has been found beforehand; or
-                # - it's a hid device
-                if [ "$_syspwr" != "1" ] \
-                    && echo "${psrc##/*/}" | grep -q -v 'hidpp_battery'; then
-                    case "$(read_sysf $psrc/status)" in
-                        Discharging)
-                            if ! lockpeek_tlp tlp_discharge; then
-                                # discharging means battery ...
-                                _syspwr=1
-                                echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging"
-                            else
-                                # ... unless forced discharge is in progress,
-                                # which means AC and end of iteration
-                                _syspwr=0
-                                echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).forced_discharge"
-                                break
-                            fi
-                            ;;
+                # battery detected
+                # --> inspect unless discharging battery has been found beforehand
+                [ "$_syspwr" = "1" ] && continue
 
-                        *) # everything else including "Unknown" means AC
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_idle"
+                case "$(read_sysf $psrc/status)" in
+                    Discharging)
+                        if ! lockpeek_tlp tlp_discharge; then
+                            # discharging means battery ...
+                            _syspwr=1
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging: syspwr=$_syspwr"
+                        else
+                            # ... unless forced discharge is in progress,
+                            # which means AC and end of iteration
                             _syspwr=0
-                            ;;
-                    esac
-                    # in any case: don't stop looking for AC and more batteries
-                fi
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).forced_discharge: syspwr=$_syspwr"
+                            break
+                        fi
+                        ;;
+
+                    *) # everything else including "Unknown" could mean AC,
+                       # so re-check after a short delay to be sure to catch
+                       # lagging battery status updates
+                        sleep 0.5
+                        if [ "$(read_sysf $psrc/status)" = "Discharging" ]; then
+                            _syspwr=1
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging2: syspwr=$_syspwr"
+                        else
+                            _syspwr=0
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_idle: syspwr=$_syspwr"
+                        fi
+                        ;;
+                esac
+                # battery found: continue looking for AC and more batteries
                 ;;
 
-            *)
-                echo_debug "ps" "get_sys_power_supply.unknown: ${psrc##/*/}"
+            *) # unknown
                 ;;
         esac
     done
 
-    # set pwrsrc to unknown if we haven't seen any AC/battery power source so far
-    : ${_syspwr:=2}
+    # set _syspwr to unknown if we haven't seen any AC/battery power source so far
+    if [ -z "$_syspwr" ]; then
+        _syspwr=2
+        echo_debug "ps" "get_sys_power_supply.unknown: syspwr=$_syspwr"
+    fi
 
     return $_syspwr
 }
