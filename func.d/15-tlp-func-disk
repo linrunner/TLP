@@ -328,7 +328,7 @@ set_sata_link_power () { # set ahci link power management
 set_ahci_runtime_pm () { # set ahci runtime power management
     # $1: 0=ac mode, 1=battery mode
 
-    local control device timeout rc
+    local control device ec timeout rc
 
     if [ "$1" = "1" ]; then
         control=${AHCI_RUNTIME_PM_ON_BAT:-}
@@ -352,36 +352,45 @@ set_ahci_runtime_pm () { # set ahci runtime power management
         return 0
     fi
 
-    # iterate ahci devices
-    for device in $AHCID; do
-        write_sysf "$control" ${device}/power/control
-        echo_debug "pm" "set_ahci_runtime_pm($1).$control: host=$device; rc=$?"
-    done
-
     # when timeout is unconfigured we're done here
     if [ -z "$timeout" ]; then
         echo_debug "pm" "set_ahci_runtime_pm($1).timeout_not_configured"
         return 0
     fi
 
-    # iterate block devices
+    # iterate disks
+    ec=0
     for device in $BLOCKD; do
         if [ -f ${device}/device/power/control ]; then
             # write timeout first because writing "auto" with the default
             # timeout -1 still active will lockup the machine!
             rc=0
-
             if write_sysf "$timeout" ${device}/device/power/autosuspend_delay_ms; then
                 # writing timeout was successful --> proceed with activation;
-                # rc=2 when unsuccessful
-                write_sysf "$control" ${device}/device/power/control || rc=2
+                if ! write_sysf "$control" ${device}/device/power/control; then
+                    # writing control failed
+                    rc=2
+                    ec=$((ec+1))
+                fi
             else
                 # writing timeout failed (or file not present)
                 rc=1
+                ec=$((ec+1))
             fi
-
             echo_debug "pm" "set_ahci_runtime_pm($1).$control: disk=$device timeout=$timeout; rc=$rc"
         fi
+    done
+
+    if [ $ec -gt 0 ]; then
+        # quit: do not touch hosts if write failed for at least one disk
+        echo_debug "pm" "set_ahci_runtime_pm($1).quit; ec=$ec"
+        return 0
+    fi
+
+    # iterate hosts
+    for device in $AHCID; do
+        write_sysf "$control" ${device}/power/control
+        echo_debug "pm" "set_ahci_runtime_pm($1).$control: host=$device; rc=$?"
     done
 
     return 0

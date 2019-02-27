@@ -169,7 +169,7 @@ SATA_LINKPWR_ON_BAT="med_power_with_dipm min_power"
 
 # Runtime Power Management for AHCI host and disks devices:
 #   on=disable, auto=enable.
-# EXPERIMENTAL ** WARNING: auto will most likely cause system lockups/data loss.
+# EXPERIMENTAL ** WARNING: auto may cause system lockups/data loss.
 # Default: <none>
 #AHCI_RUNTIME_PM_ON_AC=on
 #AHCI_RUNTIME_PM_ON_BAT=on
