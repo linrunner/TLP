@@ -14,7 +14,7 @@
 readonly UDEVADM=udevadm
 
 readonly AHCID=$PCID'/*/ata*'
-readonly BLOCKD='/sys/block/sd*'
+readonly BLOCKD='/sys/block/nvme* /sys/block/sd*'
 
 readonly DEFAULT_DISK_DEVICES="nvme0n1 sda"
 readonly DEFAULT_DISK_IDLE_SECS_ON_AC=0
