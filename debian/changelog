@@ -1,7 +1,8 @@
-tlp (1.1.907-1) unstable; urgency=low
+tlp (1.1.907-2) unstable; urgency=low
 
   [Thomas Koch]
   * Track development version
+  * Build-Depends: debhelper (>= 9.20160709) | debhelper (>= 9), dh-systemd
   * Remove all pm-utils related stuff
   * Demote linux-tools Recommends to Suggests and prefer generic (LP: #1783455)
   * Standards-Version 4.1.4
@@ -10,7 +11,7 @@ tlp (1.1.907-1) unstable; urgency=low
   * debian/tlp-rdw.install: new command tlp-rdw
   * debian/tlp-rdw.manpages: tlp-rdw.8
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 27 Feb 2019 15:42:45 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 01 Mar 2019 13:29:42 +0100
 
 tlp (1.1-2) unstable; urgency=medium
 
