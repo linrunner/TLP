@@ -245,7 +245,6 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     else
         model="$X_SIMULATE_MODEL"
     fi
-    echo $model
     echo "+++ System Info"
     echo "System         = $(read_dmi sys_vendor) $model $(read_dmi product_name)"
     echo "BIOS           = $(read_dmi bios_version)"
