@@ -21,7 +21,7 @@ Depending on the power source (AC or battery) the following settings are applied
 - Processor performance versus energy savings policy (x86_energy_perf_policy)
 - Disk drive advanced power management level (APM) and spin down timeout
 - AHCI link power management (ALPM) with device blacklist
-- AHCI runtime power management for host controllers and disks *EXPERIMENTAL*
+- AHCI runtime power management for host controllers and disks (EXPERIMENTAL)
 - PCIe active state power management (PCIe ASPM)
 - Runtime power management for PCIe bus devices
 - Intel GPU frequency limits
