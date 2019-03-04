@@ -206,3 +206,6 @@ checkbashisms:
 
 shellcheck:
 	shellcheck -s dash $(SHFILES) || true
+
+checkdupconst:
+	{ sed -n -r -e 's,^.*readonly\s+([A-Za-z_][A-Za-z_0-9]*)=.*$$,\1,p' $(SHFILES) | sort | uniq -d; } || true
