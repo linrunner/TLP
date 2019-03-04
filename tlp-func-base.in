@@ -39,7 +39,7 @@ readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T
 readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
 readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
 
-readonly RE_PARAM='^[A-Z_]+\=([0-9a-zA-Z _-]*|\"[0-9a-zA-Z _-]*\"|'\''[0-9a-zA-Z _-]*'\'')$'
+readonly RE_PARAM='^[A-Z_]+[0-9]*\=[0-9a-zA-Z _-]*$'
 
 # power supplies: ignore MacBook Pro 2017 sbs-charger and hid devices
 readonly RE_PS_IGNORE='sbs-charger|hidpp_battery'
@@ -363,15 +363,15 @@ parse_args4config () { # parse command-line arguments: everything after the
     while [ $# -gt 0 ]; do
         if [ $dflag -eq 1 ]; then
             # delimiter was passed --> sanitize and parse argument:
-            #   format is PARAMETER=value|"value"|'value'
-            #   parameter name allows 'A'..'Z' and '_' only
+            #   format is PARAMETER=value (quotes stripped by the shell calling tlp)
+            #   parameter name allows 'A'..'Z' and '_' only, may end in a number (_BAT0)
             #   parameter value allows  'A'..'Z', 'a'..'z', '0'..'9', ' ', '_', '-'
             if printf "%s" "$1" | grep -E -q "$RE_PARAM"; then
                 param="${1%%=*}"
                 value="${1#*=}"
                 if [ -n "$param" ] && [ -n "$value" ]; then
                     echo_debug "arg" "parse_args4config.param: $param=$value"
-                    eval "$param=\"$value\"" 2> /dev/null
+                    eval "$param='$value'" 2> /dev/null
                 fi
             fi
         elif [ "$1" = "--" ]; then
