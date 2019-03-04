@@ -1,4 +1,4 @@
-+++ 1.2 --- 22.02.2019 +++
++++ 1.2 --- 04.03.2019 +++
 
 *** Beta version ***
 
@@ -18,9 +18,10 @@
       - INTEL_GPU_MIN_FREQ_ON_AC/BAT, INTEL_GPU_MAX_FREQ_ON_AC/BAT,
         INTEL_GPU_BOOST_FREQ_ON_AC/BAT: Intel GPU frequency limits
     Radio Devices:
-       - Retire compatibility with Network Manager 0.9.8 (Ubuntu 14.04 EOL)
        - tlp-rdw: new command to disable RDW actions temporarily (until reboot)
+       - Support ThinkPad Pro Dock CS18 (17ef:306f)
        - USB_BLACKLIST_WWAN: disable by default
+       - Retire compatibility with Network Manager 0.9.8 (Ubuntu 14.04 EOL)
     PCI(e) devices:
        - RUNTIME_PM_BLACKLIST: add mei_me, pcieport
     ThinkPad Battery:

@@ -17,9 +17,6 @@ ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}
 # ThinkPad Pro Dock
 ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/1012/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
 
-# ThinkPad Basic Dock
-# *** TODO: yet unknown ***
-
 # ThinkPad OneLink Pro Dock (USB3 Gigabit LAN interface)
 ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/304b/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
 ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/304f/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
@@ -29,3 +26,6 @@ ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}
 
 # ThinkPad OneLink Dock Plus
 ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/3054/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
+
+# ThinkPad Pro Dock (CS18)
+ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/306f/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
