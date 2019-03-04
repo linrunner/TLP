@@ -66,14 +66,14 @@ printparm () { # formatted output of sysfile - general
         if [ -n "$namsg" ]; then
             if [ "$namsg" != "_" ]; then
                 # use specific n/a text
-                format=$(echo $format | sed -r "s/##(.*)##/($namsg)/" | sed -r "s/\[.*\]//")
+                format=$(echo $format | sed -r -e "s/##(.*)##/($namsg)/" -e "s/\[.*\]//")
             else
                 # _ = skip
                 sysf=""
             fi
         else
             # empty n/a text, use default text
-            format=$(echo $format | sed -r "s/##(.*)##/(not available)/" | sed -r "s/\[.*\]//")
+            format=$(echo $format | sed -r -e "s/##(.*)##/(not available)/" -e "s/\[.*\]//")
         fi
         # output n/a text or skip
         [ -n "$sysf" ] && printf "$format\n" "$sysf"
