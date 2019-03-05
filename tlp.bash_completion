@@ -20,7 +20,7 @@ _tlp() {
     local cur prev words cword opts bats
     _init_completion || return
 
-    opts="start ac bat usb bayoff discharge setcharge fullcharge chargeonce recalibrate stat diskid"
+    opts="start ac bat usb bayoff discharge setcharge fullcharge chargeonce recalibrate diskid"
 
     case $cword in
         1)
