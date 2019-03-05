@@ -90,6 +90,17 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
             fi # bluetooth
 
             if [ -z "$exc" ]; then
+                # check for scanners:
+                # libsane_matched envvar is set by libsane's udev rules
+                if [ "$libsane_matched" = "yes" ] || [ "$2" = "batch" ] \
+                    && $UDEVADM info -q property $usbdev 2>/dev/null | grep -q 'libsane_matched=yes'; then
+                    # do not touch this device
+                    control="black"
+                    exc="_libsane"
+                fi
+            fi
+
+            if [ -z "$exc" ]; then
                 # check for phone devices
                 : ${USB_BLACKLIST_PHONE:=${DEFAULT_USB_BLACKLIST_PHONE}}
 
@@ -202,8 +213,15 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
 
         if [ "$(read_sysf $usbdev/power/control)" != "$control" ]; then
             # set control, write actual changes only
-            write_sysf "$control" $usbdev/power/control; rc1=$?
-            chg=1
+            case $control in
+                auto|on)
+                    write_sysf "$control" $usbdev/power/control; rc1=$?
+                    chg=1
+                    ;;
+
+                black) # do not touch blacklisted device
+                    ;;
+            esac
         fi
 
         if [ "$X_TLP_USB_SET_AUTOSUSPEND_DELAY" = "1" ]; then

@@ -38,6 +38,7 @@
       - Rename "Suggestions" section to "Recommendations"
       - Remove invocation via 'tlp stat'
     USB:
+      - Exclude scanners managed by libsane from autosuspend
       - Remove long deprecated level/autosuspend attributes
 
   * Bugfixes
