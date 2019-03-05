@@ -92,6 +92,7 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
             if [ -z "$exc" ]; then
                 # check for scanners:
                 # libsane_matched envvar is set by libsane's udev rules
+                # shellcheck disable=SC2154
                 if [ "$libsane_matched" = "yes" ] || [ "$2" = "batch" ] \
                     && $UDEVADM info -q property $usbdev 2>/dev/null | grep -q 'libsane_matched=yes'; then
                     # do not touch this device
