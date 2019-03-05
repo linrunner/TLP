@@ -318,8 +318,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
             fi
         done
         for su in $RFKILL_SERVICES; do
-            ise=$($SYSTEMCTL is-enabled $su 2> /dev/null)
-            if [ -n "$ise" ] && [ "$ise" != "masked" ]; then
+            if $SYSTEMCTL is-enabled $su 2> /dev/null | grep -q -v 'masked'; then
                 echo "Notice: $su is not masked -- invoke \"systemctl mask $su\" to correct this!"
                 cnt=$((cnt+1))
             fi
