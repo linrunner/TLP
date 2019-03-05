@@ -20,6 +20,7 @@ readonly LAPMODE=laptop_mode
 readonly LOGGER=logger
 readonly MODPRO=modprobe
 readonly TPACPIBAT=@TLP_TLIB@/tpacpi-bat
+readonly UDEVADM=udevadm
 
 readonly LOCKFILE=$RUNDIR/lock
 readonly LOCKTIMEOUT=2

@@ -11,8 +11,6 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly UDEVADM=udevadm
-
 readonly AHCID=$PCID'/*/ata*'
 readonly BLOCKD='/sys/block/nvme* /sys/block/sd*'
 
