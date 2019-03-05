@@ -1029,22 +1029,23 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
     if is_thinkpad; then
         # add ThinkPad specific recommendations
-        [ $_tpsmapi -eq 128 ] && suout="${suout}Install tp-smapi kernel modules for ThinkPad battery features\n"
+        [ $_tpsmapi -eq 128 ] && reout="${reout}Install tp-smapi kernel modules for ThinkPad battery features\n"
         case $_tpacpi in
-            127) reout="${suout}Install tpacpi-bat program for ThinkPad battery features\n" ;;
-            128) reout="${suout}Install acpi-call kernel module for ThinkPad battery features\n" ;;
+            127) reout="${reout}Install tpacpi-bat program for ThinkPad battery features\n" ;;
+            128) reout="${reout}Install acpi-call kernel module for ThinkPad battery features\n" ;;
         esac
     fi # if ThinkPad
 
     if [ "$show_all" = "1" ]; then
         # add other recommendations
-        cmd_exists ethtool  || reout="${suout}Install ethtool to disable Wake On LAN (WOL)\n"
-        cmd_exists smartctl || reout="${suout}Install smartmontools for disk drive health info\n"
+        cmd_exists ethtool  || reout="${reout}Install ethtool to disable Wake On LAN (WOL)\n"
+        cmd_exists smartctl || reout="${reout}Install smartmontools for disk drive health info\n"
     fi
 
     if [ -n "$reout" ]; then
         echo "+++ Recommendations"
-        printf "%s" "$reout" | sed -r 's/^/\* /'
+        # shellcheck disable=SC2059
+        printf "$reout" | sed -r 's/^/\* /'
         echo
     fi
 
