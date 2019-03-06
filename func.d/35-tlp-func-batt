@@ -544,7 +544,7 @@ set_charge_thresholds () { # write all charge thresholds from configuration
 
     if battery_present BAT0; then
         # validate thresholds and if ok write them (quiet mode)
-        normalize_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1" \
+        normalize_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0" \
             && set_thresholds BAT0 $_start_thresh $_stop_thresh 0
     fi
 
