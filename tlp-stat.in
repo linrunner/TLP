@@ -1028,15 +1028,20 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
     if is_thinkpad; then
         # add ThinkPad specific recommendations
-        [ $_tpsmapi -eq 128 ] && reout="${reout}Install tp-smapi kernel modules for ThinkPad battery features\n"
+        [ $_tpsmapi -eq 128 ] \
+            && reout="${reout}Install tp-smapi kernel modules for ThinkPad battery thresholds and recalibration\n"
         case $_tpacpi in
-            127) reout="${reout}Install tpacpi-bat program for ThinkPad battery features\n" ;;
-            128) case $_natacpi in
-                0) ;; # natacpi covers it all
-                1) reout="${reout}Install acpi-call kernel module for ThinkPad battery discharge/recalibrate\n" ;;
-                *) reout="${reout}Install acpi-call kernel module for ThinkPad battery features\n" ;;
-            esac
+            127) missing="tpacpi-bat program" ;;
+            128) missing="acpi_call kernel module" ;;
+            *)   missing="" ;;
         esac
+        if [ -n "$missing" ]; then
+            case $_natacpi in
+                0) ;; # natacpi covers it all
+                1) reout="${reout}Install $missing for ThinkPad battery recalibration\n" ;;
+                *) reout="${reout}Install $missing for ThinkPad battery thresholds and recalibration\n" ;;
+            esac
+        fi
     fi # if ThinkPad
 
     if [ "$show_all" = "1" ]; then
