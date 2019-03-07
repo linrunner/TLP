@@ -3,10 +3,10 @@
 ### Before you report a bug
 Make shure you have:
 
-* Followed the appropiate [Installation instructions](https://localhost/linrunner/tlp/docs/tlp-linux-advanced-power-management.html#installation)
-* Read the [Settings guide](https://localhost/linrunner/tlp/docs/tlp-configuration.html)
-* Carefully checked the [FAQ](http://linrunner.de/en/tlp/docs/tlp-faq.html)
-* Tried to isolate the cause as described in [Troubleshooting](http://linrunner.de/en/tlp/docs/tlp-troubleshooting.html)
+* Followed the appropiate [Installation instructions](https://linrunner.de/en/tlp/docs/tlp-linux-advanced-power-management.html#installation)
+* Read the [Settings guide](https://linrunner.de/en/tlp/docs/tlp-configuration.html)
+* Carefully checked the [FAQ](https://linrunner.de/en/tlp/docs/tlp-faq.html)
+* Tried to isolate the cause as described in [Troubleshooting](https://linrunner.de/en/tlp/docs/tlp-troubleshooting.html)
 
 ### What not to report
 * Missing packages (including tp-smapi and acpi_call)
