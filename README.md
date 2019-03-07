@@ -17,7 +17,6 @@ Depending on the power source (AC or battery) the following settings are applied
 - Processor frequency scaling including "turbo boost" / "turbo core"
 - Limit max/min P-state to control power dissipation of the CPU - intel_pstate only
 - HWP energy performance hints
-- Power aware process scheduler for multi-core/hyper-threading
 - Processor performance versus energy savings policy (x86_energy_perf_policy)
 - Disk drive advanced power management level (APM) and spin down timeout
 - AHCI link power management (ALPM) with device blacklist
@@ -39,9 +38,7 @@ Depending on the power source (AC or battery) the following settings are applied
 - Radio device wizard: switch radios upon network connect/disconnect and dock/undock
 - Disable Wake On LAN
 - Integrated WWAN and bluetooth state is restored after suspend/hibernate
-- Untervolting of Intel processors - requires kernel with PHC-Patch
-- Battery charge thresholds - ThinkPads only
-- Recalibrate battery - ThinkPads only
+- Battery charge thresholds and recalibration - ThinkPads only
 
 ## Installation
 TLP packages are available for all major Linux distributions; see
