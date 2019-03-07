@@ -201,6 +201,8 @@ uninstall-man-rdw:
 
 uninstall: uninstall-tlp uninstall-rdw
 
+checkall: checkbashisms shellcheck checkdupconst
+
 checkbashisms:
 	checkbashisms $(SHFILES) || true
 
