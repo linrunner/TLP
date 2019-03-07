@@ -65,3 +65,9 @@ Or take a look at the manpages:
 - tlp-stat (display tlp status and active settings)
 - wifi, bluetooth, wwan (switch wireless devices on/off)
 - run-on-ac, run-on-bat
+
+## Support
+Please use adequate Linux forums for help and support questions.
+
+## Bug reports
+See the [Bug Reporting Howto](https://github.com/linrunner/TLP/blob/master/.github/Bug_Reporting_Howto.md).
