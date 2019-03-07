@@ -11,7 +11,7 @@ Make shure you have:
 ### What not to report
 * Missing packages (including tp-smapi and acpi_call)
 * Asking for help about installation, configuration and usage
-* Asking for hardware support
+* Asking for hardware support (e.g. broken or worn out batteries)
 
 Please use adequate Linux forums for help and support questions.
 
