@@ -3,8 +3,8 @@
 ### Before you report a bug
 Make shure you have:
 
-* Followed the appropiate [installation instructions](https://localhost/linrunner/tlp/docs/tlp-linux-advanced-power-management.html#installation)
-* Read the [settings guide](https://localhost/linrunner/tlp/docs/tlp-configuration.html)
+* Followed the appropiate [Installation instructions](https://localhost/linrunner/tlp/docs/tlp-linux-advanced-power-management.html#installation)
+* Read the [Settings guide](https://localhost/linrunner/tlp/docs/tlp-configuration.html)
 * Carefully checked the [FAQ](http://linrunner.de/en/tlp/docs/tlp-faq.html)
 * Tried to isolate the cause as described in [Troubleshooting](http://linrunner.de/en/tlp/docs/tlp-troubleshooting.html)
 
