@@ -10,7 +10,8 @@ fulfil your specific requirements.
 TLP is a pure command line tool with automated background tasks. It does not
 contain a GUI.
 
-## Power profiles
+## Features
+### Power profiles
 Depending on the power source (AC or battery) the following settings are applied:
 
 - Kernel laptop mode and dirty buffer params
@@ -30,7 +31,7 @@ Depending on the power source (AC or battery) the following settings are applied
 - Power off optical drive in UltraBay/MediaBay
 - Audio power saving mode
 
-## Additional features
+### Additional
 - I/O scheduler (per disk)
 - USB autosuspend with device blacklist/whitelist (input devices excluded automatically)
 - Enable or disable integrated radio devices upon system startup and shutdown

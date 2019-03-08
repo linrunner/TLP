@@ -143,17 +143,18 @@ DISK_APM_LEVEL_ON_BAT="128 128"
 #DISK_SPINDOWN_TIMEOUT_ON_BAT="0 0"
 
 # Select IO scheduler for the disk devices.
-# Multiqueue (blk-mq):
-#   none, mq-deadline, kyber
-# Non-multiqueue:
-#   cfq, deadline, noop
+# Multi queue (blk-mq) schedulers:
+#   mq-deadline(*), none, kyber, bfq
+# Single queue schedulers:
+#   deadline(*), cfq, bfq, noop
+# (*) recommended.
 # Separate values for multiple disks with spaces. Use the special value 'keep'
 # to keep the kernel default scheduler for the particular disk.
 # Notes:
-# - Non-multiqueue schedulers are deprecated and were removed together with
+# - Multi queue (blk-mq) may need kernel boot option 'scsi_mod.use_blk_mq=1'
+#   and 'modprobe mq-deadline-iosched|kyber|bfq' on kernels < 5.0
+# - Single queue schedulers are legacy now and were removed together with
 #   the old block layer in kernel 5.0
-# - Multiqueue (blk-mq) may need kernel boot option 'scsi_mod.use_blk_mq=1'
-#   and modprobe mq-deadline-iosched/kyber on kernels < 5.0
 # Default: keep
 #DISK_IOSCHED="mq-deadline mq-deadline"
 
