@@ -68,4 +68,10 @@ Or take a look at the manpages:
 Please use adequate Linux forums for help and support questions.
 
 ## Bug reports
-See the [Bug Reporting Howto](https://github.com/linrunner/TLP/blob/master/.github/Bug_Reporting_Howto.md).
+Refer to the [Bug Reporting Howto](https://github.com/linrunner/TLP/blob/master/.github/Bug_Reporting_Howto.md).
+
+## Contributing
+Contributing is not only about coding and pull requests. Volunteers helping
+with testing and support are always welcome!
+
+See [Contributing](https://github.com/linrunner/TLP/blob/master/.github/CONTRIBUTING.md).

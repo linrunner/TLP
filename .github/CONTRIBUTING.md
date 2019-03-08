@@ -1,14 +1,26 @@
-### Issues
+## How can I contribute to TLP?
 
-Disclaimer: the issue tracker is intended for TLP bug reports only, *not* as a
-general support forum. For questions on how to install, configure or use TLP
-and ThinkPad battery features, visit adequate Linux forums.
+Contributing is not only about coding and pull requests. Volunteers helping
+with testing and support are always welcome!
 
-*Before* opening an issue read the [FAQ](http://linrunner.de/en/tlp/docs/tlp-faq.html)
-and [Troubleshooting](http://linrunner.de/en/tlp/docs/tlp-troubleshooting.html).
+### Testing
+You may install and test the master branch at any time. Feel free to
+file bug reports against it.
 
-**When opening an issue, provide all the information requested by the template.**
+Please refer to the [developer docs](https://linrunner.de/en/tlp/docs/tlp-developer-documentation.html)
+for more information.
+
+### Support
+Experienced users are welcome to help others with TLP
+in their Linux community:
+
+* Reddit
+* StackExchange
+* Forums
+* User groups
+* or else
 
 ### Code
 
-Please read the [developer docs](http://linrunner.de/en/tlp/docs/tlp-developer-documentation.html) before contributing code.
+Read the [developer docs](https://linrunner.de/en/tlp/docs/tlp-developer-documentation.html)
+before developing code. Please base your pull requests on the master branch.
