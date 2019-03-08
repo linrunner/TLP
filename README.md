@@ -59,7 +59,8 @@ Read the the full documentation at the website:
 
 Or take a look at the manpages:
 
-- tlp
+- tlp (apply settings)
+- tlp-rdw (control the radio device wizard)
 - tlp-stat (display tlp status and active settings)
 - wifi, bluetooth, wwan (switch wireless devices on/off)
 - run-on-ac, run-on-bat
