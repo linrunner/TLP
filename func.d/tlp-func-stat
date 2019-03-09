@@ -360,9 +360,9 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
 
     if [ -f /sys/block/$_disk_dev/queue/scheduler ]; then
         if [ -d /sys/block/$_disk_dev/mq ]; then
-            print_sysf_trim "  Scheduler = %s (multiqueue)\n" /sys/block/$_disk_dev/queue/scheduler
+            print_sysf_trim "  Scheduler = %s (multi queue)\n" /sys/block/$_disk_dev/queue/scheduler
         else
-            print_sysf_trim "  Scheduler = %s (non-multiqueue)\n" /sys/block/$_disk_dev/queue/scheduler
+            print_sysf_trim "  Scheduler = %s (single queue)\n" /sys/block/$_disk_dev/queue/scheduler
         fi
     fi
 
