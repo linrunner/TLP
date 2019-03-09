@@ -6,7 +6,7 @@
     Disks:
       - Support for NVMe devices
       - Support for removable drives e.g. USB / IEE1394 devices
-      - Improve support for multiqueue io schedulers (blk-mq)
+      - Improve support for multi queue I/O schedulers (blk-mq)
     General:
       - tlp bat/ac: keep manual power settings until tlp start (Issue #349)
       - Remove all pm-utils scripts (Issue #363)

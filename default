@@ -142,7 +142,7 @@ DISK_APM_LEVEL_ON_BAT="128 128"
 #DISK_SPINDOWN_TIMEOUT_ON_AC="0 0"
 #DISK_SPINDOWN_TIMEOUT_ON_BAT="0 0"
 
-# Select IO scheduler for the disk devices.
+# Select I/O scheduler for the disk devices.
 # Multi queue (blk-mq) schedulers:
 #   mq-deadline(*), none, kyber, bfq
 # Single queue schedulers:
