@@ -9,7 +9,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="1.1.909"
+readonly TLPVER="1.2"
 
 readonly CONFFILE=@TLP_CONF@
 readonly RUNDIR=@TLP_RUN@
