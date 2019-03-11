@@ -1,4 +1,4 @@
-tlp (1.1.909-1) unstable; urgency=low
+tlp (1.2-1) unstable; urgency=low
 
   [Thomas Koch]
   * Track development version
@@ -11,7 +11,7 @@ tlp (1.1.909-1) unstable; urgency=low
   * debian/tlp-rdw.install: new command tlp-rdw
   * debian/tlp-rdw.manpages: tlp-rdw.8
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 06 Mar 2019 09:50:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 11 Mar 2019 06:52:42 +0100
 
 tlp (1.1-2) unstable; urgency=medium
 
