@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 9.20160709) | debhelper (>= 9), dh-systemd
 Standards-Version: 4.1.4
 Vcs-Browser: https://github.com/linrunner/TLP/tree/debian/current
 Vcs-Git: https://github.com/linrunner/TLP/tree/debian/current
-Homepage: http://linrunner.de/tlp
+Homepage: https://linrunner.de/tlp
 
 Package: tlp
 Architecture: all
