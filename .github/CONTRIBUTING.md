@@ -8,6 +8,8 @@ You may install and test the master branch at any time. Feel free to
 [file bug reports](https://github.com/linrunner/TLP/blob/master/.github/Bug_Reporting_Howto.md)
 against it.
 
+Beta packages are [published here](https://download.linrunner.de/packages/) once available.
+
 Please refer to the [developer docs](https://linrunner.de/en/tlp/docs/tlp-developer-documentation.html)
 for more information.
 
