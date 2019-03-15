@@ -1,7 +1,12 @@
+tlp (1.2.1-1) unstable; urgency=medium
+
+  * New upstream version 1.2.1 (bugfix)
+
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 18 Mar 2019 18:01:42 +0100
+
 tlp (1.2-1) unstable; urgency=low
 
   [Thomas Koch]
-  * Track development version
   * Build-Depends: debhelper (>= 9.20160709) | debhelper (>= 9), dh-systemd
   * Remove all pm-utils related stuff
   * Demote linux-tools Recommends to Suggests and prefer generic (LP: #1783455)
