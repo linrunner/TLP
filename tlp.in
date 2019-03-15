@@ -50,7 +50,7 @@ apply_common_settings () { # apply settings common to all modes
 }
 
 show_usage () {
-    echo "Usage: tlp start|true|bat|false|ac|usb|bayoff|discharge|setcharge|fullcharge|recalibrate|diskid" 1>&2
+    echo "Usage: tlp start|true|bat|false|ac|usb|bayoff|chargeonce|discharge|setcharge|fullcharge|recalibrate|diskid" 1>&2
 }
 
 parse_args () { # parse command-line arguments
@@ -85,7 +85,7 @@ parse_args () { # parse command-line arguments
                     _carg3=""
                     ;;
 
-                discharge|fullcharge|recalibrate)
+                chargeonce|discharge|fullcharge|recalibrate)
                     # commands with one or no arguments
                     _cmd="$1"
                     _cmd2=""

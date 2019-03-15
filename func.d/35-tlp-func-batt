@@ -691,8 +691,8 @@ chargeonce_battery () { # charge battery to upper threshold once
     case $_bm_read in
         natacpi|tpacpi) # use ACPI sysfiles
             if [ -f $_bd_read/energy_full ]; then
-                read_sysval $_bd_read/energy_full; efull=$?
-                read_sysval $_bd_read/energy_now; enow=$?
+                efull=$(read_sysval $_bd_read/energy_full)
+                enow=$(read_sysval $_bd_read/energy_now)
             fi
 
             if [ $efull -ne 0 ]; then
@@ -703,7 +703,7 @@ chargeonce_battery () { # charge battery to upper threshold once
             ;; # natacpi, tpacpi
 
         tpsmapi) # use tp-smapi sysfiles
-            read_sysval $_bd_read/remaining_percent; ccharge=$?
+            ccharge=$(read_sysval $_bd_read/remaining_percent)
             ;; # tpsmapi
 
         *) # invalid read method
