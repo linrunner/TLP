@@ -1,3 +1,13 @@
+tlp (1.2.900-1) unstable; urgency=low
+
+  * Track development version
+
+  [Thomas Koch]
+  * debian/rules: remove override_dh_auto_install,
+    TLP_WITH_SYSTEMD=1 is default now
+
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 19 Mar 2019 11:04:20 +0100
+
 tlp (1.2.1-1) unstable; urgency=medium
 
   * New upstream version 1.2.1 (bugfix)
