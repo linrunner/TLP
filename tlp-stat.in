@@ -1028,8 +1028,13 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
     if is_thinkpad; then
         # add ThinkPad specific recommendations
-        [ $_tpsmapi -eq 128 ] \
-            && reout="${reout}Install tp-smapi kernel modules for ThinkPad battery thresholds and recalibration\n"
+        if [ $_tpsmapi -eq 128 ]; then
+            if supports_tpsmapi_and_tpacpi; then
+                reout="${reout}Install tp-smapi kernel modules for extended battery info (e.g. the cycle count)\n"
+            else
+                reout="${reout}Install tp-smapi kernel modules for ThinkPad battery thresholds and recalibration\n"
+            fi
+        fi
         case $_tpacpi in
             127) missing="tpacpi-bat program" ;;
             128) missing="acpi_call kernel module" ;;
