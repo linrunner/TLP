@@ -1,6 +1,9 @@
 +++ 1.2.900 --- 19.03.2019 +++
 
-  * Development version
+  *** Development version ***
+
+  * Bugfixes
+    - Issue #395: ThinkPad X1C6 discharge malfunction
 
 +++ 1.2.1 --- 18.03.2019 +++
 
