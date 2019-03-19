@@ -117,7 +117,7 @@ endif
 ifneq ($(TLP_NO_INIT),1)
 	install -D -m 755 tlp.init $(_SYSV)/tlp
 endif
-ifeq ($(TLP_WITH_SYSTEMD),1)
+ifneq ($(TLP_WITH_SYSTEMD),0)
 	install -D -m 644 tlp.service $(_SYSD)/tlp.service
 	install -m 644 tlp-sleep.service $(_SYSD)/
 endif
