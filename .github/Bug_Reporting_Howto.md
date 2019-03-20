@@ -12,6 +12,7 @@ Make shure you have:
 ### What not to report
 * Missing packages (including tp-smapi and acpi_call)
 * Asking for help about installation, configuration and usage
+* Questions about your laptop's power consumption and how to optimize it
 * Deviations from powertop's recommendations
 * Hardware issues e.g. worn out or malfunctioning batteries
 
