@@ -10,11 +10,6 @@ SRV="systemd-rfkill"
 
 case "$1" in
     remove)
-        # Unmask conflicting upstart jobs (Package rfkill in Ubuntu)
-        for i in /etc/init/rfkill-*.override; do
-            [ ! -f "$i" ] || rm -f $i
-        done
-
         # Unmask conflicting systemd services
         for i in $(ls ${SYD} 2> ${NUL} | egrep "${SRV}"); do
             deb-systemd-helper unmask $i 2> ${NUL} || true

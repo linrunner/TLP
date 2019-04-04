@@ -10,14 +10,6 @@ SRV="systemd-rfkill"
 
 case "$1" in
     configure)
-        # Mask conflicting upstart jobs (Package rfkill in Ubuntu)
-        for i in /etc/init/rfkill-*.conf; do
-            if [ -f "$i" ] && [ ! -f "${i%.conf}.override" ]; then
-                # Do this only when no .override exists
-                echo "manual" > ${i%.conf}.override
-            fi
-        done
-
         # Mask conflicting systemd services
         for i in $(ls ${SYD} 2> ${NUL} | egrep "${SRV}"); do
             deb-systemd-helper mask $i 2> ${NUL} || true

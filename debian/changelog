@@ -5,8 +5,9 @@ tlp (1.2.900-1) unstable; urgency=low
   [Thomas Koch]
   * debian/rules: remove override_dh_auto_install,
     TLP_WITH_SYSTEMD=1 TLP_WITH_ELOGIND=1 is default now
+  * debian/postinst,postrm: remove mask/unmask of upstart jobs
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 04 Apr 2019 15:42:24 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 04 Apr 2019 16:16:42 +0100
 
 tlp (1.2.1-1) unstable; urgency=medium
 
@@ -66,34 +67,6 @@ tlp (1.1-1) unstable; urgency=low
 tlp (1.0-1) unstable; urgency=medium
 
   * [b811fae] New upstream version 1.0 (Closes: #850293)
-
-    Highlights:
-
-    - General
-      + TLP_PERSISTENT_DEFAULT: force battery settings on AC power
-        (or vice versa)
-
-    - Device bays
-      + BAY_POWEROFF_ON_AC: power off optical drive on AC power
-
-    - Graphics
-      + Blacklist all dGPU's by default and use kernel default for Runtime PM
-      + Improved compatibility with Bumblebee
-
-    - Processor
-      + CPU_HWP_ON_AC/BAT: HWP energy performance hints for Intel Skylake or
-        newer
-
-    - ThinkPad Battery
-      + RESTORE_THRESHOLDS_ON_BAT: restore charge thresholds when unplugging
-        AC
-      + Detect Intel Kaby Lake (*70) models
-      + tlp-stat: show "Charge total %" when more than one battery is present
-
-    - USB
-      Exclude certain devices from autosuspend to:
-      + Solve stability issues with bluetooth devices (USB_BLACKLIST_BTUSB)
-      + Enable phone charging (USB_BLACKLIST_PHONE)
 
   [ Thomas Koch ]
   * [639a7fe] debian/copyright,tlp.init: update copyright year
