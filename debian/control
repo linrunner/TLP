@@ -2,8 +2,8 @@ Source: tlp
 Maintainer: Thomas Koch <linrunner@gmx.net>
 Section: utils
 Priority: optional
-Build-Depends: debhelper (>= 9.20160709) | debhelper (>= 9), dh-systemd
-Standards-Version: 4.1.4
+Build-Depends: debhelper (>= 9.20160709)
+Standards-Version: 4.3.0
 Vcs-Browser: https://github.com/linrunner/TLP/tree/debian/current
 Vcs-Git: https://github.com/linrunner/TLP/tree/debian/current
 Homepage: https://linrunner.de/tlp

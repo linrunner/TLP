@@ -13,11 +13,14 @@ endif
 %:
 	dh $@ --with systemd
 
+override_dh_auto_install:
+	dh_auto_install -- TLP_WITH_SYSTEMD=1 TLP_WITH_ELOGIND=1
+
 override_dh_systemd_enable:
 	dh_systemd_enable --package=tlp tlp.service tlp-sleep.service
 
 override_dh_installinit:
-	dh_installinit --package=tlp --no-start --onlyscripts -- defaults 98 01
+	dh_installinit --package=tlp --no-start --only-scripts -- defaults 98 01
 
 override_dh_systemd_start:
 	dh_systemd_start --package=tlp --no-start

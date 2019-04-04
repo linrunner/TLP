@@ -4,29 +4,35 @@ tlp (1.2.900-1) unstable; urgency=low
 
   [Thomas Koch]
   * debian/rules: remove override_dh_auto_install,
-    TLP_WITH_SYSTEMD=1 is default now
+    TLP_WITH_SYSTEMD=1 TLP_WITH_ELOGIND=1 is default now
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 19 Mar 2019 11:04:20 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 04 Apr 2019 15:42:24 +0100
 
 tlp (1.2.1-1) unstable; urgency=medium
 
-  * New upstream version 1.2.1 (bugfix)
+  * Merge changes from Debian
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 18 Mar 2019 18:01:42 +0100
+  * [9c53a90] New upstream version 1.2 (LP: #1814083)
+  * [c273e03] New upstream version 1.2.1 (bugfix release)
 
-tlp (1.2-1) unstable; urgency=low
+  [ Thomas Koch ]
+  * [047ba95] Remove all pm-utils related stuff
+  * [dcfe4a1] Demote linux-tools Recommends to Suggests and prefer generic
+    (LP: #1783455)
+  * [0bd7f4b] debian/install: reflect func.d changes
+  * [6148158] New command tlp-rdw
+  * [c4d9030] debian/tlp.docs: README --> README.md
+  * [e6fc28f] debian/control: use https for Homepage field
 
-  [Thomas Koch]
-  * Build-Depends: debhelper (>= 9.20160709) | debhelper (>= 9), dh-systemd
-  * Remove all pm-utils related stuff
-  * Demote linux-tools Recommends to Suggests and prefer generic (LP: #1783455)
-  * Standards-Version 4.1.4
-  * debian/tlp.install: reflect func.d changes
-  * debian/tlp.docs: README.md
-  * debian/tlp-rdw.install: new command tlp-rdw
-  * debian/tlp-rdw.manpages: tlp-rdw.8
+  [ Raphaël Halimi ]
+  * [de3c365] Bump Standards-Version to 4.3.0
+  * [d180097] debian/copyright: update copyrights years
+  * [35e4c0a] debian/copyright: add AppStream metadata file license (MIT)
+  * [f1798c6] Remove obsolete lintian override about unusual WantedBy target
+    (fixed in lintian 2.5.118)
+  * [4178f68] Include upstream elogind sleep hook
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 11 Mar 2019 06:52:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 04 Apr 2019 08:24:42 +0200
 
 tlp (1.1-2) unstable; urgency=medium
 

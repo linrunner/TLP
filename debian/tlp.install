@@ -1,5 +1,6 @@
 etc/default/tlp
 etc/init.d/tlp
+lib/elogind/system-sleep/49-tlp-sleep
 lib/systemd/system/tlp.service
 lib/systemd/system/tlp-sleep.service
 lib/udev/rules.d/85-tlp.rules
