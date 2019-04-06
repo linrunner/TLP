@@ -32,7 +32,7 @@ readonly DISK_NOP_WORDS="_ keep"
 get_disk_dev () { # translate disk id to device (sdX)
     # $1: id or dev;
     # retval: $_disk_dev, $_disk_id, $_disk_type
-    local path
+    local bus path
 
     if [ -h /dev/disk/by-id/$1 ]; then
         # $1 is disk id
@@ -49,12 +49,19 @@ get_disk_dev () { # translate disk id to device (sdX)
     # determine device type (bus)
     if [ -b /dev/$_disk_dev ]; then
         path="$($UDEVADM info -n "$_disk_dev" -q property 2>/dev/null | sed -n 's/^ID_PATH=//p')"
+        bus="$($UDEVADM info  -n "$_disk_dev" -q property 2>/dev/null | sed -n 's/^ID_BUS=//p')"
         case "$path" in
             pci-*-nvme-*)     _disk_type="nvme" ;;
             pci-*-ata-*)      _disk_type="ata"  ;;
             pci-*-usb-*)      _disk_type="usb"  ;;
             pci-*-ieee1394-*) _disk_type="ieee1394" ;;
-            *)                _disk_type="unknown" ;;
+            *) case "$bus" in
+                nvme)      _disk_type="nvme" ;;
+                ata)       _disk_type="ata"  ;;
+                usb)       _disk_type="usb"  ;;
+                ieee1394)  _disk_type="ieee1394" ;;
+                *)         _disk_type="unknown" ;;
+            esac
         esac
         echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path"
     else
