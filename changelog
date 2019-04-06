@@ -1,9 +1,10 @@
-+++ 1.2.900 --- 19.03.2019 +++
++++ 1.2.900 --- 06.04.2019 +++
 
   *** Development version ***
 
   * Bugfixes
     - Issue #395: ThinkPad X1C6 discharge malfunction
+    - Fix disk type determination
 
 +++ 1.2.1 --- 18.03.2019 +++
 
