@@ -20,10 +20,10 @@ available in both Stretch and Jessie, but not in Wheezy.
 Finally, dh_installinit option --onlyscripts changed to --only-scripts in
 debhelper 10.1.
 
-Official backports of this package are released for oldstable and oldoldstable
-(Stretch and Jessie at the time of writing), but since only security updates are
-officially released in LTS, you'll have to build the package yourself if you
-want to backport it.
+Official backports of this package are released for stable and oldstable
+(Stretch and Jessie at the time of writing), but since only security updates
+are officially released in LTS, you'll have to build the package yourself if
+you want to backport it.
 
 The Git repository on collab-maint has a branch named "debian/wheezy-lts" which
 already contains the needed changes, so you can use it as-is to build your own
