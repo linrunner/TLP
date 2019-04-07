@@ -143,7 +143,7 @@ ifneq ($(TLP_NO_BASHCOMP),1)
 	install -D -m 644 tlp-rdw.bash_completion $(_SHCPL)/tlp-rdw
 endif
 
-install-man:
+install-man-tlp:
 	# manpages
 	install -d 755 $(_MAN)/man1
 	cd man && install -m 644 $(MANFILES1) $(_MAN)/man1/
@@ -156,6 +156,8 @@ install-man-rdw:
 	cd man-rdw && install -m 644 $(MANFILESRDW8) $(_MAN)/man8/
 
 install: install-tlp install-rdw
+
+install-man: install-man-tlp install-man-rdw
 
 uninstall-tlp:
 	# Package tlp
@@ -190,7 +192,7 @@ uninstall-rdw:
 	rm $(_NMDSP)/99tlp-rdw-nm
 	rm -f $(_SHCPL)/tlp-rdw
 
-uninstall-man:
+uninstall-man-tlp:
 	# manpages
 	cd $(_MAN)/man1 && rm -f $(MANFILES1)
 	cd $(_MAN)/man8 && rm -f $(MANFILES8)
@@ -200,6 +202,8 @@ uninstall-man-rdw:
 	cd $(_MAN)/man8 && rm -f $(MANFILESRDW8)
 
 uninstall: uninstall-tlp uninstall-rdw
+
+uninstall-man: uninstall-man uninstall-man-rdw
 
 checkall: checkbashisms shellcheck checkdupconst
 
