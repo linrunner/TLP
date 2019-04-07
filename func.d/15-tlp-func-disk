@@ -48,8 +48,8 @@ get_disk_dev () { # translate disk id to device (sdX)
 
     # determine device type (bus)
     if [ -b /dev/$_disk_dev ]; then
-        path="$($UDEVADM info -n "$_disk_dev" -q property 2>/dev/null | sed -n 's/^ID_PATH=//p')"
-        bus="$($UDEVADM info  -n "$_disk_dev" -q property 2>/dev/null | sed -n 's/^ID_BUS=//p')"
+        path="$($UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | sed -n 's/^ID_PATH=//p')"
+        bus="$($UDEVADM  info -q property /dev/$_disk_dev 2>/dev/null | sed -n 's/^ID_BUS=//p')"
         case "$path" in
             pci-*-nvme-*)     _disk_type="nvme" ;;
             pci-*-ata-*)      _disk_type="ata"  ;;
