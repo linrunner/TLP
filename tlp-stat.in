@@ -381,7 +381,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
     elif [ -f $CPU_BOOST_ALL_CTRL ]; then
         # show turbo boost info
-        get_sysval $CPU_BOOST_ALL_CTRL; boost=$?
+        boost=$(read_sysval $CPU_BOOST_ALL_CTRL)
 
         # simple test for attribute "w" doesn't work, so actually write
         if write_sysf "$boost" $CPU_BOOST_ALL_CTRL; then
