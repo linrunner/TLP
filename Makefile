@@ -171,7 +171,7 @@ uninstall-tlp:
 	rm -r $(_TLIB)
 	rm $(_ULIB)/tlp-usb-udev
 	rm $(_ULIB)/rules.d/85-tlp.rules
-	rm -f $(DESTDIR)/etc/init.d/tlp
+	rm -f $(_SYSV)/tlp
 	rm -f $(_SYSD)/tlp.service
 	rm -f $(_SYSD)/tlp-sleep.service
 	rm -f $(_ELOD)/49-tlp-sleep
