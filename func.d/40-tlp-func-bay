@@ -13,7 +13,6 @@
 
 readonly DOCKGLOB="/sys/devices/platform/dock.?"
 
-readonly RFSTATEFILE=$RUNDIR/rfkill_saved
 readonly BAYSTATEFILE=$RUNDIR/bay_saved
 
 readonly DEFAULT_BAY_POWEROFF_ON_AC=0

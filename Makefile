@@ -15,6 +15,7 @@ TLP_SHCPL  ?= /usr/share/bash-completion/completions
 TLP_MAN    ?= /usr/share/man
 TLP_META   ?= /usr/share/metainfo
 TLP_RUN    ?= /run/tlp
+TLP_VAR    ?= /var/lib/tlp
 
 # Catenate DESTDIR to paths
 _SBIN  = $(DESTDIR)$(TLP_SBIN)
@@ -31,6 +32,7 @@ _SHCPL = $(DESTDIR)$(TLP_SHCPL)
 _MAN   = $(DESTDIR)$(TLP_MAN)
 _META  = $(DESTDIR)$(TLP_META)
 _RUN   = $(DESTDIR)$(TLP_RUN)
+_VAR   = $(DESTDIR)$(TLP_VAR)
 
 SED = sed \
 	-e "s|@TLP_SBIN@|$(TLP_SBIN)|g" \
@@ -38,7 +40,8 @@ SED = sed \
 	-e "s|@TLP_FLIB@|$(TLP_FLIB)|g" \
 	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
 	-e "s|@TLP_CONF@|$(TLP_CONF)|g" \
-	-e "s|@TLP_RUN@|$(TLP_RUN)|g"
+	-e "s|@TLP_RUN@|$(TLP_RUN)|g"   \
+	-e "s|@TLP_VAR@|$(TLP_VAR)|g"
 
 INFILES = \
 	tlp \
@@ -132,6 +135,7 @@ ifneq ($(TLP_NO_BASHCOMP),1)
 	ln -sf tlp $(_SHCPL)/wwan
 endif
 	install -D -m 644 de.linrunner.tlp.metainfo.xml $(_META)/de.linrunner.tlp.metainfo.xml
+	install -d -m 755 $(_VAR)
 
 install-rdw: all
 	# Package tlp-rdw
@@ -181,6 +185,7 @@ uninstall-tlp:
 	rm -f $(_SHCPL)/wwan
 	rm -f $(_SHCPL)/tlp
 	rm -f $(_META)/de.linrunner.tlp.metainfo.xml
+	rm -r $(_VAR)
 
 uninstall-rdw:
 	# Package tlp-rdw

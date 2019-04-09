@@ -1,9 +1,10 @@
-+++ 1.2.900 --- 07.04.2019 +++
++++ 1.2.1.900 --- 09.04.2019 +++
 
   *** Development version ***
 
   * Bugfixes
     - Issue #395: ThinkPad X1C6 discharge malfunction
+    - Issue #404: make RESTORE_DEVICE_STATE_ON_STARTUP=1 persistent again
     - Fix disk type determination
     - tlp-stat: fix read of /sys/devices/system/cpu/cpufreq/boost
 

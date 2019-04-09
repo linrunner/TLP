@@ -9,10 +9,11 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="1.2.900"
+readonly TLPVER="1.2.1.900"
 
 readonly CONFFILE=@TLP_CONF@
 readonly RUNDIR=@TLP_RUN@
+readonly VARDIR=@TLP_VAR@
 
 readonly FLOCK=flock
 readonly HDPARM=hdparm

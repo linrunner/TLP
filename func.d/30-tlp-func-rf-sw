@@ -22,6 +22,8 @@ readonly RDW_DOCK_LOCK="rdw_dock"
 readonly RDW_LOCKTIME=2
 readonly RDW_KILL="rdw_kill"
 
+readonly RFSTATEFILE=$VARDIR/rfkill_saved
+
 readonly DEFAULT_RESTORE_DEVICE_STATE_ON_STARTUP=0
 
 # ----------------------------------------------------------------------------
@@ -118,7 +120,6 @@ test_rfkill_perms () { # test if either root priv or rfkill device writable
 }
 
 check_nm () { # test if NetworkManager is running and nmcli is installed
-
     cmd_exists $NMCLI
 }
 
@@ -332,28 +333,31 @@ echo_device_state () { # print radio type state -- $1: rftype, $2: state
 
 # shellcheck disable=SC2120
 save_device_states () { # save radio states -- $1: list of rftypes
+                        # rc: 0=ok/1=create failed/2=write failed
     local dev
     local devlist="${1:-$ALLDEV}" # when arg empty -> use all
-
-    echo_debug "rf" "save_device_states($devlist): $RFSTATEFILE"
+    local rc=0
 
     # create empty state file
-    create_rundir
-    { : > $RFSTATEFILE; } 2> /dev/null
+    if { : > $RFSTATEFILE; } 2> /dev/null; then
+        # iterate over all possible devices -> save state in file
+        for dev in $devlist; do
+            device_state $dev
+            { printf '%s\n' "$dev $_devs" >> $RFSTATEFILE; } 2> /dev/null || rc=2
+        done
+    else
+        # create failed
+        rc=1
+    fi
 
-    # iterate over all possible devices -> save state in file
-    for dev in $devlist; do
-        device_state $dev
-        { printf '%s\n' "$dev $_devs" >> $RFSTATEFILE; } 2> /dev/null
-    done
-
-    return 0
+    echo_debug "rf" "save_device_states($devlist): $RFSTATEFILE; rc=$rc"
+    return $rc
 }
 
 restore_device_states () { # restore radio type states
+                           # rc: 0=ok/1=state file nonexistent
     local sline
-
-    echo_debug "rf" "restore_device_states: $RFSTATEFILE"
+    local rc=0
 
     if [ -f $RFSTATEFILE ]; then
         # read state file
@@ -362,11 +366,13 @@ restore_device_states () { # restore radio type states
             set -- $sline # read dev, state into $1, $2
             device_switch $1 $2
         done < $RFSTATEFILE
-
-        return 0
     else
-        return 1
+        # state file nonexistent
+        rc=1
     fi
+
+    echo_debug "rf" "restore_device_states: $RFSTATEFILE; rc=$rc"
+    return $rc
 }
 
 set_radio_device_states () { # set/initialize all radio states
