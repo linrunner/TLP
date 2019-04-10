@@ -1057,7 +1057,9 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
     if [ -n "$reout" ]; then
         echo "+++ Recommendations"
-        printf "%s" $reout | sed -r 's/^/\* /'
+        # shellcheck disable=SC2059
+        # don't change to %s, $reout contains blanks and \n!
+        printf "$reout" | sed -r 's/^/\* /'
         echo
     fi
 
