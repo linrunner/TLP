@@ -885,7 +885,7 @@ discharge_battery () { # discharge battery
     trap cancel_force_discharge INT # enable ^C hook
 
     # wait for start == while status not "discharging" -- 15.0 sec timeout
-    printf "Initiating discharge of battery $_bat_str "
+    printf "Initiating discharge of battery %s " $_bat_str
     wt=15
     while ! battery_discharging $_bat_str && [ $wt -gt 0 ] ; do
         sleep 1
