@@ -203,7 +203,7 @@ uninstall-man-rdw:
 
 uninstall: uninstall-tlp uninstall-rdw
 
-uninstall-man: uninstall-man uninstall-man-rdw
+uninstall-man: uninstall-man-tlp uninstall-man-rdw
 
 checkall: checkbashisms shellcheck checkdupconst
 
