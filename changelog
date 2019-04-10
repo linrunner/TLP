@@ -1,4 +1,4 @@
-+++ 1.2.1.900 --- 09.04.2019 +++
++++ 1.2.1.900 --- 10.04.2019 +++
 
   *** Development version ***
 
@@ -6,6 +6,7 @@
     - Issue #395: ThinkPad X1C6 discharge malfunction
     - Issue #404: make RESTORE_DEVICE_STATE_ON_STARTUP=1 persistent again
     - Fix disk type determination
+    - tlp-stat: intelligible recommendation for tp-smapi on X220/T420 et al.
     - tlp-stat: fix read of /sys/devices/system/cpu/cpufreq/boost
 
 +++ 1.2.1 --- 18.03.2019 +++
