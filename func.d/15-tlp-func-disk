@@ -63,7 +63,7 @@ get_disk_dev () { # translate disk id to device (sdX)
                 *)         _disk_type="unknown" ;;
             esac
         esac
-        echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path"
+        echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path; bus=$bus"
     else
         _disk_type="none"
         echo_debug "disk" "get_disk_dev($1).missing"
