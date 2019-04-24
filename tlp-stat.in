@@ -1092,7 +1092,13 @@ if [ "$show_trace" = "1" ]; then
     jdone=0
     if cmd_exists $JOURNALCTL; then
         # retrieve trace output from journal, rc=1 if journald has no data available
-        $JOURNALCTL -p debug --no-pager SYSLOG_IDENTIFIER=tlp 2> /dev/null && jdone=1
+        if [ $show_verbose -eq 1 ]; then
+            # verbose: show all output
+            $JOURNALCTL -p debug --no-pager SYSLOG_IDENTIFIER=tlp 2> /dev/null && jdone=1
+        else
+            # non-verbose: show output since last reboot only
+            $JOURNALCTL -p debug --no-pager SYSLOG_IDENTIFIER=tlp -b 2> /dev/null && jdone=1
+        fi
     fi
 
     if [ "$jdone" = "0"  ]; then
