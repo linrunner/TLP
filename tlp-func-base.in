@@ -477,6 +477,9 @@ check_thinkpad () { # check for ThinkPad hardware and save model string,
             # it's a real ThinkPad --> save model substring
             _tpmodel=$(echo $pv | sed -r 's/^Think[Pp]ad //')
         fi
+    else
+        # not a ThinkPad: get DMI product string
+        pv="$(read_dmi product_version)"
     fi
 
     if [ -n "$_tpmodel" ]; then
