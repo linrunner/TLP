@@ -192,9 +192,9 @@ check_battery_features () { # determine which battery feature APIs/tools are
 # --- Battery Detection
 
 battery_present () { # check battery presence and return tpacpi-bat index
-    # $1: BAT0/BAT1/DEF
+    # $1: BAT0/BAT1/DEF/other
     # global param: $_bm_read
-    # rc: 0=bat exists/1=bat nonexistent/255=no method available
+    # rc: 0=bat exists/1=bat nonexistent
     # retval: $_bat_str:   BAT0/BAT1;
     #         $_bat_idx:   1/2;
     #         $_bd_read:   directory with battery data sysfiles;
@@ -203,7 +203,7 @@ battery_present () { # check battery presence and return tpacpi-bat index
     #         $_bf_dischg: sysfile for force discharge
 
     # defaults
-    local rc=255  # no threshold API available
+    local rc=1    # bat nonexistent
     _bat_idx=0    # no index
     _bat_str=""   # no bat
     _bd_read=""   # no directories
@@ -218,14 +218,12 @@ battery_present () { # check battery presence and return tpacpi-bat index
 
     # validate param
     case $1 in
-        BAT0|BAT1) blist="$1" ;;
-        DEF)       blist="BAT0 BAT1" ;;
-        *)         return 1 ;;
+        DEF) blist="BAT0 BAT1" ;;
+        *)   blist="$1" ;;
     esac
 
     case $_bm_read in
         natacpi) # note: includes tpacpi
-            rc=1
             for bs in $blist; do
                 bsd="$ACPIBATDIR/$bs"
 
@@ -249,6 +247,11 @@ battery_present () { # check battery presence and return tpacpi-bat index
                             else
                                 _bat_idx=1 # BAT0 nonexistent --> BAT1 is main
                             fi
+                            ;;
+
+                        *) # non-featured battery --> data read only
+                            _bat_str="$bs"
+                            _bd_read="$bsd"
                             ;;
                     esac
                     break # exit loop on first battery detected
@@ -295,7 +298,6 @@ battery_present () { # check battery presence and return tpacpi-bat index
     case $rc in
         0)   echo_debug "bat" "battery_present($1): bm_read=$_bm_read; bat_str=$_bat_str; bat_idx=$_bat_idx; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg; rc=$rc" ;;
         1)   echo_debug "bat" "battery_present($1).not_detected: bm_read=$_bm_read; rc=$rc" ;;
-        255) echo_debug "bat" "battery_present($1).no_api" ;;
     esac
 
     return $rc
@@ -597,17 +599,18 @@ setcharge_battery () { # write charge thresholds (called from cmd line)
     battery_present $bat
     case $? in
         0) # battery present
+            if [ "$_bm_thresh" = "none" ]; then
+                # no method available --> quit
+                echo "Error: battery charge thresholds not available." 1>&2
+                echo_debug "bat" "setcharge_battery.no_method"
+                return 1
+            fi
+
             # get configured values if requested
             if [ $use_cfg -eq 1 ]; then
                 eval start_thresh="\$START_CHARGE_THRESH_${_bat_str}"
                 eval stop_thresh="\$STOP_CHARGE_THRESH_${_bat_str}"
             fi
-            ;;
-
-        255) # no method
-            echo "Error: battery feature not available." 1>&2
-            echo_debug "bat" "setcharge_battery.no_method"
-            return 1
             ;;
 
         *) # not present
@@ -661,12 +664,13 @@ chargeonce_battery () { # charge battery to upper threshold once
     # check if selected battery is present
     battery_present $bat
     case $? in
-        0) ;; # battery present
-
-        255) # no method
-            echo "Error: battery feature not available." 1>&2
-            echo_debug "bat" "chargeonce_battery.no_method"
-            return 1
+        0) # battery present
+            if [ "$_bm_thresh" = "none" ]; then
+                # no method available --> quit
+                echo "Error: battery charge thresholds not available." 1>&2
+                echo_debug "bat" "chargeonce_battery.no_method"
+                return 1
+            fi
             ;;
 
         *) # not present
@@ -859,12 +863,13 @@ discharge_battery () { # discharge battery
     # check if selected battery is present
     battery_present $bat
     case $? in
-        0) ;; # battery present
-
-        255) # no method
-            echo "Error: battery feature not available." 1>&2
-            echo_debug "bat" "discharge_battery.no_method"
-            return 1
+        0) # battery present
+            if [ "$_bm_dischg" = "none" ]; then
+                # no method available --> quit
+                echo "Error: battery discharge/recalibrate not available." 1>&2
+                echo_debug "bat" "discharge_battery.no_method"
+                return 1
+            fi
             ;;
 
         *) # not present
@@ -877,8 +882,8 @@ discharge_battery () { # discharge battery
     # start discharge
     set_force_discharge $_bat_str 1; rc=$?
     if [ $rc -ne 0 ]; then
-        echo_debug "bat" "discharge_battery.force_discharge_not_available($_bat_str)"
-        echo "Error: discharge function not available for this laptop." 1>&2
+        echo_debug "bat" "discharge_battery.force_discharge_malfunction($_bat_str)"
+        echo "Error: discharge malfunction." 1>&2
         return 1
     fi
 

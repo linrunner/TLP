@@ -808,7 +808,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     ensum=0
 
     # --- show availability of (ThinkPad) battery features
-    echo "+++ Battery Features"
+    echo "+++ Battery Features: Charge Thresholds and Recalibrate"
 
     # native ACPI kernel battery API
     case $_natacpi in
@@ -864,8 +864,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
                 0) echo "+++ ThinkPad Battery Status: $batt" ;;
             esac
         else
-            # laptop or ThinkPad without feature support
-            echo "+++ Battery Status"
+            #  non-featured ThinkPad or other laptop make
+            echo "+++ Battery Status: $batt"
         fi
 
         case $_bm_read in
@@ -989,7 +989,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     if [ $bcnt -eq 0 ]; then
         # no battery detected
         printf "+++ Battery Status\n"
-        printf "No batteries detected.\n\n"
+        printf "No battery data available.\n\n"
     elif [ $bcnt -gt 1 ] && [ $efsum -ne 0 ]; then
         # more than one battery detected --> show charge total
         perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '$ensum' / '$efsum');'

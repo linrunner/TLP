@@ -467,7 +467,7 @@ print_methods_per_driver () { # show features provided by a battery driver
             case $bm in
                 _bm_read)   m="data" ;;
                 _bm_thresh) m="thresholds" ;;
-                _bm_dischg) m="discharge" ;;
+                _bm_dischg) m="recalibrate" ;;
             esac
             # concat method to output
             if [ -n "$mlist" ]; then
@@ -527,6 +527,8 @@ print_thresholds () { # formatted output of ThinkPad charging thresholds
     # global param: $_bm_thresh, $_bat_idx, $_bf_start, $_bf_stop
     local bsys sp thresh
 
+    [ "$_bm_thresh" != "none" ] || return 0 # no method available --> quit
+
     for sp in start stop; do
         get_threshold $sp; thresh=$?
 
@@ -571,6 +573,8 @@ print_discharge () { # formatted output of ThinkPad force_discharge
     # $1: BAT0/BAT1
     # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
     local force
+
+    [ "$_bm_dischg" != "none" ] || return 0 # no method available --> quit
 
     get_force_discharge $1; force=$?
 
