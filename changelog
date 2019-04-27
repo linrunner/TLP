@@ -5,13 +5,14 @@
   * Bugfixes
     - Issue #395: ThinkPad X1C6 discharge malfunction
     - Issue #404: make RESTORE_DEVICE_STATE_ON_STARTUP=1 persistent again
-    - Battery:
+    - Battery, tlp-stat -b:
       - Separate checks for charge thresholds and recalibration
-      - tlp-stat -b:
-        - Show data for non-featured batteries != BAT0/BAT1 too
-        - Explain "Battery Features: Charge Thresholds and Recalibrate"
-        - Intelligible recommendation for tp-smapi on X220/T420 et al.
+      - Show data for non-featured batteries != BAT0/BAT1 too
+      - Explain "Battery Features: Charge Thresholds and Recalibrate"
+      - Intelligible recommendation for tp-smapi on X220/T420 et al.
     - Disks: fix type determination
+    - Hardware quirk workarounds:
+        - MacBookPro 5.3: false AC offline status
     - tlp-stat -p: fix read of /sys/devices/system/cpu/cpufreq/boost
 
 +++ 1.2.1 --- 18.03.2019 +++

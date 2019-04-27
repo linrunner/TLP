@@ -518,11 +518,10 @@ get_sys_power_supply () { # get current power supply
     #           +------------ +------+------+------+
     # battery   | none        | 2    | 0    | 1    |
     # status:   | discharging | 1    | 0    | 1    |
-    #           | idle        | 0    | 0    | 1    |
-    #
-    # Note: existing AC online status has precendence over any battery status
+    #           | idle        | 0    | 0    | 0    |
 
     local psrc
+    local ac0seen=
     _syspwr=
 
     for psrc in /sys/class/power_supply/*; do
@@ -535,25 +534,28 @@ get_sys_power_supply () { # get current power supply
             Mains|USB)
                 # AC detected
                 # skip device to simulate broken AC detection
-                [ "$X_SIMULATE_AC_QUIRK" = "1" ] && continue
+                [ "$X_SIMULATE_AC_QUIRK" = "2" ] && continue
 
                 # check if online
                 if [ "$(read_sysf $psrc/online)" = "1" ]; then
-                    # AC online
+                    # AC online --> end iteration
                     _syspwr=0
                     echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_online: syspwr=$_syspwr"
+                    break
                 else
-                    # AC offline means battery
-                    _syspwr=1
-                    echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_offline: syspwr=$_syspwr"
+                    # AC offline could mean battery, but quirky hardware exists
+                    # --> just remember and continue to look for batteries
+                    ac0seen=$psrc
                 fi
-                break # AC found --> end search
                 ;;
 
             Battery)
                 # battery detected
-                # --> inspect unless discharging battery has been found beforehand
+                # --> inspect unless a discharging battery has been found beforehand
                 [ "$_syspwr" = "1" ] && continue
+
+                # skip device to simulate broken battery detection
+                [ "$X_SIMULATE_BAT_QUIRK" = "2" ] && continue
 
                 case "$(read_sysf $psrc/status)" in
                     Discharging)
@@ -591,10 +593,17 @@ get_sys_power_supply () { # get current power supply
         esac
     done
 
-    # set _syspwr to unknown if we haven't seen any AC/battery power source so far
     if [ -z "$_syspwr" ]; then
-        _syspwr=2
-        echo_debug "ps" "get_sys_power_supply.unknown: syspwr=$_syspwr"
+        # _syspwr result yet undecided
+        if [ -n "$ac0seen" ]; then
+            # no battery seen but AC offline remembered --> battery
+            _syspwr=1
+            echo_debug "ps" "get_sys_power_supply(${ac0seen##/*/}).ac_offline: syspwr=$_syspwr"
+        else
+            # we haven't seen any AC/battery power source --> unknown
+            _syspwr=2
+            echo_debug "ps" "get_sys_power_supply.unknown: syspwr=$_syspwr"
+        fi
     fi
 
     return $_syspwr
