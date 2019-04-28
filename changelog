@@ -1,19 +1,22 @@
-+++ 1.2.1.900 --- 26.04.2019 +++
++++ 1.2.1.900 --- 28.04.2019 +++
 
   *** Development version ***
 
   * Bugfixes
-    - Issue #395: ThinkPad X1C6 discharge malfunction
-    - Issue #404: make RESTORE_DEVICE_STATE_ON_STARTUP=1 persistent again
-    - Battery, tlp-stat -b:
+    Battery Features, tlp-stat -b:
+      - Issue #395: ThinkPad X1C6 discharge malfunction
       - Separate checks for charge thresholds and recalibration
-      - Show data for non-featured batteries != BAT0/BAT1 too
       - Explain "Battery Features: Charge Thresholds and Recalibrate"
       - Intelligible recommendation for tp-smapi on X220/T420 et al.
-    - Disks: fix type determination
-    - Hardware quirk workarounds:
-        - MacBookPro 5.3: false AC offline status
-    - tlp-stat -p: fix read of /sys/devices/system/cpu/cpufreq/boost
+      - Show data for non-featured batteries != BAT0/BAT1 too
+    Disks:
+      - Fix type determination
+    Operation Mode:
+      - MacBookPro 5.3: circumvent false AC offline status
+    Processor:
+      - tlp-stat -p: fix read of /sys/devices/system/cpu/cpufreq/boost
+    Radio Devices:
+      - Issue #404: make RESTORE_DEVICE_STATE_ON_STARTUP=1 persistent again
 
 +++ 1.2.1 --- 18.03.2019 +++
 
