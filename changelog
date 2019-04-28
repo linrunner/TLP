@@ -13,8 +13,9 @@
       - Fix type determination
     Operation Mode:
       - MacBookPro 5.3: circumvent false AC offline status
-    Processor:
-      - tlp-stat -p: fix read of /sys/devices/system/cpu/cpufreq/boost
+    Processor, tlp-stat -p:
+      - Fix read of /sys/devices/system/cpu/cpufreq/boost
+      - x86_energy_perf_policy: detect unsupported CPUs in newer versions
     Radio Devices:
       - Issue #404: make RESTORE_DEVICE_STATE_ON_STARTUP=1 persistent again
 

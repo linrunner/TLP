@@ -403,27 +403,32 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show x86 energy perf policy info
     if cmd_exists $ENERGYPERF; then
         # check CPU support
-        $ENERGYPERF -r > /dev/null 2>&1
+        eperf=$($ENERGYPERF -r 2> /dev/null)
         case $? in
-            0)  # parse x86_energy_perf_policy output:
-                # - replace numbers with descriptive strings
-                # - remove ":"
-                # - indent and align
-                $ENERGYPERF -r 2>/dev/null | grep -v 'HWP_' | \
-                    sed -r 's/://;
-                            s/(0x0000000000000000|EPB 0)/performance/;
-                            s/(0x0000000000000004|EPB 4)/balance-performance/;
-                            s/(0x0000000000000006|EPB 6)/default/;
-                            s/(0x0000000000000008|EPB 8)/balance-power/;
-                            s/(0x000000000000000f|EPB 15)/power/' | \
-                    awk '{ printf "x86_energy_perf_policy.%-31s = %s %s\n", $1, $2, $3; }'
+            0)  if [ -n "$eperf" ]; then
+                    # parse x86_energy_perf_policy output:
+                    # - replace numbers with descriptive strings
+                    # - remove ":"
+                    # - indent and align
+                    $ENERGYPERF -r 2>/dev/null | grep -v 'HWP_' | \
+                        sed -r 's/://;
+                                s/(0x0000000000000000|EPB 0)/performance/;
+                                s/(0x0000000000000004|EPB 4)/balance-performance/;
+                                s/(0x0000000000000006|EPB 6)/default/;
+                                s/(0x0000000000000008|EPB 8)/balance-power/;
+                                s/(0x000000000000000f|EPB 15)/power/' | \
+                        awk '{ printf "x86_energy_perf_policy.%-31s = %s %s\n", $1, $2, $3; }'
+                    printf "\n"
+                else
+                    # newer versions produce zero output for unsupported CPUs
+                    printf "x86_energy_perf_policy: unsupported CPU.\n\n"
+                fi
                 ;;
 
-            1) echo "x86_energy_perf_policy: unsupported CPU." ;;
-            2) echo "x86_energy_perf_policy: program for your kernel not installed." ;;
-            *) echo "x86_energy_perf_policy: not available." ;;
+            1) printf "x86_energy_perf_policy: unsupported CPU.\n\n" ;;
+            2) printf "x86_energy_perf_policy: program for your kernel not installed.\n\n" ;;
+            *) printf "x86_energy_perf_policy: not available.\n\n" ;;
         esac
-        echo
     else
         echo "x86_energy_perf_policy: program not installed."
         echo
