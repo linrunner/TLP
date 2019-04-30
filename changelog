@@ -1,6 +1,6 @@
-+++ 1.2.1.900 --- 28.04.2019 +++
++++ 1.2.2 --- 30.04.2019 +++
 
-  *** Development version ***
+  *** Beta version ***
 
   * Bugfixes
     Battery Features, tlp-stat -b:
