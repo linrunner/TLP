@@ -1,18 +1,18 @@
-+++ 1.2.2 --- 30.04.2019 +++
++++ 1.2.2 --- 02.05.2019 +++
 
   *** Beta version ***
 
   * Bugfixes
     Battery Features, tlp-stat -b:
+      - Show data for batteries named other than BAT0/BAT1 (non-ThinkPads)
       - Issue #395: ThinkPad X1C6 discharge malfunction
       - Separate checks for charge thresholds and recalibration
+      - Intelligible recommendation for tp-smapi on ThinkPad X220/T420 et al.
       - Explain "Battery Features: Charge Thresholds and Recalibrate"
-      - Intelligible recommendation for tp-smapi on X220/T420 et al.
-      - Show data for non-featured batteries != BAT0/BAT1 too
     Disks:
       - Fix type determination
-    Operation Mode:
-      - MacBookPro 5.3: circumvent false AC offline status
+    Operation Mode AC/BAT:
+      - MacBookPro 5.3: workaround for false AC offline status
     Processor, tlp-stat -p:
       - Fix read of /sys/devices/system/cpu/cpufreq/boost
       - x86_energy_perf_policy: detect unsupported CPUs in newer versions
