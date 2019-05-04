@@ -1,6 +1,6 @@
-tlp (1.2.1.901-1) unstable; urgency=low
+tlp (1.2.2-1) unstable; urgency=low
 
-  * Track beta version
+  * New upstream version 1.2.2 (bugfix release)
 
   [Thomas Koch]
   * debian/rules: remove override_dh_auto_install,
@@ -8,7 +8,7 @@ tlp (1.2.1.901-1) unstable; urgency=low
   * debian/postinst,postrm: remove mask/unmask of upstart jobs
   * debian/tlp.install: add /var/lib/tlp
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 30 Apr 2019 18:01:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 04 May 2019 18:42:51 +0200
 
 tlp (1.2.1-1) unstable; urgency=medium
 
