@@ -268,7 +268,7 @@ RUNTIME_PM_ON_BAT=auto
 #RUNTIME_PM_DRIVER_BLACKLIST="amdgpu mei_me nouveau nvidia pcieport radeon"
 
 # Set to 0 to disable, 1 to enable USB autosuspend feature.
-# Default: 0
+# Default: 1
 USB_AUTOSUSPEND=1
 
 # Exclude listed devices from USB autosuspend (separate with spaces).
