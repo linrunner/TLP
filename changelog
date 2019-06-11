@@ -2,6 +2,10 @@
 
   * Development version
 
+  * Bugfix
+    Battery Features:
+      - Issue #415: ThinkPad X240 discharge BAT1 malfunction (BAT0 not installed)
+
 +++ 1.2.2 --- 04.05.2019 +++
 
   * Bugfixes

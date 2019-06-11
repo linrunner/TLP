@@ -236,16 +236,20 @@ battery_present () { # check battery presence and return tpacpi-bat index
                         BAT0)
                             _bat_str="$bs"
                             _bd_read="$bsd"
-                            _bat_idx=1 # BAT0 is always assumed main battery
+                            # tpacpi: BAT0 is always assumed main battery
+                            [ $_tpacpi -eq 0 ] && _bat_idx=1
                             ;;
 
                         BAT1)
                             _bat_str="$bs"
                             _bd_read="$bsd"
-                            if [ -d $ACPIBATDIR/BAT0 ]; then
-                                _bat_idx=2 # BAT0 exists --> BAT1 is aux
-                            else
-                                _bat_idx=1 # BAT0 nonexistent --> BAT1 is main
+                            if [ $_tpacpi -eq 0 ]; then
+                                # tpacpi: try to read start threshold for index 2
+                                if $TPACPIBAT -g ST 2 2> /dev/null 1>&2 ; then
+                                    _bat_idx=2 # BAT1 is aux
+                                else
+                                    _bat_idx=1 # BAT1 is main
+                                fi
                             fi
                             ;;
 
@@ -277,7 +281,7 @@ battery_present () { # check battery presence and return tpacpi-bat index
             ;; # tpsmapi
     esac
 
-    if [ $_bat_idx -ne 0 ]; then
+    if [ -n "$_bat_str" ]; then
         case $_bm_thresh in
             natacpi)
                 _bf_start="$ACPIBATDIR/$_bat_str/charge_start_threshold"
