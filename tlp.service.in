@@ -5,7 +5,7 @@
 
 [Unit]
 Description=TLP system startup/shutdown
-After=multi-user.target bluetooth.service NetworkManager.service
+After=NetworkManager.service
 Before=shutdown.target
 Documentation=https://linrunner.de/tlp
 
