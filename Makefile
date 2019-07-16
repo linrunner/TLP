@@ -149,14 +149,14 @@ endif
 
 install-man-tlp:
 	# manpages
-	install -d 755 $(_MAN)/man1
+	install -d -m 755 $(_MAN)/man1
 	cd man && install -m 644 $(MANFILES1) $(_MAN)/man1/
-	install -d 755 $(_MAN)/man8
+	install -d -m 755 $(_MAN)/man8
 	cd man && install -m 644 $(MANFILES8) $(_MAN)/man8/
 
 install-man-rdw:
 	# manpages
-	install -d 755 $(_MAN)/man8
+	install -d -m 755 $(_MAN)/man8
 	cd man-rdw && install -m 644 $(MANFILESRDW8) $(_MAN)/man8/
 
 install: install-tlp install-rdw

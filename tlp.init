@@ -17,7 +17,7 @@
 # Description:       Initialize tlp
 ### END INIT INFO
 
-. /lib/lsb/init-functions
+[ -r /lib/lsb/init-functions ] && . /lib/lsb/init-functions
 
 TLP=/usr/sbin/tlp
 [ -x $TLP ] || exit 0
