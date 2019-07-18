@@ -98,7 +98,7 @@ wordinlist () { # test if word in list
 check_sysfs () { # debug: check if sysfile exists -- $1: routine; $2: sysfs path
     if wordinlist "sysfs" "$TLP_DEBUG"; then
         if [ ! -e $2 ]; then
-            printf "%s\n" "$1: $2 nonexistent" | \
+            printf "%s: %s nonexistent\n" "$1" "$2" | \
                 $LOGGER -p debug -t "tlp" --id=$$ -- > /dev/null 2>&1
         fi
     fi
