@@ -137,6 +137,33 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
     return 0
 }
 
+printparm_epb () { # formatted output of sysfile - Intel EPB variant
+    # $1: sysfile
+    local val strval
+
+    if val=$(read_sysf $1); then
+        # sysfile exists and is actually readable, output content
+        printf "%-54s = %2d " "$1" "$val"
+        # Convert distinct values to strings
+        strval=$(echo $val | sed -r 's/^0/performance/;
+                                     s/^4/balance-performance/;
+                                     s/^6/normal/;
+                                     s/^8/balance-power/;
+                                     s/^15/power/;
+                                     s/[0-9]+//')
+        if [ -n "$strval" ]; then
+            printf "($strval)\n"
+        else
+            printf "\n"
+        fi
+    else
+        # sysfile was not readable
+        printf "%-54s = (not available)\n" "$1"
+    fi
+
+    return 0
+}
+
 print_sysf () { # formatted output of a sysfile
     # $1: format; $2: sysfile
     local val

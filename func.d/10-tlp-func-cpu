@@ -11,13 +11,14 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly ENERGYPERF=x86_energy_perf_policy
-
 readonly CPU_BOOST_ALL_CTRL=/sys/devices/system/cpu/cpufreq/boost
 readonly INTEL_PSTATED=/sys/devices/system/cpu/intel_pstate
 readonly CPU_MIN_PERF_PCT=$INTEL_PSTATED/min_perf_pct
 readonly CPU_MAX_PERF_PCT=$INTEL_PSTATED/max_perf_pct
 readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
+
+readonly ENERGYPERF=x86_energy_perf_policy
+readonly EPB_MIN_KERNEL="5.2"
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -251,28 +252,51 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
     return 0
 }
 
-set_energy_perf_policy () { # set performance versus energy savings policy
+set_energy_perf_bias () { # set Intel energy and performance bias hint (EPB)
     # $1: 0=ac mode, 1=battery mode
 
-    local perf pnum rc
+    local ec perf pnum rc
 
+    # keep backwards compatibility with ENERGY_PERF_POLICY_ON_AC/BAT
     if [ "$1" = "1" ]; then
-        perf=${ENERGY_PERF_POLICY_ON_BAT:-}
+        perf=${ENERGY_PERF_BIAS_ON_BAT:-${ENERGY_PERF_POLICY_ON_BAT:-}}
     else
-        perf=${ENERGY_PERF_POLICY_ON_AC:-}
+        perf=${ENERGY_PERF_BIAS_ON_AC:-${ENERGY_PERF_POLICY_ON_AC:-}}
     fi
-    # translate alphanumeric to numeric values for backward compatibility
+    # translate alphanumeric to numeric values
+    # for native kernel support and
+    # x86_energy_perf_policy backward compatibility
     pnum=$(echo $perf | sed -r 's/^performance$/0/;
                                 s/^balance-performance$/4/;
                                 s/^(default|normal)$/6/;
                                 s/^balance-power?$/8/;
                                 s/^power(save)?$/15/')
-
     if [ -z "$pnum" ]; then
-        echo_debug "pm" "set_energy_perf_policy($1).not_configured"
-    elif ! cmd_exists $ENERGYPERF; then
+        echo_debug "pm" "set_energy_perf_bias($1).not_configured"
+        return 0
+    fi
+
+    if kernel_version_ge $EPB_MIN_KERNEL; then
+        # use native kernel API (5.2 and later)
+        ec=0
+        for cpuf in /sys/devices/system/cpu/cpu*/power/energy_perf_bias; do
+            write_sysf "$pnum" $cpuf || ec=$((ec + 1))
+        done
+        if [ $ec -eq 0 ]; then
+            # all writes to sysfiles were successful
+            echo_debug "pm" "set_energy_perf_bias($1).kernel: $perf($pnum)"
+        else
+            # unsupported CPU
+            echo_debug "pm" "set_energy_perf_bias($1).kernel: $perf($pnum) -- unsupported cpu"
+        fi
+        return 0
+    fi
+
+    # no native kernel support, try x86_energy_perf_policy
+    if ! cmd_exists $ENERGYPERF; then
         # x86_energy_perf_policy not installed
-        echo_debug "pm" "set_energy_perf_policy($1).not_available"
+        echo_debug "pm" "set_energy_perf_bias($1): $perf($pnum) -- x86_energy_perf_policy not installed"
+        return 0
     else
         # x86_energy_perf_policy needs kernel module 'msr'
         load_modules $MOD_MSR
@@ -286,8 +310,6 @@ set_energy_perf_policy () { # set performance versus energy savings policy
         esac
         return $rc
     fi
-
-    return 0
 }
 
 # --- Misc
