@@ -757,11 +757,12 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show pcie aspm state
     echo "+++ PCIe Active State Power Management"
     if [ -f $ASPM ]; then
-        pol=$(read_sysf $ASPM | sed -r 's/.*\[(.*)\].*/\1/')
-        if write_sysf "$pol" $ASPM; then
+        pol=$(read_sysf $ASPM | sed -r 's/[[:space:]]+$//')
+        apol=$(printf "$pol" | sed -r 's/.*\[(.*)\].*/\1/')
+        if write_sysf "$apol" $ASPM; then
             echo "$ASPM = $pol"
         else
-            echo "$ASPM = $pol (using bios preferences)"
+            echo "$ASPM = $pol (using BIOS preferences)"
         fi
     else
         echo "$ASPM = (not available)"

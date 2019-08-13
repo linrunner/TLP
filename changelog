@@ -14,6 +14,7 @@
         replaces ENERGY_PERF_POLICY_ON_AC/BAT (backwards compatible)
     tlp-stat:
       - Show RDW as "disabled" when TLP is disabled as a whole
+      - PCIe ASPM: show available policies
 
   * Bugfix
     Battery Features:
