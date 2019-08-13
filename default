@@ -109,7 +109,7 @@ NMI_WATCHDOG=0
 # Default: <none>.
 #PHC_CONTROLS="F:V F:V F:V F:V"
 
-# set Intel energy and performance bias hint (EPB): 0..15 or
+# Set Intel energy and performance bias hint (EPB): 0..15 or
 #   performance (0), balance-performance (4), normal (6), balance-power (8),
 #   power (15).
 # Values are given in order of increasing power saving.
