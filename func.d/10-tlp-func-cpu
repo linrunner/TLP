@@ -255,7 +255,7 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
 set_energy_perf_bias () { # set Intel energy and performance bias hint (EPB)
     # $1: 0=ac mode, 1=battery mode
 
-    local ec perf pnum rc
+    local cnt ec perf pnum rc
 
     # keep backwards compatibility with ENERGY_PERF_POLICY_ON_AC/BAT
     if [ "$1" = "1" ]; then
@@ -276,19 +276,22 @@ set_energy_perf_bias () { # set Intel energy and performance bias hint (EPB)
         return 0
     fi
 
-    if kernel_version_ge $EPB_MIN_KERNEL; then
-        # use native kernel API (5.2 and later)
-        ec=0
-        for cpuf in /sys/devices/system/cpu/cpu*/power/energy_perf_bias; do
+    # try native kernel API first (5.2 and later)
+    cnt=0
+    ec=0
+    for cpuf in /sys/devices/system/cpu/cpu*/power/energy_perf_bias; do
+        if [ -f $cpuf ]; then
             write_sysf "$pnum" $cpuf || ec=$((ec + 1))
-        done
-        if [ $ec -eq 0 ]; then
-            # all writes to sysfiles were successful
-            echo_debug "pm" "set_energy_perf_bias($1).kernel: $perf($pnum)"
-        else
-            # unsupported CPU
-            echo_debug "pm" "set_energy_perf_bias($1).kernel: $perf($pnum) -- unsupported cpu"
+            cnt=$((cnt + 1))
         fi
+    done
+    if [ $cnt -gt 0 ]; then
+        # native kernel API actually detected
+        echo_debug "pm" "set_energy_perf_bias($1).kernel: $perf($pnum); ec=$ec"
+        return 0
+    elif kernel_version_ge $EPB_MIN_KERNEL; then
+        # if not detected and kernel >= 5.2 --> assume unsupported CPU
+        echo_debug "pm" "set_energy_perf_bias($1).kernel: $perf($pnum) -- unsupported cpu"
         return 0
     fi
 

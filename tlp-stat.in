@@ -403,20 +403,20 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     echo
 
     # --- show Intel energy and performance bias hint (EPB)
-    if kernel_version_ge $EPB_MIN_KERNEL; then
-        # use native kernel API (5.2 and later)
-        cnt=0
-        for cpuf in /sys/devices/system/cpu/cpu*/power/energy_perf_bias; do
-            if [ -f $cpuf ]; then
-                printparm_epb $cpuf
-                cnt=$((cnt + 1))
-            fi
-        done
-        if [ $cnt -gt 0 ]; then
-            printf "\n"
-        else
-            printf "Intel EPB: unsupported CPU.\n\n"
+    # try native kernel API first (5.2 and later)
+    cnt=0
+    for cpuf in /sys/devices/system/cpu/cpu*/power/energy_perf_bias; do
+        if [ -f $cpuf ]; then
+            printparm_epb $cpuf
+            cnt=$((cnt + 1))
         fi
+    done
+    if [ $cnt -gt 0 ]; then
+        # native kernel API actually detected
+        printf "\n"
+    elif kernel_version_ge $EPB_MIN_KERNEL; then
+        # if not detected and kernel >= 5.2 --> assume unsupported CPU
+        printf "Intel EPB: unsupported CPU.\n\n"
     else
         # no native kernel API --> parse x86_energy_perf_policy output
         if cmd_exists $ENERGYPERF; then
