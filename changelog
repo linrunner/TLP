@@ -5,6 +5,8 @@
   * Features
     General:
       - systemd: start tlp.service earlier in boot process
+    PCI(e) devices:
+      - Add ASPM method 'powersupersave' (Issue #425)
     Processor:
       - ENERGY_PERF_BIAS_ON_AC/BAT: support new native kernel API for
         Intel energy and performance bias hint (EPB);

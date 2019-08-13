@@ -185,7 +185,7 @@ SATA_LINKPWR_ON_BAT="med_power_with_dipm min_power"
 AHCI_RUNTIME_PM_TIMEOUT=15
 
 # PCI Express Active State Power Management (PCIe ASPM):
-#   default(*), performance, powersave.
+#   default(*), performance, powersave, powersupersave.
 # (*) keeps BIOS ASPM defaults (recommended)
 # Default: <none>
 #PCIE_ASPM_ON_AC=default
