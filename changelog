@@ -13,7 +13,7 @@
         supersedes external tool x86_energy_perf_policy for kernel >= 5.2;
         replaces ENERGY_PERF_POLICY_ON_AC/BAT (backwards compatible)
     tlp-stat:
-      - Show RDW as "disabled" when TLP is disabled as a whole
+      - System Info: show RDW as "disabled" when TLP is disabled as a whole
       - PCIe ASPM: show available policies
 
   * Bugfix
