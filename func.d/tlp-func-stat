@@ -146,19 +146,19 @@ printparm_epb () { # formatted output of sysfile - Intel EPB variant
         printf "%-54s = %2d " "$1" "$val"
         # Convert distinct values to strings
         strval=$(echo $val | sed -r 's/^0/performance/;
-                                     s/^4/balance-performance/;
-                                     s/^6/normal/;
-                                     s/^8/balance-power/;
+                                     s/^4/balance_performance/;
+                                     s/^6/default/;
+                                     s/^8/balance_power/;
                                      s/^15/power/;
                                      s/[0-9]+//')
         if [ -n "$strval" ]; then
-            printf "($strval)\n"
+            printf "($strval) [EPB]\n"
         else
-            printf "\n"
+            printf " [EPB]\n"
         fi
     else
         # sysfile was not readable
-        printf "%-54s = (not available)\n" "$1"
+        printf "%-54s = (not available) [EPB]\n" "$1"
     fi
 
     return 0

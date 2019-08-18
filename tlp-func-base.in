@@ -392,7 +392,7 @@ parse_args4config () { # parse command-line arguments: everything after the
 
 kernel_version_ge () { # check if running kernel version >= $1: minimum version
 
-    [ "$1" = "$(printf "$1\n$(uname -r)\n" | sort -V | head -n 1)" ]
+    [ "$1" = "$(printf "%s\n%s\n" "$1" "(uname -r)" | sort -V | head -n 1)" ]
 }
 
 load_modules () { # load kernel module(s) -- $*: modules

@@ -16,9 +16,8 @@ Depending on the power source (AC or battery) the following settings are applied
 
 - Kernel laptop mode and dirty buffer params
 - Processor frequency scaling including "turbo boost" / "turbo core"
-- Limit max/min P-state to control power dissipation of the CPU - intel_pstate only
-- HWP energy performance hints
-- Processor performance versus energy savings policy (x86_energy_perf_policy)
+- Limit Intel CPU max/min P-state to control power dissipation (Intel P-state only)
+- Intel CPU energy/performance policies HWP.EPP (Intel P-state only) and EPB
 - Disk drive advanced power management level (APM) and spin down timeout
 - AHCI link power management (ALPM) with device blacklist
 - AHCI runtime power management for host controllers and disks (EXPERIMENTAL)

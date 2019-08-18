@@ -41,7 +41,7 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 # Select a CPU frequency scaling governor.
 # Intel Core i processor with intel_pstate driver:
 #   powersave(*), performance.
-# Older hardware with acpi-cpufreq driver:
+# Other hardware with acpi-cpufreq driver:
 #   ondemand(*), powersave, performance, conservative, schedutil.
 # (*) is recommended.
 # Use tlp-stat -p to show the active driver and available governors.
@@ -49,8 +49,7 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #   powersave for intel_pstate and ondemand for acpi-cpufreq are power
 #   efficient for *almost all* workloads and therefore kernel and most
 #   distributions have chosen them as defaults. If you still want to change,
-#   you should know what you're doing! You *must* disable your distribution's
-#   governor settings or conflicts will occur.
+#   you should know what you're doing!
 # Default: <none>
 #CPU_SCALING_GOVERNOR_ON_AC=powersave
 #CPU_SCALING_GOVERNOR_ON_BAT=powersave
@@ -64,15 +63,20 @@ MAX_LOST_WORK_SECS_ON_BAT=60
 #CPU_SCALING_MIN_FREQ_ON_BAT=0
 #CPU_SCALING_MAX_FREQ_ON_BAT=0
 
-# Set energy performance hints (HWP) for Intel P-state governor:
+# Set Intel CPU energy/performance policies HWP.EPP and EPB:
 #   performance, balance_performance, default, balance_power, power
 # Values are given in order of increasing power saving.
-# Note: Intel Skylake or newer CPU and Kernel >= 4.10 required.
+# Notes:
+# - Requires an Intel Core i processor
+# - HWP.EPP requires kernel 4.10 and intel_pstate driver
+# - EPB requires kernel 5.2 or module msr and x86_energy_perf_policy
+#   from linux-tools
+# - When HWP.EPP is available, EPB is not set
 # Default: <none>
-CPU_HWP_ON_AC=balance_performance
-CPU_HWP_ON_BAT=balance_power
+CPU_ENERGY_PERF_POLICY_ON_AC=balance_performance
+CPU_ENERGY_PERF_POLICY_ON_BAT=power
 
-# Set Intel P-state performance: 0..100 (%).
+# Set Intel CPU P-state performance: 0..100 (%).
 # Limit the max/min P-state to control the power dissipation of the CPU.
 # Values are stated as a percentage of the available performance.
 # Requires an Intel Core i processor with intel_pstate driver.
@@ -108,15 +112,6 @@ NMI_WATCHDOG=0
 # CAUTION: only use this, if you thoroughly understand what you are doing!
 # Default: <none>.
 #PHC_CONTROLS="F:V F:V F:V F:V"
-
-# Set Intel energy and performance bias hint (EPB): 0..15 or
-#   performance (0), balance-performance (4), normal (6), balance-power (8),
-#   power (15).
-# Values are given in order of increasing power saving.
-# Requires kernel 5.2 or module msr and x86_energy_perf_policy from linux-tools.
-# Default: <none>
-ENERGY_PERF_BIAS_ON_AC=performance
-ENERGY_PERF_BIAS_ON_BAT=power
 
 # Disk devices; separate multiple devices with spaces.
 # Devices can be specified by disk ID also (lookup with: tlp diskid).

@@ -17,8 +17,8 @@ readonly CPU_MIN_PERF_PCT=$INTEL_PSTATED/min_perf_pct
 readonly CPU_MAX_PERF_PCT=$INTEL_PSTATED/max_perf_pct
 readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
 
+readonly CPU_INFO=/proc/cpuinfo
 readonly ENERGYPERF=x86_energy_perf_policy
-readonly EPB_MIN_KERNEL="5.2"
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -30,7 +30,7 @@ check_intel_pstate () { # detect intel_pstate driver -- rc: 0=present/1=absent
     [ -d $INTEL_PSTATED ]
 }
 
-set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mode
+set_cpu_scaling_governor () { # set CPU scaling governor -- $1: 0=ac mode, 1=battery mode
     local gov cpu ec
 
     if [ "$1" = "1" ]; then
@@ -43,19 +43,19 @@ set_scaling_governor () { # set scaling governor -- $1: 0=ac mode, 1=battery mod
         ec=0
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
             if [ -f "$cpu" ] && ! write_sysf "$gov" $cpu; then
-                echo_debug "pm" "set_scaling_governor($1).write_error: $cpu $gov; rc=$?"
+                echo_debug "pm" "set_cpu_scaling_governor($1).write_error: $cpu $gov; rc=$?"
                 ec=$((ec+1))
             fi
         done
-        echo_debug "pm" "set_scaling_governor($1): $gov; ec=$?"
+        echo_debug "pm" "set_cpu_scaling_governor($1): $gov; ec=$?"
     else
-        echo_debug "pm" "set_scaling_governor($1).not_configured"
+        echo_debug "pm" "set_cpu_scaling_governor($1).not_configured"
     fi
 
     return 0
 }
 
-set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery mode
+set_cpu_scaling_min_max_freq () { # set CPU scaling limits -- $1: 0=ac mode, 1=battery mode
     local minfreq maxfreq cpu ec
     local conf=0
 
@@ -72,11 +72,11 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
         ec=0
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
             if [ -f "$cpu" ] && ! write_sysf "$minfreq" $cpu; then
-                echo_debug "pm" "set_scaling_min_max_freq($1).min.write_error: $cpu $minfreq; rc=$?"
+                echo_debug "pm" "set_cpu_scaling_min_max_freq($1).min.write_error: $cpu $minfreq; rc=$?"
                 ec=$((ec+1))
             fi
         done
-        echo_debug "pm" "set_scaling_min_max_freq($1).min: $minfreq; ec=$ec"
+        echo_debug "pm" "set_cpu_scaling_min_max_freq($1).min: $minfreq; ec=$ec"
     fi
 
     if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
@@ -84,64 +84,152 @@ set_scaling_min_max_freq () { # set scaling limits -- $1: 0=ac mode, 1=battery m
         ec=0
         for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
             if [ -f "$cpu" ] && ! write_sysf "$maxfreq" $cpu; then
-                echo_debug "pm" "set_scaling_min_max_freq($1).max.write_error: $cpu $maxfreq; rc=$?"
+                echo_debug "pm" "set_cpu_scaling_min_max_freq($1).max.write_error: $cpu $maxfreq; rc=$?"
                 ec=$((ec+1))
             fi
-            echo_debug "pm" "set_scaling_min_max_freq($1).max: $maxfreq; ec=$ec"
+            echo_debug "pm" "set_cpu_scaling_min_max_freq($1).max: $maxfreq; ec=$ec"
         done
     fi
 
-    [ $conf -eq 1 ] || echo_debug "pm" "set_scaling_min_max_freq($1).not_configured"
+    [ $conf -eq 1 ] || echo_debug "pm" "set_cpu_scaling_min_max_freq($1).not_configured"
     return 0
 }
 
 # --- Performance Policies
 
-set_cpu_hwp_pref () { # set HWP energy performance hints -- $1: 0=ac mode, 1=battery mode
-    local hwpp avail cpu ec
+supports_intel_cpu_epb () {
+    # rc: 0=CPU supports EPB/1=false
+    grep -E -q -m 1 '^flags.+epb' $CPU_INFO
+}
 
-    if ! check_intel_pstate; then
-        echo_debug "pm" "set_cpu_perf_pct($1).no_intel_pstate"
+supports_intel_cpu_epp () {
+    # rc: 0=CPU supports HWP.EPP/1=false
+    grep -E -q -m 1 '^flags.+hwp_epp' $CPU_INFO
+}
+
+set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
+    # $1: 0=ac mode, 1=battery mode
+    #
+    # depending on the CPU model the values
+    #   performance, balance_performance, default, balance_power, power
+    # in CPU_ENERGY_PERF_POLICY_ON_AC/BAT are applied to:
+    # (1) energy-performance preference (HWP.EPP) in MSR_IA32_HWP_REQUEST
+    # (2) energy-performance bias (EPB) in MSR_IA32_ENERGY_PERF_BIAS
+    # when HWP.EPP is available, EPB is not set (unless forced)
+    #
+    # full backwards compatibility for the replaced parameters:
+    # (1) CPU_HWP_ON_AC/BAT: no translation needed
+    # (2) ENERGY_PERF_POLICY_ON_AC/BAT: translate
+    #     balance-performance --> balance_perfomance
+    #     normal              --> default
+    #     balance-power       --> balance_power
+    #
+    # References:
+    # - https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html#energy-vs-performance-hints
+    # - https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_epb.html
+    # - https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=4beec1d7519691b4b6c6b764e75b4e694a09c5f7
+    # - http://manpages.ubuntu.com/manpages/disco/man8/x86_energy_perf_policy.8.html
+
+    local cnt cpuf ec perf pnum
+
+    if [ "$1" = "1" ]; then
+        perf=${CPU_ENERGY_PERF_POLICY_ON_BAT:-${ENERGY_PERF_BIAS_ON_BAT:-${CPU_HWP_ON_BAT:-}}}
+    else
+        perf=${CPU_ENERGY_PERF_POLICY_ON_AC:-${ENERGY_PERF_BIAS_ON_AC:-${CPU_HWP_ON_AC:-}}}
+    fi
+    # translate alphanumeric values from EPB to HWP.EPP syntax
+    perf=$(echo $perf | sed -r 's/^balance-performance$/balance_performance/;
+                                s/^normal$/default/;
+                                s/^balance-power$/balance_power/;
+                                s/^powersave$/power/')
+
+    if [ -z "$perf" ]; then
+        echo_debug "pm" "set_intel_cpu_perf_policy($1).not_configured"
         return 0
     fi
 
-    if [ "$1" = "1" ]; then
-        hwpp=${CPU_HWP_ON_BAT:-}
-    else
-        hwpp=${CPU_HWP_ON_AC:-}
-    fi
-
-    if [ -n "$hwpp" ]; then
-        avail=0
+    if check_intel_pstate && supports_intel_cpu_epp; then
+        # apply HWP.EPP setting
+        cnt=0
         ec=0
-        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
-            if [ -f "$cpu" ]; then
-                avail=1
-                if  ! write_sysf "$hwpp" $cpu; then
-                    echo_debug "pm" "set_cpu_hwp_pref($1).write_error: $cpu $hwpp; rc=$"
+        for cpuf in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+            if [ -f $cpuf ]; then
+                cnt=$((cnt+1))
+                if  ! write_sysf "$perf" $cpuf; then
+                    echo_debug "pm" "set_intel_cpu_perf_policy($1).hwp_epp.write_error: $perf $cpuf; rc=$?"
                     ec=$((ec+1))
                 fi
             fi
         done
-        if [ "$avail" = "1" ]; then
-            echo_debug "pm" "set_cpu_hwp_pref($1): $hwpp; ec=$ec"
+        if [ $cnt -gt 0 ]; then
+            echo_debug "pm" "set_intel_cpu_perf_policy($1).hwp_epp: $perf; ec=$ec"
+            # HWP.EPP active and applied, quit unless EPB is forced
+            [ "$X_FORCE_EPB" = "1" ] || return 0
         else
-            echo_debug "pm" "set_cpu_hwp_pref($1).no_hwp"
+            echo_debug "pm" "set_intel_cpu_perf_policy($1).hwp_epp.not_available"
         fi
     else
-        echo_debug "pm" "set_cpu_hwp_pref($1).not_configured"
+        echo_debug "pm" "set_intel_cpu_perf_policy($1).hwp_epp -- unsupported cpu"
+    fi
+
+    if supports_intel_cpu_epb; then
+        # apply EPB setting: translate HWP.EPP alphanumeric to EPB numeric values
+        # for native kernel support and x86_energy_perf_policy backwards compatibility
+        pnum=$(echo $perf | sed -r 's/^performance$/0/;
+                                    s/^balance_performance$/4/;
+                                    s/^default$/6/;
+                                    s/^balance_power$/8/;
+                                    s/^power/15/')
+
+        # try native kernel API first (5.2 and later)
+        cnt=0
+        ec=0
+        for cpuf in /sys/devices/system/cpu/cpu*/power/energy_perf_bias; do
+            if [ -f $cpuf ]; then
+                cnt=$((cnt + 1))
+                if  ! write_sysf "$pnum" $cpuf; then
+                    echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_kernel.write_error: $perf($pnum) $cpuf; rc=$?"
+                    ec=$((ec+1))
+                fi
+            fi
+        done
+        if [ $cnt -gt 0 ]; then
+            # native kernel API actually detected
+            echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_kernel: $perf($pnum); ec=$ec"
+            return 0
+        fi
+
+        # no native kernel support, try x86_energy_perf_policy
+        if ! cmd_exists $ENERGYPERF; then
+            # x86_energy_perf_policy not installed
+            echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum) -- x86_energy_perf_policy not installed"
+        else
+            # x86_energy_perf_policy needs kernel module 'msr'
+            load_modules $MOD_MSR
+            $ENERGYPERF $pnum > /dev/null 2>&1
+            rc=$?
+            case $rc in
+                0) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$?" ;;
+                1) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? -- unsupported cpu" ;;
+                2) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? -- kernel specific x86_energy_perf_policy missing" ;;
+                *) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? -- unknown" ;;
+            esac
+            return $rc
+        fi
+    else
+        echo_debug "pm" "set_intel_cpu_perf_policy($1).epb -- unsupported cpu"
     fi
 
     return 0
 }
 
-set_cpu_perf_pct () { # set Intel P-state performance
+set_intel_cpu_perf_pct () { # set Intel P-state performance limits
                       # $1: 0=ac mode, 1=battery mode
     local min max
 
 
     if ! check_intel_pstate; then
-        echo_debug "pm" "set_cpu_perf_pct($1).no_intel_pstate"
+        echo_debug "pm" "set_intel_cpu_perf_pct($1).no_intel_pstate"
         return 0
     fi
 
@@ -154,21 +242,21 @@ set_cpu_perf_pct () { # set Intel P-state performance
     fi
 
     if [ ! -f $CPU_MIN_PERF_PCT ]; then
-        echo_debug "pm" "set_cpu_perf_pct($1).min.not_supported"
+        echo_debug "pm" "set_intel_cpu_perf_pct($1).min.not_supported"
     elif [ -n "$min" ]; then
         write_sysf "$min" $CPU_MIN_PERF_PCT
-        echo_debug "pm" "set_cpu_perf_pct($1).min: $min; rc=$?"
+        echo_debug "pm" "set_intel_cpu_perf_pct($1).min: $min; rc=$?"
     else
-        echo_debug "pm" "set_cpu_perf_pct($1).min.not_configured"
+        echo_debug "pm" "set_intel_cpu_perf_pct($1).min.not_configured"
     fi
 
     if [ ! -f $CPU_MAX_PERF_PCT ]; then
-        echo_debug "pm" "set_cpu_perf_pct($1).max.not_supported"
+        echo_debug "pm" "set_intel_cpu_perf_pct($1).max.not_supported"
     elif [ -n "$max" ]; then
         write_sysf "$max" $CPU_MAX_PERF_PCT
-        echo_debug "pm" "set_cpu_perf_pct($1).max: $max; rc=$?"
+        echo_debug "pm" "set_intel_cpu_perf_pct($1).max: $max; rc=$?"
     else
-        echo_debug "pm" "set_cpu_perf_pct($1).max.not_configured"
+        echo_debug "pm" "set_intel_cpu_perf_pct($1).max.not_configured"
     fi
 
     return 0
@@ -252,68 +340,6 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
     return 0
 }
 
-set_energy_perf_bias () { # set Intel energy and performance bias hint (EPB)
-    # $1: 0=ac mode, 1=battery mode
-
-    local cnt ec perf pnum rc
-
-    # keep backwards compatibility with ENERGY_PERF_POLICY_ON_AC/BAT
-    if [ "$1" = "1" ]; then
-        perf=${ENERGY_PERF_BIAS_ON_BAT:-${ENERGY_PERF_POLICY_ON_BAT:-}}
-    else
-        perf=${ENERGY_PERF_BIAS_ON_AC:-${ENERGY_PERF_POLICY_ON_AC:-}}
-    fi
-    # translate alphanumeric to numeric values
-    # for native kernel support and
-    # x86_energy_perf_policy backward compatibility
-    pnum=$(echo $perf | sed -r 's/^performance$/0/;
-                                s/^balance-performance$/4/;
-                                s/^(default|normal)$/6/;
-                                s/^balance-power?$/8/;
-                                s/^power(save)?$/15/')
-    if [ -z "$pnum" ]; then
-        echo_debug "pm" "set_energy_perf_bias($1).not_configured"
-        return 0
-    fi
-
-    # try native kernel API first (5.2 and later)
-    cnt=0
-    ec=0
-    for cpuf in /sys/devices/system/cpu/cpu*/power/energy_perf_bias; do
-        if [ -f $cpuf ]; then
-            write_sysf "$pnum" $cpuf || ec=$((ec + 1))
-            cnt=$((cnt + 1))
-        fi
-    done
-    if [ $cnt -gt 0 ]; then
-        # native kernel API actually detected
-        echo_debug "pm" "set_energy_perf_bias($1).kernel: $perf($pnum); ec=$ec"
-        return 0
-    elif kernel_version_ge $EPB_MIN_KERNEL; then
-        # if not detected and kernel >= 5.2 --> assume unsupported CPU
-        echo_debug "pm" "set_energy_perf_bias($1).kernel: $perf($pnum) -- unsupported cpu"
-        return 0
-    fi
-
-    # no native kernel support, try x86_energy_perf_policy
-    if ! cmd_exists $ENERGYPERF; then
-        # x86_energy_perf_policy not installed
-        echo_debug "pm" "set_energy_perf_bias($1): $perf($pnum) -- x86_energy_perf_policy not installed"
-        return 0
-    else
-        # x86_energy_perf_policy needs kernel module 'msr'
-        load_modules $MOD_MSR
-        $ENERGYPERF $pnum > /dev/null 2>&1
-        rc=$?
-        case $rc in
-            0) echo_debug "pm" "set_energy_perf_policy($1): $perf($pnum)" ;;
-            1) echo_debug "pm" "set_energy_perf_policy($1): $perf($pnum) -- unsupported cpu" ;;
-            2) echo_debug "pm" "set_energy_perf_policy($1): $perf($pnum) -- kernel specific x86_energy_perf_policy missing" ;;
-            *) echo_debug "pm" "set_energy_perf_policy($1): $perf($pnum) -- unknown rc=$rc " ;;
-        esac
-        return $rc
-    fi
-}
 
 # --- Misc
 
