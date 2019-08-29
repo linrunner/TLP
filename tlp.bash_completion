@@ -6,8 +6,9 @@ _batteries() {
 
     bats=$( {
         for b in /sys/class/power_supply/*; do
-            if [ "$(cat $b/present 2> /dev/null)" = "1" ] \
-                   && [ "$(cat $b/type)" = "Battery" ]; then
+            if echo "$b" | grep -E -v -q "hid" \
+                    && [ "$(cat $b/present 2> /dev/null)" = "1" ] \
+                    && [ "$(cat $b/type)" = "Battery" ]; then
                 echo "${b##/*/} "
             fi
         done } )

@@ -228,7 +228,10 @@ battery_present () { # check battery presence and return tpacpi-bat index
                 bsd="$ACPIBATDIR/$bs"
 
                 # check acpi name space
-                if [ "$(read_sysf $bsd/present)" = "1" ] \
+                if echo "$bs" | grep -E -q "$RE_PS_IGNORE"; then
+                    rc=2 # atypical battery ignored
+
+                elif [ "$(read_sysf $bsd/present)" = "1" ] \
                    && [ "$(read_sysf $bsd/type)" = "Battery" ]; then
                     rc=0 # battery detected
                     # determine tpacpi-bat index
@@ -302,6 +305,7 @@ battery_present () { # check battery presence and return tpacpi-bat index
     case $rc in
         0)   echo_debug "bat" "battery_present($1): bm_read=$_bm_read; bat_str=$_bat_str; bat_idx=$_bat_idx; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg; rc=$rc" ;;
         1)   echo_debug "bat" "battery_present($1).not_detected: bm_read=$_bm_read; rc=$rc" ;;
+        2)   echo_debug "bat" "battery_present($1).ignored: bm_read=$_bm_read; rc=$rc" ;;
     esac
 
     return $rc

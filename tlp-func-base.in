@@ -44,7 +44,7 @@ readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
 readonly RE_PARAM='^[A-Z_]+[0-9]*\=[0-9a-zA-Z _-]*$'
 
 # power supplies: ignore MacBook Pro 2017 sbs-charger and hid devices
-readonly RE_PS_IGNORE='sbs-charger|hidpp_battery'
+readonly RE_PS_IGNORE='sbs-charger|hidpp_battery|hid-'
 
 readonly DEBUG_TAGS_ALL="arg bat disk lock nm path pm ps rf run sysfs udev usb"
 
@@ -534,7 +534,7 @@ get_sys_power_supply () { # get current power supply
     for psrc in /sys/class/power_supply/*; do
         # -f $psrc/type not necessary - read_sysf() handles this
 
-        # ignore atypical power supplies
+        # ignore atypical power supplies and batteries
         echo "$psrc" | grep -E -q "$RE_PS_IGNORE" && continue
 
         case "$(read_sysf $psrc/type)" in

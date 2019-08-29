@@ -882,7 +882,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
         [ -d "$batd" ] || continue # skip if battery directory does not exist
         batt=${batd##/*/}
-        battery_present $batt || continue # skip if battery is not present
+        battery_present $batt || continue # skip if battery is not present or atypical
 
         if is_thinkpad && [ "$_bm_thresh" != 'none' ]; then
             # ThinkPad with battery feature support
