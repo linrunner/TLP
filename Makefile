@@ -16,6 +16,7 @@ TLP_SHCPL  ?= /usr/share/bash-completion/completions
 TLP_MAN    ?= /usr/share/man
 TLP_META   ?= /usr/share/metainfo
 TLP_RUN    ?= /run/tlp
+TLP_RUNCONF    ?= /run/tlp/tlp.conf
 TLP_VAR    ?= /var/lib/tlp
 TLP_CUSTOMIZE    ?= /etc/tlp.conf.d
 
@@ -45,6 +46,7 @@ SED = sed \
 	-e "s|@TLP_CONF@|$(TLP_CONF)|g" \
 	-e "s|@TLP_CUSTOMIZE@|$(TLP_CUSTOMIZE)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"   \
+	-e "s|@TLP_RUNCONF@|$(TLP_RUNCONF)|g"   \
 	-e "s|@TLP_VAR@|$(TLP_VAR)|g"
 
 INFILES = \

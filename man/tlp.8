@@ -102,12 +102,17 @@ tlp recalibrate BAT0
 .SH FILES
 .I /etc/default/tlp
 .RS
-System-wide configuration file containing all power saving settings.
+System-wide default configuration file containing all power saving settings.
 .RE
 .PP
 .I /etc/tlp.conf.d/
 .RS
-Custimized System-wide configuration files containing all power saving settings.
+Custimized system-wide configuration files which will override /etc/default/tlp.
+.RE
+.PP
+.I /run/tlp/tlp.conf
+.RS
+Runtime system-wide configuration file which is the final setting.
 .
 .SH EXIT STATUS
 On success, 0 is returned, a non-zero failure code otherwise.
