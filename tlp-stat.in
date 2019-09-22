@@ -205,7 +205,7 @@ add_sbin2path
 
 
 # check for and read conffile
-read_defaults; conf_present=$?
+read_confs; conf_present=$?
 parse_args "$@"
 parse_args4config "$@"
 : ${needs_root_priv:=1}
@@ -228,8 +228,8 @@ echo
 # --- show configuration
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
     if [ $conf_present -eq 0 ]; then
-        echo "+++ Configured Settings: $CONFFILE"
-        grep -E -v '^#|^\s*$' $CONFFILE
+        echo "+++ Configured Settings: $CONFFILE $CUSTOMIZECONFDIR"
+        print_conf
         echo
     else
         echo "Error: config file $CONFFILE not present." 1>&2
