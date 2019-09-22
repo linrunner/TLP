@@ -14,6 +14,7 @@ readonly TLPVER="1.3.0-alpha.1"
 readonly CONFFILE=@TLP_CONF@
 readonly RUNDIR=@TLP_RUN@
 readonly VARDIR=@TLP_VAR@
+readonly CUSTOMIZECONFDIR=@TLP_CUSTOMIZE@
 
 readonly FLOCK=flock
 readonly HDPARM=hdparm
@@ -380,6 +381,34 @@ read_defaults () { # read config file
         return 1
     fi
 }
+
+read_customization () { # read customized config file
+    for i in $(find /etc/default/tlp.d -type f | sort); do
+        . $i
+    done
+    return 0
+}
+
+read_confs () { # read all config files
+    if read_defaults && read_customization;then
+        return 0
+    else
+        return $resule
+    fi
+
+}
+
+print_conf() { # print runtime conf based on default and customized configuration.
+read_confs
+cat <<EOF >/tmp/tlp-runtime.conf.prepare
+echo "
+`for i in $(grep -E -v "^#|^\s*$" /etc/default/tlp | awk -F'=' '{print $1}');do echo $i=\\'\\"\\$$i\\"\\';done`
+"
+EOF
+. /tmp/tlp-runtime.conf.prepare
+rm /tmp/tlp-runtime.conf.prepare
+}
+
 
 parse_args4config () { # parse command-line arguments: everything after the
                        # delimiter '--' is interpreted as a config parameter

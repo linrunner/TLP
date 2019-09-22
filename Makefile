@@ -17,6 +17,7 @@ TLP_MAN    ?= /usr/share/man
 TLP_META   ?= /usr/share/metainfo
 TLP_RUN    ?= /run/tlp
 TLP_VAR    ?= /var/lib/tlp
+TLP_CUSTOMIZE    ?= /etc/default/tlp.d
 
 # Catenate DESTDIR to paths
 _SBIN  = $(DESTDIR)$(TLP_SBIN)
@@ -42,6 +43,7 @@ SED = sed \
 	-e "s|@TLP_FLIB@|$(TLP_FLIB)|g" \
 	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
 	-e "s|@TLP_CONF@|$(TLP_CONF)|g" \
+	-e "s|@TLP_CUSTOMIZE@|$(TLP_CUSTOMIZE)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"   \
 	-e "s|@TLP_VAR@|$(TLP_VAR)|g"
 
