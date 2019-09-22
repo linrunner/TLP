@@ -15,6 +15,7 @@ readonly CONFFILE=@TLP_CONF@
 readonly RUNDIR=@TLP_RUN@
 readonly VARDIR=@TLP_VAR@
 readonly CUSTOMIZECONFDIR=@TLP_CUSTOMIZE@
+readonly RUNCONF=@TLP_RUNCONF@
 
 readonly FLOCK=flock
 readonly HDPARM=hdparm
@@ -407,6 +408,10 @@ echo "
 EOF
 . /tmp/tlp-runtime.conf.prepare
 rm /tmp/tlp-runtime.conf.prepare
+}
+
+generate_runtime_conf () { # generate runtime conf file based on default and customized configuration.
+    print_conf > $RUNCONF
 }
 
 parse_args4config () { # parse command-line arguments: everything after the

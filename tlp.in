@@ -247,7 +247,7 @@ exitcode=0
 case "$_cmd" in
     init) # system initialization/shutdown: sysv, upstart, systemd, ...
         check_root
-
+        generate_runtime_conf
         # try to obtain lock (with timeout)
         locked=0
         if lock_tlp; then
