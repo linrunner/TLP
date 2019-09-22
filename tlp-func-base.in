@@ -383,7 +383,7 @@ read_defaults () { # read config file
 }
 
 read_customization () { # read customized config file
-    for i in $(find /etc/default/tlp.d -type f | sort); do
+    for i in $(find $CUSTOMIZECONFDIR -type f | sort); do
         . $i
     done
     return 0
@@ -398,7 +398,7 @@ read_confs () { # read all config files
 
 }
 
-print_conf() { # print runtime conf based on default and customized configuration.
+print_conf () { # print runtime conf based on default and customized configuration.
 read_confs
 cat <<EOF >/tmp/tlp-runtime.conf.prepare
 echo "
@@ -408,7 +408,6 @@ EOF
 . /tmp/tlp-runtime.conf.prepare
 rm /tmp/tlp-runtime.conf.prepare
 }
-
 
 parse_args4config () { # parse command-line arguments: everything after the
                        # delimiter '--' is interpreted as a config parameter

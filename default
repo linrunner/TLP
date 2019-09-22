@@ -9,6 +9,7 @@
 #   or disabled by a leading '#'; use PARAM="" to disable intrinsic defaults for
 #   parameters with text string values
 # - Default <none>: do nothing or use kernel/hardware defaults
+# - The setting may be overrided by configurations in /etc/tlp.conf.d
 
 # Set to 0 to disable, 1 to enable TLP.
 # Default: 0
