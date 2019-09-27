@@ -210,7 +210,7 @@ uninstall: uninstall-tlp uninstall-rdw
 
 uninstall-man: uninstall-man-tlp uninstall-man-rdw
 
-checkall: checkbashisms shellcheck checkdupconst
+checkall: checkbashisms shellcheck checkdupconst checkwip
 
 checkbashisms:
 	checkbashisms $(SHFILES) || true
@@ -220,3 +220,6 @@ shellcheck:
 
 checkdupconst:
 	{ sed -n -r -e 's,^.*readonly\s+([A-Za-z_][A-Za-z_0-9]*)=.*$$,\1,p' $(SHFILES) | sort | uniq -d; } || true
+
+checkwip:
+	grep -E -n "### (DEBUG|DEVEL|TODO)" $(SHFILES) || true
