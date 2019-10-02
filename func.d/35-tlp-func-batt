@@ -377,7 +377,7 @@ read_threshold () { # read and echo charge threshold
     fi
 
     # "return" threshold
-    if [ "$THRESH_READ_NONE" != "1" ]; then
+    if [ "$X_THRESH_READ_NONE" != "1" ]; then
         echo $rt
     else
         echo "none"
