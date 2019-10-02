@@ -557,14 +557,14 @@ print_thresholds () { # formatted output of ThinkPad charging thresholds
     [ "$_bm_thresh" != "none" ] || return 0 # no method available --> quit
 
     for sp in start stop; do
-        get_threshold $sp; thresh=$?
+        thresh=$(read_threshold $sp)
 
         case $sp in
             start) bsys=$_bf_start ;;
             stop)  bsys=$_bf_stop ;;
         esac
 
-        if [ $thresh -ne 255 ]; then
+        if [ "$thresh" != "none" ]; then
             # valid threshold read
             case $_bm_thresh in
                 natacpi|tpsmapi)

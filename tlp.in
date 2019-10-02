@@ -435,7 +435,7 @@ case "$_cmd" in
     fullcharge) # charge battery to 100% (temporarily)
         if check_ac_power fullcharge; then
             check_root
-            setcharge_battery 96 100 $_carg1
+            setcharge_battery 0 0 $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
                 echo "Charging starts now, keep AC connected."

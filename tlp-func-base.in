@@ -149,7 +149,7 @@ check_root () { # show error message and exit when root privilege missing
     fi
 }
 
-check_tlp_enabled () { # check if TLP is enabled in config file --
+check_tlp_enabled () { # check if TLP is enabled in config file
     # $1: 1=verbose
     # rc: 0=disabled/1=enabled
 
@@ -161,6 +161,30 @@ check_tlp_enabled () { # check if TLP is enabled in config file --
         [ "$1" = "1" ] && echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in $CONFFILE." 1>&2
         return 1
     fi
+}
+
+# --- Type and value checking
+
+is_uint () { # check for unsigned integer -- $1: string; $2: max digits
+    printf "%s" "$1" | grep -E -q "^[0-9]{1,$2}$" 2> /dev/null
+}
+
+is_within_bounds () { # check condition min <= value <= max
+    # $1: value; $2: min; $3: max (all unsigned int)
+    # rc: 0=within/1=below/2=above/255=invalid
+    #
+    # value, min or max undefined/non-numeric means that this branch of the
+    # condition is fulfilled
+
+    is_uint $1 || return 255
+    if is_uint $2; then
+        [ $1 -ge $2 ] || return 1
+    fi
+    if is_uint $3; then
+        [ $1 -le $3 ] || return 2
+    fi
+
+    return  0
 }
 
 # --- Locking and Semaphores
