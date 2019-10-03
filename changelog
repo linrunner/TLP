@@ -1,4 +1,4 @@
-+++ 1.3.0–alpha.0 --- 02.10.2019 +++
++++ 1.3.0–alpha.1 --- 03.10.2019 +++
 
   * Development version
 
@@ -8,6 +8,7 @@
         clearer error messages
     General:
       - systemd: start tlp.service earlier in boot process
+      - systemd: replace tlp-sleep.service with /lib/systemd/system-sleep/tlp
     PCI(e) devices:
       - Add ASPM method 'powersupersave' (Issue #425)
     Processor:

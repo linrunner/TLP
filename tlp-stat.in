@@ -38,7 +38,7 @@ readonly IBMTHERMAL=/proc/acpi/ibm/thermal
 
 readonly DEBUGLOG=/var/log/debug
 
-readonly SYSTEMD_SERVICES="tlp.service tlp-sleep.service"
+readonly SYSTEMD_SERVICES="tlp.service"
 readonly RFKILL_SERVICES="systemd-rfkill.service systemd-rfkill.socket"
 
 # --- Variables

@@ -9,6 +9,7 @@ TLP_ULIB   ?= /lib/udev
 TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
 TLP_CONF   ?= /etc/default/tlp
 TLP_SYSD   ?= /lib/systemd/system
+TLP_SDSL   ?= /lib/systemd/system-sleep
 TLP_SYSV   ?= /etc/init.d
 TLP_ELOD   ?= /lib/elogind/system-sleep
 TLP_SHCPL  ?= /usr/share/bash-completion/completions
@@ -26,6 +27,7 @@ _ULIB  = $(DESTDIR)$(TLP_ULIB)
 _NMDSP = $(DESTDIR)$(TLP_NMDSP)
 _CONF  = $(DESTDIR)$(TLP_CONF)
 _SYSD  = $(DESTDIR)$(TLP_SYSD)
+_SDSL  = $(DESTDIR)$(TLP_SDSL)
 _SYSV  = $(DESTDIR)$(TLP_SYSV)
 _ELOD  = $(DESTDIR)$(TLP_ELOD)
 _SHCPL = $(DESTDIR)$(TLP_SHCPL)
@@ -54,7 +56,6 @@ INFILES = \
 	tlp.rules \
 	tlp-run-on \
 	tlp.service \
-	tlp-sleep.service \
 	tlp-stat \
 	tlp.upstart \
 	tlp-usb-udev
@@ -86,6 +87,8 @@ SHFILES = \
 	tlp-rdw-udev.in \
 	tlp-rf.in \
 	tlp-run-on.in \
+	tlp-sleep \
+	tlp-sleep.elogind \
 	tlp-stat.in \
 	tlp-usb-udev.in
 
@@ -122,7 +125,7 @@ ifneq ($(TLP_NO_INIT),1)
 endif
 ifneq ($(TLP_WITH_SYSTEMD),0)
 	install -D -m 644 tlp.service $(_SYSD)/tlp.service
-	install -m 644 tlp-sleep.service $(_SYSD)/
+	install -D -m 755 tlp-sleep $(_SDSL)/tlp
 endif
 ifneq ($(TLP_WITH_ELOGIND),0)
 	install -D -m 755 tlp-sleep.elogind $(_ELOD)/49-tlp-sleep
@@ -179,7 +182,7 @@ uninstall-tlp:
 	rm $(_ULIB)/rules.d/85-tlp.rules
 	rm -f $(_SYSV)/tlp
 	rm -f $(_SYSD)/tlp.service
-	rm -f $(_SYSD)/tlp-sleep.service
+	rm -f $(_SDSL)/tlp-sleep
 	rm -f $(_ELOD)/49-tlp-sleep
 	rm -f $(_SHCPL)/tlp-stat
 	rm -f $(_SHCPL)/bluetooth
