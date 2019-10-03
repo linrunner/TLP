@@ -463,21 +463,19 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     printparm "%-54s = ##%d##" $NMIWD
     echo
 
-    # --- show voltages
-    echo "+++ Undervolting"
+    # --- show PHC voltages
     phc_avail=0
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
         if [ -f $cpuf/phc_controls ]; then
-            phc_avail=1
+            if [ $phc_avail = 0 ]; then
+                echo "+++ Undervolting"
+                phc_avail=1
+            fi
             printparm "%-58s = ##%s##" $cpuf/phc_controls
             printparm "%-58s = ##%s##" $cpuf/phc_default_controls
             echo
         fi
     done
-    if [ $phc_avail = 0 ]; then
-        echo "PHC kernel not available."
-        echo
-    fi
 fi # show_proc
 
 if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then

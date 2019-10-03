@@ -21,6 +21,7 @@
       - System Info: show RDW as "disabled" when TLP is disabled as a whole
       - Intel CPU: don't show EPB values when HWP.EPP is active (see above)
       - PCIe ASPM: show available policies
+      - Undervolting: remove "PHC kernel not available" message
 
   * Bugfix
     Battery Features:
