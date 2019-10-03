@@ -72,8 +72,7 @@ MANFILES1 = \
 MANFILES8 = \
 	tlp.8 \
 	tlp-stat.8 \
-	tlp.service.8 \
-	tlp-sleep.service.8
+	tlp.service.8
 
 MANFILESRDW8 = \
 	tlp-rdw.8

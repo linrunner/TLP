@@ -1,4 +1,4 @@
-.TH tlp.service 8 2017-01-29 "TLP 1.0" "Power Management"
+.TH tlp.service 8 2019-10-02 "TLP 1.3" "Power Management"
 .
 .SH NAME
 .
@@ -15,9 +15,12 @@ and charge thresholds.
 .IP " 2." 4
 System shutdown: switch or save radio states, apply AC settings and cleanup.
 .
+.SH FILES
+.I /lib/systemd/system-sleep/tlp
+.RS
+Applies power saving settings upon system suspend and resume.
 .SH SEE ALSO
-.BR tlp (8),
-.BR tlp-sleep.service (8).
+.BR tlp (8).
 .
 .SH NOTES
 Do \fInot\fR employ tlp.service to refresh power saving settings after a
@@ -25,4 +28,4 @@ configuration change.
 Use \fBtlp start\fR instead.
 .
 .SH AUTHOR
-(c) 2017 Thomas Koch <linrunner at gmx.net>
+(c) 2019 Thomas Koch <linrunner at gmx.net>
