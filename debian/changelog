@@ -1,8 +1,10 @@
-tlp (1.3.0~alpha.0-1) unstable; urgency=low
+tlp (1.3.0~alpha.1-1) unstable; urgency=low
 
   * Track development version
 
   [Thomas Koch]
+  * debian/rules: remove tlp-sleep.service
+  * debian/tlp.install: add /lib/systemd/system-sleep/tlp
 
  -- Thomas Koch <linrunner@gmx.net>  Tue, 11 Jun 2019 17:42:48 +0200
 
