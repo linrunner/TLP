@@ -11,10 +11,12 @@
 
 readonly TLPVER="1.3.0-alpha.1"
 
-readonly CONFFILE=@TLP_CONF@
+readonly CONFFILE_DEF=@TLP_CONFDEF@
+readonly CONFFILE_TEMP=@TLP_CONFTEMP@
+readonly CONFFILE_OUTDATED=@TLP_CONFOUTDATED@
 readonly RUNDIR=@TLP_RUN@
 readonly VARDIR=@TLP_VAR@
-readonly CUSTOMIZECONFDIR=@TLP_CUSTOMIZE@
+readonly CUSTOMIZECONFDIR=@TLP_CONFD@
 readonly RUNCONF=@TLP_RUNCONF@
 
 readonly FLOCK=flock
@@ -160,7 +162,7 @@ check_tlp_enabled () { # check if TLP is enabled in config file
     if [ "$TLP_ENABLE" = "1" ]; then
         return 0
     else
-        [ "$1" = "1" ] && echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in $CONFFILE." 1>&2
+        [ "$1" = "1" ] && echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in configuration file." 1>&2
         return 1
     fi
 }
@@ -374,9 +376,9 @@ create_rundir () { # make sure $RUNDIR exists
 # --- Configuration
 
 read_defaults () { # read config file
-    if [ -f $CONFFILE ]; then
+    if [ -f $CONFFILE_DEF ]; then
         # shellcheck disable=SC1090
-        . $CONFFILE
+        . $CONFFILE_DEF
         return 0
     else
         return 1
@@ -384,17 +386,21 @@ read_defaults () { # read config file
 }
 
 read_customization () { # read customized config file
-    for i in $(find $CUSTOMIZECONFDIR -type f | sort); do
+    for i in $(find $CUSTOMIZECONFDIR -type f | sort) $CONFFILE_TEMP; do
         . $i
     done
     return 0
 }
 
 read_confs () { # read all config files
-    if read_defaults && read_customization;then
+    if read_defaults && read_customization; then
+        if [ -f $CONFFILE_OUTDATED ]; then
+            # shellcheck disable=SC1090
+            . $CONFFILE_OUTDATED
+        fi
         return 0
     else
-        return $resule
+        return 1
     fi
 
 }
@@ -403,7 +409,7 @@ print_conf () { # print runtime conf based on default and customized configurati
 read_confs
 cat <<EOF >/tmp/tlp-runtime.conf.prepare
 echo "
-`for i in $(grep -E -v "^#|^\s*$" /etc/default/tlp | awk -F'=' '{print $1}');do echo $i=\\'\\"\\$$i\\"\\';done`
+`for i in $(grep -E -v "^#|^\s*$" $CONFFILE_DEF | awk -F'=' '{print $1}');do echo $i=\\'\\"\\$$i\\"\\';done`
 "
 EOF
 . /tmp/tlp-runtime.conf.prepare
@@ -411,7 +417,9 @@ rm /tmp/tlp-runtime.conf.prepare
 }
 
 generate_runtime_conf () { # generate runtime conf file based on default and customized configuration.
+    mkdir -p $(dirname $RUNCONF)
     print_conf > $RUNCONF
+    chmod 444 $RUNCONF
 }
 
 parse_args4config () { # parse command-line arguments: everything after the

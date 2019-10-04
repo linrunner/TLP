@@ -228,11 +228,11 @@ echo
 # --- show configuration
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
     if [ $conf_present -eq 0 ]; then
-        echo "+++ Configured Settings: $CONFFILE $CUSTOMIZECONFDIR"
+        echo "+++ Configured Settings: $CONFFILE_DEF $CUSTOMIZECONFDIR"
         print_conf
         echo
     else
-        echo "Error: config file $CONFFILE not present." 1>&2
+        echo "Error: config file $CONFFILE_DEF not present." 1>&2
         echo
     fi
 fi # show_conf

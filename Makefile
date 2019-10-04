@@ -7,7 +7,9 @@ TLP_TLIB   ?= /usr/share/tlp
 TLP_FLIB   ?= /usr/share/tlp/func.d
 TLP_ULIB   ?= /lib/udev
 TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
-TLP_CONF   ?= /etc/default/tlp
+TLP_CONFDEF   ?= /usr/share/tlp/defaults.conf
+TLP_CONFTEMP   ?= /etc/tlp.conf
+TLP_CONFOUTDATED   ?= /etc/default/tlp
 TLP_SYSD   ?= /lib/systemd/system
 TLP_SDSL   ?= /lib/systemd/system-sleep
 TLP_SYSV   ?= /etc/init.d
@@ -18,7 +20,7 @@ TLP_META   ?= /usr/share/metainfo
 TLP_RUN    ?= /run/tlp
 TLP_RUNCONF    ?= /run/tlp/tlp.conf
 TLP_VAR    ?= /var/lib/tlp
-TLP_CUSTOMIZE    ?= /etc/tlp.conf.d
+TLP_CONFD  ?= /etc/tlp.conf.d
 
 # Catenate DESTDIR to paths
 _SBIN  = $(DESTDIR)$(TLP_SBIN)
@@ -27,7 +29,9 @@ _TLIB  = $(DESTDIR)$(TLP_TLIB)
 _FLIB  = $(DESTDIR)$(TLP_FLIB)
 _ULIB  = $(DESTDIR)$(TLP_ULIB)
 _NMDSP = $(DESTDIR)$(TLP_NMDSP)
-_CONF  = $(DESTDIR)$(TLP_CONF)
+_CONFDEF  = $(DESTDIR)$(TLP_CONFDEF)
+_CONFTEMP  = $(DESTDIR)$(TLP_CONFTEMP)
+_CONFD  = $(DESTDIR)$(TLP_CONFD)
 _SYSD  = $(DESTDIR)$(TLP_SYSD)
 _SDSL  = $(DESTDIR)$(TLP_SDSL)
 _SYSV  = $(DESTDIR)$(TLP_SYSV)
@@ -43,8 +47,10 @@ SED = sed \
 	-e "s|@TLP_TLIB@|$(TLP_TLIB)|g" \
 	-e "s|@TLP_FLIB@|$(TLP_FLIB)|g" \
 	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
-	-e "s|@TLP_CONF@|$(TLP_CONF)|g" \
-	-e "s|@TLP_CUSTOMIZE@|$(TLP_CUSTOMIZE)|g" \
+	-e "s|@TLP_CONFDEF@|$(TLP_CONFDEF)|g" \
+	-e "s|@TLP_CONFTEMP@|$(TLP_CONFTEMP)|g" \
+	-e "s|@TLP_CONFOUTDATED@|$(TLP_CONFOUTDATED)|g" \
+	-e "s|@TLP_CONFD@|$(TLP_CONFD)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"   \
 	-e "s|@TLP_RUNCONF@|$(TLP_RUNCONF)|g"   \
 	-e "s|@TLP_VAR@|$(TLP_VAR)|g"
@@ -122,7 +128,9 @@ endif
 	install -D -m 755 --target-directory $(_TLIB)/func.d func.d/*
 	install -D -m 755 tlp-usb-udev $(_ULIB)/tlp-usb-udev
 	install -D -m 644 tlp.rules $(_ULIB)/rules.d/85-tlp.rules
-	[ -f $(_CONF) ] || install -D -m 644 default $(_CONF)
+	[ -f $(_CONFDEF) ] || install -D -m 644 default $(_CONFDEF)
+	[ -f $(_CONFTEMP) ] || install -D -m 644 template $(_CONFTEMP)
+	[ -f $(_CONFD)/00_template ] || install -D -m 644 template $(_CONFD)/00_template
 ifneq ($(TLP_NO_INIT),1)
 	install -D -m 755 tlp.init $(_SYSV)/tlp
 endif
