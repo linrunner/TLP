@@ -1,6 +1,6 @@
 usr/share/tlp/defaults.conf
 etc/tlp.conf
-etc/tlp.conf.d/00_template
+etc/tlp.conf.d
 etc/init.d/tlp
 lib/elogind/system-sleep/49-tlp-sleep
 lib/systemd/system/tlp.service
@@ -24,5 +24,6 @@ usr/share/bash-completion/completions/wwan
 usr/share/tlp/tlp-func-base
 usr/share/tlp/func.d/*
 usr/share/tlp/tpacpi-bat
+usr/share/tlp/defaults.conf
 usr/share/metainfo/de.linrunner.tlp.metainfo.xml
 var/lib/tlp
