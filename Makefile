@@ -1,56 +1,56 @@
 # Makefile for TLP
 
 # Evaluate parameters
-TLP_SBIN   ?= /usr/sbin
-TLP_BIN    ?= /usr/bin
-TLP_TLIB   ?= /usr/share/tlp
-TLP_FLIB   ?= /usr/share/tlp/func.d
-TLP_ULIB   ?= /lib/udev
-TLP_NMDSP  ?= /etc/NetworkManager/dispatcher.d
-TLP_CONFDEF   ?= /usr/share/tlp/defaults.conf
-TLP_CONFTEMP   ?= /etc/tlp.conf
-TLP_CONFOUTDATED   ?= /etc/default/tlp
-TLP_SYSD   ?= /lib/systemd/system
-TLP_SDSL   ?= /lib/systemd/system-sleep
-TLP_SYSV   ?= /etc/init.d
-TLP_ELOD   ?= /lib/elogind/system-sleep
-TLP_SHCPL  ?= /usr/share/bash-completion/completions
-TLP_MAN    ?= /usr/share/man
-TLP_META   ?= /usr/share/metainfo
-TLP_RUN    ?= /run/tlp
-TLP_RUNCONF    ?= /run/tlp/tlp.conf
-TLP_VAR    ?= /var/lib/tlp
-TLP_CONFD  ?= /etc/tlp.conf.d
+TLP_SBIN    ?= /usr/sbin
+TLP_BIN     ?= /usr/bin
+TLP_TLIB    ?= /usr/share/tlp
+TLP_FLIB    ?= /usr/share/tlp/func.d
+TLP_ULIB    ?= /lib/udev
+TLP_NMDSP   ?= /etc/NetworkManager/dispatcher.d
+TLP_CONFUSR ?= /etc/tlp.conf
+TLP_CONFDIR ?= /etc/tlp.conf.d
+TLP_CONFDEF ?= /usr/share/tlp/defaults.conf
+TLP_CONFOLD ?= /etc/default/tlp
+TLP_SYSD    ?= /lib/systemd/system
+TLP_SDSL    ?= /lib/systemd/system-sleep
+TLP_SYSV    ?= /etc/init.d
+TLP_ELOD    ?= /lib/elogind/system-sleep
+TLP_SHCPL   ?= /usr/share/bash-completion/completions
+TLP_MAN     ?= /usr/share/man
+TLP_META    ?= /usr/share/metainfo
+TLP_RUN     ?= /run/tlp
+TLP_VAR     ?= /var/lib/tlp
 
 # Catenate DESTDIR to paths
-_SBIN  = $(DESTDIR)$(TLP_SBIN)
-_BIN   = $(DESTDIR)$(TLP_BIN)
-_TLIB  = $(DESTDIR)$(TLP_TLIB)
-_FLIB  = $(DESTDIR)$(TLP_FLIB)
-_ULIB  = $(DESTDIR)$(TLP_ULIB)
-_NMDSP = $(DESTDIR)$(TLP_NMDSP)
-_CONFDEF  = $(DESTDIR)$(TLP_CONFDEF)
-_CONFTEMP  = $(DESTDIR)$(TLP_CONFTEMP)
-_CONFD  = $(DESTDIR)$(TLP_CONFD)
-_SYSD  = $(DESTDIR)$(TLP_SYSD)
-_SDSL  = $(DESTDIR)$(TLP_SDSL)
-_SYSV  = $(DESTDIR)$(TLP_SYSV)
-_ELOD  = $(DESTDIR)$(TLP_ELOD)
-_SHCPL = $(DESTDIR)$(TLP_SHCPL)
-_MAN   = $(DESTDIR)$(TLP_MAN)
-_META  = $(DESTDIR)$(TLP_META)
-_RUN   = $(DESTDIR)$(TLP_RUN)
-_VAR   = $(DESTDIR)$(TLP_VAR)
+_SBIN    = $(DESTDIR)$(TLP_SBIN)
+_BIN     = $(DESTDIR)$(TLP_BIN)
+_TLIB    = $(DESTDIR)$(TLP_TLIB)
+_FLIB    = $(DESTDIR)$(TLP_FLIB)
+_ULIB    = $(DESTDIR)$(TLP_ULIB)
+_NMDSP   = $(DESTDIR)$(TLP_NMDSP)
+_CONFUSR = $(DESTDIR)$(TLP_CONFUSR)
+_CONFDIR = $(DESTDIR)$(TLP_CONFDIR)
+_CONFDEF = $(DESTDIR)$(TLP_CONFDEF)
+_CONFOLD = $(DESTDIR)$(TLP_CONFOLD)
+_SYSD    = $(DESTDIR)$(TLP_SYSD)
+_SDSL    = $(DESTDIR)$(TLP_SDSL)
+_SYSV    = $(DESTDIR)$(TLP_SYSV)
+_ELOD    = $(DESTDIR)$(TLP_ELOD)
+_SHCPL   = $(DESTDIR)$(TLP_SHCPL)
+_MAN     = $(DESTDIR)$(TLP_MAN)
+_META    = $(DESTDIR)$(TLP_META)
+_RUN     = $(DESTDIR)$(TLP_RUN)
+_VAR     = $(DESTDIR)$(TLP_VAR)
 
 SED = sed \
 	-e "s|@TLP_SBIN@|$(TLP_SBIN)|g" \
 	-e "s|@TLP_TLIB@|$(TLP_TLIB)|g" \
 	-e "s|@TLP_FLIB@|$(TLP_FLIB)|g" \
 	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
+	-e "s|@TLP_CONFUSR@|$(TLP_CONFUSR)|g" \
+	-e "s|@TLP_CONFDIR@|$(TLP_CONFDIR)|g" \
 	-e "s|@TLP_CONFDEF@|$(TLP_CONFDEF)|g" \
-	-e "s|@TLP_CONFTEMP@|$(TLP_CONFTEMP)|g" \
-	-e "s|@TLP_CONFOUTDATED@|$(TLP_CONFOUTDATED)|g" \
-	-e "s|@TLP_CONFD@|$(TLP_CONFD)|g" \
+	-e "s|@TLP_CONFOLD@|$(TLP_CONFOLD)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"   \
 	-e "s|@TLP_RUNCONF@|$(TLP_RUNCONF)|g"   \
 	-e "s|@TLP_VAR@|$(TLP_VAR)|g"
@@ -128,9 +128,9 @@ endif
 	install -D -m 755 --target-directory $(_TLIB)/func.d func.d/*
 	install -D -m 755 tlp-usb-udev $(_ULIB)/tlp-usb-udev
 	install -D -m 644 tlp.rules $(_ULIB)/rules.d/85-tlp.rules
-	[ -f $(_CONFDEF) ] || install -D -m 644 default $(_CONFDEF)
-	[ -f $(_CONFTEMP) ] || install -D -m 644 template $(_CONFTEMP)
-	[ -f $(_CONFD)/00_template ] || install -D -m 644 template $(_CONFD)/00_template
+	[ -f $(_CONFUSR) ] || install -D -m 644 tlp.conf $(_CONFUSR)
+	install -d $(_CONFDIR)
+	install -D -m 644 defaults.conf $(_CONFDEF)
 ifneq ($(TLP_NO_INIT),1)
 	install -D -m 755 tlp.init $(_SYSV)/tlp
 endif
@@ -188,6 +188,7 @@ uninstall-tlp:
 	rm $(_BIN)/tlp-stat
 	rm $(_BIN)/tlp-usblist
 	rm $(_BIN)/tlp-pcilist
+	rm $(_CONFDEF)
 	rm -r $(_TLIB)
 	rm $(_ULIB)/tlp-usb-udev
 	rm $(_ULIB)/rules.d/85-tlp.rules

@@ -200,14 +200,12 @@ parse_args () { # parse command-line -- $@: arguments to parse
 }
 
 # --- MAIN
-
-add_sbin2path
-
-
-# check for and read conffile
+### TODO: what happens when reading defaults.conf/tlp.conf fails?
 read_confs; conf_present=$?
 parse_args "$@"
 parse_args4config "$@"
+
+add_sbin2path
 : ${needs_root_priv:=1}
 
 # inhibit trace output (unless forced)
@@ -227,14 +225,23 @@ echo
 
 # --- show configuration
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
-    if [ $conf_present -eq 0 ]; then
-        echo "+++ Configured Settings: $CONFFILE_DEF $CUSTOMIZECONFDIR"
-        print_conf
-        echo
-    else
-        echo "Error: config file $CONFFILE_DEF not present." 1>&2
-        echo
-    fi
+    case $conf_present in
+        0)
+            echo "+++ Configured Settings: $CONF_USR $CONF_DIR"
+            print_conf
+            echo
+            ;;
+
+        1)
+            echo "Warning: missing user configuration file $CONF_USR ." 1>&2
+            echo
+            ;;
+
+        2)
+            echo "Warning: mssing default configuration file $CONF_USR not present." 1>&2
+            echo
+            ;;
+    esac
 fi # show_conf
 
 if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then

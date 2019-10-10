@@ -171,10 +171,11 @@ parse_args () { # parse command-line arguments
 }
 
 # --- MAIN
-
+### TODO: what happens when reading defaults.conf/tlp.conf fails?
 read_confs
 parse_args "$@"
 parse_args4config "$@"
+
 check_tlp_enabled 1 || exit 1
 add_sbin2path
 
