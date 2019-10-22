@@ -233,12 +233,12 @@ if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
             ;;
 
         1)
-            echo "Warning: missing user configuration file $CONF_USR ." 1>&2
+            echo "Warning: missing user configuration file ${CONF_USR}." 1>&2
             echo
             ;;
 
         2)
-            echo "Warning: mssing default configuration file $CONF_USR not present." 1>&2
+            echo "Warning: missing default configuration file ${CONF_DEF}." 1>&2
             echo
             ;;
     esac

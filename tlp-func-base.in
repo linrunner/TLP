@@ -20,6 +20,7 @@ readonly CONF_DEF=@TLP_CONFDEF@  # /usr/share/tlp/defaults.conf
 readonly CONF_OLD=@TLP_CONFOLD@  # /etc/default/tlp
 readonly CONF_RUN="run.conf"
 
+### TODO: remove after successful completion of conf.d
 #readonly CUSTOMIZECONFDIR=@TLP_CONFD@
 #readonly CONFFILE_DEF=@TLP_CONFDEF@
 #readonly CONFFILE_TEMP=@TLP_CONFTEMP@
@@ -168,7 +169,7 @@ check_tlp_enabled () { # check if TLP is enabled in config file
     if [ "$TLP_ENABLE" = "1" ]; then
         return 0
     else
-        [ "$1" = "1" ] && echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in configuration file." 1>&2
+        [ "$1" = "1" ] && echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in ${CONF_USR}." 1>&2
         return 1
     fi
 }
@@ -394,9 +395,9 @@ read_confs () { # read all config files
     fi
 
     # 2. customization
-    for cf in $(find $CONF_DIR -maxdepth 1 -type f -name '*.conf' -type f | sort); do
+    for cf in $CONF_DIR/*; do
         # shellcheck disable=SC1090
-        . $cf
+        [ ! -f "$cf" ] || . "$cf"
     done
 
     # 3. user settings
@@ -415,7 +416,6 @@ read_confs () { # read all config files
 
 print_conf () { # print runtime conf based on default and customized configuration
 ### TODO: only defaults.conf parsed, no aggregation of multiple files, no conf args, shellcheck complains, mktemp?
-    read_confs
 cat <<EOF >/tmp/tlp-runtime.conf.prepare
 echo "
 `for i in $(grep -E -v "^#|^\s*$" $CONF_DEF | awk -F'=' '{print $1}');do echo $i=\\'\\"\\$$i\\"\\';done`
