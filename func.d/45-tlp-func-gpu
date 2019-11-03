@@ -22,11 +22,6 @@ readonly IGPU_FREQ_TABLE=i915_ring_freq_table
 
 readonly RADD=/sys/module/radeon
 
-readonly DEFAULT_RADEON_POWER_PROFILE_ON_AC=default
-readonly DEFAULT_RADEON_POWER_PROFILE_ON_BAT=default
-readonly DEFAULT_RADEON_DPM_PERF_LEVEL_ON_AC=auto
-readonly DEFAULT_RADEON_DPM_PERF_LEVEL_ON_BAT=auto
-
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -120,19 +115,17 @@ set_radeon_profile () { # set radeon power profile
             # Use new radeon dynamic power management method (dpm)
             if [ "$1" = "1" ]; then
                 pwr=${RADEON_DPM_STATE_ON_BAT:-}
-                level=${RADEON_DPM_PERF_LEVEL_ON_BAT-${DEFAULT_RADEON_DPM_PERF_LEVEL_ON_BAT}}
+                level=${RADEON_DPM_PERF_LEVEL_ON_BAT:-}
             else
                 pwr=${RADEON_DPM_STATE_ON_AC:-}
-                level=${RADEON_DPM_PERF_LEVEL_ON_AC-${DEFAULT_RADEON_DPM_PERF_LEVEL_ON_AC}}
+                level=${RADEON_DPM_PERF_LEVEL_ON_AC:-}
             fi
 
-            if [ -z "$pwr" ]; then
-                # do nothing if unconfigured
+            if [ -z "$pwr" ] || [ -z "$level" ]; then
+                # do nothing if (partially) unconfigured
                 echo_debug "pm" "set_radeon_profile($1).not_configured: $card"
                 return 0
-            fi
-
-            if [ -n "$pwr" ]; then
+            else
                 write_sysf "$pwr" $card/power_dpm_state; rc1=$?
                 write_sysf "$level" $card/power_dpm_force_performance_level; rc2=$?
                 echo_debug "pm" "set_radeon_profile($1): $card: state=${pwr}: rc=$rc1; perf=${level}: rc=$rc2"
@@ -143,18 +136,16 @@ set_radeon_profile () { # set radeon power profile
         elif [ -f $card/power_method ] && [ -f $card/power_profile ]; then
             # Use old radeon power profile method
             if [ "$1" = "1" ]; then
-                pwr=${RADEON_POWER_PROFILE_ON_BAT-${DEFAULT_RADEON_POWER_PROFILE_ON_BAT}}
+                pwr=${RADEON_POWER_PROFILE_ON_BAT:-}
             else
-                pwr=${RADEON_POWER_PROFILE_ON_AC-${DEFAULT_RADEON_POWER_PROFILE_ON_AC}}
+                pwr=${RADEON_POWER_PROFILE_ON_AC:-}
             fi
 
             if [ -z "$pwr" ]; then
                 # do nothing if unconfigured
                 echo_debug "pm" "set_radeon_profile($1).not_configured: $card"
                 return 0
-            fi
-
-            if [ -n "$pwr" ]; then
+            else
                 write_sysf "profile" $card/power_method; rc1=$?
                 write_sysf "$pwr" $card/power_profile; rc2=$?
                 echo_debug "pm" "set_radeon_profile($1): $card; method=profile: rc=$rc1; profile=${pwr}: rc=$rc2"

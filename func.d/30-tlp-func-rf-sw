@@ -24,8 +24,6 @@ readonly RDW_KILL="rdw_kill"
 
 readonly RFSTATEFILE=$VARDIR/rfkill_saved
 
-readonly DEFAULT_RESTORE_DEVICE_STATE_ON_STARTUP=0
-
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -383,7 +381,7 @@ set_radio_device_states () { # set/initialize all radio states
 
     # save/restore mode is disabled by default
     if [ "$1" != "radiosw" ]; then
-        restore=${RESTORE_DEVICE_STATE_ON_STARTUP:-${DEFAULT_RESTORE_DEVICE_STATE_ON_STARTUP}}
+        restore="$RESTORE_DEVICE_STATE_ON_STARTUP"
     else
         restore=0
     fi

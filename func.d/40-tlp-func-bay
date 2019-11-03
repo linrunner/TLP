@@ -15,10 +15,6 @@ readonly DOCKGLOB="/sys/devices/platform/dock.?"
 
 readonly BAYSTATEFILE=$RUNDIR/bay_saved
 
-readonly DEFAULT_BAY_POWEROFF_ON_AC=0
-readonly DEFAULT_BAY_POWEROFF_ON_BAT=0
-readonly DEFAULT_BAY_DEVICE=sr0
-
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -61,9 +57,9 @@ poweroff_drivebay () { # power off optical drive in drive bay
     local pwr optdrv syspath
 
     if [ "$1" = "1" ]; then
-        pwr=${BAY_POWEROFF_ON_BAT:-${DEFAULT_BAY_POWEROFF_ON_BAT}}
+        pwr="$BAY_POWEROFF_ON_BAT"
     else
-        pwr=${BAY_POWEROFF_ON_AC:-${DEFAULT_BAY_POWEROFF_ON_AC}}
+        pwr="$BAY_POWEROFF_ON_AC"
     fi
 
     # Run only if forced or enabled
@@ -98,7 +94,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
         [ "$2" = "1" ] && echo "No drive in bay (or power already off)."
     else
         # Check for optical drive
-        optdrv=${BAY_DEVICE-${DEFAULT_BAY_DEVICE}}
+        optdrv="$BAY_DEVICE"
         if [ -z "$optdrv" ]; then
             echo_debug "pm" "poweroff_drivebay($1).opt_drive_not_configured"
             [ "$2" = "1" ] && echo "Error: no optical drive configured (BAY_DEVICE=\"\")." 1>&2
@@ -149,8 +145,8 @@ poweroff_drivebay () { # power off optical drive in drive bay
 suspend_drivebay () { # Save power state of drive bay before suspend
                       # $1: 0=ac mode, 1=battery mode
 
-    if [ "$1" = "1" ] && [ "${BAY_POWEROFF_ON_BAT:-${DEFAULT_BAY_POWEROFF_ON_BAT}}" = "1" ] || \
-       [ "$1" = "0" ] && [ "${BAY_POWEROFF_ON_AC:-${DEFAULT_BAY_POWEROFF_ON_AC}}"  = "1" ]; then
+    if [ "$1" = "1" ] && [ "$BAY_POWEROFF_ON_BAT" = "1" ] || \
+       [ "$1" = "0" ] && [ "$BAY_POWEROFF_ON_AC"  = "1" ]; then
         # setting corresponding to mode is active -> save state
         get_drivebay_device
 

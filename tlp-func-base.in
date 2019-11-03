@@ -53,10 +53,7 @@ readonly RE_PARAM='^[A-Z_]+[0-9]*=[0-9a-zA-Z _\-:]*$'
 # power supplies: ignore MacBook Pro 2017 sbs-charger and hid devices
 readonly RE_PS_IGNORE='sbs-charger|hidpp_battery|hid-'
 
-readonly DEBUG_TAGS_ALL="arg bat disk lock nm path pm ps rf run sysfs udev usb"
-
-readonly DEFAULT_TLP_ENABLE=0
-readonly DEFAULT_TLP_PERSISTENT_DEFAULT=0
+readonly DEBUG_TAGS_ALL="arg bat cfg disk lock nm path pm ps rf run sysfs udev usb"
 
 # ----------------------------------------------------------------------------
 # Control
@@ -168,8 +165,6 @@ check_root () { # show error message and quit when root privilege missing
 check_tlp_enabled () { # check if TLP is enabled in config file
     # $1: 1=verbose
     # rc: 0=disabled/1=enabled
-
-    : ${TLP_ENABLE:=${DEFAULT_TLP_ENABLE}}
 
     if [ "$TLP_ENABLE" = "1" ]; then
         return 0
@@ -699,7 +694,6 @@ get_power_state () { # get current power mode -- rc: 0=ac, 1=battery
     local rc=$?
 
     : ${TLP_DEFAULT_MODE:=}
-    : ${TLP_PERSISTENT_DEFAULT:=${DEFAULT_TLP_PERSISTENT_DEFAULT}}
 
     if [ -n "$TLP_DEFAULT_MODE" ] \
         && [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then

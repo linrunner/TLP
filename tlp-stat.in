@@ -536,16 +536,14 @@ fi # show_all
 if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show storage device info
     echo "+++ Storage Devices"
-    # list for storage device iteration: use default when undefined
-    disklist="${DISK_DEVICES-${DEFAULT_DISK_DEVICES}}"
-    # list for output: add "(default)" when unset, "(disabled)" when empty
-    diskstat="${DISK_DEVICES-${DEFAULT_DISK_DEVICES} (default)}"
-    diskstat="${diskstat:-(disabled)}"
+    # list for storage device iteration
+    disklist="$DISK_DEVICES"
+    # list for output: print "(disabled)" when empty
+    diskstat="${DISK_DEVICES:-(disabled)}"
     printf "Devices = %s\n" "$diskstat"
 
     # iterate over list
     if [ -n "$disklist" ]; then
-        # add "(default)" when unset, "(disabled)" when empty
         cnt=0
         for dev in $disklist; do # iterate all devices
             show_disk_data $dev && cnt=$((cnt+1))
@@ -766,9 +764,8 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show runtime pm
     echo "+++ Runtime Power Management"
     echo "Device blacklist = ${RUNTIME_PM_BLACKLIST:=(not configured)}"
-    # add "(default)" when unset, "(disabled)" when empty
-    pmdbl="${RUNTIME_PM_DRIVER_BLACKLIST-${DEFAULT_RUNTIME_PM_DRIVER_BLACKLIST} (default)}"
-    echo "Driver blacklist = ${pmdbl:-(disabled)}"
+    # add "(disabled)" when empty
+    echo "Driver blacklist = ${RUNTIME_PM_DRIVER_BLACKLIST:-(disabled)}"
     echo
 
     if cmd_exists $TLPPCI; then

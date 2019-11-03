@@ -14,13 +14,6 @@
 readonly AHCID=$PCID'/*/ata*'
 readonly BLOCKD='/sys/block/nvme* /sys/block/sd*'
 
-readonly DEFAULT_DISK_DEVICES="nvme0n1 sda"
-readonly DEFAULT_DISK_IDLE_SECS_ON_AC=0
-readonly DEFAULT_DISK_IDLE_SECS_ON_BAT=2
-readonly DEFAULT_DISK_IOSCHED="keep"
-readonly DEFAULT_MAX_LOST_WORK_SECS=15
-readonly DEFAULT_AHCI_RUNTIME_PM_TIMEOUT="15"
-
 readonly DISK_TYPES_NO_APM_CHANGE="usb ieee1394"
 readonly DISK_NOP_WORDS="_ keep"
 
@@ -106,9 +99,6 @@ set_disk_apm_level () { # set disk apm level
     local pwrmode="$1"
     local dev log_message
 
-    # when undefined use default
-    : ${DISK_DEVICES=${DEFAULT_DISK_DEVICES}}
-
     # quit when disabled
     if [ -z "$DISK_DEVICES" ]; then
         echo_debug "disk" "set_disk_apm_level($pwrmode).disabled"
@@ -162,9 +152,6 @@ set_disk_spindown_timeout () { # set disk spindown timeout
 
     local pwrmode="$1"
     local dev log_message
-
-    # when undefined use default
-    : ${DISK_DEVICES=${DEFAULT_DISK_DEVICES}}
 
     # quit when disabled
     if [ -z "$DISK_DEVICES" ]; then
@@ -221,9 +208,6 @@ spindown_disk () { # stop spindle motor -- $1: dev
 set_disk_iosched () { # set disk io scheduler
     local dev log_message
 
-    # when undefined use default
-    : ${DISK_DEVICES=${DEFAULT_DISK_DEVICES}}
-
     # quit when disabled
     if [ -z "$DISK_DEVICES" ]; then
         echo_debug "disk" "set_disk_iosched.disabled"
@@ -243,13 +227,13 @@ set_disk_iosched () { # set disk io scheduler
 
     # pairwise iteration DISK_DEVICES[1,n], schedlist[1,m]; m > 0
     #  for j in [1,min(n,m)]   : disk_dev[j], schedlistj]
-    #  for j in [min(n,m)+1,n] : disk_dev[j], %DEFAULT_DISK_IO_SCHEDULER
+    #  for j in [min(n,m)+1,n] : disk_dev[j], %keep
     for dev in $DISK_DEVICES; do
         local sched schedctrl
         get_disk_dev $dev
 
-        # get sched from argv, use default scheduler when list is too short
-        sched=${1:-${DEFAULT_DISK_IOSCHED}}
+        # get sched from argv, use "keep" when list is too short
+        sched=${1:-keep}
         schedctrl="/sys/block/$_disk_dev/queue/scheduler"
         log_message="set_disk_iosched: $_disk_dev [$_disk_id] $sched"
 
@@ -264,7 +248,7 @@ set_disk_iosched () { # set disk io scheduler
             echo_debug "disk" "${log_message}; rc=$?"
         fi
 
-        # using %DEFAULT_DISK_IO_SCHEDULER when argv is empty
+        # using "keep" when argv is empty
         [ $# -eq 0 ] || shift
     done
 
@@ -342,7 +326,7 @@ set_ahci_runtime_pm () { # set ahci runtime power management
     fi
 
     # calc timeout in millisecs
-    timeout="${AHCI_RUNTIME_PM_TIMEOUT-${DEFAULT_AHCI_RUNTIME_PM_TIMEOUT}}"
+    timeout="$AHCI_RUNTIME_PM_TIMEOUT"
     [ -z "$timeout" ] || timeout=$((timeout * 1000))
 
     # check values
@@ -409,9 +393,9 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
     local isec
 
     if [ "$1" = "1" ]; then
-        isec=${DISK_IDLE_SECS_ON_BAT:-${DEFAULT_DISK_IDLE_SECS_ON_BAT}}
+        isec="$DISK_IDLE_SECS_ON_BAT"
     else
-        isec=${DISK_IDLE_SECS_ON_AC:-${DEFAULT_DISK_IDLE_SECS_ON_AC}}
+        isec="$DISK_IDLE_SECS_ON_AC"
     fi
     # replace with empty string if non-numeric chars are contained
     isec=$(printf '%s' "$isec" | grep -E '^[0-9]+$')
@@ -437,9 +421,9 @@ set_dirty_parms () { # set filesystem buffer params
     check_sysfs "set_dirty_parms" "/proc/sys/vm"
 
     if [ "$1" = "1" ]; then
-        age=${MAX_LOST_WORK_SECS_ON_BAT:-${DEFAULT_MAX_LOST_WORK_SECS}}
+        age=${MAX_LOST_WORK_SECS_ON_BAT:-0}
     else
-        age=${MAX_LOST_WORK_SECS_ON_AC:-${DEFAULT_MAX_LOST_WORK_SECS}}
+        age=${MAX_LOST_WORK_SECS_ON_AC:-0}
     fi
 
     # calc age in centisecs, non numeric values result in "0"
