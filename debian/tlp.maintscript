@@ -1,3 +1,4 @@
 rm_conffile /etc/bash_completion.d/tlp
 rm_conffile /etc/acpi/events/thinkpad-radiosw
 rm_conffile /etc/acpi/thinkpad-radiosw.sh
+mv_conffile /etc/default/tlp /etc/tlp.conf
