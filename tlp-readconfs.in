@@ -1,0 +1,111 @@
+#!/usr/bin/perl
+# tlp-readconfs - read all of TLP's config files
+#
+# Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
+# This software is licensed under the GPL v2 or later.
+
+# $ARGV[0]: filepath to contain merged configuration
+# $ARGV[1]: 1=no trace
+# rc: 0=ok/5=tlp.conf missing/6=defaults.conf missing
+
+package tlp_readconfs;
+use strict;
+use warnings;
+
+# --- Constants
+use constant CONF_USR => "@TLP_CONFUSR@";
+use constant CONF_DIR => "@TLP_CONFDIR@";
+use constant CONF_DEF => "@TLP_CONFDEF@";
+use constant CONF_OLD => "@TLP_CONFOLD@";
+
+# --- Global vars
+my @config_val = (); # 2-dim array: parameter name-value pairs
+my %config_idx = (); # hash: parameter name ==> index into the name-value array
+my $debug = 0;
+
+# --- Subroutines
+
+# write debug message
+# $_[0]: messages
+sub echo_debug {
+    if ( defined $ARGV[1] && ( $ARGV[1] ne "1" ) && $debug ) {
+        #my $logpipe;
+        open (my $logpipe, "| logger -p debug -t \"tlp\" --id=\$\$ --") or return 1;
+        print $logpipe $_[0];
+        close ($logpipe);
+    }
+    return 0
+}
+
+# Store parameter name-value pairs in array/hash
+# $_[0]: parameter name  (non-null string)
+# $_[1]: parameter value (maybe null string)
+# return: 0=new name/1=known name
+sub store_name_value {
+    if ( defined $config_idx{$_[0]} ) {
+        # existing name --> overwrite value only
+        $config_val[$config_idx{$_[0]}][1] = $_[1];
+        $debug = 1 if ( $_[0] eq "TLP_DEBUG" ) && ( $_[1] =~ /\bcfg\b/ );
+        echo_debug ("tlp-readconfs.replace [" . $config_idx{$_[0]} . "]: " . $_[0] . " = " . $_[1]);
+    } else {
+        # new name --> store name-value pair and hash name
+        push(@config_val, [$_[0], $_[1]]);
+        $config_idx{$_[0]} = $#config_val;
+        $debug = 1 if ( $_[0] eq "TLP_DEBUG" ) && ( $_[1] =~ /\bcfg\b/ );
+        echo_debug ("tlp-readconfs.insert  [" . $#config_val . "]: " . $_[0] . " = " . $_[1]);
+    }
+}
+
+# Parse whole config file and store parameters
+# $_[0]: filepath
+# return: 0=ok/1=file non-existent
+sub parse_configfile {
+    open (my $cf, "$_[0]") or return 1;
+    while ( my $line = <$cf> ) {
+        chomp $line;
+        if ( $line =~ /^[A-Z_]+[0-9]*=([0-9a-zA-Z_\-:]*|"[0-9a-zA-Z _\-:]*")\s*$/ ) {
+            my ($name, $value) = split /=/, $line, 2;
+            $value =~ s/\s+$//;
+            $value =~ s/"(.*)"/$1/;
+            store_name_value ($name, $value);
+        }
+    }
+    close ($cf);
+    return 0
+}
+
+# Output all stored parameter name-value pairs to a file
+# $_[0]: filepath (without argument the output will be written to stdout)
+# return: 0=ok/1=file open error/2=no filepath argument
+sub write_runconf {
+    my $runconf;
+    if ( ! defined $_[0] ) {
+        return 2;
+    } elsif ( "$_[0]" eq "STDOUT" ) {
+        $runconf = *STDOUT;
+    } else {
+        open ($runconf, ">", "$_[0]") or return 1;
+    }
+    foreach ( @config_val ) {
+        print $runconf @{$_}[0] . "=\"" . @{$_}[1] . "\"\n";
+    }
+    close ($runconf);
+    return 0
+}
+
+# --- MAIN
+# 1. read intrinsic defaults
+parse_configfile (CONF_DEF) == 0 or exit 6;
+
+# 2. read customization
+foreach my $conffile ( glob CONF_DIR . "/*.conf" ) {
+    parse_configfile ($conffile);
+}
+
+# 3. read user settings
+parse_configfile (CONF_USR) == 0 or parse_configfile (CONF_OLD) == 0 or exit 5;
+
+# save result
+write_runconf ($ARGV[0]);
+
+exit 0;

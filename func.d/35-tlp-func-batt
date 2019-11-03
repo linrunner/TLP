@@ -116,7 +116,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
                     _bm_dischg="natacpi"
                 fi
             fi
-            break # exit loop on first battery detected
+            break # quit loop on first battery detected
         fi
     done
     echo_debug "bat" "check_battery_features.natacpi: $_natacpi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
@@ -277,7 +277,7 @@ battery_present () { # check battery presence and return tpacpi-bat index
                             _bd_read="$bsd"
                             ;;
                     esac
-                    break # exit loop on first battery detected
+                    break # quit loop on first battery detected
                 fi
             done
             ;; # natacpi
@@ -294,7 +294,7 @@ battery_present () { # check battery presence and return tpacpi-bat index
                         BAT0) _bat_str="$bs"; _bd_read="$bsd" ; _bat_idx=1 ;;
                         BAT1) _bat_str="$bs"; _bd_read="$bsd" ; _bat_idx=2 ;;
                     esac
-                    break # exit loop on first battery detected
+                    break # quit loop on first battery detected
                 fi
             done
             ;; # tpsmapi
@@ -927,7 +927,7 @@ cancel_force_discharge () { # called from trap -- global param: $_bat_str
     echo_debug "bat" "force_discharge.cancelled($_bat_str)"
     echo " Cancelled."
 
-    exit 0
+    do_exit 0
 }
 
 battery_discharging () { # check if battery is discharging -- $1: BAT0/BAT1,

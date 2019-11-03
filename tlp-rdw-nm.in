@@ -55,9 +55,11 @@ get_iface_type () { # get saved interface type -- $1: interface
 
 # --- MAIN
 
-read_defaults
-check_tlp_enabled 0 || exit 0
-check_run_flag $RDW_KILL && exit 0
+# read configuration: quit on error, trace allowed
+read_config 1 0
+
+check_tlp_enabled 0 || do_exit 0
+check_run_flag $RDW_KILL && do_exit 0
 add_sbin2path
 
 # Get args
@@ -67,10 +69,11 @@ itype=""
 
 
 # Quit for invalid interfaces
-[ -n "$iface" ] && [ "$iface" != "none" ] || exit 0
+# shellcheck disable=SC2015
+[ -n "$iface" ] && [ "$iface" != "none" ] || do_exit 0
 
 # Quit for actions other than "up" and "down"
-[ "$action" = "up" ] || [ "$action" = "down" ] || exit 0
+[ "$action" = "up" ] || [ "$action" = "down" ] || do_exit 0
 
 #  Quit for virtual interfaces (up action)
 if [ "$action" = "up" ] && readlink "$NETD/$iface" | grep -q '/virtual/'; then
@@ -78,7 +81,7 @@ if [ "$action" = "up" ] && readlink "$NETD/$iface" | grep -q '/virtual/'; then
     save_iface_type $iface virtual
     [ "$X_NET_VIRTUAL_TRACE" = 1 ] && \
         echo_debug "nm" "+++ rdw_nm($iface).up.ignore_virtual"
-    exit 0
+    do_exit 0
 fi
 
 # Get saved interface type (down action)
@@ -89,7 +92,7 @@ if [ "$action" = "down" ]; then
     if [ "$itype" = "virtual" ]; then
         [ "$X_NET_VIRTUAL_TRACE" = 1 ] && \
             echo_debug "nm" "+++ rdw_nm($iface).down.ignore_virtual"
-        exit 0
+        do_exit 0
     fi
 fi
 
@@ -193,4 +196,4 @@ case $action in
 
 esac
 
-exit 0
+do_exit 0

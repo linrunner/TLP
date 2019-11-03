@@ -15,9 +15,11 @@ done
 
 # --- MAIN
 
-read_defaults
-check_tlp_enabled 0 || exit 0
-check_run_flag $RDW_KILL && exit 0
+# read configuration: quit on error, trace allowed
+read_config 1 0
+
+check_tlp_enabled 0 || do_exit 0
+check_run_flag $RDW_KILL && do_exit 0
 add_sbin2path
 
 # get power source
@@ -29,9 +31,9 @@ devtype=$2
 
 case $devtype in
     dock)
-        # check if type is "dock_station", exit if not
+        # check if type is "dock_station", quit if not
         type=$(read_sysf $ddev/type)
-        [ "$type" = "dock_station" ] || exit 0
+        [ "$type" = "dock_station" ] || do_exit 0
 
         docked=$(read_sysf $ddev/docked)
         action=$EVENT
@@ -50,13 +52,13 @@ case $devtype in
         echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev syspwr=$_syspwr"
         ;;
 
-    *) exit 0 ;; # unknown device type
+    *) do_exit 0 ;; # unknown device type
 esac
 
 # quit if timed lock in progress
 if check_timed_lock $RDW_DOCK_LOCK ; then
     echo_debug "udev" "rdw_udev.locked"
-    exit 0
+    do_exit 0
 fi
 
 case $action in
@@ -99,4 +101,4 @@ case $action in
     *) ;; # unknown action -> do nothing
 esac
 
-exit 0
+do_exit 0

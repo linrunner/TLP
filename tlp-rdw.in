@@ -15,7 +15,9 @@ done
 
 # --- MAIN
 
-read_defaults
+# read configuration: quit on error, trace allowed
+read_config 1 0
+
 carg1=$1
 parse_args4config "$@"
 
@@ -41,4 +43,4 @@ case $carg1 in
         ;;
 esac
 
-exit 0
+do_exit 0

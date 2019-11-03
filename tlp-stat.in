@@ -189,7 +189,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 echo "                  -w | --warn      | -v | --verbose   |"
                 echo "                  -P | --pev       |    | --psup      |"
                 echo "                  -T | --trace ]"
-                exit 3
+                do_exit 3
                 ;;
         esac
 
@@ -200,8 +200,9 @@ parse_args () { # parse command-line -- $@: arguments to parse
 }
 
 # --- MAIN
-### TODO: what happens when reading defaults.conf/tlp.conf fails?
-read_confs; conf_present=$?
+# read configuration; continue on error, no trace
+read_config 0 1
+
 parse_args "$@"
 parse_args4config "$@"
 
@@ -225,23 +226,8 @@ echo
 
 # --- show configuration
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
-    case $conf_present in
-        0)
-            echo "+++ Configured Settings: $CONF_USR $CONF_DIR"
-            print_conf
-            echo
-            ;;
-
-        1)
-            echo "Warning: missing user configuration file ${CONF_USR}." 1>&2
-            echo
-            ;;
-
-        2)
-            echo "Warning: missing default configuration file ${CONF_DEF}." 1>&2
-            echo
-            ;;
-    esac
+    echo "+++ Configured Settings:"
+    print_config
 fi # show_conf
 
 if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
@@ -1152,4 +1138,4 @@ if [ "$show_trace" = "1" ]; then
     fi
 fi # show_trace
 
-exit 0
+do_exit 0

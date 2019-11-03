@@ -109,7 +109,7 @@ set_disk_apm_level () { # set disk apm level
     # when undefined use default
     : ${DISK_DEVICES=${DEFAULT_DISK_DEVICES}}
 
-    # exit when disabled
+    # quit when disabled
     if [ -z "$DISK_DEVICES" ]; then
         echo_debug "disk" "set_disk_apm_level($pwrmode).disabled"
         return 0
@@ -122,7 +122,7 @@ set_disk_apm_level () { # set disk apm level
         set -- $DISK_APM_LEVEL_ON_AC
     fi
 
-    # exit if empty apmlist
+    # quit if empty apmlist
     if [ $# -eq 0 ]; then
         echo_debug "disk" "set_disk_apm_level($pwrmode).not_configured"
         return 0
@@ -166,7 +166,7 @@ set_disk_spindown_timeout () { # set disk spindown timeout
     # when undefined use default
     : ${DISK_DEVICES=${DEFAULT_DISK_DEVICES}}
 
-    # exit when disabled
+    # quit when disabled
     if [ -z "$DISK_DEVICES" ]; then
         echo_debug "disk" "set_disk_spindown_timeout($pwrmode).disabled"
         return 0
@@ -179,7 +179,7 @@ set_disk_spindown_timeout () { # set disk spindown timeout
         set -- $DISK_SPINDOWN_TIMEOUT_ON_AC
     fi
 
-    # exit if empty timeoutlist
+    # quit if empty timeoutlist
     if [ $# -eq 0 ]; then
         echo_debug "disk" "set_disk_spindown_timeout($pwrmode).not_configured"
         return 0
@@ -224,7 +224,7 @@ set_disk_iosched () { # set disk io scheduler
     # when undefined use default
     : ${DISK_DEVICES=${DEFAULT_DISK_DEVICES}}
 
-    # exit when disabled
+    # quit when disabled
     if [ -z "$DISK_DEVICES" ]; then
         echo_debug "disk" "set_disk_iosched.disabled"
         return 0
@@ -233,7 +233,7 @@ set_disk_iosched () { # set disk io scheduler
     # set @argv := schedlist
     set -- $DISK_IOSCHED
 
-    # exit if empty schedlist
+    # quit if empty schedlist
     if [ $# -eq 0 ]; then
         echo_debug "disk" "set_disk_iosched.not_configured"
         return 0

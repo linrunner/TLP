@@ -110,7 +110,7 @@ set_radeon_profile () { # set radeon power profile
     local sdone=0 # 1=radeon present
 
     if [ ! -d $RADD ]; then
-        # No card present --> exit
+        # No card present --> quit
         echo_debug "pm" "set_radeon_profile($1).no_card"
         return 0
     fi

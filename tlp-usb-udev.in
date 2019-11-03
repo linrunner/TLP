@@ -18,12 +18,13 @@ done
 
 # --- MAIN
 
-# read config
-read_defaults
+# read configuration: quit on error, trace allowed
+read_config 1 0
 
-# exit if TLP or autosuspend disabled
+# quit if TLP or autosuspend disabled
 : ${USB_AUTOSUSPEND:=${DEFAULT_USB_AUTOSUSPEND}}
-check_tlp_enabled 0 && [ "$USB_AUTOSUSPEND" = "1" ] || exit 0
+# shellcheck disable=SC2015
+check_tlp_enabled 0 && [ "$USB_AUTOSUSPEND" = "1" ] || do_exit 0
 
 # USB autosuspend has two principal operation modes:
 #
@@ -36,8 +37,8 @@ check_tlp_enabled 0 && [ "$USB_AUTOSUSPEND" = "1" ] || exit 0
 # Mode 2 (default):
 # - Everything - including system startup, but not shutdown - is handled by this udev script
 
-# do exit if mode 1 and no startup completion flag
-[ "$X_TLP_USB_MODE" = "1" ] && ! check_run_flag $USB_DONE && exit 0
+# quit if mode 1 and no startup completion flag
+[ "$X_TLP_USB_MODE" = "1" ] && ! check_run_flag $USB_DONE && do_exit 0
 
 if [ "$X_USB_ENV_TRACE" = "1" ]; then
     echo_debug "usb" "tlp_usb_udev.env = $(printenv)"
@@ -46,4 +47,4 @@ fi
 # handle device
 usb_suspend_device "/sys$1" "udev"
 
-exit 0
+do_exit 0

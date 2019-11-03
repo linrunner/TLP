@@ -109,7 +109,7 @@ parse_args () { # parse command-line arguments
                 stat)
                     # unsupported command
                     echo "Error: 'tlp stat' no longer supported, use 'tlp-stat' instead."  1>&2
-                    exit 3
+                    do_exit 3
                     ;;
 
                 noop)
@@ -122,7 +122,7 @@ parse_args () { # parse command-line arguments
                     # unknown command
                     echo "Error: unknown command \"$1\"."  1>&2
                     show_usage
-                    exit 3
+                    do_exit 3
                     ;;
             esac
 
@@ -135,7 +135,7 @@ parse_args () { # parse command-line arguments
 
                 *) # unknown subcommand
                     echo "Usage: tlp init {start|stop|restart|force-reload}" >&2
-                    exit 3
+                    do_exit 3
                     ;;
             esac
 
@@ -159,7 +159,7 @@ parse_args () { # parse command-line arguments
     if  [ "$_cmd" = "nil" ]; then
         # no command parsed
         show_usage
-        exit 3
+        do_exit 3
     fi
 
     # clear missing arguments
@@ -171,12 +171,13 @@ parse_args () { # parse command-line arguments
 }
 
 # --- MAIN
-### TODO: what happens when reading defaults.conf/tlp.conf fails?
-read_confs
+# read configuration: quit on error, trace allowed
+read_config 1 0
+
 parse_args "$@"
 parse_args4config "$@"
 
-check_tlp_enabled 1 || exit 1
+check_tlp_enabled 1 || do_exit 1
 add_sbin2path
 
 check_laptop_mode_tools
@@ -248,7 +249,6 @@ exitcode=0
 case "$_cmd" in
     init) # system initialization/shutdown: sysv, upstart, systemd, ...
         check_root
-        generate_runtime_conf
         # try to obtain lock (with timeout)
         locked=0
         if lock_tlp; then
@@ -318,10 +318,11 @@ case "$_cmd" in
 
             *)
                 echo "Usage: tlp init {start|stop|restart|force-reload}" >&2
-                exit 3
+                do_exit 3
                 ;;
         esac
 
+        save_runconf
         # unlock if necessary
         [ $locked -eq 0 ] || unlock_tlp
         ;;
@@ -331,7 +332,6 @@ case "$_cmd" in
           # rationale: filter out duplicate power_supply udev events
         check_root
         if lock_tlp_nb; then
-
             if compare_and_save_power_state $pwrmode; then
                 apply_common_settings $pwrmode
                 poweroff_drivebay $pwrmode 0
@@ -341,6 +341,7 @@ case "$_cmd" in
                     set_charge_thresholds
                 fi
             fi
+            save_runconf
             unlock_tlp
         fi
         ;;
@@ -354,6 +355,7 @@ case "$_cmd" in
             set_usb_suspend 0 auto
             set_charge_thresholds
             set_radio_device_states $pwrmode
+            save_runconf
             unlock_tlp
 
             echo_started_mode $pwrmode
@@ -370,6 +372,7 @@ case "$_cmd" in
             poweroff_drivebay $pwrmode 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
             set_radio_device_states 1
+            save_runconf
             unlock_tlp
 
             echo_started_mode 1
@@ -386,6 +389,7 @@ case "$_cmd" in
             poweroff_drivebay $pwrmode 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
             set_radio_device_states 0
+            save_runconf
             unlock_tlp
 
             echo_started_mode 0
@@ -401,6 +405,7 @@ case "$_cmd" in
 
             apply_common_settings 0
             suspend_drivebay $pwrmode
+            save_runconf
             unlock_tlp
         fi
         ;;
@@ -413,6 +418,7 @@ case "$_cmd" in
             compare_and_save_power_state $pwrmode
             apply_common_settings $pwrmode
             resume_drivebay $pwrmode
+            save_runconf
             unlock_tlp
         fi
         ;;
@@ -502,10 +508,9 @@ case "$_cmd" in
     noop) # Debug: no operation
         check_root
         battery_present DEF
+        save_runconf
         echo "Debug: no operation performed."
         ;;
 esac
 
-exit $exitcode
-
-
+do_exit $exitcode

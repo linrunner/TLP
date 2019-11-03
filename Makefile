@@ -52,7 +52,6 @@ SED = sed \
 	-e "s|@TLP_CONFDEF@|$(TLP_CONFDEF)|g" \
 	-e "s|@TLP_CONFOLD@|$(TLP_CONFOLD)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"   \
-	-e "s|@TLP_RUNCONF@|$(TLP_RUNCONF)|g"   \
 	-e "s|@TLP_VAR@|$(TLP_VAR)|g"
 
 INFILES = \
@@ -64,6 +63,7 @@ INFILES = \
 	tlp-rdw \
 	tlp-rf \
 	tlp.rules \
+	tlp-readconfs \
 	tlp-run-on \
 	tlp.service \
 	tlp-stat \
@@ -101,6 +101,11 @@ SHFILES = \
 	tlp-stat.in \
 	tlp-usb-udev.in
 
+PLFILES = \
+	tlp-pcilist \
+	tlp-readconfs.in \
+	tlp-usblist
+
 # Make targets
 all: $(INFILES)
 
@@ -125,11 +130,13 @@ ifneq ($(TLP_NO_TPACPI),1)
 	install -D -m 755 tpacpi-bat $(_TLIB)/tpacpi-bat
 endif
 	install -D -m 755 tlp-func-base $(_TLIB)/tlp-func-base
+	install -D -m 755 tlp-readconfs $(_TLIB)/tlp-readconfs
 	install -D -m 755 --target-directory $(_TLIB)/func.d func.d/*
 	install -D -m 755 tlp-usb-udev $(_ULIB)/tlp-usb-udev
 	install -D -m 644 tlp.rules $(_ULIB)/rules.d/85-tlp.rules
 	[ -f $(_CONFUSR) ] || install -D -m 644 tlp.conf $(_CONFUSR)
 	install -d $(_CONFDIR)
+	install -D -m 644 00-template.conf $(_CONFDIR)/00-template.conf
 	install -D -m 644 defaults.conf $(_CONFDEF)
 ifneq ($(TLP_NO_INIT),1)
 	install -D -m 755 tlp.init $(_SYSV)/tlp
@@ -188,7 +195,7 @@ uninstall-tlp:
 	rm $(_BIN)/tlp-stat
 	rm $(_BIN)/tlp-usblist
 	rm $(_BIN)/tlp-pcilist
-	rm $(_CONFDEF)
+	rm $(_CONFDIR)/00-template.conf
 	rm -r $(_TLIB)
 	rm $(_ULIB)/tlp-usb-udev
 	rm $(_ULIB)/rules.d/85-tlp.rules
@@ -228,13 +235,17 @@ uninstall-man: uninstall-man-tlp uninstall-man-rdw
 checkall: checkbashisms shellcheck checkdupconst checkwip
 
 checkbashisms:
+	@echo "+++ checkbashisms +++"
 	checkbashisms $(SHFILES) || true
 
 shellcheck:
+	@echo "+++ shellcheck +++"
 	shellcheck -s dash $(SHFILES) || true
 
 checkdupconst:
+	@echo "+++ checkdupconst +++"
 	{ sed -n -r -e 's,^.*readonly\s+([A-Za-z_][A-Za-z_0-9]*)=.*$$,\1,p' $(SHFILES) | sort | uniq -d; } || true
 
 checkwip:
-	grep -E -n "### (DEBUG|DEVEL|TODO)" $(SHFILES) || true
+	@echo "+++ checkwip +++"
+	grep -E -n "### (DEBUG|DEVEL|TODO)" $(SHFILES) $(PLFILES) || true
