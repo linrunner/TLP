@@ -48,7 +48,7 @@ readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T
 readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
 readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
 
-readonly RE_PARAM='^[A-Z_]+[0-9]*=[0-9a-zA-Z _\-:]*$'
+readonly RE_PARAM='^[A-Z_]+[0-9]*=[0-9a-zA-Z _\-\:]*$'
 
 # power supplies: ignore MacBook Pro 2017 sbs-charger and hid devices
 readonly RE_PS_IGNORE='sbs-charger|hidpp_battery|hid-'
