@@ -124,14 +124,14 @@ install-tlp: all
 	install -m 755 tlp-run-on $(_BIN)/run-on-ac
 	ln -sf run-on-ac $(_BIN)/run-on-bat
 	install -m 755 tlp-stat $(_BIN)/
-	install -m 755 tlp-usblist $(_BIN)/
-	install -m 755 tlp-pcilist $(_BIN)/
-ifneq ($(TLP_NO_TPACPI),1)
-	install -D -m 755 tpacpi-bat $(_TLIB)/tpacpi-bat
-endif
-	install -D -m 755 tlp-func-base $(_TLIB)/tlp-func-base
-	install -D -m 755 tlp-readconfs $(_TLIB)/tlp-readconfs
 	install -D -m 755 --target-directory $(_TLIB)/func.d func.d/*
+	install -m 755 tlp-func-base $(_TLIB)/
+	install -m 755 tlp-pcilist $(_TLIB)/
+	install -m 755 tlp-readconfs $(_TLIB)/
+	install -m 755 tlp-usblist $(_TLIB)/
+ifneq ($(TLP_NO_TPACPI),1)
+	install -m 755 tpacpi-bat $(_TLIB)/
+endif
 	install -D -m 755 tlp-usb-udev $(_ULIB)/tlp-usb-udev
 	install -D -m 644 tlp.rules $(_ULIB)/rules.d/85-tlp.rules
 	[ -f $(_CONFUSR) ] || install -D -m 644 tlp.conf $(_CONFUSR)
@@ -193,8 +193,6 @@ uninstall-tlp:
 	rm $(_BIN)/run-on-ac
 	rm $(_BIN)/run-on-bat
 	rm $(_BIN)/tlp-stat
-	rm $(_BIN)/tlp-usblist
-	rm $(_BIN)/tlp-pcilist
 	rm $(_CONFDIR)/00-template.conf
 	rm -r $(_TLIB)
 	rm $(_ULIB)/tlp-usb-udev

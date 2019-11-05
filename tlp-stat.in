@@ -15,8 +15,8 @@ done
 
 # --- Constants
 
-readonly TLPUSB=tlp-usblist
-readonly TLPPCI=tlp-pcilist
+readonly TLPUSB=@TLP_TLIB@/tlp-usblist
+readonly TLPPCI=@TLP_TLIB@/tlp-pcilist
 readonly TLPRDW=tlp-rdw
 
 readonly LSBREL=lsb_release
