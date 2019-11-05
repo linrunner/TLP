@@ -1,4 +1,3 @@
-usr/share/tlp/defaults.conf
 etc/tlp.conf
 etc/tlp.conf.d
 etc/init.d/tlp
@@ -10,9 +9,7 @@ lib/udev/tlp-usb-udev
 usr/bin/bluetooth
 usr/bin/run-on-ac
 usr/bin/run-on-bat
-usr/bin/tlp-pcilist
 usr/bin/tlp-stat
-usr/bin/tlp-usblist
 usr/bin/wifi
 usr/bin/wwan
 usr/sbin/tlp
@@ -21,10 +18,12 @@ usr/share/bash-completion/completions/tlp
 usr/share/bash-completion/completions/tlp-stat
 usr/share/bash-completion/completions/wifi
 usr/share/bash-completion/completions/wwan
-usr/share/tlp/tlp-func-base
-usr/share/tlp/tlp-readconfs
-usr/share/tlp/func.d/*
-usr/share/tlp/tpacpi-bat
 usr/share/tlp/defaults.conf
+usr/share/tlp/func.d/*
+usr/share/tlp/tlp-func-base
+usr/share/tlp/tlp-pcilist
+usr/share/tlp/tlp-readconfs
+usr/share/tlp/tlp-usblist
+usr/share/tlp/tpacpi-bat
 usr/share/metainfo/de.linrunner.tlp.metainfo.xml
 var/lib/tlp
