@@ -13,7 +13,6 @@ use constant USBD => "/sys/bus/usb/devices";
 
 # --- Global vars
 my %usbdevices;
-my $udev;
 
 my $no_runtimepm = 0;
 
@@ -23,10 +22,11 @@ my $no_runtimepm = 0;
 # $_[0]: input file
 # return: content / empty string if nonexistent or not readable
 sub catsysf {
+    my $fname = "$_[0]";
     my $sysval = "";
-    if (open (SYSF, "$_[0]")) {
-        chomp ($sysval = <SYSF>);
-        close (SYSF);
+    if ( open (my $sysf, "<", $fname) ) {
+        chomp ($sysval = <$sysf>);
+        close ($sysf);
     }
     return $sysval;
 }
@@ -35,18 +35,18 @@ sub catsysf {
 # $_[0]: (sub)device base path
 # return: driver / empty string if uevent nonexistent or not readable
 sub getdriver {
+    my $dpath = "$_[0]";
     my $driver = "";
-
-    if ( open (SYSF, "$_[0]/uevent") ) {
+    if ( open (my $sysf, "<", $dpath . "/uevent") ) {
         # read file line by line
-        while (<SYSF>) {
+        while (<$sysf>) {
             # match line content and return DRIVER= value
             if ( s/^DRIVER=(.*)/$1/ ) {
                 chomp ($driver = $_);
                 last; # break loop
             }
         }
-        close (SYSF);
+        close ($sysf);
     }
     return $driver
 }
@@ -55,11 +55,10 @@ sub getdriver {
 # $_[0]: device base path
 # return:  driver list / "no driver" if none found
 sub usbdriverlist {
+    my $dpath = "$_[0]";
     my $driverlist = "";
-    my $subdev;
-
     # iterate subdevices
-    foreach $subdev (glob "$_[0]/*:*") {
+    foreach my $subdev (glob $dpath . "/*:*") {
         # get subdevice driver
         my $driver = getdriver ("$subdev");
         if ( $driver ) {
@@ -80,7 +79,7 @@ sub usbdriverlist {
 $no_runtimepm = 1 if ( ! glob USBD . "/*/power/autosuspend*");
 
 # Read USB device tree attributes as arrays into %usbdevices hash, indexed by Bus_Device
-foreach $udev (grep { ! /:/ } glob USBD . "/*") {
+foreach my $udev (grep { ! /:/ } glob USBD . "/*") {
     my $usbv = "(autosuspend not available)";
 
     # get device id

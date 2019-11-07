@@ -1,0 +1,6 @@
+[ValuesAndExpressions::ProhibitConstantPragma]
+severity = 1
+
+[InputOutput::RequireBriefOpen]
+severity = 1
+

@@ -230,7 +230,7 @@ uninstall: uninstall-tlp uninstall-rdw
 
 uninstall-man: uninstall-man-tlp uninstall-man-rdw
 
-checkall: checkbashisms shellcheck checkdupconst checkwip
+checkall: checkbashisms shellcheck perlcritic checkdupconst checkwip
 
 checkbashisms:
 	@echo "+++ checkbashisms +++"
@@ -239,6 +239,10 @@ checkbashisms:
 shellcheck:
 	@echo "+++ shellcheck +++"
 	shellcheck -s dash $(SHFILES) || true
+
+perlcritic:
+	@echo "+++ shellcheck +++"
+	perlcritic --severity 4 --verbose "%F: [%p] %m at line %l, column %c.  (Severity: %s)\n" $(PLFILES) || true
 
 checkdupconst:
 	@echo "+++ checkdupconst +++"
