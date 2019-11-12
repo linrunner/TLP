@@ -16,7 +16,7 @@ use warnings;
 use constant CONF_USR => "@TLP_CONFUSR@";
 use constant CONF_DIR => "@TLP_CONFDIR@";
 use constant CONF_DEF => "@TLP_CONFDEF@";
-use constant CONF_OLD => "@TLP_CONFOLD@";
+use constant CONF_OLD => "@TLP_CONF@";
 
 # --- Global vars
 my @config_val = (); # 2-dim array: parameter name-value pairs

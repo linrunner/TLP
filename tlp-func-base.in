@@ -17,7 +17,7 @@ readonly VARDIR=@TLP_VAR@
 readonly CONF_DEF=@TLP_CONFDEF@  # /usr/share/tlp/defaults.conf
 readonly CONF_DIR=@TLP_CONFDIR@  # /etc/tlp.conf.d
 readonly CONF_USR=@TLP_CONFUSR@  # /etc/tlp.conf
-readonly CONF_OLD=@TLP_CONFOLD@  # /etc/default/tlp
+readonly CONF_OLD=@TLP_CONF@     # /etc/default/tlp
 readonly CONF_RUN="$RUNDIR/run.conf"
 
 readonly FLOCK=flock

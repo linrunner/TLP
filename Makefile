@@ -10,7 +10,7 @@ TLP_NMDSP   ?= /etc/NetworkManager/dispatcher.d
 TLP_CONFUSR ?= /etc/tlp.conf
 TLP_CONFDIR ?= /etc/tlp.conf.d
 TLP_CONFDEF ?= /usr/share/tlp/defaults.conf
-TLP_CONFOLD ?= /etc/default/tlp
+TLP_CONF    ?= /etc/default/tlp
 TLP_SYSD    ?= /lib/systemd/system
 TLP_SDSL    ?= /lib/systemd/system-sleep
 TLP_SYSV    ?= /etc/init.d
@@ -31,7 +31,7 @@ _NMDSP   = $(DESTDIR)$(TLP_NMDSP)
 _CONFUSR = $(DESTDIR)$(TLP_CONFUSR)
 _CONFDIR = $(DESTDIR)$(TLP_CONFDIR)
 _CONFDEF = $(DESTDIR)$(TLP_CONFDEF)
-_CONFOLD = $(DESTDIR)$(TLP_CONFOLD)
+_CONF    = $(DESTDIR)$(TLP_CONF)
 _SYSD    = $(DESTDIR)$(TLP_SYSD)
 _SDSL    = $(DESTDIR)$(TLP_SDSL)
 _SYSV    = $(DESTDIR)$(TLP_SYSV)
@@ -50,7 +50,7 @@ SED = sed \
 	-e "s|@TLP_CONFUSR@|$(TLP_CONFUSR)|g" \
 	-e "s|@TLP_CONFDIR@|$(TLP_CONFDIR)|g" \
 	-e "s|@TLP_CONFDEF@|$(TLP_CONFDEF)|g" \
-	-e "s|@TLP_CONFOLD@|$(TLP_CONFOLD)|g" \
+	-e "s|@TLP_CONF@|$(TLP_CONF)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"   \
 	-e "s|@TLP_VAR@|$(TLP_VAR)|g"
 
