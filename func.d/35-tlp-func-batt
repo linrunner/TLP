@@ -1051,7 +1051,8 @@ discharge_battery () { # discharge battery
                 tpsmapi) # use tp-smapi sysfiles
                     printf "voltage            = %6s [mV]\n"  "$(read_sysf $_bd_read/voltage)"
                     printf "remaining capacity = %6s [mWh]\n" "$(read_sysf $_bd_read/remaining_capacity)"
-                    printf "remaining percent  = %6s [%%]\n"  "$(read_sysf $_bd_read/remaining_percent)"
+                    rp=$(read_sysf $_bd_read/remaining_percent)
+                    printf "remaining percent  = %6s [%%]\n"  "$rp"
                     printf "remaining time     = %6s [min]\n" "$(read_sysf $_bd_read/remaining_running_time_now)"
                     printf "power              = %6s [mW]\n"  "$(read_sysf $_bd_read/power_avg)"
                     printf "state              = %s\n"  "$(read_sysf $_bd_read/state)"
