@@ -965,7 +965,7 @@ discharge_battery () { # discharge battery
     # global param: $_tpacpi, $_tpsmapi
     # rc: 0=ok/1=error
 
-    local bat en ef pn rc wt
+    local bat en ef pn rc rp wt
     # $_bat_str is global for cancel_force_discharge() trap
 
     # check params
@@ -1001,6 +1001,7 @@ discharge_battery () { # discharge battery
     fi
 
     trap cancel_force_discharge INT # enable ^C hook
+    rc=0; rp=0
 
     # wait for start == while status not "discharging" -- 15.0 sec timeout
     printf "Initiating discharge of battery %s " $_bat_str
@@ -1030,9 +1031,11 @@ discharge_battery () { # discharge battery
 
                     ef=$(read_sysval $_bd_read/energy_full)
                     if [ "$ef" != "0" ]; then
-                        perl -e 'printf ("remaining percent  = %6d [%%]\n", 100.0 * '$en' / '$ef' );'
+                        rp=$(perl -e 'printf ("%d", 100.0 * '$en' / '$ef' );')
+                        perl -e 'printf ("remaining percent  = %6d [%%]\n", '$rp' );'
                     else
                         printf "remaining percent  = not available [%%]\n"
+                        rp=0
                     fi
 
                     pn=$(read_sysval $_bd_read/power_now)
@@ -1060,13 +1063,19 @@ discharge_battery () { # discharge battery
             echo "Press Ctrl+C to cancel."
             sleep 5
         done
+
+        if [ $rp -gt 0 ]; then
+            # battery not emptied
+            echo_debug "bat" "discharge_battery.not_emptied($_bat_str)"
+            echo "Error: battery $_bat_str was not discharged completely. Check your hardware." 1>&2
+            rc=2
+        fi
     else
         # discharge malfunction --> cancel discharge and abort
         set_force_discharge $_bat_str 0;
         echo_debug "bat" "discharge_battery.malfunction($_bat_str)"
         echo "Error: discharge $_bat_str malfunction." 1>&2
-        trap - INT # remove ^C hook
-        return 1
+        rc=1
     fi
 
     trap - INT # remove ^C hook
@@ -1074,8 +1083,11 @@ discharge_battery () { # discharge battery
     # ThinkPad E-series firmware may keep force_discharge active --> cancel it
     ! get_force_discharge $_bat_str && set_force_discharge $_bat_str 0
 
-    echo
-    echo "Done: battery $_bat_str was completely discharged."
-    echo_debug "bat" "discharge_battery.complete($_bat_str)"
-    return 0
+    if [ $rc -eq 0 ]; then
+        echo
+        echo "Done: battery $_bat_str was completely discharged."
+        echo_debug "bat" "discharge_battery.complete($_bat_str)"
+    fi
+
+    return $rc
 }
