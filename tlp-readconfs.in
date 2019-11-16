@@ -28,14 +28,12 @@ my $notrace = ( defined $ARGV[1] and ( "$ARGV[1]" eq "1" ) );
 
 # --- Subroutines
 
-# write debug message
-# $_[0]: message
-sub echo_debug {
-    my $msg = "$_[0]";
-
+# Format and write debug message
+# @_: printf arguments including format string
+sub printf_debug {
     if ( not $notrace and $debug ) {
         open (my $logpipe, "|-", "logger -p debug -t \"tlp\" --id=\$\$ --") or return 1;
-        print $logpipe $msg;
+        printf {$logpipe} @_;
         close ($logpipe);
     }
 
@@ -55,14 +53,14 @@ sub store_name_value {
         $config_val[$config_idx{$name}][1] = $value;
 
         $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
-        echo_debug ("tlp-readconfs.replace [" . $config_idx{$name} . "]: " . $name . " = " . $value);
+        printf_debug ("tlp-readconfs.replace [%s]: %s = %s\n", $config_idx{$name}, $name, $value);
     } else {
         # new name --> store name-value pair and hash name
         push(@config_val, [$name, $value]);
         $config_idx{$name} = $#config_val;
 
         $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
-        echo_debug ("tlp-readconfs.insert  [" . $#config_val . "]: " . $name . " = " . $value);
+        printf_debug ("tlp-readconfs.insert  [%s]: %s = %s\n", $#config_val, $name, $value);
     }
 
     return 0;
