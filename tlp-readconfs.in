@@ -48,18 +48,18 @@ sub store_name_value {
     my $name = "$_[0]";
     my $value = "$_[1]";
 
+    $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
+
     if ( defined $config_idx{$name} ) {
         # existing name --> overwrite value only
         $config_val[$config_idx{$name}][1] = $value;
 
-        $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
         printf_debug ("tlp-readconfs.replace [%s]: %s = %s\n", $config_idx{$name}, $name, $value);
     } else {
         # new name --> store name-value pair and hash name
         push(@config_val, [$name, $value]);
         $config_idx{$name} = $#config_val;
 
-        $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
         printf_debug ("tlp-readconfs.insert  [%s]: %s = %s\n", $#config_val, $name, $value);
     }
 
