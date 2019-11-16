@@ -76,10 +76,10 @@ sub parse_configfile {
 
     while ( my $line = <$cf> ) {
         chomp $line;
-        if ( $line =~ /^[A-Z_]+[0-9]*=([0-9a-zA-Z_\-:]*|"[0-9a-zA-Z _\-:]*")\s*$/ ) {
-            my ($name, $value) = split /=/, $line, 2;
-            $value =~ s/\s+$//;
-            $value =~ s/"(.*)"/$1/;
+        if ( $line =~ /^(?<name>[A-Z_]+[0-9]*)=(?:(?<val_bare>[0-9a-zA-Z_\-:]*)|"(?<val_dquoted>[0-9a-zA-Z _\-:]*)")\s*$/ ) {
+            my $name = $+{name};
+            my $value = $+{val_dquoted} // $+{val_bare};
+
             store_name_value ($name, $value);
         }
     }
