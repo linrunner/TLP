@@ -24,18 +24,16 @@ my %config_idx = (); # hash: parameter name ==> index into the name-value array
 
 my $outfile = $ARGV[0];
 my $debug = 0;
-my $notrace = ( defined $ARGV[1] and ( "$ARGV[1]" eq "1" ) );
+my $notrace = ( defined $ARGV[1] and ( $ARGV[1] eq "1" ) );
 
 # --- Subroutines
 
-# write debug message
-# $_[0]: message
-sub echo_debug {
-    my $msg = "$_[0]";
-
+# Format and write debug message
+# @_: printf arguments including format string
+sub printf_debug {
     if ( not $notrace and $debug ) {
         open (my $logpipe, "|-", "logger -p debug -t \"tlp\" --id=\$\$ --") or return 1;
-        print $logpipe $msg;
+        printf {$logpipe} @_;
         close ($logpipe);
     }
 
@@ -47,22 +45,22 @@ sub echo_debug {
 # $_[1]: parameter value (maybe null string)
 # return: 0=new name/1=known name
 sub store_name_value {
-    my $name = "$_[0]";
-    my $value = "$_[1]";
+    my $name = $_[0];
+    my $value = $_[1];
+
+    $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
 
     if ( defined $config_idx{$name} ) {
         # existing name --> overwrite value only
         $config_val[$config_idx{$name}][1] = $value;
 
-        $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
-        echo_debug ("tlp-readconfs.replace [" . $config_idx{$name} . "]: " . $name . " = " . $value);
+        printf_debug ("tlp-readconfs.replace [%s]: %s = %s\n", $config_idx{$name}, $name, $value);
     } else {
         # new name --> store name-value pair and hash name
         push(@config_val, [$name, $value]);
         $config_idx{$name} = $#config_val;
 
-        $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
-        echo_debug ("tlp-readconfs.insert  [" . $#config_val . "]: " . $name . " = " . $value);
+        printf_debug ("tlp-readconfs.insert  [%s]: %s = %s\n", $#config_val, $name, $value);
     }
 
     return 0;
@@ -72,16 +70,16 @@ sub store_name_value {
 # $_[0]: filepath
 # return: 0=ok/1=file non-existent
 sub parse_configfile {
-    my $fname = "$_[0]";
+    my $fname = $_[0];
 
     open (my $cf, "<", $fname) or return 1;
 
     while ( my $line = <$cf> ) {
         chomp $line;
-        if ( $line =~ /^[A-Z_]+[0-9]*=([0-9a-zA-Z_\-:]*|"[0-9a-zA-Z _\-:]*")\s*$/ ) {
-            my ($name, $value) = split /=/, $line, 2;
-            $value =~ s/\s+$//;
-            $value =~ s/"(.*)"/$1/;
+        if ( $line =~ /^(?<name>[A-Z_]+[0-9]*)=(?:(?<val_bare>[0-9a-zA-Z_\-:]*)|"(?<val_dquoted>[0-9a-zA-Z _\-:]*)")\s*$/ ) {
+            my $name = $+{name};
+            my $value = $+{val_dquoted} // $+{val_bare};
+
             store_name_value ($name, $value);
         }
     }
@@ -94,7 +92,7 @@ sub parse_configfile {
 # $_[0]: filepath (without argument the output will be written to stdout)
 # return: 0=ok/1=file open error/2=no filepath argument
 sub write_runconf {
-    my $fname = "$_[0]";
+    my $fname = $_[0];
 
     my $runconf;
     if ( not $fname ) {
@@ -106,7 +104,7 @@ sub write_runconf {
     }
 
     foreach ( @config_val ) {
-        print $runconf @{$_}[0] . "=\"" . @{$_}[1] . "\"\n";
+        printf {$runconf} "%s=\"%s\"\n", @{$_}[0], @{$_}[1];
     }
     close ($runconf);
 
@@ -118,7 +116,7 @@ sub write_runconf {
 parse_configfile (CONF_DEF) == 0 or exit 6;
 
 # 2. read customization
-foreach my $conffile ( glob CONF_DIR . "/*.conf" ) {
+foreach my $conffile ( grep { -f $_ } glob CONF_DIR . "/*.conf" ) {
     parse_configfile ($conffile);
 }
 
@@ -126,6 +124,6 @@ foreach my $conffile ( glob CONF_DIR . "/*.conf" ) {
 parse_configfile (CONF_USR) == 0 or parse_configfile (CONF_OLD) == 0 or exit 5;
 
 # save result
-write_runconf ($ARGV[0]);
+write_runconf ($outfile);
 
 exit 0;
