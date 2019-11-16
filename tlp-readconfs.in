@@ -104,7 +104,7 @@ sub write_runconf {
     }
 
     foreach ( @config_val ) {
-        print $runconf @{$_}[0] . "=\"" . @{$_}[1] . "\"\n";
+        printf {$runconf} "%s=\"%s\"\n", @{$_}[0], @{$_}[1];
     }
     close ($runconf);
 
