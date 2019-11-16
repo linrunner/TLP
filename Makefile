@@ -241,7 +241,7 @@ shellcheck:
 	shellcheck -s dash $(SHFILES) || true
 
 perlcritic:
-	@echo "+++ shellcheck +++"
+	@echo "+++ perlcritic +++"
 	perlcritic --severity 4 --verbose "%F: [%p] %m at line %l, column %c.  (Severity: %s)\n" $(PLFILES) || true
 
 checkdupconst:
