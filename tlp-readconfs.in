@@ -124,6 +124,6 @@ foreach my $conffile ( grep { -f $_ } glob CONF_DIR . "/*.conf" ) {
 parse_configfile (CONF_USR) == 0 or parse_configfile (CONF_OLD) == 0 or exit 5;
 
 # save result
-write_runconf ($ARGV[0]);
+write_runconf ($outfile);
 
 exit 0;
