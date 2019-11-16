@@ -116,7 +116,7 @@ sub write_runconf {
 parse_configfile (CONF_DEF) == 0 or exit 6;
 
 # 2. read customization
-foreach my $conffile ( glob CONF_DIR . "/*.conf" ) {
+foreach my $conffile ( grep { -f $_ } glob CONF_DIR . "/*.conf" ) {
     parse_configfile ($conffile);
 }
 
