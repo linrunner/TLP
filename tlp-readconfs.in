@@ -24,7 +24,7 @@ my %config_idx = (); # hash: parameter name ==> index into the name-value array
 
 my $outfile = $ARGV[0];
 my $debug = 0;
-my $notrace = ( defined $ARGV[1] and ( "$ARGV[1]" eq "1" ) );
+my $notrace = ( defined $ARGV[1] and ( $ARGV[1] eq "1" ) );
 
 # --- Subroutines
 
@@ -45,8 +45,8 @@ sub printf_debug {
 # $_[1]: parameter value (maybe null string)
 # return: 0=new name/1=known name
 sub store_name_value {
-    my $name = "$_[0]";
-    my $value = "$_[1]";
+    my $name = $_[0];
+    my $value = $_[1];
 
     $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
 
@@ -70,7 +70,7 @@ sub store_name_value {
 # $_[0]: filepath
 # return: 0=ok/1=file non-existent
 sub parse_configfile {
-    my $fname = "$_[0]";
+    my $fname = $_[0];
 
     open (my $cf, "<", $fname) or return 1;
 
@@ -92,7 +92,7 @@ sub parse_configfile {
 # $_[0]: filepath (without argument the output will be written to stdout)
 # return: 0=ok/1=file open error/2=no filepath argument
 sub write_runconf {
-    my $fname = "$_[0]";
+    my $fname = $_[0];
 
     my $runconf;
     if ( not $fname ) {
