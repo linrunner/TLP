@@ -1,4 +1,4 @@
-+++ 1.3.0–alpha.2 --- 15.11.2019 +++
++++ 1.3.0–alpha.2 --- 19.11.2019 +++
 
   * Development version
 
@@ -10,6 +10,7 @@
           3. /etc/tlp.conf          - User configuration
         In case of identical parameters, the last occurence has precedence
       - /etc/default/tlp is replaced by /etc/tlp.conf
+      - Parse config files instead of sourcing --> no more shell expansion
     Battery Features:
       - Charge thresholds: better checks for command line and configuration;
         clearer error messages
