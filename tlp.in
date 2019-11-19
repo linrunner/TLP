@@ -337,8 +337,8 @@ case "$_cmd" in
                     && [ "$pwrmode" = "1" ]; then
                     set_charge_thresholds
                 fi
+                save_runconf
             fi
-            save_runconf
             unlock_tlp
         fi
         ;;
