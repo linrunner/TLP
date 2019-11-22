@@ -391,7 +391,11 @@ read_config () { # read all config files and write temporary runconf file
     local rc=0
     if _conf_tmp=$($MKTEMP --tmpdir "tlp-run_XXXXXX.conf"); then
         # external perl script: merge all config files to $cf
-        $READCONFS $_conf_tmp $2; rc=$?
+        if [ "$2" = "1" ]; then
+            $READCONFS --outfile $_conf_tmp --notrace; rc=$?
+        else
+            $READCONFS --outfile $_conf_tmp; rc=$?
+        fi
         # shellcheck disable=SC1090
         [ $rc -eq 0 ] && . $_conf_tmp
     else
@@ -447,7 +451,7 @@ parse_args4config () { # parse command-line arguments: everything after the
 
 print_config () { # print runtime conf based on all config files
     # external perl script: merge all config files to $cf
-    $READCONFS "STDOUT" 1
+    $READCONFS --stdout --notrace
 }
 
 save_runconf () { # copy temporary to final runconf

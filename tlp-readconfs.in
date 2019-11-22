@@ -4,13 +4,22 @@
 # Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# $ARGV[0]: filepath to contain merged configuration
-# $ARGV[1]: 1=no trace
-# rc: 0=ok/5=tlp.conf missing/6=defaults.conf missing
+# Cmdline options
+#   --outfile <FILE>: filepath to contain merged configuration
+#   --stdout: write merged configuration to stdout
+#   --notrace: disable trace
+#
+# Return codes
+#   0: ok
+#   5: tlp.conf missing
+#   6: defaults.conf missing
 
 package tlp_readconfs;
 use strict;
 use warnings;
+
+# --- Modules
+use Getopt::Long;
 
 # --- Constants
 use constant CONF_USR => "@TLP_CONFUSR@";
@@ -22,9 +31,8 @@ use constant CONF_OLD => "@TLP_CONF@";
 my @config_val = (); # 2-dim array: parameter name-value pairs
 my %config_idx = (); # hash: parameter name ==> index into the name-value array
 
-my $outfile = $ARGV[0];
-my $debug = 0;
-my $notrace = ( defined $ARGV[1] and ( $ARGV[1] eq "1" ) );
+my $notrace = 0;
+my $debug   = 0;
 
 # --- Subroutines
 
@@ -93,12 +101,13 @@ sub parse_configfile {
 # return: 0=ok/1=file open error/2=no filepath argument
 sub write_runconf {
     my $fname = $_[0];
+    my $stdout = $_[1];
 
     my $runconf;
-    if ( not $fname ) {
-        return 2;
-    } elsif ( $fname eq "STDOUT" ) {
+    if ( $stdout ) {
         $runconf = *STDOUT;
+    } elsif ( not $fname ) {
+        return 2;
     } else {
         open ($runconf, ">", $fname) or return 1;
     }
@@ -112,6 +121,12 @@ sub write_runconf {
 }
 
 # --- MAIN
+my $outfile = '';
+my $stdout  = 0;
+
+# parse arguments
+GetOptions ('outfile=s' => \$outfile, 'stdout' => \$stdout, 'notrace' => \$notrace);
+
 # 1. read intrinsic defaults
 parse_configfile (CONF_DEF) == 0 or exit 6;
 
@@ -124,6 +139,6 @@ foreach my $conffile ( grep { -f $_ } glob CONF_DIR . "/*.conf" ) {
 parse_configfile (CONF_USR) == 0 or parse_configfile (CONF_OLD) == 0 or exit 5;
 
 # save result
-write_runconf ($outfile);
+write_runconf ($outfile, $stdout);
 
 exit 0;

@@ -4,3 +4,5 @@ severity = 1
 [InputOutput::RequireBriefOpen]
 severity = 1
 
+[Subroutines::RequireArgUnpacking]
+severity = 1
