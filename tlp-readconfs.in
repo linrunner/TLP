@@ -98,16 +98,13 @@ sub parse_configfile {
 
 # Output all stored parameter name-value pairs to a file
 # $_[0]: filepath (without argument the output will be written to stdout)
-# return: 0=ok/1=file open error/2=no filepath argument
+# return: 0=ok/1=file open error
 sub write_runconf {
     my $fname = $_[0];
-    my $stdout = $_[1];
 
     my $runconf;
-    if ( $stdout ) {
+    if ( not $fname ) {
         $runconf = *STDOUT;
-    } elsif ( not $fname ) {
-        return 2;
     } else {
         open ($runconf, ">", $fname) or return 1;
     }
@@ -122,10 +119,9 @@ sub write_runconf {
 
 # --- MAIN
 my $outfile = '';
-my $stdout  = 0;
 
 # parse arguments
-GetOptions ('outfile=s' => \$outfile, 'stdout' => \$stdout, 'notrace' => \$notrace);
+GetOptions ('outfile=s' => \$outfile, 'notrace' => \$notrace);
 
 # 1. read intrinsic defaults
 parse_configfile (CONF_DEF) == 0 or exit 6;
@@ -139,6 +135,6 @@ foreach my $conffile ( grep { -f $_ } glob CONF_DIR . "/*.conf" ) {
 parse_configfile (CONF_USR) == 0 or parse_configfile (CONF_OLD) == 0 or exit 5;
 
 # save result
-write_runconf ($outfile, $stdout);
+write_runconf ($outfile);
 
 exit 0;
