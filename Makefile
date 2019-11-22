@@ -234,20 +234,20 @@ checkall: checkbashisms shellcheck perlcritic checkdupconst checkwip
 
 checkbashisms:
 	@echo "+++ checkbashisms +++"
-	checkbashisms $(SHFILES) || true
+	@checkbashisms $(SHFILES) || true
 
 shellcheck:
 	@echo "+++ shellcheck +++"
-	shellcheck -s dash $(SHFILES) || true
+	@shellcheck -s dash $(SHFILES) || true
 
 perlcritic:
 	@echo "+++ perlcritic +++"
-	perlcritic --severity 4 --verbose "%F: [%p] %m at line %l, column %c.  (Severity: %s)\n" $(PLFILES) || true
+	@perlcritic --severity 4 --verbose "%F: [%p] %m at line %l, column %c.  (Severity: %s)\n" $(PLFILES) || true
 
 checkdupconst:
 	@echo "+++ checkdupconst +++"
-	{ sed -n -r -e 's,^.*readonly\s+([A-Za-z_][A-Za-z_0-9]*)=.*$$,\1,p' $(SHFILES) | sort | uniq -d; } || true
+	@{ sed -n -r -e 's,^.*readonly\s+([A-Za-z_][A-Za-z_0-9]*)=.*$$,\1,p' $(SHFILES) | sort | uniq -d; } || true
 
 checkwip:
 	@echo "+++ checkwip +++"
-	grep -E -n "### (DEBUG|DEVEL|TODO)" $(SHFILES) $(PLFILES) || true
+	@grep -E -n "### (DEBUG|DEVEL|TODO)" $(SHFILES) $(PLFILES) || true
