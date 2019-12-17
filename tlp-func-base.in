@@ -9,7 +9,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="1.3.0-alpha.2"
+readonly TLPVER="1.3.0-alpha.3"
 
 readonly RUNDIR=@TLP_RUN@
 readonly VARDIR=@TLP_VAR@
@@ -597,8 +597,14 @@ get_sys_power_supply () { # get current power supply
     #             AC online:  | none | 1    | 0    |
     #           +------------ +------+------+------+
     # battery   | none        | 2    | 0    | 1    |
-    # status:   | discharging | 1    | 0    | 1    |
-    #           | idle        | 0    | 0    | 0    |
+    # status    | Charging    | *    | 0    | *    |
+    #           | Discharging | 1    | 0    | 1    |
+    #           | Full        | *    | 0    | *    |
+    #           | Unknown     | **   | 0    | **   |
+    #
+    # special cases:
+    #   *)  re-check battery status after 0.5 sec
+    #   **) check for battery current > 0
 
     local psrc
     local ac0seen=
@@ -640,7 +646,7 @@ get_sys_power_supply () { # get current power supply
                 case "$(read_sysf $psrc/status)" in
                     Discharging)
                         if ! lockpeek_tlp tlp_discharge; then
-                            # discharging means battery ...
+                            # "Discharging" means battery ...
                             _syspwr=1
                             echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging: syspwr=$_syspwr"
                         else
@@ -652,18 +658,30 @@ get_sys_power_supply () { # get current power supply
                         fi
                         ;;
 
-                    *) # everything else including "Unknown" could mean AC,
-                       # so re-check after a short delay to be sure to catch
-                       # lagging battery status updates
+                    Unknown) # "Unknown" might be caused by lagging battery status updates,
+                             # so check if battery current > 0 instead (see Issue #446)
+                        # shellcheck disable=SC2046
+                        if [ $(read_sysval $psrc/current_now) -gt 0 ]; then
+                            _syspwr=1
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging_current: syspwr=$_syspwr"
+                        else
+                            _syspwr=0
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_state_unknown: syspwr=$_syspwr"
+                        fi
+                        ;;
+
+                    *) # everything else - e.g. "Charging", "Full" - might be caused by lagging battery status updates,
+                       # so re-check after a short delay
                         sleep 0.5
                         if [ "$(read_sysf $psrc/status)" = "Discharging" ]; then
                             _syspwr=1
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging2: syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging_rechecked: syspwr=$_syspwr"
                         else
                             _syspwr=0
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_idle: syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_not_discharging_rechecked: syspwr=$_syspwr"
                         fi
                         ;;
+
                 esac
                 # battery found: continue looking for AC and more batteries
                 ;;
