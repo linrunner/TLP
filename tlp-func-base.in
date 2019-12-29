@@ -592,22 +592,31 @@ is_thinkpad () { # check for ThinkPad by saved model string
 get_sys_power_supply () { # get current power supply
                           # retval/rc: $_syspwr (0=ac, 1=battery, 2=unknown)
 
-    # _syspwr is determined as follows:
+    # _syspwr is determined by iterating all power sources:
     #
-    #             AC online:  | none | 1    | 0    |
-    #           +------------ +------+------+------+
-    # battery   | none        | 2    | 0    | 1    |
-    # status    | Charging    | *    | 0    | *    |
-    #           | Discharging | 1    | 0    | 1    |
-    #           | Full        | *    | 0    | *    |
-    #           | Unknown     | **   | 0    | **   |
+    #             AC status:  | none  | 1       | 0       |
+    #                         | found | online  | offline |
+    #           +------------ +-------+---------+---------+
+    # battery   | none found  | 2     | 0 *s    | *o      |
+    # status    | Charging    | *r    | 0 *s    | *r      |
+    #           | Discharging | *d    | 0 *s    | *d      |
+    #           | Full        | *r    | 0 *s    | *r      |
+    #           | Unknown     | *u    | 0 *s    | *u      |
     #
     # special cases:
-    #   *)  re-check battery status after 0.5 sec
-    #   **) check for battery current > 0
+    #   *o) if battery status "Unknown" was seen previously then _syspwr=1;
+    #       else remember AC offline state
+    #   *r) re-check battery status after 0.5 sec -> if battery status
+    #       "Discharging" then _syspwr=1 and stop looking; else _syspwr=0
+    #   *d) if forced discharge in progress then _syspwr=0; else _syspwr=1;
+    #       stop looking
+    #   *u) if AC offline was seen previously then _syspwr=1;
+    #       else remember "Unknown" battery status
+    #   *s) stop looking (for other power sources)
 
     local psrc
     local ac0seen=
+    local batuseen=
     _syspwr=
 
     for psrc in /sys/class/power_supply/*; do
@@ -622,7 +631,7 @@ get_sys_power_supply () { # get current power supply
                 # skip device to simulate broken AC detection
                 [ "$X_SIMULATE_AC_QUIRK" = "2" ] && continue
 
-                # check if online
+                # check AC status
                 if [ "$(read_sysf $psrc/online)" = "1" ]; then
                     # AC online --> end iteration
                     _syspwr=0
@@ -630,43 +639,54 @@ get_sys_power_supply () { # get current power supply
                     break
                 else
                     # AC offline could mean battery, but quirky hardware exists
-                    # --> just remember and continue to look for batteries
-                    ac0seen=$psrc
+                    if [ "$batuseen" = "1" ]; then
+                        # Battery status "Unknown" and AC offline could mean battery mode,
+                        # except when a charge threshold is effective and a 2nd battery remains
+                        # --> continue looking for the 2nd battery
+                        _syspwr=1
+                        echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_offline_bat_unknown: syspwr=$_syspwr"
+                    else
+                        # No battery status "Unknown" detected yet
+                        # --> remember and continue looking (for batteries)
+                        ac0seen=1
+                    fi
                 fi
                 ;;
 
             Battery)
                 # battery detected
-                # --> inspect unless a discharging battery has been found beforehand
-                [ "$_syspwr" = "1" ] && continue
-
                 # skip device to simulate broken battery detection
                 [ "$X_SIMULATE_BAT_QUIRK" = "2" ] && continue
 
+                # check battery status
                 case "$(read_sysf $psrc/status)" in
                     Discharging)
                         if ! lockpeek_tlp tlp_discharge; then
-                            # "Discharging" means battery ...
+                            # battery status "Discharging" means battery mode ...
                             _syspwr=1
                             echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging: syspwr=$_syspwr"
                         else
-                            # ... unless forced discharge is in progress,
-                            # which means AC and end of iteration
+                            # ... unless forced discharge is in progress, which means AC
                             _syspwr=0
                             echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).forced_discharge: syspwr=$_syspwr"
-                            break
                         fi
+                        break # --> end iteration
                         ;;
 
-                    Unknown) # "Unknown" might be caused by lagging battery status updates,
-                             # so check if battery current > 0 instead (see Issue #446)
-                        # shellcheck disable=SC2046
-                        if [ $(read_sysval $psrc/current_now) -gt 0 ]; then
+                    Unknown) # battery status "Unknown" might be caused by
+                             # - charge threshold effective (ThinkPads only)
+                             # - lagging battery status updates (see Issue #446)
+                        if [ "$ac0seen" = "1" ]; then
+                            # AC offline and battery status "Unknown" could mean battery mode,
+                            # except when a charge threshold is effective for the 1st battery
+                            # and a 2nd battery exists
+                            # --> continue looking for the 2nd battery
                             _syspwr=1
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging_current: syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_unknown_ac_offline: syspwr=$_syspwr"
                         else
-                            _syspwr=0
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_state_unknown: syspwr=$_syspwr"
+                            # AC offline not detected yet
+                            # --> remember "Unknown" battery status and continue looking for AC or 2nd battery
+                            batuseen=1
                         fi
                         ;;
 
@@ -674,33 +694,41 @@ get_sys_power_supply () { # get current power supply
                        # so re-check after a short delay
                         sleep 0.5
                         if [ "$(read_sysf $psrc/status)" = "Discharging" ]; then
+                            # battery status changed to "Discharging" means battery mode
+                            # --> end iteration
                             _syspwr=1
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging_rechecked: syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging_re-checked: syspwr=$_syspwr"
+                            break
                         else
+                            # other statuses could mean AC mode
+                            # --> continue looking
                             _syspwr=0
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_not_discharging_rechecked: syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_not_discharging_re-checked: syspwr=$_syspwr"
                         fi
                         ;;
 
                 esac
-                # battery found: continue looking for AC and more batteries
                 ;;
 
-            *) # unknown
+            *) # unknown power source type --> ignore
                 ;;
         esac
     done
 
     if [ -z "$_syspwr" ]; then
         # _syspwr result yet undecided
-        if [ -n "$ac0seen" ]; then
-            # no battery seen but AC offline remembered --> battery
+        if [ "$ac0seen" = "1" ]; then
+            # AC offline remembered --> battery mode
             _syspwr=1
             echo_debug "ps" "get_sys_power_supply(${ac0seen##/*/}).ac_offline: syspwr=$_syspwr"
+        elif [ "$batuseen" = "1" ]; then
+            # battery status "Unknown" remembered, assume charge threshold effective --> AC mode
+            _syspwr=0
+            echo_debug "ps" "get_sys_power_supply(${ac0seen##/*/}).bat_unknown: syspwr=$_syspwr"
         else
-            # we haven't seen any AC/battery power source --> unknown
+            # we have seen neither a AC nor a battery power source --> unknown mode
             _syspwr=2
-            echo_debug "ps" "get_sys_power_supply.unknown: syspwr=$_syspwr"
+            echo_debug "ps" "get_sys_power_supply.none_found: syspwr=$_syspwr"
         fi
     fi
 
@@ -749,7 +777,7 @@ compare_and_save_power_state() { # compare $1 to last saved power state,
     case $1 in
         0|1) ;; # valid state
         *) # invalid new state --> return "different"
-            echo_debug "pm" "compare_and_save_power_state($1).invalid"
+            echo_debug "ps" "compare_and_save_power_state($1).invalid"
             return 0
             ;;
     esac
@@ -762,12 +790,12 @@ compare_and_save_power_state() { # compare $1 to last saved power state,
         # saved state is nonexistent/empty or is different --> save new state
         create_rundir
         write_sysf "$1" $PWRRUNFILE
-        echo_debug "pm" "compare_and_save_power_state($1).different: old=$lp"
+        echo_debug "ps" "compare_and_save_power_state($1).different: old=$lp"
         return 0
     else
         # touch file for last run
         touch $PWRRUNFILE
-        echo_debug "pm" "compare_and_save_power_state($1).equal"
+        echo_debug "ps" "compare_and_save_power_state($1).equal"
         return 1
     fi
 }
