@@ -693,12 +693,10 @@ get_sys_power_supply () { # get current power supply
                         fi
                         ;;
 
-                    *) # everything else - e.g. "Charging", "Full" - might be caused by
-                       # - lagging battery status updates
-                       # - quirky firmware
-                       # so re-check after a short delay
+                    *) # everything else - e.g. "Charging", "Full" - might be caused by lagging
+                       # battery status updates --> re-check after a short delay
                         echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_not_discharging_check1: bs=$bs; syspwr=$_syspwr"
-                        sleep 0.5
+                        sleep 0.8
                         bs="$(read_sysf $psrc/status)"
                         if [ "$bs" = "Discharging" ]; then
                             # battery status changed to "Discharging" means battery mode
@@ -706,11 +704,6 @@ get_sys_power_supply () { # get current power supply
                             _syspwr=1
                             echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging_check2: bs=$bs; syspwr=$_syspwr"
                             break
-                        elif [ "$ac0seen" = "1" ]; then
-                            # AC offline probably means battery mode
-                            # --> continue looking
-                            _syspwr=1
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_not_discharging_check2_ac_offline: bs=$bs; syspwr=$_syspwr"
                         else
                             # otherwise assume AC mode
                             # --> continue looking
