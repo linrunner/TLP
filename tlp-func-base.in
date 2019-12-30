@@ -614,7 +614,7 @@ get_sys_power_supply () { # get current power supply
     #       else remember "Unknown" battery status
     #   *s) stop looking (for other power sources)
 
-    local psrc
+    local bs psrc
     local ac0seen=
     local batuseen=
     _syspwr=
@@ -649,6 +649,7 @@ get_sys_power_supply () { # get current power supply
                         # No battery status "Unknown" detected yet
                         # --> remember and continue looking (for batteries)
                         ac0seen=1
+                        echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_offline_remembered"
                     fi
                 fi
                 ;;
@@ -659,7 +660,8 @@ get_sys_power_supply () { # get current power supply
                 [ "$X_SIMULATE_BAT_QUIRK" = "2" ] && continue
 
                 # check battery status
-                case "$(read_sysf $psrc/status)" in
+                bs="$(read_sysf $psrc/status)"
+                case "$bs" in
                     Discharging)
                         if ! lockpeek_tlp tlp_discharge; then
                             # battery status "Discharging" means battery mode ...
@@ -687,23 +689,33 @@ get_sys_power_supply () { # get current power supply
                             # AC offline not detected yet
                             # --> remember "Unknown" battery status and continue looking for AC or 2nd battery
                             batuseen=1
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_unknown_remembered"
                         fi
                         ;;
 
-                    *) # everything else - e.g. "Charging", "Full" - might be caused by lagging battery status updates,
+                    *) # everything else - e.g. "Charging", "Full" - might be caused by
+                       # - lagging battery status updates
+                       # - quirky firmware
                        # so re-check after a short delay
+                        echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_not_discharging_check1: bs=$bs; syspwr=$_syspwr"
                         sleep 0.5
-                        if [ "$(read_sysf $psrc/status)" = "Discharging" ]; then
+                        bs="$(read_sysf $psrc/status)"
+                        if [ "$bs" = "Discharging" ]; then
                             # battery status changed to "Discharging" means battery mode
                             # --> end iteration
                             _syspwr=1
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging_re-checked: syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging_check2: bs=$bs; syspwr=$_syspwr"
                             break
+                        elif [ "$ac0seen" = "1" ]; then
+                            # AC offline probably means battery mode
+                            # --> continue looking
+                            _syspwr=1
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_not_discharging_check2_ac_offline: bs=$bs; syspwr=$_syspwr"
                         else
-                            # other statuses could mean AC mode
+                            # otherwise assume AC mode
                             # --> continue looking
                             _syspwr=0
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_not_discharging_re-checked: syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_not_discharging_check2: bs=$bs; syspwr=$_syspwr"
                         fi
                         ;;
 
