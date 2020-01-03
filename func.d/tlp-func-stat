@@ -208,17 +208,27 @@ print_file_modtime_and_age () { # show a file's last modification time
 }
 
 print_saved_powerstate () { # read and print saved state
-    case "$(read_sysf $PWRRUNFILE)" in
+    local sps
+
+    sps="$(read_sysf $PWRRUNFILE)"
+    case "$sps" in
         0) printf "AC" ;;
         1) printf "battery" ;;
         *) printf "unknown" ;;
     esac
 
-    # add manual mode
+    # check for manual mode
     get_manual_mode
     case "$_manual_mode" in
         0|1) printf " (manual)\n" ;;
-        *)   printf "\n" ;;
+
+        *) # check for persistent mode
+            if get_persist_mode && [ "$_persist_mode" = "$sps" ]; then
+                printf " (persistent)\n"
+            else
+                printf "\n"
+            fi
+            ;;
     esac
 
     return 0

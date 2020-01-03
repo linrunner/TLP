@@ -1,4 +1,4 @@
-+++ 1.3.0–alpha.3 --- 02.01.2020 +++
++++ 1.3.0–alpha.3 --- 03.01.2020 +++
 
   * Development version
 
@@ -32,7 +32,9 @@
         when HWP.EPP is available, EPB is not set;
         eliminate external tool x86_energy_perf_policy for kernel >= 5.2
     tlp-stat:
-      - System Info: show RDW as "disabled" when TLP is disabled as a whole
+      - System Info:
+        - show RDW as "disabled" when TLP is disabled as a whole
+        - indicate persistent mode
       - Intel CPU: don't show EPB values when HWP.EPP is active (see above)
       - PCIe ASPM: show available policies
       - Undervolting: remove "PHC kernel not available" message

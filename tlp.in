@@ -180,7 +180,7 @@ add_sbin2path
 check_laptop_mode_tools
 
 # get current power state
-get_power_state; pwrmode=$?
+get_power_mode; pwrmode=$?
 get_manual_mode
 
 if [ -z "$_cmd2" ]; then
