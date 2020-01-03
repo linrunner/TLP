@@ -1,6 +1,6 @@
 # tlp-rdw - udev rules
 #
-# Copyright (c) 2019 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2020 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
 # --- Dock/undock events
