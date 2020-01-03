@@ -716,17 +716,15 @@ get_sys_power_supply () { # get current power supply
 get_persist_mode () { # get persistent operation mode
     # rc: 0=persistent/1=not persistent
     # retval: $_persist_mode (0=ac, 1=battery, none)
-    local rc
+    local rc=1
+    _persist_mode="none"
 
     if [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then
         # persistent mode = configured default mode
-        case "${TLP_DEFAULT_MODE:=}" in
+        case "$TLP_DEFAULT_MODE" in
             ac|AC)   _persist_mode=0; rc=0 ;;
             bat|BAT) _persist_mode=1; rc=0 ;;
-            *)       _persist_mode="none"; rc=1 ;; # none or invalid mode
         esac
-    else
-        rc=1
     fi
 
     return $rc
@@ -747,7 +745,7 @@ get_power_mode () { # get current operation mode -- rc: 0=AC, 1=battery
         # non-persistent mode, use current power source
         if [ $rc -eq 2 ]; then
             # unknown power supply, use configured default mode
-            case "${TLP_DEFAULT_MODE:=}" in
+            case "$TLP_DEFAULT_MODE" in
                 ac|AC)   rc=0 ;;
                 bat|BAT) rc=1 ;;
                 *)       rc=0 ;; # use AC if none or invalid mode
