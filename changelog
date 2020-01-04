@@ -11,11 +11,15 @@
           3. /etc/tlp.conf          - User configuration
         In case of identical parameters, the last occurence has precedence
       - Parse config files instead of sourcing --> no more shell expansion
-    Battery Features:
+    Battery Features, tlp-stat -b:
       - Charge thresholds: better checks for command line and configuration;
         clearer error messages
       - tlp discharge: error message "check your hardware" when battery wasn't
         completely discharged (Issue #438)
+      - Distinguish between "no kernel support" for natacpi (< 4.17) and
+        "laptop not supported" (>= 4.17)
+      - Supplement battery status "Unknown" with "threshold may prevent
+        charging" when thresholds are available only
     General:
       - systemd: start tlp.service earlier in boot process
       - systemd: replace tlp-sleep.service with /lib/systemd/system-sleep/tlp
@@ -32,8 +36,6 @@
         when HWP.EPP is available, EPB is not set;
         eliminate external tool x86_energy_perf_policy for kernel >= 5.2
     tlp-stat:
-      - Battery Features: distinguish between "no kernel support" for natacpi
-        (< 4.17) and "laptop not supported" (>= 4.17)
       - System Info:
         - show RDW as "disabled" when TLP is disabled as a whole
         - indicate persistent mode

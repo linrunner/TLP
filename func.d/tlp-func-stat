@@ -544,7 +544,11 @@ print_batstate () { # print battery charging state with
         # Explain content if necessary
         case $val in
             "Unknown"|"Not charging") # a threshold forbids charging
-                printf " (threshold effective)\n"
+                if [ "$_bm_thresh" != "none" ]; then
+                    printf " (threshold may prevent charging)\n"
+                else
+                    printf "\n"
+                fi
                 ;;
 
             *) # Nothing to do
