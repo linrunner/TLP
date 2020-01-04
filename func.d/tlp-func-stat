@@ -559,89 +559,90 @@ print_batstate () { # print battery charging state with
     return 0
 }
 
-print_thresholds () { # formatted output of ThinkPad charging thresholds
+print_thresholds_discharge () { # formatted output of battery features
+    # charge thresholds and force_discharge
     # $1: BAT0/BAT1
     # global param: $_bm_thresh, $_bat_idx, $_bf_start, $_bf_stop
-    local bsys sp thresh
+    local bsys force sp thresh
+    local nl=0
 
-    [ "$_bm_thresh" != "none" ] || return 0 # no method available --> quit
+    if [ "$_bm_thresh" != "none" ]; then
+        for sp in start stop; do
+            thresh=$(read_threshold $sp)
+            case $sp in
+                start) bsys=$_bf_start ;;
+                stop)  bsys=$_bf_stop ;;
+            esac
+            if [ "$thresh" != "none" ]; then
+                # valid threshold read
+                case $_bm_thresh in
+                    natacpi|tpsmapi)
+                        printf "%-59s = %6d [%%]\n" "$bsys" "$thresh"
+                        nl=1
+                        ;;
 
-    for sp in start stop; do
-        thresh=$(read_threshold $sp)
+                    tpacpi)
+                        printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.${sp}Threshold" "$thresh"
+                        nl=1
+                        ;;
 
-        case $sp in
-            start) bsys=$_bf_start ;;
-            stop)  bsys=$_bf_stop ;;
-        esac
+                    none) ;; # nothing to show
+                esac
+            else
+                # threshold read failed
+                case $_bm_thresh in
+                    natacpi|tpsmapi)
+                        printf "%-59s = (not available)\n" "$bsys"
+                        nl=1
+                        ;;
 
-        if [ "$thresh" != "none" ]; then
-            # valid threshold read
-            case $_bm_thresh in
+                    tpacpi)
+                        printf "%-59s = (not available)\n" "tpacpi-bat.${1}.${sp}Threshold"
+                        nl=1
+                        ;;
+
+                    none) ;; # nothing to show
+                esac
+            fi
+        done # for sp
+    fi
+
+    if [ "$_bm_dischg" != "none" ]; then
+        get_force_discharge $1; force=$?
+        if [ $force -lt 2 ]; then
+            # valid force_discharge read
+            case $_bm_dischg in
                 natacpi|tpsmapi)
-                    printf "%-59s = %6d [%%]\n" "$bsys" "$thresh"
+                    printf "%-59s = %6d\n" "$_bf_dischg" "$force"
+                    nl=1
                     ;;
 
                 tpacpi)
-                    printf "%-59s = %6d [%%]\n" "tpacpi-bat.${1}.${sp}Threshold" "$thresh"
+                    printf "%-59s = %6d\n" "tpacpi-bat.${1}.forceDischarge" "$force"
+                    nl=1
                     ;;
 
                 none) ;; # nothing to show
             esac
         else
-            # threshold read failed
-            case $_bm_thresh in
+            # force_discharge read failed
+            case $_bm_dischg in
                 natacpi|tpsmapi)
-                    printf "%-59s = (not available)\n" "$bsys"
+                    printf "%-59s = (not available)\n" "$_bf_dischg"
+                    nl=1
                     ;;
 
                 tpacpi)
-                    printf "%-59s = (not available)\n" "tpacpi-bat.${1}.${sp}Threshold"
+                    printf "%-59s = %6d\n" "tpacpi-bat.${1}.forceDischarge" "(not available)"
+                    nl=1
                     ;;
 
                 none) ;; # nothing to show
             esac
         fi
-    done # for sp
-
-    return 0
-}
-
-print_discharge () { # formatted output of ThinkPad force_discharge
-    # $1: BAT0/BAT1
-    # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
-    local force
-
-    [ "$_bm_dischg" != "none" ] || return 0 # no method available --> quit
-
-    get_force_discharge $1; force=$?
-
-    if [ $force -lt 2 ]; then
-        # valid force_discharge read
-        case $_bm_dischg in
-            natacpi|tpsmapi)
-                printf "%-59s = %6d\n" "$_bf_dischg" "$force"
-                ;;
-
-            tpacpi)
-                printf "%-59s = %6d\n" "tpacpi-bat.${1}.forceDischarge" "$force"
-                ;;
-
-            none) ;; # nothing to show
-        esac
-    else
-        # force_discharge read failed
-        case $_bm_dischg in
-            natacpi|tpsmapi)
-                printf "%-59s = (not available)\n" "$_bf_dischg"
-                ;;
-
-            tpacpi)
-                printf "%-59s = %6d\n" "tpacpi-bat.${1}.forceDischarge" "(not available)"
-                ;;
-
-            none) ;; # nothing to show
-        esac
     fi
+
+    [ $nl -eq 0 ] || echo
 
     return 0
 }

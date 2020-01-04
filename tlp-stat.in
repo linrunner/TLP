@@ -832,6 +832,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         32)  echo "natacpi    = inactive (disabled by configuration)" ;;
         128) echo "natacpi    = inactive (no kernel support)" ;;
         253) echo "natacpi    = inactive (laptop not supported)" ;;
+        254) echo "natacpi    = inactive (ThinkPad not supported)" ;;
         *)   echo "natacpi    = unknown status" ;;
     esac
 
@@ -979,14 +980,10 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
         esac # $_bm_read
 
-        # --- show thresholds
-        print_thresholds $batt
-
-        # --- show force_discharge
-        print_discharge $batt
+        # --- show battery features: thresholds, force_discharge
+        print_thresholds_discharge $batt
 
         # show charge + capacity
-        echo
         lcnt=0
         if [ $ef -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'

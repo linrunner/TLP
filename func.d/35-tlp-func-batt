@@ -32,6 +32,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
     #       32=disabled/
     #       128=no kernel support/
     #       253=laptop not supported
+    #       254=ThinkPad not supported
     #
     # 2. check for acpi-call external kernel module and test with integrated
     #    tpacpi-bat [ThinkPads only]
@@ -94,7 +95,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
         if [ "$(read_sysf $ps/present)" = "1" ]; then
             # battery detected
             if [ -f $ps/charge_start_threshold ]; then
-                # kernel with native acpi support detected
+                # sysfile for native acpi support detected
                 _natacpi=253
 
                 if readable_sysf $ps/charge_start_threshold; then
@@ -111,10 +112,17 @@ check_battery_features () { # determine which battery feature APIs/tools are
                     _natacpi=0
                     _bm_dischg="natacpi"
                 fi
+            elif kernel_version_ge 4.17; then
+                # kernel capable of native acpi support
+                _natacpi=253
             fi
             break # quit loop on first battery detected
         fi
     done
+    if [ $_natacpi -eq 253 ] && is_thinkpad; then
+        # map code for ThinkPads
+        _natacpi=254
+    fi
     echo_debug "bat" "check_battery_features.natacpi: $_natacpi (read=$_bm_read; thresh=$_bm_thresh; dischg=$_bm_dischg)"
 
     # when not a Thinkpad --> we're done here
@@ -344,8 +352,12 @@ read_threshold () { # read and echo charge threshold
         tpacpi) # use tpacpi-bat
             if [ $_bat_idx -ne 0 ]; then
                 # bat index is valid
-                rt=$($TPACPIBAT -g $1 $_bat_idx 2> /dev/null | cut -f1 -d' '); tprc=$?
-                if [ $tprc -eq 0 ] && [ -n "$rc" ]; then
+                case $1 in
+                    start) rt=$($TPACPIBAT -g ST $_bat_idx 2> /dev/null | cut -f1 -d' ') ;;
+                    stop)  rt=$($TPACPIBAT -g SP $_bat_idx 2> /dev/null | cut -f1 -d' ') ;;
+                esac
+                tprc=$?
+                if [ $tprc -eq 0 ] && is_uint "$rt"; then
                     if [ $rt -ge 128 ]; then
                         # Remove offset of 128 for Edge S430 et al.
                         rt=$((rt - 128))

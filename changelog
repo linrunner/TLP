@@ -1,15 +1,15 @@
-+++ 1.3.0–alpha.3 --- 03.01.2020 +++
++++ 1.3.0–alpha.3 --- 04.01.2020 +++
 
   * Development version
 
   * Features
     New configuration scheme:
+      - /etc/default/tlp is replaced by /etc/tlp.conf
       - Settings are read in the following order:
           1. Intrinsic defaults
           2. /etc/tlp.conf.d/*.conf - Drop-in customizations
           3. /etc/tlp.conf          - User configuration
         In case of identical parameters, the last occurence has precedence
-      - /etc/default/tlp is replaced by /etc/tlp.conf
       - Parse config files instead of sourcing --> no more shell expansion
     Battery Features:
       - Charge thresholds: better checks for command line and configuration;
@@ -32,6 +32,8 @@
         when HWP.EPP is available, EPB is not set;
         eliminate external tool x86_energy_perf_policy for kernel >= 5.2
     tlp-stat:
+      - Battery Features: distinguish between "no kernel support" for natacpi
+        (< 4.17) and "laptop not supported" (>= 4.17)
       - System Info:
         - show RDW as "disabled" when TLP is disabled as a whole
         - indicate persistent mode
