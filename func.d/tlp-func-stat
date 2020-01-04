@@ -527,6 +527,7 @@ print_methods_per_driver () { # show features provided by a battery driver
 print_batstate () { # print battery charging state with
     # an explanation when a threshold inhibits charging
     # $1: sysfile
+    # global param: $_bm_thresh, $_syspwr
     local sysf val
 
     # check if bat state sysfile exists
@@ -543,8 +544,9 @@ print_batstate () { # print battery charging state with
         printf "%-59s = %s" "$sysf" "$val"
         # Explain content if necessary
         case $val in
-            "Unknown"|"Not charging") # a threshold forbids charging
-                if [ "$_bm_thresh" != "none" ]; then
+            "Unknown"|"Not charging") # a threshold may prevent charging ...
+                if [ "$_syspwr" = "0" ] && [ "$_bm_thresh" != "none" ]; then
+                    # ... when on AC power and a threshold method is available
                     printf " (threshold may prevent charging)\n"
                 else
                     printf "\n"
