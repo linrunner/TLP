@@ -809,9 +809,14 @@ check_ac_power () { # check if ac power connected -- $1: function
 
 echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
     if [ "$1" = "0" ]; then
-        echo "TLP started in AC mode."
+        printf "TLP started in AC mode"
     else
-        echo "TLP started in battery mode."
+        printf "TLP started in battery mode"
+    fi
+    if [ "$_manual_mode" != "none" ]; then
+        printf " (manual).\n"
+    else
+        printf " (auto).\n"
     fi
 
     return 0
