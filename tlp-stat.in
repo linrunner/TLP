@@ -228,6 +228,7 @@ echo
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Configured Settings:"
     print_config
+    echo
 fi # show_conf
 
 if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
