@@ -6,7 +6,6 @@
 
 # Cmdline options
 #   --outfile <FILE>: filepath to contain merged configuration
-#   --stdout: write merged configuration to stdout
 #   --notrace: disable trace
 #
 # Return codes

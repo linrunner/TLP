@@ -451,7 +451,7 @@ parse_args4config () { # parse command-line arguments: everything after the
 
 print_config () { # print runtime conf based on all config files
     # external perl script: merge all config files to $cf
-    $READCONFS --stdout --notrace
+    $READCONFS --notrace
 }
 
 save_runconf () { # copy temporary to final runconf
