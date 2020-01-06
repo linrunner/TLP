@@ -74,8 +74,6 @@ MANFILES1 = \
 	bluetooth.1 \
 	run-on-ac.1 \
 	run-on-bat.1 \
-	tlp-pcilist.1 \
-	tlp-usblist.1 \
 	wifi.1 \
 	wwan.1
 
