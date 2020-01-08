@@ -1,12 +1,12 @@
-tlp (1.3.0~beta.1-1) unstable; urgency=low
+tlp (1.3.0~beta.2-1) unstable; urgency=low
 
-  * New upstream version 1.3.0–beta.1
+  * New upstream version 1.3.0–beta.2
 
   [Thomas Koch]
   * debian/rules: remove tlp-sleep.service
   * debian/source/options: extend-diff-ignore=.github|.perlcriticrc
   * debian/tlp.install: add
-    - /etc/tlp.conf.d
+    - /etc/tlp.d
     - /lib/systemd/system-sleep/tlp
     - /usr/share/tlp/defaults.conf
     - /usr/share/tlp/tlp-pcilist (moved)
@@ -15,7 +15,7 @@ tlp (1.3.0~beta.1-1) unstable; urgency=low
   * debian/tlp.maintscript: add
     - mv_conffile /etc/default/tlp /etc/tlp.conf
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 05 Jan 2020 17:42:17 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 08 Jan 2020 16:24:42 +0100
 
 tlp (1.2.2-1) unstable; urgency=low
 

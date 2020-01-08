@@ -1,5 +1,5 @@
 etc/tlp.conf
-etc/tlp.conf.d
+etc/tlp.d
 etc/init.d/tlp
 lib/elogind/system-sleep/49-tlp-sleep
 lib/systemd/system/tlp.service
