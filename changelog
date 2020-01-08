@@ -1,14 +1,21 @@
++++ 1.3.0–beta.2 --- 08.01.2020 +++
+
+   * Beta release - Changes since beta.1:
+     - New configuration scheme: drop-in customizations moved to /etc/tlp.d/
+     - Makefile: fix install-man-tlp
+
 +++ 1.3.0–beta.1 --- 05.01.2020 +++
 
   * Beta release
 
   * Features
-    New configuration scheme:
+    New configuration scheme:* Beta release
+
       - /etc/default/tlp is replaced by /etc/tlp.conf
       - Settings are read in the following order:
           1. Intrinsic defaults
-          2. /etc/tlp.conf.d/*.conf - Drop-in customizations
-          3. /etc/tlp.conf          - User configuration
+          2. /etc/tlp.d/*.conf - Drop-in customizations
+          3. /etc/tlp.conf     - User configuration
         In case of identical parameters, the last occurence has precedence
       - Parse config files instead of sourcing --> no more shell expansion
     Battery Features, tlp-stat -b:

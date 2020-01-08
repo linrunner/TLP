@@ -9,15 +9,15 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="1.3.0-beta.1"
+readonly TLPVER="1.3.0-beta.2"
 
 readonly RUNDIR=@TLP_RUN@
 readonly VARDIR=@TLP_VAR@
 
-readonly CONF_DEF=@TLP_CONFDEF@  # /usr/share/tlp/defaults.conf
-readonly CONF_DIR=@TLP_CONFDIR@  # /etc/tlp.conf.d
-readonly CONF_USR=@TLP_CONFUSR@  # /etc/tlp.conf
-readonly CONF_OLD=@TLP_CONF@     # /etc/default/tlp
+readonly CONF_DEF=@TLP_CONFDEF@
+readonly CONF_DIR=@TLP_CONFDIR@
+readonly CONF_USR=@TLP_CONFUSR@
+readonly CONF_OLD=@TLP_CONF@
 readonly CONF_RUN="$RUNDIR/run.conf"
 
 readonly FLOCK=flock
