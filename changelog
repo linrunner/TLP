@@ -9,8 +9,7 @@
   * Beta release
 
   * Features
-    New configuration scheme:* Beta release
-
+    New configuration scheme:
       - /etc/default/tlp is replaced by /etc/tlp.conf
       - Settings are read in the following order:
           1. Intrinsic defaults
