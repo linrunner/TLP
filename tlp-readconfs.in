@@ -18,6 +18,7 @@ use strict;
 use warnings;
 
 # --- Modules
+use File::Basename;
 use Getopt::Long;
 
 # --- Constants
@@ -27,7 +28,7 @@ use constant CONF_DEF => "@TLP_CONFDEF@";
 use constant CONF_OLD => "@TLP_CONF@";
 
 # --- Global vars
-my @config_val = (); # 2-dim array: parameter name-value pairs
+my @config_val = (); # 2-dim array: parameter name, value, source
 my %config_idx = (); # hash: parameter name ==> index into the name-value array
 
 my $notrace = 0;
@@ -47,27 +48,30 @@ sub printf_debug {
     return 0;
 }
 
-# Store parameter name-value pairs in array/hash
+# Store parameter name, value, source in array/hash
 # $_[0]: parameter name  (non-null string)
 # $_[1]: parameter value (maybe null string)
+# $_[2]: parameter source e.g. filepath + line no.
 # return: 0=new name/1=known name
-sub store_name_value {
+sub store_name_value_source {
     my $name = $_[0];
     my $value = $_[1];
+    my $source = $_[2];
 
     $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
 
     if ( defined $config_idx{$name} ) {
-        # existing name --> overwrite value only
+        # existing name --> overwrite value, source only
         $config_val[$config_idx{$name}][1] = $value;
+        $config_val[$config_idx{$name}][2] = $source;
 
-        printf_debug ("tlp-readconfs.replace [%s]: %s = %s\n", $config_idx{$name}, $name, $value);
+        printf_debug ("tlp-readconfs.replace [%s]: %s=\"%s\" %s\n", $config_idx{$name}, $name, $value, $source);
     } else {
-        # new name --> store name-value pair and hash name
-        push(@config_val, [$name, $value]);
+        # new name --> store name, value, source and hash name
+        push(@config_val, [$name, $value, $source]);
         $config_idx{$name} = $#config_val;
 
-        printf_debug ("tlp-readconfs.insert  [%s]: %s = %s\n", $#config_val, $name, $value);
+        printf_debug ("tlp-readconfs.insert  [%s]: %s=\"%s\" %s\n", $#config_val, $name, $value, $source);
     }
 
     return 0;
@@ -75,19 +79,27 @@ sub store_name_value {
 
 # Parse whole config file and store parameters
 # $_[0]: filepath
+
 # return: 0=ok/1=file non-existent
 sub parse_configfile {
     my $fname = $_[0];
+    my $source;
+    if ( $fname eq CONF_DEF ) {
+        $source = basename ($fname);
+    } else {
+        $source = $fname;
+    }
 
     open (my $cf, "<", $fname) or return 1;
 
+    my $ln = 0;
     while ( my $line = <$cf> ) {
         chomp $line;
+        $ln += 1;
         if ( $line =~ /^(?<name>[A-Z_]+[0-9]*)=(?:(?<val_bare>[0-9a-zA-Z_\-:]*)|"(?<val_dquoted>[0-9a-zA-Z _\-:]*)")\s*$/ ) {
             my $name = $+{name};
             my $value = $+{val_dquoted} // $+{val_bare};
-
-            store_name_value ($name, $value);
+            store_name_value_source ($name, $value, $source . " L" . sprintf ("%04d", $ln) );
         }
     }
     close ($cf);
@@ -95,7 +107,8 @@ sub parse_configfile {
     return 0;
 }
 
-# Output all stored parameter name-value pairs to a file
+# Output all stored parameter name, value to a file
+# or parameter name, value, source to stdout
 # $_[0]: filepath (without argument the output will be written to stdout)
 # return: 0=ok/1=file open error
 sub write_runconf {
@@ -109,7 +122,11 @@ sub write_runconf {
     }
 
     foreach ( @config_val ) {
-        printf {$runconf} "%s=\"%s\"\n", @{$_}[0], @{$_}[1];
+        if ( $runconf eq *STDOUT ) {
+            printf {$runconf} "%s: %s=\"%s\"\n", @{$_}[2], @{$_}[0], @{$_}[1];
+        } else  {
+            printf {$runconf} "%s=\"%s\"\n", @{$_}[0], @{$_}[1];
+        }
     }
     close ($runconf);
 
