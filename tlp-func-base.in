@@ -13,6 +13,7 @@ readonly TLPVER="1.3.0-beta.3"
 
 readonly RUNDIR=@TLP_RUN@
 readonly VARDIR=@TLP_VAR@
+readonly TMPDIR=/tmp
 
 readonly CONF_DEF=@TLP_CONFDEF@
 readonly CONF_DIR=@TLP_CONFDIR@
@@ -389,7 +390,7 @@ read_config () { # read all config files and write temporary runconf file
     # retval: config parameters;
     #         _conf_tmp: runconf
     local rc=0
-    if _conf_tmp=$($MKTEMP --tmpdir "tlp-run_XXXXXX.conf"); then
+    if _conf_tmp=$($MKTEMP -p "$TMPDIR" "tlp-run.conf_XXXXXX"); then
         # external perl script: merge all config files to $cf
         if [ "$2" = "1" ]; then
             $READCONFS --outfile $_conf_tmp --notrace; rc=$?
