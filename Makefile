@@ -134,6 +134,7 @@ endif
 	install -D -m 644 tlp.rules $(_ULIB)/rules.d/85-tlp.rules
 	[ -f $(_CONFUSR) ] || install -D -m 644 tlp.conf $(_CONFUSR)
 	install -d $(_CONFDIR)
+	install -D -m 644 README.d $(_CONFDIR)/README
 	install -D -m 644 00-template.conf $(_CONFDIR)/00-template.conf
 	install -D -m 644 defaults.conf $(_CONFDEF)
 ifneq ($(TLP_NO_INIT),1)
@@ -191,6 +192,7 @@ uninstall-tlp:
 	rm $(_BIN)/run-on-ac
 	rm $(_BIN)/run-on-bat
 	rm $(_BIN)/tlp-stat
+	rm $(_CONFDIR)/README
 	rm $(_CONFDIR)/00-template.conf
 	rm -r $(_TLIB)
 	rm $(_ULIB)/tlp-usb-udev
