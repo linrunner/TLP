@@ -6,6 +6,7 @@
      - /etc/tlp.d/README added
      - Parameter parsing: allow dots (.) in value strings
      - systemd: do *not* start tlp.service earlier in boot process
+     - tlp.conf: 'use PARAM="" to disable an intrinsic default'
 
 Reference:
 *  https://github.com/linrunner/TLP/issues/449#issuecomment-573857246

@@ -223,7 +223,7 @@ disable_wake_on_lan () {  # disable WOL
             echo_debug "pm" "disable_wake_on_lan: $ei; rc=$?"
         done
     else
-        echo_debug "pm" "disable_wake_on_lan.disabled"
+        echo_debug "pm" "disable_wake_on_lan.not_configured"
     fi
 
     return 0
