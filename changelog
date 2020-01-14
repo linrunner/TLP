@@ -5,6 +5,7 @@
      - Fix manpages
      - /etc/tlp.d/README added
      - Parameter parsing: allow dots (.) in value strings
+     - systemd: do *not* start tlp.service earlier in boot process
 
 Reference:
 *  https://github.com/linrunner/TLP/issues/449#issuecomment-573857246
@@ -37,7 +38,6 @@ Reference:
       - Supplement battery status "Unknown" with "threshold may prevent
         charging" when thresholds are available only
     General:
-      - systemd: start tlp.service earlier in boot process
       - systemd: replace tlp-sleep.service with /lib/systemd/system-sleep/tlp
     Operation Mode AC/BAT:
       - TLP_PS_IGNORE: power supply class to ignore when determining operation

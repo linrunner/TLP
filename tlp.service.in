@@ -5,7 +5,7 @@
 
 [Unit]
 Description=TLP system startup/shutdown
-After=NetworkManager.service
+After=multi-user.target NetworkManager.service
 Before=shutdown.target
 Documentation=https://linrunner.de/tlp
 
