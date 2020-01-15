@@ -234,6 +234,14 @@ print_saved_powerstate () { # read and print saved state
     return 0
 }
 
+print_selinux () { # print SELinux status and mode
+    if cmd_exists $SESTATUS; then
+        $SESTATUS | awk -F '[ \t\n]+' '/SELinux status:/ { printf "SELinux status = %s", $3 } ; \
+                                       /Current mode:/   { printf " (%s)", $3 }'
+        printf "\n"
+    fi
+}
+
 # --- Storage Devices
 
 print_disk_model () { # print disk model -- $1: dev
