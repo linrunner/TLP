@@ -8,6 +8,7 @@
      - systemd: do *not* start tlp.service earlier in boot process
      - tlp.conf: 'use PARAM="" to disable an intrinsic default'
      + tlp-stat -s: show SELinux status
+     + Disks: fix nvme detection on Linux 4.15
 
 +++ 1.3.0–beta.2 --- 08.01.2020 +++
 
