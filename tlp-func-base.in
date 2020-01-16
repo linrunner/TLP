@@ -389,7 +389,16 @@ read_config () { # read all config files and write temporary runconf file
     # retval: config parameters;
     #         _conf_tmp: runconf
     local rc=0
-    if _conf_tmp=$($MKTEMP -p "${TMP:-/tmp}" "tlp-run.conf_XXXXXX"); then
+    local tmpdir
+
+    if test_root; then
+        tmpdir=$RUNDIR
+        create_rundir
+    else
+        tmpdir=${TMP:-/tmp}/tlp
+        mkdir -p $tmpdir 2> /dev/null 1>&2
+    fi
+    if _conf_tmp=$($MKTEMP -p "$tmpdir" "run.conf_tmpXXXXXX"); then
         # external perl script: merge all config files to $cf
         if [ "$2" = "1" ]; then
             $READCONFS --outfile "$_conf_tmp" --notrace; rc=$?
@@ -458,7 +467,7 @@ save_runconf () { # copy temporary to final runconf
     create_rundir
     [ -f "$_conf_tmp" ] && cp --preserve=timestamps "$_conf_tmp" $CONF_RUN > /dev/null 2>&1
     chmod g+r,o+r "$_conf_tmp" $CONF_RUN > /dev/null 2>&1
-    echo_debug "cfg" "save_runconf: $_conf_tmp --> $CONF_RUN"
+    echo_debug "run" "save_runconf: $_conf_tmp --> $CONF_RUN"
 }
 
 # --- Kernel

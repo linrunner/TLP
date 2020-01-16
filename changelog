@@ -9,6 +9,7 @@
      - tlp.conf: 'use PARAM="" to disable an intrinsic default'
      + tlp-stat -s: show SELinux status
      + Disks: fix nvme detection on Linux 4.15
+     - Write temporary run.conf to /run/tlp to prevent SELinux AVCs (Fedora)
 
 +++ 1.3.0–beta.2 --- 08.01.2020 +++
 
