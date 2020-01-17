@@ -47,7 +47,7 @@ TLP packages are available for all major Linux distributions; see
 ## Configuration
 The default configuration provides optimized power saving out of the box.
 
-Settings are stored in `/etc/default/tlp`;
+Settings are stored in `/etc/tlp.conf`;
 see [Configuration](https://linrunner.de/en/tlp/docs/tlp-configuration.html) for
 details.
 

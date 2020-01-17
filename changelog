@@ -1,15 +1,17 @@
 +++ 1.3.0–beta.3 --- <unreleased> +++
 
    * Changes since beta.2:
-     + tlp-stat -c: format FILEPATH L#: PARAMETER="VALUE"
-     - Fix manpages
+     - tlp.conf: 'use PARAM="" to disable an intrinsic default'
      - /etc/tlp.d/README added
      - Parameter parsing: allow dots (.) in value strings
-     - systemd: do *not* start tlp.service earlier in boot process
-     - tlp.conf: 'use PARAM="" to disable an intrinsic default'
-     + tlp-stat -s: show SELinux status
+     + tlp-stat -c: show file where the parameter comes from
      + Disks: fix nvme detection on Linux 4.15
-     - Write temporary run.conf to /run/tlp to prevent SELinux AVCs (Fedora)
+     + tlp-stat -s: show SELinux status
+     - Prevent SELinux AVCs in Fedora:
+       - Write temporary run.conf to /run/tlp
+       - Pass messages as a parameter to the logger
+     - systemd: do *not* start tlp.service earlier in boot process
+     - Fix manpages
 
 +++ 1.3.0–beta.2 --- 08.01.2020 +++
 
