@@ -1,4 +1,4 @@
-+++ 1.3.0–beta.3 --- <unreleased> +++
++++ 1.3.0–beta.3 --- 17.01.2020 +++
 
    * Changes since beta.2:
      - tlp.conf: 'use PARAM="" to disable an intrinsic default'
