@@ -1,4 +1,5 @@
 # Makefile for TLP
+TLPVER := $(shell read _ver _dummy < ./VERSION; printf '%s' "$${_ver:-undef}")
 
 # Evaluate parameters
 TLP_SBIN    ?= /usr/sbin
@@ -43,6 +44,7 @@ _RUN     = $(DESTDIR)$(TLP_RUN)
 _VAR     = $(DESTDIR)$(TLP_VAR)
 
 SED = sed \
+	-e "s|@TLPVER@|$(TLPVER)|g" \
 	-e "s|@TLP_SBIN@|$(TLP_SBIN)|g" \
 	-e "s|@TLP_TLIB@|$(TLP_TLIB)|g" \
 	-e "s|@TLP_FLIB@|$(TLP_FLIB)|g" \

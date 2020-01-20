@@ -9,7 +9,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLPVER="1.3.0-beta.3"
+readonly TLPVER="@TLPVER@"
 
 readonly RUNDIR=@TLP_RUN@
 readonly VARDIR=@TLP_VAR@
