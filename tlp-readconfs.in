@@ -122,10 +122,11 @@ sub write_runconf {
     }
 
     foreach ( @config_val ) {
+	my ($name, $value, $source) = @$_;
         if ( $runconf eq *STDOUT ) {
-            printf {$runconf} "%s: %s=\"%s\"\n", @{$_}[2], @{$_}[0], @{$_}[1];
+            printf {$runconf} "%s: %s=\"%s\"\n", $source, $name, $value;
         } else  {
-            printf {$runconf} "%s=\"%s\"\n", @{$_}[0], @{$_}[1];
+            printf {$runconf} "%s=\"%s\"\n", $name, $value;
         }
     }
     close ($runconf);
