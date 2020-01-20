@@ -393,7 +393,7 @@ read_config () { # read all config files and write temporary runconf file
         tmpdir=$RUNDIR
         create_rundir
     else
-        tmpdir=${TMP:-/tmp}/tlp
+        tmpdir=${TMPDIR:-/tmp}
         mkdir -p $tmpdir 2> /dev/null 1>&2
     fi
     if _conf_tmp=$($MKTEMP -p "$tmpdir" "run.conf_tmpXXXXXX"); then
