@@ -27,7 +27,7 @@ readonly LOGGER=logger
 readonly MKTEMP=mktemp
 readonly MODPRO=modprobe
 readonly READCONFS=@TLP_TLIB@/tlp-readconfs
-readonly TPACPIBAT=@TLP_TLIB@/tpacpi-bat
+readonly TPACPIBAT=@TPACPIBAT@
 readonly UDEVADM=udevadm
 
 readonly LOCKFILE=$RUNDIR/lock
