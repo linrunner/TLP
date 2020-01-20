@@ -394,9 +394,8 @@ read_config () { # read all config files and write temporary runconf file
         create_rundir
     else
         tmpdir=${TMPDIR:-/tmp}
-        mkdir -p $tmpdir 2> /dev/null 1>&2
     fi
-    if _conf_tmp=$($MKTEMP -p "$tmpdir" "run.conf_tmpXXXXXX"); then
+    if _conf_tmp=$($MKTEMP -p "$tmpdir" "tlp-run.conf_tmpXXXXXX"); then
         # external perl script: merge all config files to $cf
         if [ "$2" = "1" ]; then
             $READCONFS --outfile "$_conf_tmp" --notrace; rc=$?
