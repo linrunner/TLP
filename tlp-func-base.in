@@ -628,7 +628,7 @@ get_sys_power_supply () { # get current power supply
         psrc_name="${psrc##*/}"
 
         # ignore atypical power supplies and batteries
-        echo "$psrc" | grep -E -q "$RE_PS_IGNORE" && continue
+        echo "$psrc_name" | grep -E -q "$RE_PS_IGNORE" && continue
 
         case "$(read_sysf $psrc/type)" in
             Mains|USB)
