@@ -619,12 +619,13 @@ get_sys_power_supply () { # get current power supply
     #       stop looking
     #   *s) stop looking (for other power sources)
 
-    local bs psrc
+    local bs psrc psrc_name
     local ac0seen=
     _syspwr=
 
     for psrc in /sys/class/power_supply/*; do
         # -f $psrc/type not necessary - read_sysf() handles this
+        psrc_name="${psrc##*/}"
 
         # ignore atypical power supplies and batteries
         echo "$psrc" | grep -E -q "$RE_PS_IGNORE" && continue
@@ -634,7 +635,7 @@ get_sys_power_supply () { # get current power supply
                 # AC detected
                 # skip device to ignore incorrect AC status
                 if [ "$TLP_PS_IGNORE" = "AC" ]; then
-                    echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_ignored: syspwr=$_syspwr"
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_ignored: syspwr=$_syspwr"
                     continue
                 fi
 
@@ -642,13 +643,13 @@ get_sys_power_supply () { # get current power supply
                 if [ "$(read_sysf $psrc/online)" = "1" ]; then
                     # AC online --> end iteration
                     _syspwr=0
-                    echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_online: syspwr=$_syspwr"
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_online: syspwr=$_syspwr"
                     break
                 else
                     # AC offline could mean battery, but quirky hardware exists
                     # --> remember and continue looking (for batteries)
                     ac0seen=1
-                    echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).ac_offline_remembered"
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_offline_remembered"
                 fi
                 ;;
 
@@ -656,7 +657,7 @@ get_sys_power_supply () { # get current power supply
                 # battery detected
                 # skip device to ignore incorrect battery status
                 if [ "$TLP_PS_IGNORE" = "BAT" ]; then
-                    echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_ignored: syspwr=$_syspwr"
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_ignored: syspwr=$_syspwr"
                     continue
                 fi
 
@@ -667,31 +668,31 @@ get_sys_power_supply () { # get current power supply
                         if ! lockpeek_tlp tlp_discharge; then
                             # battery status "Discharging" means battery mode ...
                             _syspwr=1
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging: syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_discharging: syspwr=$_syspwr"
                         else
                             # ... unless forced discharge is in progress, which means AC
                             _syspwr=0
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).forced_discharge: syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).forced_discharge: syspwr=$_syspwr"
                         fi
                         break # --> end iteration
                         ;;
 
                     *) # everything else - e.g. "Charging", "Full", "Unknown" - might be caused by lagging
                        # battery status updates --> re-check after a short delay
-                        echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_not_discharging_check1: bs=$bs; syspwr=$_syspwr"
+                        echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging_check1: bs=$bs; syspwr=$_syspwr"
                         sleep 0.8
                         bs="$(read_sysf $psrc/status)"
                         if [ "$bs" = "Discharging" ] && ! lockpeek_tlp tlp_discharge; then
                             # battery status changed to "Discharging" (not forced) means battery mode
                             # --> end iteration
                             _syspwr=1
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_discharging_check2: bs=$bs; syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_discharging_check2: bs=$bs; syspwr=$_syspwr"
                             break
                         else
                             # otherwise assume AC mode
                             # --> continue looking
                             _syspwr=0
-                            echo_debug "ps" "get_sys_power_supply(${psrc##/*/}).bat_not_discharging_check2: bs=$bs; syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging_check2: bs=$bs; syspwr=$_syspwr"
                         fi
                         ;;
 
