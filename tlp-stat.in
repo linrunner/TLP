@@ -269,7 +269,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
 
     # --- show TLP status
     echo "+++ TLP Status"
-    if check_tlp_enabled 0; then
+    if check_tlp_enabled; then
         printf "State          = enabled\n"
     else
         printf "State          = disabled\n"
@@ -277,7 +277,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
 
     # --- show RDW status
     if cmd_exists $TLPRDW; then
-        if ! check_tlp_enabled 0; then
+        if ! check_tlp_enabled; then
             printf "RDW state      = disabled (TLP disabled)\n"
         elif check_run_flag $RDW_KILL; then
             printf "RDW state      = disabled\n"

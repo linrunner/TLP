@@ -18,7 +18,7 @@ done
 # read configuration: quit on error, trace allowed
 read_config 1 0
 
-check_tlp_enabled 0 || do_exit 0
+check_tlp_enabled || do_exit 0
 check_run_flag $RDW_KILL && do_exit 0
 add_sbin2path
 

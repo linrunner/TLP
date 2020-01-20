@@ -23,7 +23,7 @@ read_config 1 0
 
 # quit if TLP or autosuspend disabled
 # shellcheck disable=SC2015
-check_tlp_enabled 0 && [ "$USB_AUTOSUSPEND" = "1" ] || do_exit 0
+check_tlp_enabled && [ "$USB_AUTOSUSPEND" = "1" ] || do_exit 0
 
 # USB autosuspend has two principal operation modes:
 #

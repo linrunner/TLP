@@ -161,13 +161,13 @@ check_root () { # show error message and quit when root privilege missing
 }
 
 check_tlp_enabled () { # check if TLP is enabled in config file
-    # $1: 1=verbose
+    # $1: 1=verbose (default: 0)
     # rc: 0=disabled/1=enabled
 
     if [ "$TLP_ENABLE" = "1" ]; then
         return 0
     else
-        [ "$1" = "1" ] && echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in ${CONF_USR}." 1>&2
+        [ "${1:-0}" = "1" ] && echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in ${CONF_USR}." 1>&2
         return 1
     fi
 }
