@@ -12,6 +12,7 @@
 # Constants
 
 readonly INITCTL=initctl
+readonly SESTATUS=sestatus
 readonly SMARTCTL=smartctl
 readonly SYSTEMCTL=systemctl
 readonly SYSTEMD=systemd

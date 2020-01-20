@@ -21,7 +21,6 @@ readonly TLPRDW=tlp-rdw
 
 readonly LSBREL=lsb_release
 readonly JOURNALCTL=journalctl
-readonly SESTATUS=sestatus
 
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly EFID=/sys/firmware/efi
