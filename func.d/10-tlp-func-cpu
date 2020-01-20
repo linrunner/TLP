@@ -138,10 +138,12 @@ set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
         perf=${CPU_ENERGY_PERF_POLICY_ON_AC:-${ENERGY_PERF_BIAS_ON_AC:-${CPU_HWP_ON_AC:-}}}
     fi
     # translate alphanumeric values from EPB to HWP.EPP syntax
-    perf=$(printf '%s' "$perf" | sed -r 's/^balance-performance$/balance_performance/;
-                                s/^normal$/default/;
-                                s/^balance-power$/balance_power/;
-                                s/^powersave$/power/')
+    case "${perf}" in
+        'balance-performance') perf='balance_performance' ;;
+        'normal') perf='default' ;;
+        'balance-power') perf='balance_power' ;;
+        'powersave') perf='power' ;;
+    esac
 
     if [ -z "$perf" ]; then
         echo_debug "pm" "set_intel_cpu_perf_policy($1).not_configured"
