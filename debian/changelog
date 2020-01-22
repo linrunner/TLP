@@ -3,6 +3,7 @@ tlp (1.3.0~beta.3-1) unstable; urgency=low
   * New upstream version 1.3.0–beta.3
 
   [Thomas Koch]
+  * debian/control: change description "Wifi" to "Wi-Fi" (fixes lintian msg)
   * debian/rules: remove tlp-sleep.service
   * debian/source/options: extend-diff-ignore=.github|.perlcriticrc
   * debian/tlp.install: add
