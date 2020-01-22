@@ -462,9 +462,12 @@ print_config () { # print runtime conf based on all config files
 
 save_runconf () { # copy temporary to final runconf
     create_rundir
-    [ -f "$_conf_tmp" ] && cp --preserve=timestamps "$_conf_tmp" $CONF_RUN > /dev/null 2>&1
-    chmod g+r,o+r "$_conf_tmp" $CONF_RUN > /dev/null 2>&1
-    echo_debug "run" "save_runconf: $_conf_tmp --> $CONF_RUN"
+    if cp --preserve=timestamps "$_conf_tmp" $CONF_RUN > /dev/null 2>&1; then
+        chmod 664 "$_conf_tmp" $CONF_RUN > /dev/null 2>&1
+        echo_debug "run" "save_runconf.ok: $_conf_tmp --> $CONF_RUN"
+    else
+        echo_debug "run" "save_runconf.failed: $_conf_tmp --> $CONF_RUN"
+    fi
 }
 
 # --- Kernel
