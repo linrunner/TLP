@@ -564,7 +564,7 @@ check_thinkpad () { # check for ThinkPad hardware and save model string,
         # check DMI product string for occurrence of "ThinkPad"
         if printf '%s' "$pv" | grep -E -q 'Think[Pp]ad'; then
             # it's a real ThinkPad --> save model substring
-            _tpmodel=$(echo $pv | sed -r 's/^Think[Pp]ad //')
+            _tpmodel=$(printf '%s\n' "$pv" | sed -r 's/^Think[Pp]ad //')
         fi
     else
         # not a ThinkPad: get DMI product string
@@ -631,7 +631,7 @@ get_sys_power_supply () { # get current power supply
         psrc_name="${psrc##*/}"
 
         # ignore atypical power supplies and batteries
-        echo "$psrc_name" | grep -E -q "$RE_PS_IGNORE" && continue
+        printf '%s\n' "$psrc_name" | grep -E -q "$RE_PS_IGNORE" && continue
 
         case "$(read_sysf $psrc/type)" in
             Mains|USB)

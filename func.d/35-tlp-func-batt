@@ -248,7 +248,7 @@ battery_present () { # check battery presence and return tpacpi-bat index
                 bsd="$ACPIBATDIR/$bs"
 
                 # check acpi name space
-                if echo "$bs" | grep -E -q "$RE_PS_IGNORE"; then
+                if printf '%s\n' "$bs" | grep -E -q "$RE_PS_IGNORE"; then
                     rc=2 # atypical battery ignored
 
                 elif [ "$(read_sysf $bsd/present)" = "1" ] \

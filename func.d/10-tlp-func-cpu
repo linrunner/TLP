@@ -177,11 +177,11 @@ set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
     if supports_intel_cpu_epb; then
         # apply EPB setting: translate HWP.EPP alphanumeric to EPB numeric values
         # for native kernel support and x86_energy_perf_policy backwards compatibility
-        pnum=$(echo $perf | sed -r 's/^performance$/0/;
-                                    s/^balance_performance$/4/;
-                                    s/^default$/6/;
-                                    s/^balance_power$/8/;
-                                    s/^power/15/')
+        pnum=$(printf '%s\n' "$perf" | sed -r 's/^performance$/0/;
+                                             s/^balance_performance$/4/;
+                                             s/^default$/6/;
+                                             s/^balance_power$/8/;
+                                             s/^power$/15/')
 
         # try native kernel API first (5.2 and later)
         cnt=0

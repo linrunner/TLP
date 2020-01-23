@@ -467,8 +467,8 @@ set_radio_device_states () { # set/initialize all radio states
         if [ -n "$devs2disable" ]; then
             [ "$quiet" = "1" ] || echo -n "Disabling radios:"
             for dev in $devs2disable; do
-                [ "$quiet" = "1" ] || echo -n " $dev"
-                device_switch $dev off
+                [ "$quiet" = "1" ] || printf ' %s' "$dev"
+                device_switch "$dev" off
             done
             [ "$quiet" = "1" ] || echo "."
         fi

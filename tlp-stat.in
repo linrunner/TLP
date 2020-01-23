@@ -78,7 +78,7 @@ glob_files () {
 
     while shift && [ $# -gt 0 ]; do
         for file_iter in ${1}${glob_pattern}; do
-            [ ! -f "${file_iter}" ] || echo "${file_iter}"
+            [ ! -f "${file_iter}" ] || printf '%s\n' "${file_iter}"
         done
     done
 }
