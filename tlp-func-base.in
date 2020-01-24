@@ -464,9 +464,9 @@ save_runconf () { # copy temporary to final runconf
     create_rundir
     if cp --preserve=timestamps "$_conf_tmp" $CONF_RUN > /dev/null 2>&1; then
         chmod 664 "$_conf_tmp" $CONF_RUN > /dev/null 2>&1
-        echo_debug "run" "save_runconf.ok: $_conf_tmp --> $CONF_RUN"
+        echo_debug "run" "save_runconf.ok: $_conf_tmp -> $CONF_RUN"
     else
-        echo_debug "run" "save_runconf.failed: $_conf_tmp --> $CONF_RUN"
+        echo_debug "run" "save_runconf.failed: $_conf_tmp -> $CONF_RUN"
     fi
 }
 

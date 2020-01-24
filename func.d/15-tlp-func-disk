@@ -139,11 +139,11 @@ set_disk_apm_level () { # set disk apm level
         log_message="set_disk_apm_level($pwrmode): $_disk_dev [$_disk_id] $1"
 
         if [ ! -b /dev/$_disk_dev ]; then
-            echo_debug "disk" "${log_message} -- missing"
+            echo_debug "disk" "${log_message}; missing"
         elif ! check_disk_apm /dev/$_disk_dev || wordinlist "$_disk_type" "$DISK_TYPES_NO_APM_CHANGE"; then
-            echo_debug "disk" "${log_message} -- not supported"
+            echo_debug "disk" "${log_message}; not supported"
         elif wordinlist "$1" "$DISK_NOP_WORDS"; then
-            echo_debug "disk" "${log_message} -- keep as is"
+            echo_debug "disk" "${log_message}; keep as is"
         else
             $HDPARM -B $1 /dev/$_disk_dev > /dev/null 2>&1
             echo_debug "disk" "${log_message}; rc=$?"
@@ -193,9 +193,9 @@ set_disk_spindown_timeout () { # set disk spindown timeout
         log_message="set_disk_spindown_timeout($pwrmode): $_disk_dev [$_disk_id] $1"
 
         if [ ! -b /dev/$_disk_dev ]; then
-            echo_debug "disk" "${log_message} -- missing"
+            echo_debug "disk" "${log_message}; missing"
         elif wordinlist "$1" "$DISK_NOP_WORDS"; then
-            echo_debug "disk" "${log_message} -- keep as is"
+            echo_debug "disk" "${log_message}; keep as is"
         else
             $HDPARM -S $1 /dev/$_disk_dev > /dev/null 2>&1
             echo_debug "disk" "${log_message}; rc=$?"
@@ -247,11 +247,11 @@ set_disk_iosched () { # set disk io scheduler
         log_message="set_disk_iosched: $_disk_dev [$_disk_id] $sched"
 
         if [ ! -b /dev/$_disk_dev ]; then
-            echo_debug "disk" "${log_message} -- missing"
+            echo_debug "disk" "${log_message}; missing"
         elif [ ! -f $schedctrl ]; then
-            echo_debug "disk" "${log_message} -- not supported"
+            echo_debug "disk" "${log_message}; not supported"
         elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
-            echo_debug "disk" "${log_message} -- keep as is"
+            echo_debug "disk" "${log_message}; keep as is"
         else
             write_sysf "$sched" $schedctrl
             echo_debug "disk" "${log_message}; rc=$?"
