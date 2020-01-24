@@ -332,11 +332,8 @@ check_ata_errors () { # check kernel log for ata errors
 show_disk_data () { # formatted output of NVMe / SATA disk data
     # $1: disk device
 
-    # translate disk name
-    get_disk_dev $1
-
-    # check if block device
-    if [ ! -b /dev/$_disk_dev ]; then
+    # translate disk name and check presence
+    if ! get_disk_dev $1; then
         # no block device for disk name --> we're done
         printf     "\n%s: not present.\n" /dev/$_disk_dev
         return 1

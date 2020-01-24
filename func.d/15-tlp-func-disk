@@ -66,12 +66,12 @@ get_disk_dev () { # translate disk id to device (sdX)
             esac
         esac
         echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath"
+        return 0
     else
         _disk_type="none"
         echo_debug "disk" "get_disk_dev($1).missing"
+        return 1
     fi
-
-    return 0
 }
 
 check_disk_apm () { # check if disk device supports advanced pm
@@ -91,8 +91,7 @@ show_disk_ids () { # show disk id's
       # shellcheck disable=SC2010
         for dev in $(ls /dev/disk/by-id/ | grep -E '^(ata|ieee1394|nvme|usb)' | grep -E -v '(^nvme-eui|\-part[1-9]+)'); do
             if [ -n "$dev" ]; then
-                get_disk_dev $dev
-                echo "$_disk_dev: $_disk_id"
+                get_disk_dev $dev && printf '%s: %s\n' "$_disk_dev" "$_disk_id"
             fi
         done
     } | sort
@@ -135,20 +134,18 @@ set_disk_apm_level () { # set disk apm level
     for dev in $DISK_DEVICES; do
         : ${1:?BUG: broken DISK_APM_LEVEL list handling}
 
-        get_disk_dev $dev
-        log_message="set_disk_apm_level($pwrmode): $_disk_dev [$_disk_id] $1"
+        if get_disk_dev $dev; then
+            log_message="set_disk_apm_level($pwrmode): $_disk_dev [$_disk_id] $1"
 
-        if [ ! -b /dev/$_disk_dev ]; then
-            echo_debug "disk" "${log_message}; missing"
-        elif ! check_disk_apm /dev/$_disk_dev || wordinlist "$_disk_type" "$DISK_TYPES_NO_APM_CHANGE"; then
-            echo_debug "disk" "${log_message}; not supported"
-        elif wordinlist "$1" "$DISK_NOP_WORDS"; then
-            echo_debug "disk" "${log_message}; keep as is"
-        else
-            $HDPARM -B $1 /dev/$_disk_dev > /dev/null 2>&1
-            echo_debug "disk" "${log_message}; rc=$?"
+            if ! check_disk_apm /dev/$_disk_dev || wordinlist "$_disk_type" "$DISK_TYPES_NO_APM_CHANGE"; then
+                echo_debug "disk" "${log_message}; not supported"
+            elif wordinlist "$1" "$DISK_NOP_WORDS"; then
+                echo_debug "disk" "${log_message}; keep as is"
+            else
+                $HDPARM -B $1 /dev/$_disk_dev > /dev/null 2>&1
+                echo_debug "disk" "${log_message}; rc=$?"
+            fi
         fi
-
         # last entry in apmlist applies to all remaining disks
         [ $# -lt 2 ] || shift
     done
@@ -189,18 +186,16 @@ set_disk_spindown_timeout () { # set disk spindown timeout
     for dev in $DISK_DEVICES; do
         : ${1:?BUG: broken DISK_SPINDOWN_TIMEOUT list handling}
 
-        get_disk_dev $dev
-        log_message="set_disk_spindown_timeout($pwrmode): $_disk_dev [$_disk_id] $1"
+        if get_disk_dev $dev; then
+            log_message="set_disk_spindown_timeout($pwrmode): $_disk_dev [$_disk_id] $1"
 
-        if [ ! -b /dev/$_disk_dev ]; then
-            echo_debug "disk" "${log_message}; missing"
-        elif wordinlist "$1" "$DISK_NOP_WORDS"; then
-            echo_debug "disk" "${log_message}; keep as is"
-        else
-            $HDPARM -S $1 /dev/$_disk_dev > /dev/null 2>&1
-            echo_debug "disk" "${log_message}; rc=$?"
+            if wordinlist "$1" "$DISK_NOP_WORDS"; then
+                echo_debug "disk" "${log_message}; keep as is"
+            else
+                $HDPARM -S $1 /dev/$_disk_dev > /dev/null 2>&1
+                echo_debug "disk" "${log_message}; rc=$?"
+            fi
         fi
-
         # last entry in timeoutlist applies to all remaining disks
         [ $# -lt 2 ] || shift
     done
@@ -239,24 +234,21 @@ set_disk_iosched () { # set disk io scheduler
     #  for j in [min(n,m)+1,n] : disk_dev[j], %keep
     for dev in $DISK_DEVICES; do
         local sched schedctrl
-        get_disk_dev $dev
+        if get_disk_dev $dev; then
+            # get sched from argv, use "keep" when list is too short
+            sched=${1:-keep}
+            schedctrl="/sys/block/$_disk_dev/queue/scheduler"
+            log_message="set_disk_iosched: $_disk_dev [$_disk_id] $sched"
 
-        # get sched from argv, use "keep" when list is too short
-        sched=${1:-keep}
-        schedctrl="/sys/block/$_disk_dev/queue/scheduler"
-        log_message="set_disk_iosched: $_disk_dev [$_disk_id] $sched"
-
-        if [ ! -b /dev/$_disk_dev ]; then
-            echo_debug "disk" "${log_message}; missing"
-        elif [ ! -f $schedctrl ]; then
-            echo_debug "disk" "${log_message}; not supported"
-        elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
-            echo_debug "disk" "${log_message}; keep as is"
-        else
-            write_sysf "$sched" $schedctrl
-            echo_debug "disk" "${log_message}; rc=$?"
+            if [ ! -f $schedctrl ]; then
+                echo_debug "disk" "${log_message}; not supported"
+            elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
+                echo_debug "disk" "${log_message}; keep as is"
+            else
+                write_sysf "$sched" $schedctrl
+                echo_debug "disk" "${log_message}; rc=$?"
+            fi
         fi
-
         # using "keep" when argv is empty
         [ $# -eq 0 ] || shift
     done
