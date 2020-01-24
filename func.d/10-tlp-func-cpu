@@ -138,11 +138,11 @@ set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
         perf=${CPU_ENERGY_PERF_POLICY_ON_AC:-${ENERGY_PERF_BIAS_ON_AC:-${CPU_HWP_ON_AC:-}}}
     fi
     # translate alphanumeric values from EPB to HWP.EPP syntax
-    case "${perf}" in
-        'balance-performance') perf='balance_performance' ;;
-        'normal') perf='default' ;;
-        'balance-power') perf='balance_power' ;;
-        'powersave') perf='power' ;;
+    case "$perf" in
+        'balance-performance')  perf='balance_performance' ;;
+        'normal')               perf='default' ;;
+        'balance-power')        perf='balance_power' ;;
+        'powersave')            perf='power' ;;
     esac
 
     if [ -z "$perf" ]; then
@@ -151,6 +151,17 @@ set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
     fi
 
     if check_intel_pstate && supports_intel_cpu_epp; then
+        # validate HWP.EPP setting
+        case "$perf" in
+            performance|balance_performance|default|balance_power|power) # OK --> continue
+                ;;
+
+            *) # invalid setting
+                echo_debug "pm" "set_intel_cpu_perf_policy($1).hwp_epp.invalid: perf=$perf"
+                return 0
+                ;;
+        esac
+
         # apply HWP.EPP setting
         cnt=0
         ec=0
@@ -171,18 +182,28 @@ set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
             echo_debug "pm" "set_intel_cpu_perf_policy($1).hwp_epp.not_available"
         fi
     else
-        echo_debug "pm" "set_intel_cpu_perf_policy($1).hwp_epp -- unsupported cpu"
+        echo_debug "pm" "set_intel_cpu_perf_policy($1).hwp_epp.unsupported_cpu"
     fi
 
     if supports_intel_cpu_epb; then
-        # apply EPB setting: translate HWP.EPP alphanumeric to EPB numeric values
-        # for native kernel support and x86_energy_perf_policy backwards compatibility
-        pnum=$(printf '%s\n' "$perf" | sed -r 's/^performance$/0/;
-                                             s/^balance_performance$/4/;
-                                             s/^default$/6/;
-                                             s/^balance_power$/8/;
-                                             s/^power$/15/')
+        # translate HWP.EPP alphanumeric to EPB numeric values for native kernel support
+        # and x86_energy_perf_policy backwards compatibility; validate numeric values
+        case "$perf" in
+            performance)         pnum=0 ;;
+            balance_performance) pnum=4 ;;
+            default)             pnum=6 ;;
+            balance_power)       pnum=8 ;;
+            power)               pnum=15 ;;
 
+            0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15) pnum="$perf" ;;
+
+            *) # invalid setting
+                echo_debug "pm" "set_intel_cpu_perf_policy($1).epb.invalid: perf=$perf"
+                return 0
+                ;;
+        esac
+
+        # apply EPB setting
         # try native kernel API first (5.2 and later)
         cnt=0
         ec=0
@@ -204,7 +225,7 @@ set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
         # no native kernel support, try x86_energy_perf_policy
         if ! cmd_exists $ENERGYPERF; then
             # x86_energy_perf_policy not installed
-            echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum) -- x86_energy_perf_policy not installed"
+            echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); x86_energy_perf_policy not installed"
         else
             # x86_energy_perf_policy needs kernel module 'msr'
             load_modules $MOD_MSR
@@ -212,14 +233,14 @@ set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
             rc=$?
             case $rc in
                 0) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$?" ;;
-                1) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? -- unsupported cpu" ;;
-                2) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? -- kernel specific x86_energy_perf_policy missing" ;;
-                *) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? -- unknown" ;;
+                1) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? (unsupported cpu)" ;;
+                2) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? (kernel specific x86_energy_perf_policy missing)" ;;
+                *) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? (unknown)" ;;
             esac
             return $rc
         fi
     else
-        echo_debug "pm" "set_intel_cpu_perf_policy($1).epb -- unsupported cpu"
+        echo_debug "pm" "set_intel_cpu_perf_policy($1).epb.unsupported_cpu"
     fi
 
     return 0
