@@ -1,38 +1,11 @@
-+++ 1.3.0-beta.4 --- 24.01.2020 +++
-
-   * Changes since beta.3:
-     - Improvements from code review
-     - CPU_ENERGY_PERF_POLICY_ON_AC/BAT: validate parameters
-
-+++ 1.3.0-beta.3 --- 17.01.2020 +++
-
-   * Changes since beta.2:
-     - tlp.conf: 'use PARAM="" to disable an intrinsic default'
-     - /etc/tlp.d/README added
-     - Parameter parsing: allow dots (.) in value strings
-     + tlp-stat -c: show file where the parameter comes from
-     + Disks: fix nvme detection on Linux 4.15
-     + tlp-stat -s: show SELinux status
-     - Prevent SELinux AVCs in Fedora:
-       - Write temporary run.conf to /run/tlp
-       - Pass messages as a parameter to the logger
-     - systemd: do *not* start tlp.service earlier in boot process
-     - Fix manpages
-
-+++ 1.3.0-beta.2 --- 08.01.2020 +++
-
-   * Changes since beta.1:
-     - New configuration scheme: drop-in customizations moved to /etc/tlp.d/
-     - Makefile: fix install-man-tlp
-
-+++ 1.3.0-beta.1 --- 05.01.2020 +++
++++ 1.3.0 --- 31.01.2020 +++
 
   * Features
     New configuration scheme:
       - /etc/default/tlp is replaced by /etc/tlp.conf
       - Settings are read in the following order:
           1. Intrinsic defaults
-          2. /etc/tlp.d/*.conf - Drop-in customizations
+          2. /etc/tlp.d/*.conf - Drop-in customization snippets
           3. /etc/tlp.conf     - User configuration
         In case of identical parameters, the last occurence has precedence
       - Parse config files instead of sourcing --> no more shell expansion
@@ -52,17 +25,19 @@
         mode; workaround for laptops reporting incorrect AC or battery status
         (Issue #446)
     PCI(e) devices:
-      - Add ASPM method 'powersupersave' (Issue #425)
+      - PCIE_ASPM_ON_AC/BAT: add method 'powersupersave' (Issue #425)
     Processor:
       - CPU_ENERGY_PERF_POLICY_ON_AC/BAT: backward compatible merge of
         settings for Intel energy vs. performance policies
         EPB (ENERGY_PERF_POLICY_ON_AC/BAT) and HWP.EPP (CPU_HWP_ON_AC/BAT);
-        when HWP.EPP is available, EPB is not set;
+        when HWP.EPP is available, EPB is not set; validate parameters;
         eliminate external tool x86_energy_perf_policy for kernel >= 5.2
     tlp-stat:
+      - Configuration: show file where the parameter comes from
       - System Info:
-        - show RDW as "disabled" when TLP is disabled as a whole
-        - indicate persistent mode
+        - Show SELinux status
+        - Show RDW as 'disabled' when TLP is disabled as a whole
+        - Indicate persistent mode
       - Intel CPU: don't show EPB values when HWP.EPP is active (see above)
       - PCIe ASPM: show available policies
       - Undervolting: remove "PHC kernel not available" message
@@ -71,6 +46,8 @@
     Battery Features:
       - Issue #415: ThinkPad X240 discharge BAT1 malfunction when BAT0 is not
         installed
+    Disks:
+      - Fix NVMe detection on Linux 4.15
     tlp-stat:
       - Issue #430: ignore hid device batteries
 
