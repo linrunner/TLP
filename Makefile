@@ -70,6 +70,7 @@ INFILES = \
 	tlp.rules \
 	tlp-readconfs \
 	tlp-run-on \
+	tlp-sleep.service \
 	tlp.service \
 	tlp-stat \
 	tlp.upstart \
@@ -99,7 +100,6 @@ SHFILES = \
 	tlp-rdw-udev.in \
 	tlp-rf.in \
 	tlp-run-on.in \
-	tlp-sleep \
 	tlp-sleep.elogind \
 	tlp-stat.in \
 	tlp-usb-udev.in
@@ -147,7 +147,7 @@ ifneq ($(TLP_NO_INIT),1)
 endif
 ifneq ($(TLP_WITH_SYSTEMD),0)
 	install -D -m 644 tlp.service $(_SYSD)/tlp.service
-	install -D -m 755 tlp-sleep $(_SDSL)/tlp
+	install -D -m 644 tlp-sleep.service $(_SYSD)/tlp-sleep.service
 endif
 ifneq ($(TLP_WITH_ELOGIND),0)
 	install -D -m 755 tlp-sleep.elogind $(_ELOD)/49-tlp-sleep
@@ -204,7 +204,7 @@ uninstall-tlp:
 	rm $(_ULIB)/rules.d/85-tlp.rules
 	rm -f $(_SYSV)/tlp
 	rm -f $(_SYSD)/tlp.service
-	rm -f $(_SDSL)/tlp-sleep
+	rm -f $(_SYSD)/tlp-sleep.service
 	rm -f $(_ELOD)/49-tlp-sleep
 	rm -f $(_SHCPL)/tlp-stat
 	rm -f $(_SHCPL)/bluetooth
