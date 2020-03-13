@@ -21,6 +21,7 @@ Please use adequate Linux forums for help and support questions.
 ### Reporting a bug
 This project uses [GitHub issues](https://github.com/linrunner/TLP/issues) for bug reports and feature requests.
 
-When opening an issue, provide all the information requested by the template.
+When opening an issue, provide **all the information requested by the
+[template](https://github.com/linrunner/TLP/blob/master/.github/ISSUE_TEMPLATE/bug_report.md)**.
 Bug reports not providing the necessary information get flagged *incomplete* and
 may be closed without further notice.
