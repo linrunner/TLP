@@ -8,6 +8,7 @@ assignees: ''
 ---
 
 [x] I've read and accepted the [Bug Reporting Howto](https://github.com/linrunner/TLP/blob/master/.github/Bug_Reporting_Howto.md)
+[x] I've attached all required `tlp-stat` outputs (see below)
 
 **Describe the bug**
 
