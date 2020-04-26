@@ -301,7 +301,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         *) printf "Power source   = unknown\n" ;;
     esac
     if check_ac_quirk "$model"; then
-        echo "Notice: system may not detect AC/charger -- see: https://linrunner.de/en/tlp/docs/tlp-faq.html#acquirk"
+        echo "Notice: system may not detect AC/charger -- see: https://linrunner.de/faq/operation.html#faq-ac-quirk"
     fi
     echo
 
