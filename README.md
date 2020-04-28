@@ -1,38 +1,40 @@
-# TLP - Linux Advanced Power Management
-TLP is a feature-rich utility for Linux, saving laptop battery power without the
-need to delve deeper into technical details.
+# TLP - Optimize Linux Laptop Battery Life
+TLP is a feature-rich command line utility for Linux, saving laptop battery power
+without the need to delve deeper into technical details.
 
 TLP’s default settings are already optimized for battery life, so you may just
-install and forget it. Nevertheless TLP is highly customizable to fulfil your
-specific requirements.
+install and forget it.
 
-Settings are organized into two profiles, enabling you to adjust between savings
-and performance independently for battery (BAT) and AC operation.
+Nevertheless TLP is highly customizable to fulfil your specific requirements.
 
-TLP is a pure command line tool with automated background tasks. It does not
-contain a GUI.
-
+## Documentation
 Read the full documentation at the website: https://linrunner.de/tlp
 
 ## Features
-Summary of TLP's capabilities: [Features](https://linrunner.de/tlp/features.html).
+For a  summary of TLP's capabilities see
+[Features](https://linrunner.de/tlp/features.html).
 
 ## Installation
 TLP packages are available for all major Linux distributions:
 [Installation](https://linrunner.de/tlp/installation).
 
-## Configuration
+## Settings
+Settings are organized into two profiles, enabling you to adjust between savings
+and performance independently for battery (BAT) and AC operation.
+
 Refer to [Settings](https://linrunner.de/tlp/settings/introduction) to learn
 how to customize the configuration if desired.
 
 ## Support
-Please use adequate Linux forums for help and support questions.
+Please visit your favorite Linux community for help and support questions.
+Make shure to check [Support](https://linrunner.de/tlp/support) first.
 
 ## Bug reports
-Refer to the [Bug Reporting Howto](https://github.com/linrunner/TLP/blob/master/.github/Bug_Reporting_Howto.md).
+Refer to the
+[Bug Reporting Howto](https://github.com/linrunner/TLP/blob/master/.github/Bug_Reporting_Howto.md).
 
-## Contributing
-Contributing is not only about coding and pull requests. Volunteers helping
-with support and testing are always welcome!
+## Contribute
+Contributing is not only about coding. Volunteers helping with support, testing
+and documentation are always welcome!
 
-See [Contributing](https://github.com/linrunner/TLP/blob/master/.github/CONTRIBUTING.md).
+See [Contributing](https://linrunner.de/tlp/contribute).
