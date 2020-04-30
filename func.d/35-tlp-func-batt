@@ -871,6 +871,7 @@ echo_discharge_locked () { # print "locked" message
 get_force_discharge () { # $1: BAT0/BAT1,
     # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
     # rc: 0=off/1=on/2=discharge not present/255=no thresh api
+    # retval: $_bs_dischg:=rc
 
     local bsys rc=0
 
@@ -894,6 +895,7 @@ get_force_discharge () { # $1: BAT0/BAT1,
     esac
 
     echo_debug "bat" "get_force_discharge($1): bm_dischg=$_bm_dischg; bat_idx=$_bat_idx; rc=$rc"
+    _bs_dischg=$rc
     return $rc
 }
 
@@ -938,13 +940,21 @@ cancel_force_discharge () { # called from trap -- global param: $_bat_str
     do_exit 0
 }
 
-battery_discharging () { # check if battery is discharging -- $1: BAT0/BAT1,
+battery_forced_to_discharge () { # check if battery is in 'force_discharge' state
+    # $1: BAT0/BAT1,
     # global param: $_bm_read, $_bd_read
     # rc: 0=discharging/1=not discharging/255=no battery api
 
     local bsys rc=255
 
-    # determine status sysfile
+    if get_force_discharge $_bat_str; then
+        # force_discharge is off --> quit
+        echo_debug "bat" "battery_forced_to_discharge($1): rc=1"
+        return 1
+    fi
+
+    # force_discharge is still on, but quirky firmware (e.g. ThinkPad E-series)
+    # may keep force_discharge on --> check battery status sysfile too
     case $_bm_read in
         natacpi|tpacpi)
             bsys=$_bd_read/status # use ACPI sysfile
@@ -968,7 +978,7 @@ battery_discharging () { # check if battery is discharging -- $1: BAT0/BAT1,
         esac
     fi
 
-    echo_debug "bat" "battery_discharging($1): bm_read=$_bm_read; rc=$rc"
+    echo_debug "bat" "battery_forced_to_discharge($1): bm_read=$_bm_read; rc=$rc"
     return $rc
 }
 
@@ -1018,18 +1028,18 @@ discharge_battery () { # discharge battery
     # wait for start == while status not "discharging" -- 15.0 sec timeout
     printf "Initiating discharge of battery %s " $_bat_str
     wt=15
-    while ! battery_discharging $_bat_str && [ $wt -gt 0 ] ; do
+    while ! battery_forced_to_discharge $_bat_str && [ $wt -gt 0 ] ; do
         sleep 1
         printf "."
         wt=$((wt - 1))
     done
     printf "\n"
 
-    if battery_discharging $_bat_str; then
+    if battery_forced_to_discharge $_bat_str; then
         # discharge initiated sucessfully --> wait for completion == while status "discharging"
         echo_debug "bat" "discharge_battery.running($_bat_str)"
 
-        while battery_discharging $_bat_str; do
+        while battery_forced_to_discharge $_bat_str; do
             clear
             echo "Currently discharging battery $_bat_str:"
 
@@ -1071,17 +1081,27 @@ discharge_battery () { # discharge battery
                     ;; # tpsmapi
 
             esac
-            get_force_discharge $_bat_str; printf "force discharge    = %s\n"  "$?"
+            printf "force discharge    = %s\n"  "$_bs_dischg"
 
             echo "Press Ctrl+C to cancel."
             sleep 5
         done
+        unlock_tlp tlp_discharge
 
         if [ $rp -gt 0 ]; then
-            # battery not emptied
-            echo_debug "bat" "discharge_battery.not_emptied($_bat_str)"
-            echo "Error: battery $_bat_str was not discharged completely. Check your hardware." 1>&2
-            rc=2
+            # battery not emptied --> determine cause
+            get_sys_power_supply
+            if [ $_syspwr -eq 1 ]; then
+                # system on battery --> AC power removed
+                echo_debug "bat" "discharge_battery.ac_removed($_bat_str)"
+                echo "Warning: battery $_bat_str was not discharged completely -- AC/charger removed." 1>&2
+                rc=3
+            else
+                # discharging terminated by unknown reason
+                echo_debug "bat" "discharge_battery.not_emptied($_bat_str)"
+                echo "Error: battery $_bat_str was not discharged completely -- check your hardware." 1>&2
+                rc=2
+            fi
         fi
     else
         # discharge malfunction --> cancel discharge and abort

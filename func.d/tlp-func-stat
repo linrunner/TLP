@@ -607,17 +607,17 @@ print_thresholds_discharge () { # formatted output of battery features
     fi
 
     if [ "$_bm_dischg" != "none" ]; then
-        get_force_discharge $1; force=$?
-        if [ $force -lt 2 ]; then
+        get_force_discharge $1
+        if [ $_bs_dischg -lt 2 ]; then
             # valid force_discharge read
             case $_bm_dischg in
                 natacpi|tpsmapi)
-                    printf "%-59s = %6d\n" "$_bf_dischg" "$force"
+                    printf "%-59s = %6d\n" "$_bf_dischg" "$_bs_dischg"
                     nl=1
                     ;;
 
                 tpacpi)
-                    printf "%-59s = %6d\n" "tpacpi-bat.${1}.forceDischarge" "$force"
+                    printf "%-59s = %6d\n" "tpacpi-bat.${1}.forceDischarge" "$_bs_dischg"
                     nl=1
                     ;;
 

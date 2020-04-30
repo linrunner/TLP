@@ -468,7 +468,6 @@ case "$_cmd" in
             if lock_tlp_nb tlp_discharge; then
                 discharge_battery $_carg1
                 exitcode=$?
-                unlock_tlp tlp_discharge
             else
                 echo_discharge_locked
             fi
@@ -488,8 +487,9 @@ case "$_cmd" in
                 if [ $exitcode -eq 0 ]; then
                     echo "Charging starts now, for a complete recalibration"
                     echo "keep AC connected until the battery is fully charged."
+                else
+                    echo "Battery recalibration aborted."
                 fi
-                unlock_tlp tlp_discharge
             else
                 echo_discharge_locked
             fi

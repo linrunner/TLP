@@ -4,9 +4,11 @@
 
   * Features
     Battery Features, tlp-stat -b:
-      - Map battery state "Unknown" to "Idle" for clarity (avoid user questions)
+      - Map battery state "Unknown" to "Idle" for clarity
 
   * Bugfixes
+    Battery Features:
+      - tlp discharge/recalibrate: terminate properly when AC/charger is removed
 
 
 +++ 1.3.1 --- 06.02.2020 +++
