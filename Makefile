@@ -127,7 +127,7 @@ install-tlp: all
 	install -m 755 tlp-run-on $(_BIN)/run-on-ac
 	ln -sf run-on-ac $(_BIN)/run-on-bat
 	install -m 755 tlp-stat $(_BIN)/
-	install -D -m 755 --target-directory $(_TLIB)/func.d func.d/*
+	install -D -m 755 -t $(_TLIB)/func.d func.d/*
 	install -m 755 tlp-func-base $(_TLIB)/
 	install -m 755 tlp-pcilist $(_TLIB)/
 	install -m 755 tlp-readconfs $(_TLIB)/
