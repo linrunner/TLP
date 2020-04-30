@@ -3,6 +3,8 @@
   *** Development version ***
 
   * Features
+    Battery Features, tlp-stat -b:
+      - Map battery state "Unknown" to "Idle" for clarity (avoid user questions)
 
   * Bugfixes
 

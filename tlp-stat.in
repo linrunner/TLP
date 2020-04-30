@@ -220,6 +220,7 @@ if [ "$needs_root_priv" = "1" ]; then
     check_thinkpad
     check_battery_features
 fi
+get_sys_power_supply
 
 echo "--- TLP $TLPVER --------------------------------------------"
 echo
