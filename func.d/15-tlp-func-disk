@@ -12,7 +12,7 @@
 # Constants
 
 readonly AHCID=$PCID'/*/ata*'
-readonly BLOCKD='/sys/block/nvme* /sys/block/sd*'
+readonly BLOCKD='/sys/block/sd*'
 
 readonly DISK_TYPES_NO_APM_CHANGE="usb ieee1394"
 readonly DISK_NOP_WORDS="_ keep"
