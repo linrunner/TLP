@@ -5,13 +5,14 @@
   * Features
     Battery Features, tlp-stat -b:
       - Map battery state "Unknown" to "Idle" for clarity
+    tlp-stat:
+      - Disks: show AHCI host controller a SATA disk is attached to
 
   * Bugfixes
     Battery Features:
       - tlp discharge/recalibrate: terminate properly when AC/charger is removed
     Disks:
-      - Issue #474: confine AHCI_RUNTIME_PM_ON_AC/BAT to AHCI(SATA) disks
-        and their associated host controllers
+      - Issue #474: confine AHCI_RUNTIME_PM_ON_AC/BAT to SATA disks
 
 +++ 1.3.1 --- 06.02.2020 +++
 

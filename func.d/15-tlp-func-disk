@@ -315,19 +315,19 @@ set_sata_link_power () { # set ahci link power management
     return 0
 }
 
-get_ahci_host () { # get ahci host associated with a disk
+get_ahci_host_ctrlr () { # get ahci host controller the disk is attached to
     # $1: device (sans /dev)
-    # retval: $_disk_host
-    if _dev_host="$(readlink /sys/block/$1 | sed -r 's/^\.\.\/devices\/pci[0-9:]+\/([0-9a-f:.]+\/ata[0-9]+).*$/\1/')"; then
+    # retval: $_disk_host_ctrlr
+    if _disk_host_ctrlr="$(readlink /sys/block/$1 | sed -r 's/^\.\.\/devices\/pci[0-9:]+\/([0-9a-f:.]+\/ata[0-9]+).*$/\1/')"; then
         # /sys/block/$device is a softlink to
         # "../devices/pci0000:00/0000:00:XY.Z/ataN/.../$device"
         # which designates the associated ahci host
         # /sys/bus/pci/devices/0000:00:XY.Z/$device
-        _dev_host="/sys/bus/pci/devices/$_dev_host"
-        echo_debug "disk" "get_ahci_host($1): dev_host=$_dev_host; rc=0"
+        _disk_host_ctrlr="/sys/bus/pci/devices/$_disk_host_ctrlr"
+        echo_debug "disk" "get_ahci_host_ctrlr($1): ctrlr=$_disk_host_ctrlr; rc=0"
         return 0
     else
-        echo_debug "disk" "get_ahci_host($1): rc=1"
+        echo_debug "disk" "get_ahci_host_host_ctrlr($1): rc=1"
         return 1
     fi
 }
@@ -382,7 +382,7 @@ set_ahci_runtime_pm () { # set ahci runtime power management
                     if ! write_sysf "$control" ${device}/device/power/control; then
                         # writing control failed --> add host to blacklist
                         get_ahci_host $devbn
-                        hostbl="$hostbl $_dev_host"
+                        hostbl="$hostbl $_disk_host_ctrlr"
                         rc=2
                         ec=$((ec+1))
                     fi
@@ -390,7 +390,7 @@ set_ahci_runtime_pm () { # set ahci runtime power management
                     # writing timeout failed (or file not present)
                     #  --> add host to blacklist
                     get_ahci_host $devbn
-                    hostbl="$hostbl $_dev_host"
+                    hostbl="$hostbl $_disk_host_ctrlr"
                     rc=1
                     ec=$((ec+1))
                 fi
