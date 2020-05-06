@@ -23,7 +23,7 @@ readonly DISK_NOP_WORDS="_ keep"
 # --- Device Helpers
 
 get_disk_dev () { # translate disk id to device (sdX)
-    # $1: id or dev;
+    # $1: id or device (sans /dev)
     # retval: $_disk_dev, $_disk_id, $_disk_type
     local bus dpath path
 
@@ -315,10 +315,27 @@ set_sata_link_power () { # set ahci link power management
     return 0
 }
 
+get_ahci_host () { # get ahci host associated with a disk
+    # $1: device (sans /dev)
+    # retval: $_disk_host
+    if _dev_host="$(readlink /sys/block/$1 | sed -r 's/^\.\.\/devices\/pci[0-9:]+\/([0-9a-f:.]+\/ata[0-9]+).*$/\1/')"; then
+        # /sys/block/$device is a softlink to
+        # "../devices/pci0000:00/0000:00:XY.Z/ataN/.../$device"
+        # which designates the associated ahci host
+        # /sys/bus/pci/devices/0000:00:XY.Z/$device
+        _dev_host="/sys/bus/pci/devices/$_dev_host"
+        echo_debug "disk" "get_ahci_host($1): dev_host=$_dev_host; rc=0"
+        return 0
+    else
+        echo_debug "disk" "get_ahci_host($1): rc=1"
+        return 1
+    fi
+}
+
 set_ahci_runtime_pm () { # set ahci runtime power management
     # $1: 0=ac mode, 1=battery mode
 
-    local control device ec timeout rc
+    local control devbn device ec hostbl timeout rc
 
     if [ "$1" = "1" ]; then
         control=${AHCI_RUNTIME_PM_ON_BAT:-}
@@ -350,9 +367,11 @@ set_ahci_runtime_pm () { # set ahci runtime power management
 
     # iterate disks
     ec=0
+    hostbl=""
     for device in $BLOCKD; do
         if [ -f ${device}/device/power/control ]; then
-            get_disk_dev ${device##/*/}
+            devbn=${device##/*/}
+            get_disk_dev $devbn
             # consider only ahci == ata disks
             if [ "$_disk_type" = "ata" ]; then
                 # write timeout first because writing "auto" with the default
@@ -361,12 +380,17 @@ set_ahci_runtime_pm () { # set ahci runtime power management
                 if write_sysf "$timeout" ${device}/device/power/autosuspend_delay_ms; then
                     # writing timeout was successful --> proceed with activation;
                     if ! write_sysf "$control" ${device}/device/power/control; then
-                        # writing control failed
+                        # writing control failed --> add host to blacklist
+                        get_ahci_host $devbn
+                        hostbl="$hostbl $_dev_host"
                         rc=2
                         ec=$((ec+1))
                     fi
                 else
                     # writing timeout failed (or file not present)
+                    #  --> add host to blacklist
+                    get_ahci_host $devbn
+                    hostbl="$hostbl $_dev_host"
                     rc=1
                     ec=$((ec+1))
                 fi
@@ -378,18 +402,17 @@ set_ahci_runtime_pm () { # set ahci runtime power management
         fi
     done
 
-    if [ $ec -gt 0 ]; then
-        # quit: do not touch hosts if write failed for at least one disk
-        echo_debug "pm" "set_ahci_runtime_pm($1).quit; ec=$ec"
-        return 0
-    fi
-
-    # iterate hosts
+    # iterate ahci hosts considering the blacklist
     for device in $AHCID; do
-        if write_sysf "$control" ${device}/power/control; then
-            echo_debug "pm" "set_ahci_runtime_pm($1).$control: host=$device; rc=$?"
+        if ! wordinlist "$device" "$hostbl"; then
+            if write_sysf "$control" ${device}/power/control; then
+                echo_debug "pm" "set_ahci_runtime_pm($1).$control: host=$device; rc=$?"
+            else
+                echo_debug "pm" "set_ahci_runtime_pm($1).no-hosts"
+            fi
         else
-            echo_debug "pm" "set_ahci_runtime_pm($1).no-hosts"
+            # do not touch blacklisted host
+            echo_debug "pm" "set_ahci_runtime_pm($1).blacklisted: host=$device"
         fi
     done
 
