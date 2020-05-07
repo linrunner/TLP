@@ -9,6 +9,7 @@
       - tlp-stat -d
         - show AHCI host controller a SATA disk is attached to
         - show ALPM state in the sysfs directory of the AHCI host
+        - remove "No AHCI-enabled host controller detected." message
 
   * Bugfixes
     Battery Features:

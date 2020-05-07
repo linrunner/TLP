@@ -555,13 +555,11 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     echo
 
     # --- show sata alpm mode
-    echo "+++ AHCI Link Power Management (ALPM)"
     if stat -t ${ALPMD}/link_power_management_policy > /dev/null 2>&1; then
+        echo "+++ AHCI Link Power Management (ALPM)"
         for i in ${ALPMD} ; do
             printparm "%-56s = ##%s##" $i/link_power_management_policy _
         done
-    else
-        echo "No AHCI-enabled host controller detected."
     fi
     echo
 
