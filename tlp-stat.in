@@ -556,8 +556,8 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show sata alpm mode
     echo "+++ AHCI Link Power Management (ALPM)"
-    if stat -t /sys/class/scsi_host/host*/link_power_management_policy > /dev/null 2>&1; then
-        for i in /sys/class/scsi_host/host* ; do
+    if stat -t ${ALPMD}/link_power_management_policy > /dev/null 2>&1; then
+        for i in ${ALPMD} ; do
             printparm "%-56s = ##%s##" $i/link_power_management_policy _
         done
     else

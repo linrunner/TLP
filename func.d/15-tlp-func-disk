@@ -12,6 +12,7 @@
 # Constants
 
 readonly AHCID=$PCID'/*/ata*'
+readonly ALPMD=$AHCID'/host*/scsi_host/host*'
 readonly BLOCKD='/sys/block/sd*'
 
 readonly DISK_TYPES_NO_APM_CHANGE="usb ieee1394"
@@ -284,7 +285,7 @@ set_sata_link_power () { # set ahci link power management
     # copy configured values to args
     set -- $pwrlist
     # iterate SATA hosts
-    for host in /sys/class/scsi_host/host* ; do
+    for host in $ALPMD ; do
         linkpol=$host/link_power_management_policy
         if [ -f $linkpol ]; then
             hostid=${host##*/}

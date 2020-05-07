@@ -3,10 +3,12 @@
   *** Development version ***
 
   * Features
-    Battery Features, tlp-stat -b:
-      - Map battery state "Unknown" to "Idle" for clarity
-    tlp-stat:
-      - Disks: show AHCI host controller a SATA disk is attached to
+    Battery Features:
+      - tlp-stat -b: Map battery state "Unknown" to "Idle" for clarity
+    Disks:
+      - tlp-stat -d
+        - show AHCI host controller a SATA disk is attached to
+        - show ALPM state in the sysfs directory of the AHCI host
 
   * Bugfixes
     Battery Features:
