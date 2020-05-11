@@ -76,7 +76,7 @@ set_runtime_pm () { # set runtime power management
 
                 if wordinlist "$address" "$pci_bl_adr"; then
                     # device is in address blacklist
-                    echo_debug "pm" "set_runtime_pm($1).bloack_address: $device [$class]"
+                    echo_debug "pm" "set_runtime_pm($1).black_address: $device [$class]"
                 elif wordinlist "$address" "$pci_bl_drv"; then
                     # device is in driver blacklist
                     echo_debug "pm" "set_runtime_pm($1).black_driver: $device [$class]"
