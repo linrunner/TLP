@@ -4,7 +4,9 @@
 
   * Features
     Battery Features:
-      - tlp-stat -b: Map battery state "Unknown" to "Idle" for clarity
+      - tlp-stat -b
+        - Map battery state "Unknown" to "Idle" for clarity
+        - Flag ThinkPad L512 as "unsupported"
     Disks:
       - tlp-stat -d
         - show AHCI host controller a SATA disk is attached to

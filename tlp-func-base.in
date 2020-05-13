@@ -46,7 +46,7 @@ readonly NETD=/sys/class/net
 
 readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T23|T[346][0123][p]?|T[45][01]0[s]?|W[57]0[01]|X[346][012][s]?( Tablet)?|X1[02]0e|X[23]0[01][s]?( Tablet)?|Z6[01][mpt])$'
 readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
-readonly RE_TP_NONE='^(L[45]20|SL[345]00|X121e)$'
+readonly RE_TP_NONE='^(L[45]20|L512|SL[345]00|X121e)$'
 
 readonly RE_PARAM='^[A-Z_]+[0-9]*=[0-9a-zA-Z _\-\:\.]*$'
 
