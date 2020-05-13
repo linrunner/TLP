@@ -10,7 +10,7 @@ Make shure you have:
 * Tried to isolate the cause as described in [Troubleshooting](https://linrunner.de/tlp/support/troubleshooting.html)
 
 ### What not to report
-* Missing packages (including tp-smapi and acpi_call)
+* **Any issues with packages not provided by the project, in particular tp-smapi and acpi_call**
 * Asking for help about installation, configuration and usage
 * Questions about your laptop's power consumption and how to optimize it
 * Deviations from powertop's recommendations
