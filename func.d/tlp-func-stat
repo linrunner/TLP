@@ -567,7 +567,7 @@ print_thresholds_discharge () { # formatted output of battery features
     # charge thresholds and force_discharge
     # $1: BAT0/BAT1
     # global param: $_bm_thresh, $_bat_idx, $_bf_start, $_bf_stop
-    local bsys force sp thresh
+    local bsys sp thresh
     local nl=0
 
     if [ "$_bm_thresh" != "none" ]; then

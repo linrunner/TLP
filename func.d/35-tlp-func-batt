@@ -1091,6 +1091,7 @@ discharge_battery () { # discharge battery
         if [ $rp -gt 0 ]; then
             # battery not emptied --> determine cause
             get_sys_power_supply
+            # shellcheck disable=SC2154
             if [ $_syspwr -eq 1 ]; then
                 # system on battery --> AC power removed
                 echo_debug "bat" "discharge_battery.ac_removed($_bat_str)"
