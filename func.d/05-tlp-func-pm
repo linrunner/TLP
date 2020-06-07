@@ -82,22 +82,6 @@ set_runtime_pm () { # set runtime power management
                     echo_debug "pm" "set_runtime_pm($1).black_driver: $device [$class]"
                 else
                     control=$ccontrol
-
-                    # check for Nvidia gpu's
-                    if wordinlist "nouveau" "$drv_bl" || wordinlist "nvidia" "$drv_bl"; then
-                        # driver nouveau or nvidia is in blacklist
-                        # --> blacklist depending on vendor and class
-                        vendor=$(read_sysf $device/vendor)
-
-                        if [ "$vendor" = "0x10de" ]; then
-                            # vendor nvidia
-                            # --> check for display or 3d controller class
-                            case $class in
-                                "0x030000"|"0x030200") control="black_nvgpu" ;;
-                            esac
-                        fi
-                    fi # if nouveau | nvidia blacklisted
-
                     case $control in
                         auto|on)
                             write_sysf $control $device/power/control
