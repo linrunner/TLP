@@ -3,6 +3,8 @@
   *** Development version ***
 
   * Features
+    Audio:
+      - SOUND_POWER_SAVE_ON_AC: change default to enabled (Issue #495)
     Battery Features:
       - tlp-stat -b
         - Map battery state "Unknown" to "Idle" for clarity
@@ -14,7 +16,7 @@
         - remove "No AHCI-enabled host controller detected." message
     Graphics:
         - Improve powerdown of unused GPUs with drivers amdgpu, nouveau,
-          nvidia and without driver (Issues #488, #498)
+          nvidia and without driver (Issues #488, #495, #498)
     PCI(e) devices:
        - RUNTIME_PM_BLACKLIST: remove amdgpu, nvidia, pcieport from defaults
 
@@ -23,6 +25,9 @@
       - tlp discharge/recalibrate: terminate properly when AC/charger is removed
     Disks:
       - Issue #474: confine AHCI_RUNTIME_PM_ON_AC/BAT to SATA disks
+    Graphics:
+      - Issue #488: Idle temperature 20 °C higher on battery (Nvidia GPU)
+      - Issue #495: SOUND_POWER_SAVE_ON_AC=0 prevents powerdown of Nvidia GPU
 
 +++ 1.3.1 --- 06.02.2020 +++
 
