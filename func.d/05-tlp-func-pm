@@ -25,7 +25,8 @@ set_runtime_pm () { # set runtime power management
     # $1: 0=ac mode, 1=battery mode
 
     local address class ccontrol control device driver drv_bl
-    local pci_bl_adr pci_bl_drv type vendor
+    local pci_bl_adr pci_bl_drv type
+    local pci_enable_adr pci_disable_adr
 
     if [ "$1" = "1" ]; then
         ccontrol=${RUNTIME_PM_ON_BAT:-}
@@ -38,6 +39,10 @@ set_runtime_pm () { # set runtime power management
         echo_debug "pm" "set_runtime_pm($1).not_configured"
         return 0
     fi
+
+    # permanent addresses
+    pci_enable_adr=${RUNTIME_PM_ENABLE:-}
+    pci_disable_adr=${RUNTIME_PM_DISABLE:-}
 
     # driver specific blacklist:
     # - undefined = use intrinsic default from /usr/share/tlp/defaults.conf
@@ -74,7 +79,15 @@ set_runtime_pm () { # set runtime power management
                 address=${device##/*/0000:}
                 class=$(read_sysf $device/class)
 
-                if wordinlist "$address" "$pci_bl_adr"; then
+                if wordinlist "$address" "$pci_enable_adr"; then
+                    # device should be permanently 'auto' (enabled)
+                    write_sysf "auto" $device/power/control
+                    echo_debug "pm" "set_runtime_pm($1).perm_auto: $device [$class]; rc=$?"
+                elif wordinlist "$address" "$pci_disable_adr"; then
+                    # device should be permanently 'on' (disabled)
+                    write_sysf "on" $device/power/control
+                    echo_debug "pm" "set_runtime_pm($1).perm_on: $device [$class]; rc=$?"
+                elif wordinlist "$address" "$pci_bl_adr"; then
                     # device is in address blacklist
                     echo_debug "pm" "set_runtime_pm($1).black_address: $device [$class]"
                 elif wordinlist "$address" "$pci_bl_drv"; then
