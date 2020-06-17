@@ -311,13 +311,13 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         cnt=0
         for su in $SYSTEMD_SERVICES; do
             if ! $SYSTEMCTL is-enabled $su > /dev/null 2>&1 ; then
-                echo "Notice: $su is not enabled -- invoke \"systemctl enable $su\" to correct this!"
+                echo "Warning: $su is not enabled -- invoke \"systemctl enable $su\" to correct this!"
                 cnt=$((cnt+1))
             fi
         done
         for su in $RFKILL_SERVICES; do
             if $SYSTEMCTL is-enabled $su 2> /dev/null | grep -q -v 'masked'; then
-                echo "Notice: $su is not masked -- invoke \"systemctl mask $su\" to correct this!"
+                echo "Warning: $su is not masked -- invoke \"systemctl mask $su\" to correct this!"
                 cnt=$((cnt+1))
             fi
         done
@@ -336,40 +336,62 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     echo
 
     # -- show scaling gov and freq info
+    cnt=0
     epp=0
+    cpu2nd=""
+    cpulast=""
     for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
         if [ -f $cpuf/scaling_driver ]; then
-            printparm "%-54s = ##%s##" $cpuf/scaling_driver
-            printparm "%-54s = ##%s##" $cpuf/scaling_governor
-            printparm "%s = ##%s##" $cpuf/scaling_available_governors _
+            cpuno=${cpuf#/sys/devices/system/cpu/}
+            cpuno=${cpuno%/cpufreq}
 
-            if [ -f $cpuf/scaling_min_freq ]; then
-                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(read_sysf $cpuf/scaling_min_freq)"
+            # show only cpu0, unless verbose mode is enabled
+            if [ $cnt -eq 0 ] || [ "$show_verbose" = "1" ] ; then
+                printparm "%-54s = ##%s##" $cpuf/scaling_driver
+                printparm "%-54s = ##%s##" $cpuf/scaling_governor
+                printparm "%s = ##%s##" $cpuf/scaling_available_governors _
+
+                if [ -f $cpuf/scaling_min_freq ]; then
+                    printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(read_sysf $cpuf/scaling_min_freq)"
+                fi
+
+                if [ -f $cpuf/scaling_max_freq ]; then
+                    printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(read_sysf $cpuf/scaling_max_freq)"
+                fi
+
+                if [ -f $cpuf/scaling_available_frequencies ]; then
+                    printf "%s = " "$cpuf/scaling_available_frequencies"
+                    for freq in $(read_sysf $cpuf/scaling_available_frequencies); do
+                        printf "%s " "$freq"
+                    done
+                    printf "[kHz]\n"
+                fi
+
+                if [ -f $cpuf/energy_performance_preference ]; then
+                    printparm "%s = ##%s## [HWP.EPP]" $cpuf/energy_performance_preference
+                    epp=1
+                fi
+                if [ -f $cpuf/energy_performance_available_preferences ]; then
+                    printparm "%s = ##%s##" $cpuf/energy_performance_available_preferences
+                fi
+
+                printf "\n"
+
             fi
 
-            if [ -f $cpuf/scaling_max_freq ]; then
-                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(read_sysf $cpuf/scaling_max_freq)"
+            if [ $cnt -eq 1 ]; then
+                # remember 2nd cpu core
+                cpu2nd=$cpuno
+            else
+                # remember last cpu core
+                cpulast=$cpuno
             fi
-
-            if [ -f $cpuf/scaling_available_frequencies ]; then
-                printf "%s = " "$cpuf/scaling_available_frequencies"
-                for freq in $(read_sysf $cpuf/scaling_available_frequencies); do
-                    printf "%s " "$freq"
-                done
-                printf "[kHz]\n"
-            fi
-
-            if [ -f $cpuf/energy_performance_preference ]; then
-                printparm "%s = ##%s## [HWP.EPP]" $cpuf/energy_performance_preference
-                epp=1
-            fi
-            if [ -f $cpuf/energy_performance_available_preferences ]; then
-                printparm "%s = ##%s##" $cpuf/energy_performance_available_preferences
-            fi
-
-            printf "\n"
+            cnt=$((cnt + 1))
         fi
     done
+    if [ "$show_verbose" = "0" ] && [ $cnt -gt 1 ]; then
+        printf "/sys/devices/system/cpu/%s..%s omitted for clarity. Use -v to show all.\n\n" $cpu2nd $cpulast
+    fi
 
     if check_intel_pstate; then
         # show Intel P-state info

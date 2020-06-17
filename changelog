@@ -21,6 +21,8 @@
        - RUNTIME_PM_ENABLE/DISABLE: permanently enable/disable runtime PM for
          PCI(e) devices based on address (independent of the power source)
        - RUNTIME_PM_BLACKLIST: remove amdgpu, nvidia, pcieport from defaults
+    Processor:
+      - tlp-stat -p: cpu1..cpuN omitted for clarity, use -v to show all
 
   * Bugfixes
     Battery Features:
