@@ -25,7 +25,7 @@ Settings
 Settings are organized into two profiles, enabling you to adjust between savings
 and performance independently for battery (BAT) and AC operation.
 
-Refer to ` Settings <https://linrunner.de/tlp/settings/introduction>`_ to learn
+Refer to `Settings <https://linrunner.de/tlp/settings/introduction>`_ to learn
 how to customize the configuration if desired.
 
 Support
