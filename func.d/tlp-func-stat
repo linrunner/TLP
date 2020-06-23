@@ -165,6 +165,26 @@ printparm_epb () { # formatted output of sysfile - Intel EPB variant
     return 0
 }
 
+printparm_ml () { # indented output of a multiline sysfile
+    # $1: indent str, $2: sysfile, $3: n/a message
+    local ind="$1"
+    local sysf="$2"
+    local namsg="$3"
+    local sline
+
+    if [ -f $sysf ]; then
+        printf "%s:\n" $sysf
+        # read and output sysfile line by line
+        # shellcheck disable=SC2162
+        while read sline; do
+            printf "%s%s\n" "$ind" "$sline"
+        done < $sysf
+        printf "\n"
+    elif [ -n "$namsg" ]; then
+        printf "%s (%s)\n\n" $sysf $namsg
+    fi
+}
+
 print_sysf () { # formatted output of a sysfile
     # $1: format; $2: sysfile
     local val

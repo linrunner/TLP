@@ -25,6 +25,7 @@ readonly JOURNALCTL=journalctl
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly EFID=/sys/firmware/efi
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
+readonly SWITCHEROO=/sys/kernel/debug/vgaswitcheroo/switch
 readonly WQPE=/sys/module/workqueue/parameters/power_efficient
 
 readonly CORETEMP_DIRS="
@@ -376,7 +377,6 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                 fi
 
                 printf "\n"
-
             fi
 
             if [ $cnt -eq 1 ]; then
@@ -638,6 +638,13 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
 fi # show_disk
 
 if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
+    # --- show hybrid graphics switch (nouveau, radeon only)
+
+    if [ -f $SWITCHEROO ]; then
+        echo "+++ Hybrid Graphics Switch"
+        printparm_ml "  " $SWITCHEROO
+    fi
+
     # --- show Intel GPU power mgmt and frequencies
     show_intel_gpu_data
 
@@ -662,6 +669,7 @@ if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
             fi
         done
     fi
+
 fi # show_graf
 
 if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
