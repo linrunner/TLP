@@ -13,6 +13,7 @@ Documentation=https://linrunner.de/tlp
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=@TLP_SBIN@/tlp init start
+ExecReload=@TLP_SBIN@/tlp start
 ExecStop=@TLP_SBIN@/tlp init stop
 
 [Install]
