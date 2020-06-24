@@ -341,10 +341,11 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     epp=0
     cpu2nd=""
     cpulast=""
-    for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
+    # shellcheck disable=SC2010
+    for cn in $(ls ${CPUD} | grep '^cpu[0-9]' | cut -c4- | sort -n); do
+        cpuf="${CPUD}/cpu${cn}/cpufreq"
         if [ -f $cpuf/scaling_driver ]; then
-            cpuno=${cpuf#/sys/devices/system/cpu/}
-            cpuno=${cpuno%/cpufreq}
+            cpu="cpu${cn}"
 
             # show only cpu0, unless verbose mode is enabled
             if [ $cnt -eq 0 ] || [ "$show_verbose" = "1" ] ; then
@@ -381,16 +382,17 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
             if [ $cnt -eq 1 ]; then
                 # remember 2nd cpu core
-                cpu2nd=$cpuno
+                cpu2nd=$cpu
             else
                 # remember last cpu core
-                cpulast=$cpuno
+                cpulast=$cpu
             fi
             cnt=$((cnt + 1))
         fi
     done
+
     if [ "$show_verbose" = "0" ] && [ $cnt -gt 1 ]; then
-        printf "/sys/devices/system/cpu/%s..%s omitted for clarity. Use -v to show all.\n\n" $cpu2nd $cpulast
+        printf "%s/%s..%s: omitted for clarity, use -v to show all\n\n" $CPUD $cpu2nd $cpulast
     fi
 
     if check_intel_pstate; then
@@ -417,7 +419,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show sched power save info
     for pool in mc smp smt; do
-        sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
+        sdev="${CPUD}/sched_${pool}_power_savings"
         printparm "%-54s = ##%d##" $sdev _
     done
     echo
@@ -428,9 +430,14 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         if supports_intel_cpu_epb; then
             # CPU supports EPB: try native kernel API first (5.2 and later)
             cnt=0
-            for cpuf in /sys/devices/system/cpu/cpu*/power/energy_perf_bias; do
+            # shellcheck disable=SC2010
+            for cn in $(ls ${CPUD} | grep '^cpu[0-9]' | cut -c4- | sort -n); do
+                cpuf="${CPUD}/cpu${cn}/power/energy_perf_bias"
                 if [ -f $cpuf ]; then
-                    printparm_epb $cpuf
+                    # show only cpu0, unless verbose mode is enabled
+                    if [ $cnt -eq 0 ] || [ "$show_verbose" = "1" ]; then
+                        printparm_epb $cpuf
+                    fi
                     cnt=$((cnt + 1))
                 fi
             done
@@ -483,7 +490,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show PHC voltages
     phc_avail=0
-    for cpuf in /sys/devices/system/cpu/cpu*/cpufreq; do
+    for cpuf in ${CPUD}/cpu*/cpufreq; do
         if [ -f $cpuf/phc_controls ]; then
             if [ $phc_avail = 0 ]; then
                 echo "+++ Undervolting"

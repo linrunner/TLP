@@ -11,8 +11,9 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly CPU_BOOST_ALL_CTRL=/sys/devices/system/cpu/cpufreq/boost
-readonly INTEL_PSTATED=/sys/devices/system/cpu/intel_pstate
+readonly CPUD=/sys/devices/system/cpu
+readonly CPU_BOOST_ALL_CTRL=${CPUD}/cpufreq/boost
+readonly INTEL_PSTATED=${CPUD}/intel_pstate
 readonly CPU_MIN_PERF_PCT=$INTEL_PSTATED/min_perf_pct
 readonly CPU_MAX_PERF_PCT=$INTEL_PSTATED/max_perf_pct
 readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
@@ -41,7 +42,7 @@ set_cpu_scaling_governor () { # set CPU scaling governor -- $1: 0=ac mode, 1=bat
 
     if [ -n "$gov" ]; then
         ec=0
-        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+        for cpu in ${CPUD}/cpu*/cpufreq/scaling_governor; do
             if [ -f "$cpu" ] && ! write_sysf "$gov" $cpu; then
                 echo_debug "pm" "set_cpu_scaling_governor($1).write_error: $cpu $gov; rc=$?"
                 ec=$((ec+1))
@@ -70,7 +71,7 @@ set_cpu_scaling_min_max_freq () { # set CPU scaling limits -- $1: 0=ac mode, 1=b
     if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
         conf=1
         ec=0
-        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq; do
+        for cpu in ${CPUD}/cpu*/cpufreq/scaling_min_freq; do
             if [ -f "$cpu" ] && ! write_sysf "$minfreq" $cpu; then
                 echo_debug "pm" "set_cpu_scaling_min_max_freq($1).min.write_error: $cpu $minfreq; rc=$?"
                 ec=$((ec+1))
@@ -82,7 +83,7 @@ set_cpu_scaling_min_max_freq () { # set CPU scaling limits -- $1: 0=ac mode, 1=b
     if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
         conf=1
         ec=0
-        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq; do
+        for cpu in ${CPUD}/cpu*/cpufreq/scaling_max_freq; do
             if [ -f "$cpu" ] && ! write_sysf "$maxfreq" $cpu; then
                 echo_debug "pm" "set_cpu_scaling_min_max_freq($1).max.write_error: $cpu $maxfreq; rc=$?"
                 ec=$((ec+1))
@@ -165,7 +166,7 @@ set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
         # apply HWP.EPP setting
         cnt=0
         ec=0
-        for cpuf in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+        for cpuf in ${CPUD}/cpu*/cpufreq/energy_performance_preference; do
             if [ -f $cpuf ]; then
                 cnt=$((cnt+1))
                 if  ! write_sysf "$perf" $cpuf; then
@@ -207,7 +208,7 @@ set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
         # try native kernel API first (5.2 and later)
         cnt=0
         ec=0
-        for cpuf in /sys/devices/system/cpu/cpu*/power/energy_perf_bias; do
+        for cpuf in ${CPUD}/cpu*/power/energy_perf_bias; do
             if [ -f $cpuf ]; then
                 cnt=$((cnt + 1))
                 if  ! write_sysf "$pnum" $cpuf; then
@@ -350,7 +351,7 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
     fi
 
     for pool in mc smp smt; do
-        sdev="/sys/devices/system/cpu/sched_${pool}_power_savings"
+        sdev="${CPUD}/sched_${pool}_power_savings"
         if [ -f "$sdev" ]; then
             write_sysf "$pwr" $sdev
             echo_debug "pm" "set_sched_powersave($1): ${sdev##/*/} $pwr; rc=$?"
@@ -400,7 +401,7 @@ set_phc_controls () { # set core voltages
         return 0
     fi
 
-    for control in /sys/devices/system/cpu/cpu*/cpufreq/phc_controls; do
+    for control in ${CPUD}/cpu*/cpufreq/phc_controls; do
         if [ -f "$control" ]; then
             write_sysf "$phc_controls" $control
             echo_debug "pm" "set_phc_controls: $control $phc_controls; rc=$?"
