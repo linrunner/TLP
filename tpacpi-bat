@@ -393,6 +393,7 @@ sub acpiCall($){
 
   my %aslBaseOverrides = (
       'ThinkPad S2'         => '\_SB.PCI0.LPCB.EC.HKEY',
+      'ThinkPad 13'         => '\_SB.PCI0.LPCB.EC.HKEY',
       'ThinkPad 13 2nd Gen' => '\_SB.PCI0.LPCB.EC.HKEY',
       'ThinkPad Edge E130'  => '\_SB.PCI0.LPCB.EC.HKEY',
   );
