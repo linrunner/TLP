@@ -21,6 +21,7 @@ readonly IGPU_BOOST_FREQ=gt_boost_freq_mhz
 readonly IGPU_FREQ_TABLE=i915_ring_freq_table
 
 readonly RADD=/sys/module/radeon
+readonly AMDD=/sys/module/amdgpu
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -149,6 +150,54 @@ set_radeon_profile () { # set radeon power profile
                 write_sysf "profile" $card/power_method; rc1=$?
                 write_sysf "$pwr" $card/power_profile; rc2=$?
                 echo_debug "pm" "set_radeon_profile($1): $card; method=profile: rc=$rc1; profile=${pwr}: rc=$rc2"
+            fi
+
+            sdone=1
+        fi
+    done
+
+    if [ $sdone -eq 0 ]; then
+        echo_debug "pm" "set_radeon_profile($1).not_available"
+    fi
+
+    return 0
+}
+
+set_amdgpu_profile () {
+    # set amdgpu power profile
+    # $1: 0=ac mode, 1=battery mode
+
+    local gpu level pwr rc1 rc2
+    local sdone=0 # 1=amdgpu present
+
+    if [ ! -d $AMDD ]; then
+        # No card present --> quit
+        echo_debug "pm" "set_amdgpu_profile($1).no_card"
+        return 0
+    fi
+
+    for gpu in ${BASE_DRMD}/card?; do
+        driver=$(readlink ${gpu}/device/driver)
+        driver=${driver##*/}
+        if [ "$driver" != "amdgpu" ]; then
+            echo_debug "pm" "set_amdgpu_profile($1).not_amdgpu_driver"
+            continue
+        fi
+        if [ -f $gpu/device/power_dpm_force_performance_level ]; then
+            # Use new amdgpu dynamic power management method (dpm)
+            if [ "$1" = "1" ]; then
+                level=${AMDGPU_DPM_PERF_LEVEL_ON_BAT:-}
+            else
+                level=${AMDGPU_DPM_PERF_LEVEL_ON_AC:-}
+            fi
+
+            if [ -z "$level" ]; then
+                # do nothing if (partially) unconfigured
+                echo_debug "pm" "set_amdgpu_profile($1).not_configured: $card"
+                return 0
+            else
+                write_sysf "$level" $gpu/device/power_dpm_force_performance_level; rc2=$?
+                echo_debug "pm" "set_amdgpu_profile($1): $gpu: state=${pwr}: rc=$rc1; perf=${level}: rc=$rc2"
             fi
 
             sdone=1
