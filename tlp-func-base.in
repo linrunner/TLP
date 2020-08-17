@@ -4,7 +4,7 @@
 # Copyright (c) 2020 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC2086
+# shellcheck disable=SC2034,SC2086
 
 # ----------------------------------------------------------------------------
 # Constants
@@ -302,7 +302,7 @@ set_timed_lock () { # create timestamp n seconds in the future
 
     # cleanup obsolete locks
     time=$(date +%s)
-    for lockfile in $RUNDIR/${1}_timed_lock_*; do
+    for lockfile in "$RUNDIR/${1}_timed_lock_"*; do
         if [ -f "$lockfile" ]; then
             locktime=${lockfile#${RUNDIR}/${1}_timed_lock_}
             if [ $time -ge $locktime ]; then
@@ -320,7 +320,7 @@ check_timed_lock () { # check if active timestamp exists
     local lockfile locktime time
 
     time=$(date +%s)
-    for lockfile in $RUNDIR/${1}_timed_lock_*; do
+    for lockfile in "$RUNDIR/${1}_timed_lock_"*; do
         if [ -f "$lockfile" ]; then
             locktime=${lockfile#${RUNDIR}/${1}_timed_lock_}
             if [ $time -lt $(( locktime - 120 )) ]; then

@@ -193,10 +193,10 @@ fi
 # shellcheck disable=SC2154
 if [ -n "$_addpath" ]; then
     # shellcheck disable=SC2154
-    echo_debug "path" "PATH=$_oldpath[$_addpath]"
+    echo_debug "path" "PATH=${_oldpath}[${_addpath}]"
 else
     # shellcheck disable=SC2154
-    echo_debug "path" "PATH=$_oldpath"
+    echo_debug "path" "PATH=${_oldpath}"
 fi
 
 # determine new power state

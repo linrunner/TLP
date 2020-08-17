@@ -13,6 +13,7 @@
 
 readonly MODINFO=modinfo
 
+# shellcheck disable=SC2034
 readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIBATDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
@@ -91,7 +92,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
 
     # --- 1. check for native kernel ACPI (Linux 4.17 or higher required)
     local ps
-    for ps in $ACPIBATDIR/*; do
+    for ps in "$ACPIBATDIR"/*; do
         if [ "$(read_sysf $ps/present)" = "1" ]; then
             # battery detected
             if [ -f $ps/charge_start_threshold ]; then

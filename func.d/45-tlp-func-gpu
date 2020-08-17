@@ -18,6 +18,7 @@ readonly BASE_DEBUGD=/sys/kernel/debug/dri
 readonly IGPU_MIN_FREQ=gt_min_freq_mhz
 readonly IGPU_MAX_FREQ=gt_max_freq_mhz
 readonly IGPU_BOOST_FREQ=gt_boost_freq_mhz
+# shellcheck disable=SC2034
 readonly IGPU_FREQ_TABLE=i915_ring_freq_table
 
 readonly RADD=/sys/module/radeon
@@ -39,7 +40,7 @@ check_intel_gpu () { # detect Intel GPU presence and determine sysdirs
     _intel_gpu_drm=""
     _intel_gpu_dbg=""
 
-    for gpu in ${BASE_DRMD}/card?; do
+    for gpu in "${BASE_DRMD}"/card?; do
         driver=$(readlink ${gpu}/device/driver)
         driver=${driver##*/}
         case $driver in
@@ -176,7 +177,7 @@ set_amdgpu_profile () {
         return 0
     fi
 
-    for gpu in ${BASE_DRMD}/card?; do
+    for gpu in "${BASE_DRMD}"/card?; do
         driver=$(readlink ${gpu}/device/driver)
         driver=${driver##*/}
         if [ "$driver" != "amdgpu" ]; then

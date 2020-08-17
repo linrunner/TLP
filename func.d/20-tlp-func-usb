@@ -12,7 +12,6 @@
 # Constants
 
 readonly USBD=/sys/bus/usb/devices
-readonly USB_TIMEOUT=2
 readonly USB_TIMEOUT_MS=2000
 readonly USB_WWAN_VENDORS="0bdb 05c6 1199 2cb7"
 readonly USB_DONE=usb_done
@@ -42,7 +41,7 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
         # trace only: get drivers for all subdevices
         if [ "$X_USB_DRIVER_TRACE" = "1" ]; then
             local dl
-            drvlist=$(for dl in $usbdev/*:*/driver; do readlink "$dl" | \
+            drvlist=$(for dl in "$usbdev"/*:*/driver; do readlink "$dl" | \
                 sed -r 's/.+\///'; done | sort -u | tr '\n' ' ')
             drvlist="(${drvlist% })"
         fi
@@ -62,7 +61,7 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
             [ "$caller" = "udev" ] && sleep 0.5
 
             # check for hid subdevices
-            for subdev in $usbdev/*:*; do
+            for subdev in "$usbdev"/*:*; do
                 if [ "$(read_sysf $subdev/bInterfaceClass)" = "03" ]; then
                     control="on"
                     exc="_hid_black"
@@ -103,7 +102,7 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
                             control="on"
                             exc="_phone_black"
                         elif [ "$dclass" = "00" ]; then
-                           for subdev in $usbdev/*:*; do
+                           for subdev in "$usbdev"/*:*; do
                                 if [ -d $subdev ]; then
                                     if [ "$(read_sysf $subdev/interface)" = "BlackBerry" ]; then
                                         # Blackberry
@@ -127,7 +126,7 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
 
                     elif [ "$dclass" = "00" ]; then
                         # class defined at interface level, iterate subdevices
-                        for subdev in $usbdev/*:*; do
+                        for subdev in "$usbdev"/*:*; do
                             if [ -d $subdev ]; then
                                 if [ "$(read_sysf $subdev/interface)" = "MTP" ]; then
                                     # MTP: mostly Android
@@ -162,7 +161,7 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
                 if [ "$USB_BLACKLIST_PRINTER" = "1" ]; then
                     if [ "$dclass" = "00" ]; then
                         # check for printer subdevices
-                        for subdev in $usbdev/*:*; do
+                        for subdev in "$usbdev"/*:*; do
                             if [ "$(read_sysf $subdev/bInterfaceClass)" = "07" ]; then
                                 control="on"
                                 exc="_printer_black"
@@ -178,7 +177,7 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
                 if [ "$USB_BLACKLIST_WWAN" = "1" ]; then
                     if [ "$dclass" != "00" ]; then
                         # check for cdc subdevices
-                        for subdev in $usbdev/*:*; do
+                        for subdev in "$usbdev"/*:*; do
                             if [ "$(read_sysf $subdev/bInterfaceClass)" = "0a" ]; then
                                 control="on"
                                 exc="_wwan_black"
@@ -237,7 +236,7 @@ set_usb_suspend () { # enable/disable usb autosuspend for all devices
 
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
         # autosuspend is configured --> iterate devices
-        for usbdev in $USBD/*; do
+        for usbdev in "$USBD"/*; do
             case "$usbdev" in
                 *:*) ;; # colon in device name --> do nothing
 

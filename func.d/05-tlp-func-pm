@@ -59,7 +59,7 @@ set_runtime_pm () { # set runtime power management
     for driver in $drv_bl; do # iterate list
         if [ -n "$driver" ] && [ -d $PCIDRV/$driver ]; then
             # driver is active --> iterate over assigned devices
-            for device in $PCIDRV/$driver/0000:*; do
+            for device in "$PCIDRV/$driver/0000:"*; do
                 # get short device address
                 address=${device##/*/0000:}
 
@@ -73,7 +73,7 @@ set_runtime_pm () { # set runtime power management
 
     # iterate pci(e) devices
     for type in $PCID; do
-        for device in $type/*; do
+        for device in "$type"/*; do
             if [ -f $device/power/control ]; then
                 # get short device address, class
                 address=${device##/*/0000:}
@@ -197,7 +197,7 @@ get_ethifaces () { # get all eth devices -- retval: $_ethifaces
     local ei eic
     _ethifaces=""
 
-    for eic in $NETD/*/device/class; do
+    for eic in "$NETD"/*/device/class; do
         if [ "$(read_sysf $eic)" = "0x020000" ] \
             && [ ! -d "${eic%/class}/ieee80211" ]; then
 

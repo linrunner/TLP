@@ -25,7 +25,7 @@ get_wifi_ifaces () { # get all wifi devices -- retval: $_wifaces
     local wi wiu
     _wifaces=""
 
-    for wiu in $NETD/*/uevent; do
+    for wiu in "$NETD"/*/uevent; do
         if grep -q -s 'DEVTYPE=wlan' $wiu ; then
             wi=${wiu%/uevent}; wi=${wi##*/}
             _wifaces="$_wifaces $wi"
@@ -137,7 +137,7 @@ get_wwan_ifaces () { # get all wwan devices -- retval: $_wanifaces
     local wi wiu
     _wanifaces=""
 
-    for wiu in $NETD/*/uevent; do
+    for wiu in "$NETD"/*/uevent; do
         if grep -q -s 'DEVTYPE=wwan' $wiu ; then
             wi=${wiu%/uevent}; wi=${wi##*/}
             _wanifaces="$_wanifaces $wi"
@@ -177,7 +177,7 @@ get_wwan_driver () { # get driver associated with interface
 
 get_bluetooth_ifaces () { # get all bluetooth interfaces -- retval: $_bifaces
     # enumerate symlinks only
-    _bifaces="$(for i in $BLUETOOTHD/*; do [ -h $i ] && echo ${i##/*/}; done | grep -v ':')"
+    _bifaces="$(for i in """$BLUETOOTHD"""/*; do [ -h $i ] && echo ${i##/*/}; done | grep -v ':')"
     return 0
 }
 
@@ -201,7 +201,7 @@ bluetooth_in_use () { # check if bluetooth interface is in use -- $1: iface
     # when devices are connected to an interface its sysdir is populated with
     # subdevices like <iface>:<number> where the uevent file contains a line
     # "DEVTYPE=link"
-    for uev in $BLUETOOTHD/$1/$1:*/uevent; do
+    for uev in "$BLUETOOTHD/$1/$1":*/uevent; do
         grep -q -s 'DEVTYPE=link' $uev && return 0
     done
 

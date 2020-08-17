@@ -6,7 +6,7 @@
 
 # Needs: tlp-func-base, tlp-func-rf
 
-# shellcheck disable=SC2086
+# shellcheck disable=SC2034,SC2086
 
 # ----------------------------------------------------------------------------
 # Constants

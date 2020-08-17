@@ -490,7 +490,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show PHC voltages
     phc_avail=0
-    for cpuf in ${CPUD}/cpu*/cpufreq; do
+    for cpuf in "${CPUD}"/cpu*/cpufreq; do
         if [ -f $cpuf/phc_controls ]; then
             if [ $phc_avail = 0 ]; then
                 echo "+++ Undervolting"
