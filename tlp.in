@@ -36,7 +36,6 @@ apply_common_settings () { # apply settings common to all modes
     set_ahci_runtime_pm $1
     set_pcie_aspm $1
     set_intel_gpu_min_max_boost_freq $1
-    set_radeon_profile $1
     set_amdgpu_profile $1
     set_wifi_power_mode $1
     disable_wake_on_lan

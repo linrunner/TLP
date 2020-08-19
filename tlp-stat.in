@@ -655,27 +655,8 @@ if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show Intel GPU power mgmt and frequencies
     show_intel_gpu_data
 
-    # --- show radeon power profile or dpm state
-    if [ -d $RADD ]; then
-        for card in /sys/class/drm/card[0-9]/device ; do
-            if [ -f $card/power_dpm_state ] && [ -f $card/power_dpm_force_performance_level ]; then
-                # Use new radeon dpm state
-                echo "+++ Radeon Graphics"
-                printparm "%-25s = ##%s##" $card/power_dpm_state
-                printparm "%-25s = ##%s##" $card/power_dpm_force_performance_level
-                echo
-                break
-
-            elif [ -f $card/power_method ] && [ -f $card/power_profile ]; then
-                # Use old radeon power profile
-                echo "+++ Radeon Graphics"
-                printparm "%-25s = ##%s##" $card/power_method
-                printparm "%-25s = ##%s##" $card/power_profile
-                echo
-                break
-            fi
-        done
-    fi
+    # --- show AMD Radeon GPU DPM or power profile
+    show_amd_gpu_data
 
 fi # show_graf
 

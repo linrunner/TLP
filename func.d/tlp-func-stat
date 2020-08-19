@@ -494,7 +494,7 @@ show_intel_gpu_data () { # show Intel GPU data
     check_intel_gpu || return 0
 
     # power managment data
-    echo "+++ Intel Graphics"
+    echo "+++ Intel Graphics (i915)"
     printparm_i915 $_intel_gpu_parm/powersave
     printparm_i915 $_intel_gpu_parm/enable_rc6 $_intel_gpu_parm/i915_enable_rc6
     printparm_i915 $_intel_gpu_parm/enable_dc
@@ -521,6 +521,50 @@ show_intel_gpu_data () { # show Intel GPU data
 
     return 0
 }
+
+
+show_amd_gpu_data () { # show AMD GPU data
+    local gpu hdr=
+
+    check_amd_gpu || return 0
+
+    # power management data
+    for gpu in "${BASE_DRMD}"/card?; do
+        case "$gpu" in
+            amdgpu)
+                if [ "$hdr" != "amdgpu" ]; then
+                    echo "+++ AMD Radeon Graphics (amdgpu)"
+                    hdr="amdgpu"
+                fi
+                printparm "%-65s = ##%s##" $gpu/device/power_dpm_force_performance_level
+                echo
+                ;;
+
+            radeon)
+                if [ "$hdr" != "radeon" ]; then
+                    echo "+++ AMD Radeon Graphics (radeon)"
+                    hdr="radeon"
+                fi
+                if [ -f $gpu/device/power_dpm_force_performance_level ]; then
+                    # AMD hardware
+                    printparm "%-65s = ##%s##" $gpu/device/power_dpm_force_performance_level
+                    printparm "%-65s = ##%s##" $gpu/device/power_dpm_state
+                    echo
+
+                elif [ -f $gpu/device/power_method ]; then
+                    # legacy ATI hardware
+                    printparm "%-65s = ##%s##" $gpu/device/power_method
+                    printparm "%-65s = ##%s##" $gpu/device/power_profile
+                    echo
+
+                fi
+                ;;
+        esac
+    done
+
+    return 0
+}
+
 
 # --- Battery Features
 
