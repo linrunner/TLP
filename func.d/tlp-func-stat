@@ -524,13 +524,15 @@ show_intel_gpu_data () { # show Intel GPU data
 
 
 show_amd_gpu_data () { # show AMD GPU data
-    local gpu hdr=
+    local driver gpu hdr=
 
     check_amd_gpu || return 0
 
     # power management data
     for gpu in "${BASE_DRMD}"/card?; do
-        case "$gpu" in
+        driver=$(readlink ${gpu}/device/driver)
+        driver=${driver##*/}
+        case "$driver" in
             amdgpu)
                 if [ "$hdr" != "amdgpu" ]; then
                     echo "+++ AMD Radeon Graphics (amdgpu)"
