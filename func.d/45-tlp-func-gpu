@@ -26,42 +26,21 @@ readonly IGPU_FREQ_TABLE=i915_ring_freq_table
 
 # --- Intel GPU
 
-check_intel_gpu () { # detect Intel GPU presence and determine sysdirs
-    # rc: 0=present/1=absent
-    # retval: $_intel_gpu_parm: card parameter sysdir;
-    #         $_intel_gpu_drm:  card drm sysdir;
-    #         $_intel_gpu_dbg:  card debug sysdir
-    local cardno driver gpu
+get_intel_gpu_sysdirs () { # determine Intel GPU sysdirs
+    # $1: drm sysdir, $2: driver
+    # retval: $_intel_gpu_parm: parameter sysdir;
+    #         $_intel_gpu_dbg:  debug sysdir
 
-    _intel_gpu_parm=""
-    _intel_gpu_drm=""
-    _intel_gpu_dbg=""
+    _intel_gpu_parm=${BASE_MODD}/$2/parameters
+    _intel_gpu_dbg=${BASE_DEBUGD}/${1##${BASE_DRMD}/card}
+    echo_debug "pm" "get_intel_gpu_sysdirs: gpu=$1 driver=$2; parm=$_intel_gpu_parm; dbg=$_intel_gpu_dbg"
 
-    for gpu in "${BASE_DRMD}"/card?; do
-        driver=$(readlink ${gpu}/device/driver)
-        driver=${driver##*/}
-        case "$driver" in
-            i915*) # Intel GPU found
-                cardno=${gpu##${BASE_DRMD}/card}
-                _intel_gpu_parm=${BASE_MODD}/${driver}/parameters
-                _intel_gpu_drm=${gpu}
-                _intel_gpu_dbg=${BASE_DEBUGD}/${cardno}
-                echo_debug "pm" "check_intel_gpu.present: parm=$_intel_gpu_parm; drm=$_intel_gpu_drm; dbg=$_intel_gpu_dbg"
-                return 0
-                ;;
-        esac
-    done
-
-    # no Intel GPU found
-    echo_debug "pm" "check_intel_gpu.no_gpu"
-    return 1
+    return 0
 }
 
 set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mode, 1=battery mode
     local minfreq maxfreq boostfreq
-    local conf=0
-
-    check_intel_gpu || return 0
+    local conf
 
     if [ "$1" = "1" ]; then
         minfreq=${INTEL_GPU_MIN_FREQ_ON_BAT:-}
@@ -73,59 +52,50 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
         boostfreq=${INTEL_GPU_BOOST_FREQ_ON_AC:-}
     fi
 
-    if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
-        write_sysf "$minfreq" $_intel_gpu_drm/$IGPU_MIN_FREQ
-        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: $minfreq; rc=$?"
-        conf=1
-    fi
-
-    if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
-        write_sysf "$maxfreq" $_intel_gpu_drm/$IGPU_MAX_FREQ
-        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: $maxfreq; rc=$?"
-        conf=1
-    fi
-
-    if [ -n "$boostfreq" ] && [ "$boostfreq" != "0" ]; then
-        write_sysf "$boostfreq" $_intel_gpu_drm/$IGPU_BOOST_FREQ
-        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: $boostfreq; rc=$?"
-        conf=1
-    fi
-
-    [ $conf -eq 1 ] ||  echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_configured"
-    return 0
-}
-
-# --- AMD Radeon GPU
-
-
-check_amd_gpu () { # detect AMD GPU presence and determine driver and sysdir
-    # rc: 0=present/1=absent
-    local driver gpu
-
     for gpu in "${BASE_DRMD}"/card?; do
         driver=$(readlink ${gpu}/device/driver)
         driver=${driver##*/}
         case "$driver" in
-            amdgpu|radeon) # AMD GPU found
-                echo_debug "pm" "check_amd_gpu.present: drv=$driver; drm=$gpu"
-                return 0
+            i915*) # Intel GPU found
+                conf=0
+                get_intel_gpu_sysdirs "$gpu" "$driver"
+
+                if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
+                    write_sysf "$minfreq" $gpu/$IGPU_MIN_FREQ
+                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$minfreq; rc=$?"
+                    conf=1
+                fi
+
+                if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
+                    write_sysf "$maxfreq" $gpu/$IGPU_MAX_FREQ
+                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$maxfreq; rc=$?"
+                    conf=1
+                fi
+
+                if [ -n "$boostfreq" ] && [ "$boostfreq" != "0" ]; then
+                    write_sysf "$boostfreq" $gpu/$IGPU_BOOST_FREQ
+                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: gpu=$gpu freq=$boostfreq; rc=$?"
+                    conf=1
+                fi
+
+                if [ $conf -eq 0 ]; then
+                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_configured: gpu=$gpu"
+                    return 0
+                fi
                 ;;
         esac
     done
 
-    # no AMD GPU found
-    echo_debug "pm" "check_amd_gpu.no_gpu"
-    return 1
+    return 0
 }
 
+# --- AMD Radeon GPU
 
 set_amdgpu_profile () { # set amdgpu/radeon power profile
     # $1: 0=ac mode, 1=battery mode
 
     local driver gpu level pwr rc1 rc2
     local sdone=0 # 1=gpu present
-
-    check_amd_gpu || return 0
 
     for gpu in "${BASE_DRMD}"/card?; do
         driver=$(readlink ${gpu}/device/driver)
@@ -142,11 +112,11 @@ set_amdgpu_profile () { # set amdgpu/radeon power profile
 
                     if [ -z "$level" ]; then
                         # do nothing if unconfigured
-                        echo_debug "pm" "set_amdgpu_profile($1).amdgpu.not_configured: $gpu"
+                        echo_debug "pm" "set_amdgpu_profile($1).amdgpu.not_configured: gpu=$gpu"
                         return 0
                     else
                         write_sysf "$level" $gpu/device/power_dpm_force_performance_level; rc1=$?
-                        echo_debug "pm" "set_amdgpu_profile($1).amdgpu: $gpu; level=${level}: rc=$rc1"
+                        echo_debug "pm" "set_amdgpu_profile($1).amdgpu: gpu=$gpu level=${level}: rc=$rc1"
                     fi
                     sdone=1
                 fi
@@ -165,12 +135,12 @@ set_amdgpu_profile () { # set amdgpu/radeon power profile
 
                     if [ -z "$pwr" ] || [ -z "$level" ]; then
                         # do nothing if (partially) unconfigured
-                        echo_debug "pm" "set_amdgpu_profile($1).radeon.not_configured: $gpu"
+                        echo_debug "pm" "set_amdgpu_profile($1).radeon.not_configured: gpu=$gpu"
                         return 0
                     else
                         write_sysf "$level" $gpu/device/power_dpm_force_performance_level; rc1=$?
                         write_sysf "$pwr" $gpu/device/power_dpm_state; rc2=$?
-                        echo_debug "pm" "set_amdgpu,profile($1).radeon: $gpu: perf=${level}: rc=$rc1; state=${pwr}: rc=$rc2"
+                        echo_debug "pm" "set_amdgpu_profile($1).radeon: gpu=$gpu perf=${level}: rc=$rc1; state=${pwr}: rc=$rc2"
                     fi
                     sdone=1
 
@@ -184,20 +154,21 @@ set_amdgpu_profile () { # set amdgpu/radeon power profile
 
                     if [ -z "$pwr" ]; then
                         # do nothing if unconfigured
-                        echo_debug "pm" "set_radeon_profile($1).radeon_legacy.not_configured: $gpu"
+                        echo_debug "pm" "set_amdgpu_profile($1).radeon_legacy.not_configured: gpu=$gpu"
                         return 0
                     else
                         write_sysf "profile" $gpu/device/power_method; rc1=$?
                         write_sysf "$pwr" $gpu/power_profile; rc2=$?
-                        echo_debug "pm" "set_radeon_profile($1).radeon_legacy: $gpu; method=profile: rc=$rc1; profile=${pwr}: rc=$rc2"
+                        echo_debug "pm" "set_amdgpu_profile($1).radeon_legacy: gpu=$gpu method=profile: rc=$rc1; profile=${pwr}: rc=$rc2"
                     fi
                     sdone=1
                 fi
+                ;;
         esac
     done
 
     if [ $sdone -eq 0 ]; then
-        echo_debug "pm" "set_radeon_profile($1).not_available"
+        echo_debug "pm" "set_amdgpu_profile($1).no_gpu"
     fi
 
     return 0

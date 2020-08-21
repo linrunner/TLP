@@ -489,62 +489,62 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
 
 # --- Graphics
 
-show_intel_gpu_data () { # show Intel GPU data
-
-    check_intel_gpu || return 0
-
-    # power managment data
-    echo "+++ Intel Graphics (i915)"
-    printparm_i915 $_intel_gpu_parm/powersave
-    printparm_i915 $_intel_gpu_parm/enable_rc6 $_intel_gpu_parm/i915_enable_rc6
-    printparm_i915 $_intel_gpu_parm/enable_dc
-    printparm_i915 $_intel_gpu_parm/enable_fbc $_intel_gpu_parm/i915_enable_fbc
-    printparm_i915 $_intel_gpu_parm/enable_psr "" 1
-    printparm_i915 $_intel_gpu_parm/lvds_downclock
-    printparm_i915 $_intel_gpu_parm/modeset
-    printparm_i915 $_intel_gpu_parm/semaphores
-    echo
-
-    # frequency parameters
-    if readable_sysf $_intel_gpu_drm/$IGPU_MIN_FREQ; then
-        printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_MIN_FREQ
-        printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_MAX_FREQ
-        printparm "%-44s = ##%5d## [MHz]" $_intel_gpu_drm/$IGPU_BOOST_FREQ
-        if readable_sysf $_intel_gpu_dbg/$IGPU_FREQ_TABLE; then
-            # available frequencies
-            printf "%s: " $_intel_gpu_dbg/$IGPU_FREQ_TABLE
-            awk -F ' ' '{ if (NR >= 2) { printf "%d ", $1 } }; ' $_intel_gpu_dbg/$IGPU_FREQ_TABLE
-            printf "[MHz] \n"
-        fi
-        echo
-    fi
-
-    return 0
-}
-
-
-show_amd_gpu_data () { # show AMD GPU data
+show_gpu_data () { # show GPU data for all drivers
     local driver gpu hdr=
 
-    check_amd_gpu || return 0
-
-    # power management data
     for gpu in "${BASE_DRMD}"/card?; do
         driver=$(readlink ${gpu}/device/driver)
         driver=${driver##*/}
         case "$driver" in
-            amdgpu)
+            i915*) # Intel GPU
+                get_intel_gpu_sysdirs "$gpu" "$driver"
+
+                # power managment data
+                if [ "$hdr" != "i915" ]; then
+                    echo "+++ Intel Graphics"
+                    printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                    echo
+                    hdr="i915"
+                fi
+                printparm_i915 $_intel_gpu_parm/powersave
+                printparm_i915 $_intel_gpu_parm/enable_rc6 $_intel_gpu_parm/i915_enable_rc6
+                printparm_i915 $_intel_gpu_parm/enable_dc
+                printparm_i915 $_intel_gpu_parm/enable_fbc $_intel_gpu_parm/i915_enable_fbc
+                printparm_i915 $_intel_gpu_parm/enable_psr "" 1
+                printparm_i915 $_intel_gpu_parm/lvds_downclock
+                printparm_i915 $_intel_gpu_parm/modeset
+                printparm_i915 $_intel_gpu_parm/semaphores
+                echo
+
+                # frequency parameters
+                if readable_sysf $gpu/$IGPU_MIN_FREQ; then
+                    printparm "%-44s = ##%5d## [MHz]" $gpu/$IGPU_MIN_FREQ
+                    printparm "%-44s = ##%5d## [MHz]" $gpu/$IGPU_MAX_FREQ
+                    printparm "%-44s = ##%5d## [MHz]" $gpu/$IGPU_BOOST_FREQ
+                    if readable_sysf $_intel_gpu_dbg/$IGPU_FREQ_TABLE; then
+                        # available frequencies
+                        printf "%s: " $_intel_gpu_dbg/$IGPU_FREQ_TABLE
+                        awk -F ' ' '{ if (NR >= 2) { printf "%d ", $1 } }; ' $_intel_gpu_dbg/$IGPU_FREQ_TABLE
+                        printf "[MHz] \n"
+                    fi
+                    echo
+                fi
+                ;;
+
+            amdgpu) # AMD GPU
                 if [ "$hdr" != "amdgpu" ]; then
-                    echo "+++ AMD Radeon Graphics (amdgpu)"
+                    echo "+++ AMD Radeon Graphics"
+                    printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
                     hdr="amdgpu"
                 fi
                 printparm "%-65s = ##%s##" $gpu/device/power_dpm_force_performance_level
                 echo
                 ;;
 
-            radeon)
+            radeon) # AMD GPU
                 if [ "$hdr" != "radeon" ]; then
-                    echo "+++ AMD Radeon Graphics (radeon)"
+                    echo "+++ AMD Radeon Graphics"
+                    printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
                     hdr="radeon"
                 fi
                 if [ -f $gpu/device/power_dpm_force_performance_level ]; then
@@ -558,9 +558,27 @@ show_amd_gpu_data () { # show AMD GPU data
                     printparm "%-65s = ##%s##" $gpu/device/power_method
                     printparm "%-65s = ##%s##" $gpu/device/power_profile
                     echo
-
                 fi
                 ;;
+
+            nouveau|nvidia) # Nvidia GPU
+                if [ "$hdr" != "$driver" ]; then
+                    echo "+++ Nvidia Graphics"
+                    printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                    hdr="$driver"
+                fi
+                echo
+                ;;
+
+            *) # Other GPU
+                if [ "$hdr" != "$driver" ]; then
+                    echo "+++ Other Graphics"
+                    printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                    hdr="$driver"
+                fi
+                echo
+                ;;
+
         esac
     done
 

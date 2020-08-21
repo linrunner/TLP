@@ -646,17 +646,13 @@ fi # show_disk
 
 if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show hybrid graphics switch (nouveau, radeon only)
-
     if [ -f $SWITCHEROO ]; then
         echo "+++ Hybrid Graphics Switch"
         printparm_ml "  " $SWITCHEROO
     fi
 
-    # --- show Intel GPU power mgmt and frequencies
-    show_intel_gpu_data
-
-    # --- show AMD Radeon GPU DPM or power profile
-    show_amd_gpu_data
+    # --- show GPU date for all drivers
+    show_gpu_data
 
 fi # show_graf
 
