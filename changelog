@@ -11,16 +11,16 @@
         - Flag ThinkPad L512 as "unsupported"
     Disks:
       - tlp-stat -d
-        - show AHCI host controller a SATA disk is attached to
-        - show ALPM state in the sysfs directory of the AHCI host
-        - remove "No AHCI-enabled host controller detected." message
+        - Show AHCI host controller a SATA disk is attached to
+        - Show ALPM state in the sysfs directory of the AHCI host
+        - Remove "No AHCI-enabled host controller detected." message
     Graphics:
         - Add support for amdgpu (#498)
         - Improve powerdown of unused GPUs with drivers amdgpu, nouveau,
           nvidia and without driver (Issues #488, #495, #498)
         - tlp-stat -g:
-          - show hybrid graphics switch state (switcheroo)
-          - list all GPUs with drivers with at least the driver info
+          - Show hybrid graphics switch state (switcheroo)
+          - List all GPUs with at least the driver info
     PCI(e) devices:
        - RUNTIME_PM_ENABLE/DISABLE: permanently enable/disable runtime PM for
          PCI(e) devices based on address (independent of the power source)
@@ -28,7 +28,7 @@
     Processor:
       - tlp-stat -p:
         - cpu1..cpuN omitted for clarity, use -v to show all
-        - sort more than 10 cpu cores in proper numerical order
+        - Sort more than 10 CPU cores in proper numerical order
 
   * Bugfixes
     Battery Features:
