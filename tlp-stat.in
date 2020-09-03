@@ -878,12 +878,12 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     echo
 
     case $_bm_read in
-        natacpi) batglob="$ACPIBATDIR/*" ;;
-        tpsmapi) batglob="$SMAPIBATDIR/BAT[01]" ;;
+        natacpi) batglobd="$ACPIBATDIR/$_tc_bat_glob" ;;
+        tpsmapi) batglobd="$SMAPIBATDIR/$_tc_bat_glob" ;;
     esac
 
     # -- show battery data
-    for batd in $batglob; do # iterate all batteries
+    for batd in $batglobd; do # iterate all batteries
 
         [ -d "$batd" ] || continue # skip if battery directory does not exist
         batt=${batd##/*/}

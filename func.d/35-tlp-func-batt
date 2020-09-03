@@ -82,7 +82,8 @@ check_battery_features () { # determine which battery feature APIs/tools are
     _bm_read="natacpi"
     _bm_thresh="none"
     _bm_dischg="none"
-    # threshold boundary presets, atm ThinkPads only
+    # threshold presets, atm ThinkPads only
+    _tc_bat_glob="BAT[01]"
     _tc_start_min=1
     _tc_stop_min=5
     _tc_start_max=96
@@ -92,7 +93,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
 
     # --- 1. check for native kernel ACPI (Linux 4.17 or higher required)
     local ps
-    for ps in "$ACPIBATDIR"/*; do
+    for ps in $ACPIBATDIR/$_tc_bat_glob; do
         if [ "$(read_sysf $ps/present)" = "1" ]; then
             # battery detected
             if [ -f $ps/charge_start_threshold ]; then
@@ -231,7 +232,7 @@ battery_present () { # check battery presence and return tpacpi-bat index
     _bf_start=""
     _bf_stop=""
     _bf_dischg=""
-    local blist bs bsd
+    local batglob bs bsd
 
     # load modules and check prerequisites
     check_thinkpad
@@ -239,16 +240,17 @@ battery_present () { # check battery presence and return tpacpi-bat index
 
     # validate param
     case $1 in
-        DEF) blist="BAT0 BAT1" ;;
-        *)   blist="$1" ;;
+        DEF) batglob="$_tc_bat_glob" ;;
+        *)   batglob="$1" ;;
     esac
 
     case $_bm_read in
         natacpi) # note: includes tpacpi
-            for bs in $blist; do
-                bsd="$ACPIBATDIR/$bs"
+            for bsd in $ACPIBATDIR/$batglob; do
+                bs="${bsd##/*/}"
 
                 # check acpi name space
+                ### WIP $_tc_bat_glob: is this still necessary?
                 if printf '%s\n' "$bs" | grep -E -q "$RE_PS_IGNORE"; then
                     rc=2 # atypical battery ignored
 
@@ -289,8 +291,11 @@ battery_present () { # check battery presence and return tpacpi-bat index
 
         tpsmapi)
             rc=1
-            for bs in $blist; do
-                bsd="$SMAPIBATDIR/$bs"
+            for bsd in $SMAPIBATDIR/$batglob; do
+                bs="${bsd##/*/}"
+                ### DEVEL ###
+                echo_debug "bat" "battery_present($1).tpsmapi: bs=$bs bsd=$bsd"
+                ###
 
                 # check tp-smapi name space
                 if [ "$(read_sysf $bsd/installed)" = "1" ]; then
