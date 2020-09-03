@@ -255,4 +255,4 @@ checkdupconst:
 
 checkwip:
 	@echo "+++ checkwip +++"
-	@grep -E -n "### (DEBUG|DEVEL|TODO)" $(SHFILES) $(PLFILES) || true
+	@grep -E -n "### (DEBUG|DEVEL|TODO|WIP)" $(SHFILES) $(PLFILES) || true
