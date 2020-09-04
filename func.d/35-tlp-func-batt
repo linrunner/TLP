@@ -4,17 +4,13 @@
 # Copyright (c) 2020 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# Needs: tlp-func-base
+# Needs: tlp-func-base, 34-tlp-func-platform
 
 # shellcheck disable=SC2086
 
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly MODINFO=modinfo
-
-# shellcheck disable=SC2034
-readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIBATDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
 
@@ -143,7 +139,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
         :
     elif [ ! -e /proc/acpi/call ]; then
         # call API not present
-        if $MODINFO acpi_call > /dev/null 2>&1; then
+        if $MODINFO $MOD_TPACPI > /dev/null 2>&1; then
             # module installed but not loaded
             _tpacpi=64
         else
@@ -199,7 +195,7 @@ check_battery_features () { # determine which battery feature APIs/tools are
     elif ! supports_tpsmapi_only && ! supports_tpsmapi_and_tpacpi || supports_no_tp_bat_funcs; then
         # not tp-smapi capable models
         _tpsmapi=254
-    elif $MODINFO tp_smapi > /dev/null 2>&1; then
+    elif $MODINFO $MOD_TPSMAPI > /dev/null 2>&1; then
         # module installed but not loaded
         _tpsmapi=64
     else

@@ -1,0 +1,109 @@
+#!/bin/sh
+# tlp-func-platform - Platform Detection Functions
+#
+# Copyright (c) 2020 Thomas Koch <linrunner at gmx.net> and others.
+# This software is licensed under the GPL v2 or later.
+
+# Needs: tlp-func-base
+
+# shellcheck disable=
+
+# ----------------------------------------------------------------------------
+# Constants
+
+readonly MODINFO=modinfo
+
+readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
+
+readonly MOD_TPSMAPI="tp_smapi"
+readonly MOD_TPACPI="acpi_call"
+
+readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T23|T[346][0123][p]?|T[45][01]0[s]?|W[57]0[01]|X[346][012][s]?( Tablet)?|X1[02]0e|X[23]0[01][s]?( Tablet)?|Z6[01][mpt])$'
+readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
+readonly RE_TP_NONE='^(L[45]20|L512|SL[345]00|X121e)$'
+
+# ----------------------------------------------------------------------------
+# Functions
+
+# --- ThinkPad Checks
+
+supports_tpsmapi_only () {
+    # rc: 0=ThinkPad supports tpsmapi only/1=false
+    # prerequisite: check_thinkpad()
+    printf '%s' "$_tpmodel" | grep -E -q "${RE_TPSMAPI_ONLY}"
+}
+
+supports_tpsmapi_and_tpacpi () {
+    # rc: 0=ThinkPad supports tpsmapi, tpacpi-bat, natacpi/1=false
+    # prerequisite: check_thinkpad()
+    printf '%s' "$_tpmodel" | grep -E -q "${RE_TPSMAPI_AND_TPACPI}"
+}
+
+supports_no_tp_bat_funcs () {
+    # rc: 0=ThinkPad doesn't support battery features/1=false
+    # prerequisite: check_thinkpad()
+    printf '%s' "$_tpmodel" | grep -E -q "${RE_TP_NONE}"
+}
+
+supports_tpacpi () {
+    # rc: 0=ThinkPad does support tpacpi-bat, natacpi/1=false
+    # prerequisite: check_thinkpad()
+    # assumption: all newer models support tpapaci-bat/natacapi except
+    # explicitly unsupported or older tpsmapi only models
+    ! supports_no_tp_bat_funcs && ! supports_tpsmapi_only
+}
+
+check_thinkpad () { # check for ThinkPad hardware and save model string,
+                 # load ThinkPad specific kernel modules
+                 # rc: 0=ThinkPad, 1=other hardware
+                 # retval: $_tpmodel
+    local pv
+
+    _tpmodel=""
+
+    if [ -d $TPACPIDIR ]; then
+        # kernel module thinkpad_acpi is loaded
+
+        if [ -z "$X_SIMULATE_MODEL" ]; then
+            # get DMI product string and sanitize it
+            pv="$(read_dmi product_version | tr -C -d 'a-zA-Z0-9 ')"
+        else
+            # simulate arbitrary model
+            pv="$X_SIMULATE_MODEL"
+        fi
+
+        # check DMI product string for occurrence of "ThinkPad"
+        if printf '%s' "$pv" | grep -E -q 'Think[Pp]ad'; then
+            # it's a real ThinkPad --> save model substring
+            _tpmodel=$(printf '%s\n' "$pv" | sed -r 's/^Think[Pp]ad //')
+        fi
+    else
+        # not a ThinkPad: get DMI product string
+        pv="$(read_dmi product_version)"
+    fi
+
+    if [ -n "$_tpmodel" ]; then
+        # load tp-smapi for supported models only; prevents kernel messages
+        if supports_tpsmapi_only || supports_tpsmapi_and_tpacpi; then
+            load_modules $MOD_TPSMAPI
+        fi
+
+        # load acpi-call for supported models only; prevents kernel messages
+        if supports_tpacpi; then
+            load_modules $MOD_TPACPI
+        fi
+
+        echo_debug "bat" "check_thinkpad: tpmodel=$_tpmodel"
+        return 0
+    fi
+
+    # not a ThinkPad
+    echo_debug "bat" "check_thinkpad.not_a_thinkpad: model=$pv"
+    return 1
+}
+
+is_thinkpad () { # check for ThinkPad by saved model string
+                 # rc: 0=ThinkPad, 1=other hardware
+    [ -n "$_tpmodel" ]
+}
+
