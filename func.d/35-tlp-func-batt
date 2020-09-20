@@ -11,6 +11,8 @@
 # ----------------------------------------------------------------------------
 # Constants
 
+readonly MODINFO=modinfo
+
 readonly SMAPIBATDIR=/sys/devices/platform/smapi
 readonly ACPIBATDIR=/sys/class/power_supply
 

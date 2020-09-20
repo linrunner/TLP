@@ -11,8 +11,6 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly MODINFO=modinfo
-
 readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 
 readonly MOD_TPSMAPI="tp_smapi"
