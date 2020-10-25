@@ -8,8 +8,6 @@
     Battery Features:
       - tlp-stat -b
         - Map battery state "Unknown" to "Idle" for clarity
-        - [Try to] mitigate false threshold readouts caused by the
-          annoying firmware issue on ThinkPad A/E/L/S series (Issue #369)
         - Flag ThinkPad L512 as "unsupported"
     Disks:
       - tlp-stat -d
@@ -35,6 +33,8 @@
   * Bugfixes
     Battery Features:
       - tlp discharge/recalibrate: terminate properly when AC/charger is removed
+      - [Try to] mitigate false threshold readouts caused by the annoying
+        firmware issue on ThinkPad A/E/L/S series (Issue #369)
     Disks:
       - Issue #474: confine AHCI_RUNTIME_PM_ON_AC/BAT to SATA disks
     Graphics:
