@@ -351,14 +351,29 @@ read_threshold () { # read and echo charge threshold
             esac
             # get effective threshold, "none" if not readable/non-existent
             rt=$(read_sysf $bsys "none")
+            # workaround: read threshold sysfile a second time to mitigate
+            # the annoying firmware issue on ThinkPad A/E/L/S series
+            # (refer to issue #369 and FAQ)
+            if is_thinkpad && [ "$_bm_thresh" = "natacpi" ]; then
+                rt=$(read_sysf $bsys "none")
+            fi
             ;; # natacpi, tpsmapi
 
         tpacpi) # use tpacpi-bat
             if [ $_bat_idx -ne 0 ]; then
                 # bat index is valid
                 case $1 in
-                    start) rt=$($TPACPIBAT -g ST $_bat_idx 2> /dev/null | cut -f1 -d' ') ;;
-                    stop)  rt=$($TPACPIBAT -g SP $_bat_idx 2> /dev/null | cut -f1 -d' ') ;;
+                    start)
+                        rt=$($TPACPIBAT -g ST $_bat_idx 2> /dev/null | cut -f1 -d' ')
+                        # workaround: read threshold a second time (see above)
+                        rt=$($TPACPIBAT -g ST $_bat_idx 2> /dev/null | cut -f1 -d' ')
+                        ;;
+
+                    stop)
+                        rt=$($TPACPIBAT -g SP $_bat_idx 2> /dev/null | cut -f1 -d' ')
+                        # workaround: read threshold a second time (see above)
+                        rt=$($TPACPIBAT -g SP $_bat_idx 2> /dev/null | cut -f1 -d' ')
+                        ;;
                 esac
                 tprc=$?
                 if [ $tprc -eq 0 ] && is_uint "$rt"; then
