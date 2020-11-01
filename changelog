@@ -21,6 +21,9 @@
         - tlp-stat -g:
           - Show hybrid graphics switch state (switcheroo)
           - List all GPUs with at least the driver info
+    Operation Mode AC/BAT:
+      - Speed up power source detection (obsolete delayed battery state check
+        removed)
     PCI(e) devices:
        - RUNTIME_PM_ENABLE/DISABLE: permanently enable/disable runtime PM for
          PCI(e) devices based on address (independent of the power source)

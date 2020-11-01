@@ -592,23 +592,10 @@ get_sys_power_supply () { # get current power supply
                         break # --> end iteration
                         ;;
 
-                    *) # everything else - e.g. "Charging", "Full", "Unknown" - might be caused by lagging
-                       # battery status updates --> re-check after a short delay
-                        echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging_check1: bs=$bs; syspwr=$_syspwr"
-                        sleep 0.8
-                        bs="$(read_sysf $psrc/status)"
-                        if [ "$bs" = "Discharging" ] && ! lockpeek_tlp tlp_discharge; then
-                            # battery status changed to "Discharging" (not forced) means battery mode
-                            # --> end iteration
-                            _syspwr=1
-                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_discharging_check2: bs=$bs; syspwr=$_syspwr"
-                            break
-                        else
-                            # otherwise assume AC mode
-                            # --> continue looking
-                            _syspwr=0
-                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging_check2: bs=$bs; syspwr=$_syspwr"
-                        fi
+                    *) # assume AC mode for everything else - e.g. "Charging", "Full", "Unknown"
+                       # --> continue looking
+                        _syspwr=0
+                        echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging: bs=$bs; syspwr=$_syspwr"
                         ;;
 
                 esac
