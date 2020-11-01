@@ -635,8 +635,8 @@ print_batstate () { # print battery charging state with
 
     if val=$(read_sysf $sysf); then
         # sysfile was readable, output state
-        # map "Unknown" to "Idle" on AC for clarity (and avoid user questions)
-        [ "$val" = "Unknown" ] && [ "$_syspwr" = "0" ] && val="Idle"
+        # map "Unknown" to "Idle" for clarity (and avoid user questions)
+        [ "$val" = "Unknown" ] && val="Idle"
         printf "%-59s = %s\n" "$sysf" "$val"
     else
         # sysfile was not readable
