@@ -9,6 +9,7 @@
       - tlp-stat -b
         - Map battery state "Unknown" to "Idle" for clarity
         - Flag ThinkPad L512 as "unsupported"
+      - Discharge malfunction: hint to check battery, charger
     Disks:
       - tlp-stat -d
         - Show AHCI host controller a SATA disk is attached to

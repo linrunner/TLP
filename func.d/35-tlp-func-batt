@@ -1037,7 +1037,7 @@ discharge_battery () { # discharge battery
     set_force_discharge $_bat_str 1; rc=$?
     if [ $rc -ne 0 ]; then
         echo_debug "bat" "discharge_battery.force_discharge_malfunction($_bat_str)"
-        echo "Error: discharge malfunction." 1>&2
+        echo "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
         return 1
     fi
 
@@ -1119,7 +1119,7 @@ discharge_battery () { # discharge battery
             else
                 # discharging terminated by unknown reason
                 echo_debug "bat" "discharge_battery.not_emptied($_bat_str)"
-                echo "Error: battery $_bat_str was not discharged completely -- check your hardware." 1>&2
+                echo "Error: battery $_bat_str was not discharged completely -- check your hardware (battery, charger)." 1>&2
                 rc=2
             fi
         fi
@@ -1127,7 +1127,7 @@ discharge_battery () { # discharge battery
         # discharge malfunction --> cancel discharge and abort
         set_force_discharge $_bat_str 0;
         echo_debug "bat" "discharge_battery.malfunction($_bat_str)"
-        echo "Error: discharge $_bat_str malfunction." 1>&2
+        echo "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
         rc=1
     fi
 
