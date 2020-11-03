@@ -411,7 +411,7 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
             esac
 
             if [ "$_disk_type" = "ata" ]; then
-                get_ahci_host_ctrlr $_disk_dev && printf    "  Host Ctrlr = %s\n" $_disk_host_ctrlr
+                get_ahci_host_ctrlr $_disk_dev && printf    "  HBA/Port   = %s\n" $_disk_host_ctrlr
             fi
 
             # restore standby state

@@ -594,7 +594,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show ahci runtime pm
     if stat -t ${AHCID}/power > /dev/null 2>&1; then
-        echo "+++ AHCI Host Controller Runtime Power Management"
+        echo "+++ AHCI Runtime Power Management"
         for dev in ${AHCID}/power ; do
             printparm "%-40s = ##%s##" $dev/control
         done
