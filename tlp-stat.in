@@ -594,7 +594,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show ahci runtime pm
     if stat -t ${AHCID}/power > /dev/null 2>&1; then
-        echo "+++ AHCI Runtime Power Management"
+        echo "+++ AHCI Port Runtime Power Management"
         for dev in ${AHCID}/power ; do
             printparm "%-40s = ##%s##" $dev/control
         done
@@ -777,7 +777,7 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
     echo
 
     # -- show runtime pm
-    echo "+++ Runtime Power Management"
+    echo "+++ PCIe Runtime Power Management"
     echo "Enable devices   = ${RUNTIME_PM_ENABLE:-(disabled)}"
     echo "Disable devices  = ${RUNTIME_PM_DISABLE:-(disabled)}"
     echo "Device blacklist = ${RUNTIME_PM_BLACKLIST:=(disabled)}"

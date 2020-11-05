@@ -316,27 +316,27 @@ set_sata_link_power () { # set ahci link power management
     return 0
 }
 
-get_ahci_host_ctrlr () { # get ahci host controller the disk is attached to
+get_ahci_cph () { # get ahci controller/port/host the disk is attached to
     # $1: device (sans /dev)
-    # retval: $_disk_host_ctrlr
-    if _disk_host_ctrlr="$(readlink /sys/block/$1 | sed -r 's/^\.\.\/devices\/pci[0-9:]+\/([0-9a-f:.]+\/ata[0-9]+).*$/\1/')"; then
-        # /sys/block/$device is a softlink to
-        # "../devices/pci0000:00/0000:00:XY.Z/ataN/.../$device"
-        # which designates the associated ahci host
-        # /sys/bus/pci/devices/0000:00:XY.Z/$device
-        _disk_host_ctrlr="/sys/bus/pci/devices/$_disk_host_ctrlr"
-        echo_debug "disk" "get_ahci_host_ctrlr($1): ctrlr=$_disk_host_ctrlr; rc=0"
+    # retval: $_disk_cph
+
+    # /sys/block/$device is a softlink to
+    #   ../devices/pci0000:00/0000:00:XY.Z/ataN/.../$device
+    # which reveals the associated ahci controller, port, host:
+    #   0000:00:XY.Z/ataN/hostM
+    if _disk_cph="$(readlink /sys/block/$1 | sed -r 's/^\.\.\/devices\/pci[0-9:]+\/([0-9a-f:.]+\/ata[0-9]+\/host[0-9]+).*$/\1/')"; then
+        echo_debug "disk" "get_ahci_cph($1): disk_cph=$_disk_cph; rc=0"
         return 0
     else
-        echo_debug "disk" "get_ahci_host_host_ctrlr($1): rc=1"
+        echo_debug "disk" "get_ahci_cph($1): rc=1"
         return 1
     fi
 }
 
-set_ahci_runtime_pm () { # set ahci runtime power management
+set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
     # $1: 0=ac mode, 1=battery mode
 
-    local control devbn device ec hostbl timeout rc
+    local control devbn device ec timeout rc
 
     if [ "$1" = "1" ]; then
         control=${AHCI_RUNTIME_PM_ON_BAT:-}
@@ -356,19 +356,18 @@ set_ahci_runtime_pm () { # set ahci runtime power management
 
     if [ -z "$control" ]; then
         # do nothing if unconfigured
-        echo_debug "pm" "set_ahci_runtime_pm($1).not_configured"
+        echo_debug "pm" "set_ahci_disk_runtime_pm($1).not_configured"
         return 0
     fi
 
     # when timeout is unconfigured we're done here
     if [ -z "$timeout" ]; then
-        echo_debug "pm" "set_ahci_runtime_pm($1).timeout_not_configured"
+        echo_debug "pm" "set_ahci_disk_runtime_pm($1).timeout_not_configured"
         return 0
     fi
 
     # iterate disks
     ec=0
-    hostbl=""
     for device in $BLOCKD; do
         if [ -f ${device}/device/power/control ]; then
             devbn=${device##/*/}
@@ -381,39 +380,49 @@ set_ahci_runtime_pm () { # set ahci runtime power management
                 if write_sysf "$timeout" ${device}/device/power/autosuspend_delay_ms; then
                     # writing timeout was successful --> proceed with activation;
                     if ! write_sysf "$control" ${device}/device/power/control; then
-                        # writing control failed --> add host to blacklist
-                        get_ahci_host $devbn
-                        hostbl="$hostbl $_disk_host_ctrlr"
+                        # writing control failed
                         rc=2
                         ec=$((ec+1))
                     fi
                 else
                     # writing timeout failed (or file not present)
-                    #  --> add host to blacklist
-                    get_ahci_host $devbn
-                    hostbl="$hostbl $_disk_host_ctrlr"
                     rc=1
                     ec=$((ec+1))
                 fi
-                echo_debug "pm" "set_ahci_runtime_pm($1).$control: disk=$device timeout=$timeout; rc=$rc"
+                echo_debug "pm" "set_ahci_disk_runtime_pm($1).$control: disk=$device timeout=$timeout; rc=$rc"
             else
                 # ignore non-ata
-                echo_debug "pm" "set_ahci_runtime_pm($1).non-ata: disk=$device"
+                echo_debug "pm" "set_ahci_disk_runtime_pm($1).non-ata: disk=$device"
             fi
         fi
     done
 
-    # iterate ahci hosts considering the blacklist
+    return 0
+}
+
+set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
+    # $1: 0=ac mode, 1=battery mode
+
+    local control device
+
+    if [ "$1" = "1" ]; then
+        control=${AHCI_RUNTIME_PM_ON_BAT:-}
+    else
+        control=${AHCI_RUNTIME_PM_ON_AC:-}
+    fi
+
+    if [ -z "$control" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_ahci_port_runtime_pm($1).not_configured"
+        return 0
+    fi
+
+    # iterate ahci ports
     for device in $AHCID; do
-        if ! wordinlist "$device" "$hostbl"; then
-            if write_sysf "$control" ${device}/power/control; then
-                echo_debug "pm" "set_ahci_runtime_pm($1).$control: host=$device; rc=$?"
-            else
-                echo_debug "pm" "set_ahci_runtime_pm($1).no-hosts"
-            fi
+        if write_sysf "$control" ${device}/power/control; then
+            echo_debug "pm" "set_ahci_port_runtime_pm($1).$control: port=$device; rc=0"
         else
-            # do not touch blacklisted host
-            echo_debug "pm" "set_ahci_runtime_pm($1).blacklisted: host=$device"
+            echo_debug "pm" "set_ahci_port_runtime_pm($1).no-port"
         fi
     done
 

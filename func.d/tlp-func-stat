@@ -362,31 +362,31 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
     case "$_disk_type" in
         nvme) # NVMe disk
             printf     "\n%s:\n" /dev/$_disk_dev
-            printf     "  Type       = NVMe\n"
-            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
-            print_sysf "  Model      = %s\n" /sys/block/$_disk_dev/device/model
-            print_sysf "  Firmware   = %s\n" /sys/block/$_disk_dev/device/firmware_rev
+            [ -n "$_disk_id" ] && printf "  Disk ID         = %s\n" $_disk_id
+            printf     "  Type            = NVMe\n"
+            print_sysf "  Model           = %s\n" /sys/block/$_disk_dev/device/model
+            print_sysf "  Firmware        = %s\n" /sys/block/$_disk_dev/device/firmware_rev
             # TODO: more features?
             ;;
 
         ata|usb|ieee1394)
             # ATA/USB/IEEE1394 disk
             printf     "\n%s:\n" /dev/$_disk_dev
-            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
+            [ -n "$_disk_id" ] && printf "  Disk ID         = %s\n" $_disk_id
 
-            printf     "  Type       = %s\n" "$(toupper $_disk_type)"
+            printf     "  Type            = %s\n" "$(toupper $_disk_type)"
 
             # save spindle state
             get_disk_state $_disk_dev
 
-            printf "  Model      = "
+            printf "  Model           = "
             print_disk_model $_disk_dev
 
-            printf "  Firmware   = "
+            printf "  Firmware        = "
             print_disk_firmware $_disk_dev
 
             get_disk_apm_level $_disk_dev; local apm=$?
-            printf "  APM Level  = "
+            printf "  APM Level       = "
             case $apm in
                 0|255)
                     printf "none/disabled\n"
@@ -402,16 +402,16 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
                     ;;
             esac
 
-            printf "  Status     = %s\n" $_disk_state
+            printf "  Status          = %s\n" $_disk_state
 
             get_disk_trim_capability $_disk_dev; local trim=$?
             case $trim in
-                0) printf "  TRIM       = not supported\n" ;;
-                1) printf "  TRIM       = supported\n" ;;
+                0) printf "  TRIM            = not supported\n" ;;
+                1) printf "  TRIM            = supported\n" ;;
             esac
 
             if [ "$_disk_type" = "ata" ]; then
-                get_ahci_host_ctrlr $_disk_dev && printf    "  HBA/Port   = %s\n" $_disk_host_ctrlr
+                get_ahci_cph $_disk_dev && printf    "  Contr/Port/Host = %s\n" $_disk_cph
             fi
 
             # restore standby state
@@ -426,9 +426,9 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
 
     if [ -f /sys/block/$_disk_dev/queue/scheduler ]; then
         if [ -d /sys/block/$_disk_dev/mq ]; then
-            print_sysf_trim "  Scheduler  = %s (multi queue)\n" /sys/block/$_disk_dev/queue/scheduler
+            print_sysf_trim "  Scheduler       = %s (multi queue)\n" /sys/block/$_disk_dev/queue/scheduler
         else
-            print_sysf_trim "  Scheduler  = %s (single queue)\n" /sys/block/$_disk_dev/queue/scheduler
+            print_sysf_trim "  Scheduler       = %s (single queue)\n" /sys/block/$_disk_dev/queue/scheduler
         fi
     fi
 
