@@ -585,18 +585,18 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show sata alpm mode
     if stat -t ${ALPMD}/link_power_management_policy > /dev/null 2>&1; then
-        echo "+++ AHCI Link Power Management (ALPM)"
+        echo "+++ AHCI Link Power Management (ALPM) :: SATA Links"
         for i in ${ALPMD} ; do
-            printparm "%-56s = ##%s##" $i/link_power_management_policy _
+            printparm_ahci $i/link_power_management_policy
         done
     fi
     echo
 
     # --- show ahci runtime pm
     if stat -t ${AHCID}/power > /dev/null 2>&1; then
-        echo "+++ AHCI Port Runtime Power Management"
+        echo "+++ AHCI Port Runtime Power Management :: SATA Ports"
         for dev in ${AHCID}/power ; do
-            printparm "%-40s = ##%s##" $dev/control
+            printparm_ahci $dev/control
         done
         echo
     fi

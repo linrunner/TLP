@@ -12,7 +12,7 @@
       - Discharge malfunction: hint to check battery, charger
     Disks:
       - tlp-stat -d
-        - Show AHCI controller/port/host a SATA disk is attached to
+        - Show disks attached to SATA links/ports
         - Show ALPM state in the sysfs directory of the AHCI host
         - Remove "No AHCI-enabled host controller detected." message
     Graphics:

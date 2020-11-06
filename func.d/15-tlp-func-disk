@@ -316,23 +316,6 @@ set_sata_link_power () { # set ahci link power management
     return 0
 }
 
-get_ahci_cph () { # get ahci controller/port/host the disk is attached to
-    # $1: device (sans /dev)
-    # retval: $_disk_cph
-
-    # /sys/block/$device is a softlink to
-    #   ../devices/pci0000:00/0000:00:XY.Z/ataN/.../$device
-    # which reveals the associated ahci controller, port, host:
-    #   0000:00:XY.Z/ataN/hostM
-    if _disk_cph="$(readlink /sys/block/$1 | sed -r 's/^\.\.\/devices\/pci[0-9:]+\/([0-9a-f:.]+\/ata[0-9]+\/host[0-9]+).*$/\1/')"; then
-        echo_debug "disk" "get_ahci_cph($1): disk_cph=$_disk_cph; rc=0"
-        return 0
-    else
-        echo_debug "disk" "get_ahci_cph($1): rc=1"
-        return 1
-    fi
-}
-
 set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
     # $1: 0=ac mode, 1=battery mode
 

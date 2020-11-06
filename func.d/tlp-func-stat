@@ -314,7 +314,6 @@ get_disk_apm_level () { # get disk apm level -- $1: dev; rc: apm
 
 get_disk_trim_capability () { # check for trim capability
     # $1: dev; rc: 0=no, 1=yes, 254=no ssd device
-
     local trim
 
     if $HDPARM -I /dev/$1 2> /dev/null | grep -q 'Solid State Device'; then
@@ -410,10 +409,6 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
                 1) printf "  TRIM            = supported\n" ;;
             esac
 
-            if [ "$_disk_type" = "ata" ]; then
-                get_ahci_cph $_disk_dev && printf    "  Contr/Port/Host = %s\n" $_disk_cph
-            fi
-
             # restore standby state
             [ "$_disk_state" = "standby" ] && spindown_disk $_disk_dev
             ;;
@@ -483,6 +478,49 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
         *) # unkown disk type
             ;;
     esac
+
+    return 0
+}
+
+get_ahci_disk () { # get disk associated with an alpm or ahci port runtimepm sysfile
+    # $1: sysfile
+    # retval: $_ahci_disk
+    local aport
+
+    # cut sysfile path down to the ahci port /sys/bus/pci/devices/0000:00:XY.Z/ataN
+    aport="$(echo $1 | sed -r 's/^(\/sys\/bus\/pci\/devices\/[0-9a-f:.]+\/ata[0-9]+).*$/\1/')"
+
+    # the directory /sys/bus/pci/devices/0000:00:XY.Z/ataN/host*/target*/*/block
+    # lists the actual block device name pointing to /dev/sdX resp. /sys/block/sdX
+    # shellcheck disable=SC2012
+    _ahci_disk="$(ls ${aport}/host*/target*/*/block 2> /dev/null | head -1)"
+
+    if [ -n "$_ahci_disk" ]; then
+        echo_debug "disk" "get_ahci_disk($1): port=$aport ahci_disk=$_ahci_disk"
+        return 0
+    else
+        echo_debug "disk" "get_ahci_disk($1).none"
+        return 1
+    fi
+}
+
+printparm_ahci () { # print alpm or ahci port runtime pm sysfile
+    # accompanied by the attached disk device
+    # $1: sysfile
+    local val
+
+    if val=$(read_sysf $1); then
+        # sysfile exists and is actually readable, output content
+        printf "%-56s = %s " "$1" "$val"
+
+        get_ahci_disk $1
+
+        if [ -n "$_ahci_disk" ]; then
+            printf " -- %s\n" "$_ahci_disk"
+        else
+            printf "\n"
+        fi
+    fi
 
     return 0
 }
