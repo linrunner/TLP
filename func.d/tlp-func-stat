@@ -386,7 +386,7 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
             # TODO: more features?
             ;;
 
-        ata|usb|ieee1394)
+        sata|ata|usb|ieee1394)
             # ATA/USB/IEEE1394 disk
             printf     "\n%s:\n" /dev/$_disk_dev
             [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
@@ -427,7 +427,7 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
                 1) printf "  TRIM       = supported\n" ;;
             esac
 
-            if [ "$_disk_type" = "ata" ]; then
+            if [ "$_disk_type" = "sata" ] || [ "$_disk_type" = "ata" ]; then
                 get_ahci_host $_disk_dev && printf    "  Host       = %s\n" $_ahci_host
             fi
 
@@ -472,7 +472,7 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
                     sed 's/^/    /'
             ;;
 
-        ata|usb)
+        sata|ata|usb)
             printf "\n  SMART info:\n"
             $SMARTCTL -A /dev/$_disk_dev | grep -v '<==' | \
                 awk -F ' ' '$2 ~ /Power_Cycle_Count|Start_Stop_Count|Load_Cycle_Count|Reallocated_Sector_Ct/ \

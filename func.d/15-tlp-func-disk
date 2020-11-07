@@ -26,7 +26,7 @@ readonly DISK_NOP_WORDS="_ keep"
 get_disk_dev () { # translate disk id to device (sdX)
     # $1: id or device (sans /dev)
     # retval: $_disk_dev, $_disk_id, $_disk_type
-    local bus dpath path
+    local bus dpath dpath2 path
 
     if [ -h /dev/disk/by-id/$1 ]; then
         # $1 is disk id
@@ -66,6 +66,15 @@ get_disk_dev () { # translate disk id to device (sdX)
                     ;;
             esac
         esac
+
+        if [ "$_disk_type" = "ata" ]; then
+            # distinguish sata from ata(ide) disks
+            dpath2="$($UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | sed -n 's/^DEVPATH=/\/sys/; s/\/target.*//p')"
+            if ls ${dpath2}/scsi_host/host*/link_power_management_policy > /dev/null 2>&1; then
+                _disk_type=sata
+            fi
+        fi
+
         echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath"
         return 0
     else
@@ -356,7 +365,7 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
             devbn=${device##/*/}
             get_disk_dev $devbn
             # consider only ahci == ata disks
-            if [ "$_disk_type" = "ata" ]; then
+            if [ "$_disk_type" = "sata" ] || [ "$_disk_type" = "ata" ]; then
                 # write timeout first because writing "auto" with the default
                 # timeout -1 still active will lockup the machine!
                 rc=0

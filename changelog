@@ -12,6 +12,7 @@
       - Discharge malfunction: hint to check battery, charger
     Disks:
       - tlp-stat -d
+        - Distinguish SATA from ATA(IDE) disks
         - Show disks attached to SATA links/ports
         - Show a disk's host
         - Show ALPM state in the sysfs directory of the AHCI host
