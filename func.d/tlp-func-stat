@@ -347,6 +347,24 @@ check_ata_errors () { # check kernel log for ata errors
     return 0
 }
 
+get_ahci_host () { # get host associated with a disk
+    # $1: device
+    # retval: $_ahci_host
+
+    #  /sys/block/$device is a softlink to
+    #   ../devices/pci0000:00/0000:00:XY.Z/ataN/.../$device
+    # which reveals the associated ahci host: 0000:00:XY.Z/ataN/hostM
+    _ahci_host="$(readlink /sys/block/$1 | sed -r 's/^\.\.\/devices\/pci[0-9:]+\/[0-9a-f:.]+\/ata[0-9]+\/(host[0-9]+).*$/\1/')"
+
+    if [ -n "$_ahci_host" ]; then
+        echo_debug "disk" "get_ahci_host($1): host=$_ahci_host"
+        return 0
+    else
+        echo_debug "disk" "get_ahci_host($1).none"
+        return 1
+    fi
+}
+
 show_disk_data () { # formatted output of NVMe / SATA disk data
     # $1: disk device
 
@@ -361,31 +379,31 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
     case "$_disk_type" in
         nvme) # NVMe disk
             printf     "\n%s:\n" /dev/$_disk_dev
-            [ -n "$_disk_id" ] && printf "  Disk ID         = %s\n" $_disk_id
-            printf     "  Type            = NVMe\n"
-            print_sysf "  Model           = %s\n" /sys/block/$_disk_dev/device/model
-            print_sysf "  Firmware        = %s\n" /sys/block/$_disk_dev/device/firmware_rev
+            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
+            printf     "  Type       = NVMe\n"
+            print_sysf "  Model      = %s\n" /sys/block/$_disk_dev/device/model
+            print_sysf "  Firmware   = %s\n" /sys/block/$_disk_dev/device/firmware_rev
             # TODO: more features?
             ;;
 
         ata|usb|ieee1394)
             # ATA/USB/IEEE1394 disk
             printf     "\n%s:\n" /dev/$_disk_dev
-            [ -n "$_disk_id" ] && printf "  Disk ID         = %s\n" $_disk_id
+            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
 
-            printf     "  Type            = %s\n" "$(toupper $_disk_type)"
+            printf     "  Type       = %s\n" "$(toupper $_disk_type)"
 
             # save spindle state
             get_disk_state $_disk_dev
 
-            printf "  Model           = "
+            printf "  Model      = "
             print_disk_model $_disk_dev
 
-            printf "  Firmware        = "
+            printf "  Firmware   = "
             print_disk_firmware $_disk_dev
 
             get_disk_apm_level $_disk_dev; local apm=$?
-            printf "  APM Level       = "
+            printf "  APM Level  = "
             case $apm in
                 0|255)
                     printf "none/disabled\n"
@@ -401,13 +419,17 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
                     ;;
             esac
 
-            printf "  Status          = %s\n" $_disk_state
+            printf "  Status     = %s\n" $_disk_state
 
             get_disk_trim_capability $_disk_dev; local trim=$?
             case $trim in
-                0) printf "  TRIM            = not supported\n" ;;
-                1) printf "  TRIM            = supported\n" ;;
+                0) printf "  TRIM       = not supported\n" ;;
+                1) printf "  TRIM       = supported\n" ;;
             esac
+
+            if [ "$_disk_type" = "ata" ]; then
+                get_ahci_host $_disk_dev && printf    "  Host       = %s\n" $_ahci_host
+            fi
 
             # restore standby state
             [ "$_disk_state" = "standby" ] && spindown_disk $_disk_dev
@@ -421,9 +443,9 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
 
     if [ -f /sys/block/$_disk_dev/queue/scheduler ]; then
         if [ -d /sys/block/$_disk_dev/mq ]; then
-            print_sysf_trim "  Scheduler       = %s (multi queue)\n" /sys/block/$_disk_dev/queue/scheduler
+            print_sysf_trim "  Scheduler  = %s (multi queue)\n" /sys/block/$_disk_dev/queue/scheduler
         else
-            print_sysf_trim "  Scheduler       = %s (single queue)\n" /sys/block/$_disk_dev/queue/scheduler
+            print_sysf_trim "  Scheduler  = %s (single queue)\n" /sys/block/$_disk_dev/queue/scheduler
         fi
     fi
 

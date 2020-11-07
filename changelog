@@ -13,6 +13,7 @@
     Disks:
       - tlp-stat -d
         - Show disks attached to SATA links/ports
+        - Show a disk's host
         - Show ALPM state in the sysfs directory of the AHCI host
         - Remove "No AHCI-enabled host controller detected." message
     Graphics:
