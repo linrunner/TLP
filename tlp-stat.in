@@ -19,12 +19,12 @@ readonly TLPUSB=@TLP_TLIB@/tlp-usblist
 readonly TLPPCI=@TLP_TLIB@/tlp-pcilist
 readonly TLPRDW=tlp-rdw
 
-readonly LSBREL=lsb_release
 readonly JOURNALCTL=journalctl
 
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly EFID=/sys/firmware/efi
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
+readonly OSRELEASE=/etc/os-release
 readonly SWITCHEROO=/sys/kernel/debug/vgaswitcheroo/switch
 readonly WQPE=/sys/module/workqueue/parameters/power_efficient
 
@@ -246,7 +246,10 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     echo "BIOS           = $(read_dmi bios_version)"
 
     # --- show release & kernel info
-    cmd_exists $LSBREL && echo "Release        = $($LSBREL -d -s)"
+    printf "Release        = "
+    if ! sed -rn 's/VERSION="(.*)"/\1/p' $OSRELEASE 2> /dev/null; then
+        echo "unknown"
+    fi
     echo "Kernel         = $(uname -r -m -v)"
     printparm "%-14s = %s" /proc/cmdline
 

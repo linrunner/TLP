@@ -19,6 +19,8 @@
         - Show a disk's host (for SATA_LINKPWR_BLACKLIST)
         - Show ALPM state in the sysfs directory of the AHCI host
         - Remove "No AHCI-enabled host controller detected." message
+    General:
+        - tlp-stat -s: determine OS release without the lsb_release utility
     Graphics:
         - Add support for amdgpu (#498)
         - Improve powerdown of unused GPUs with drivers amdgpu, nouveau,
