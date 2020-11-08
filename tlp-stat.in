@@ -246,8 +246,8 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     echo "BIOS           = $(read_dmi bios_version)"
 
     # --- show release & kernel info
-    printf "Release        = "
-    if ! sed -rn 's/VERSION="(.*)"/\1/p' $OSRELEASE 2> /dev/null; then
+    printf "OS Release     = "
+    if ! sed -rn 's/PRETTY_NAME="(.*)"/\1/p' $OSRELEASE 2> /dev/null; then
         echo "unknown"
     fi
     echo "Kernel         = $(uname -r -m -v)"
