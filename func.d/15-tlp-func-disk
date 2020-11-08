@@ -15,7 +15,6 @@ readonly AHCID=$PCID'/*/ata*'
 readonly ALPMD=$AHCID'/host*/scsi_host/host*'
 readonly BLOCKD='/sys/block/sd*'
 
-readonly DISK_TYPES_NO_APM_CHANGE="usb ieee1394"
 readonly DISK_NOP_WORDS="_ keep"
 
 # ----------------------------------------------------------------------------
@@ -87,7 +86,7 @@ get_disk_dev () { # translate disk id to device (sdX)
 check_disk_apm () { # check if disk device supports advanced pm
     # $1: dev; rc: 0=yes/1=no
 
-    if $HDPARM -i $1 2> /dev/null | grep -q 'AdvancedPM=yes'; then
+    if $HDPARM -I $1 2> /dev/null | grep -q 'Advanced Power Management feature set'; then
         return 0
     else
         return 1
@@ -136,8 +135,6 @@ set_disk_apm_level () { # set disk apm level
         return 0
     fi
 
-    echo_debug "disk" "set_disk_apm_level($pwrmode)"
-
     # pairwise iteration DISK_DEVICES[1,n], apmlist[1,m]; m > 0
     #  for j in [1,n]: disk_dev[j], apmlist[min(j,m)]
     #
@@ -147,7 +144,9 @@ set_disk_apm_level () { # set disk apm level
         if get_disk_dev $dev; then
             log_message="set_disk_apm_level($pwrmode): $_disk_dev [$_disk_id] $1"
 
-            if ! check_disk_apm /dev/$_disk_dev || wordinlist "$_disk_type" "$DISK_TYPES_NO_APM_CHANGE"; then
+            if wordinlist "$_disk_type" "$DISK_APM_CLASS_DENYLIST"; then
+                echo_debug "disk" "${log_message}; class denylist"
+            elif ! check_disk_apm /dev/$_disk_dev; then
                 echo_debug "disk" "${log_message}; not supported"
             elif wordinlist "$1" "$DISK_NOP_WORDS"; then
                 echo_debug "disk" "${log_message}; keep as is"
@@ -187,8 +186,6 @@ set_disk_spindown_timeout () { # set disk spindown timeout
         echo_debug "disk" "set_disk_spindown_timeout($pwrmode).not_configured"
         return 0
     fi
-
-    echo_debug "disk" "set_disk_spindown_timeout($pwrmode)"
 
     # pairwise iteration DISK_DEVICES[1,n], timeoutlist[1,m]; m > 0
     #  for j in [1,n]: disk_dev[j], timeoutlist[min(j,m)]
@@ -236,8 +233,6 @@ set_disk_iosched () { # set disk io scheduler
         echo_debug "disk" "set_disk_iosched.not_configured"
         return 0
     fi
-
-    echo_debug "disk" "set_disk_iosched"
 
     # pairwise iteration DISK_DEVICES[1,n], schedlist[1,m]; m > 0
     #  for j in [1,min(n,m)]   : disk_dev[j], schedlistj]

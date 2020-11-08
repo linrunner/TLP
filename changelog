@@ -6,15 +6,17 @@
     Audio:
       - SOUND_POWER_SAVE_ON_AC: change default to enabled (Issue #495)
     Battery Features:
+      - Discharge malfunction: hint to check battery, charger
       - tlp-stat -b
         - Map battery state "Unknown" to "Idle" for clarity
         - Flag ThinkPad L512 as "unsupported"
-      - Discharge malfunction: hint to check battery, charger
     Disks:
+      - DISK_APM_CLASS_DENYLIST: exclude disk classes from APM, i.e. you may
+        now activate it for USB and IEEE1394 drives (Issue #523)
       - tlp-stat -d
         - Distinguish SATA from ATA(IDE) disks
         - Show disks attached to SATA links/ports
-        - Show a disk's host
+        - Show a disk's host (for SATA_LINKPWR_BLACKLIST)
         - Show ALPM state in the sysfs directory of the AHCI host
         - Remove "No AHCI-enabled host controller detected." message
     Graphics:
