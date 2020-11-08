@@ -23,8 +23,9 @@ readonly DISK_NOP_WORDS="_ keep"
 # --- Device Helpers
 
 get_disk_dev () { # translate disk id to device (sdX)
+    # and determine disk type and apm capability
     # $1: id or device (sans /dev)
-    # retval: $_disk_dev, $_disk_id, $_disk_type
+    # retval: $_disk_dev, $_disk_id, $_disk_type, $_disk_apm
     local bus dpath dpath2 path
 
     if [ -h /dev/disk/by-id/$1 ]; then
@@ -38,6 +39,7 @@ get_disk_dev () { # translate disk id to device (sdX)
         _disk_dev=$1
         _disk_id=""
     fi
+    _disk_apm=0
 
     # determine device type (bus)
     if [ -b /dev/$_disk_dev ]; then
@@ -74,21 +76,16 @@ get_disk_dev () { # translate disk id to device (sdX)
             fi
         fi
 
+        # determine APM capability
+        if $UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | grep -q 'ID_ATA_FEATURE_SET_PM_ENABLED=1'; then
+            _disk_apm=1
+        fi
+
         echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath"
         return 0
     else
         _disk_type="none"
         echo_debug "disk" "get_disk_dev($1).missing"
-        return 1
-    fi
-}
-
-check_disk_apm () { # check if disk device supports advanced pm
-    # $1: dev; rc: 0=yes/1=no
-
-    if $HDPARM -I $1 2> /dev/null | grep -q 'Advanced Power Management feature set'; then
-        return 0
-    else
         return 1
     fi
 }
@@ -146,7 +143,7 @@ set_disk_apm_level () { # set disk apm level
 
             if wordinlist "$_disk_type" "$DISK_APM_CLASS_DENYLIST"; then
                 echo_debug "disk" "${log_message}; class denylist"
-            elif ! check_disk_apm /dev/$_disk_dev; then
+            elif [ "$_disk_apm" = "1" ]; then
                 echo_debug "disk" "${log_message}; not supported"
             elif wordinlist "$1" "$DISK_NOP_WORDS"; then
                 echo_debug "disk" "${log_message}; keep as is"
