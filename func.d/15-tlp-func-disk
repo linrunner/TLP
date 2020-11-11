@@ -23,9 +23,15 @@ readonly DISK_NOP_WORDS="_ keep"
 # --- Device Helpers
 
 get_disk_dev () { # translate disk id to device (sdX)
-    # and determine disk type and apm capability
-    # $1: id or device (sans /dev)
-    # retval: $_disk_dev, $_disk_id, $_disk_type, $_disk_apm
+    # and determine disk type and capabilities
+    # $1: id or device basename
+    # retval: $_disk_dev:   device basename - below /dev or /sys/block;
+    #         $_disk_id:    id basename - below /dev/disk/by-id;
+    #         $_disk_type:  nvme/ata/sata/usb/ieee1394;
+    #         $_disk_apm:   0=no apm/1=apm capable;
+    #         $_disk_mq:    0=single/1=multi-queue scheduler;
+    #         $_disk_runpm: 0=unsafe/safe for ahci runtime pm
+
     local bus dpath dpath2 path
 
     if [ -h /dev/disk/by-id/$1 ]; then
@@ -41,8 +47,8 @@ get_disk_dev () { # translate disk id to device (sdX)
     fi
     _disk_apm=0
 
-    # determine device type (bus)
     if [ -b /dev/$_disk_dev ]; then
+        # determine device type (bus)
         path="$($UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | sed -n 's/^ID_PATH=//p')"
         bus="$($UDEVADM  info -q property /dev/$_disk_dev 2>/dev/null | sed -n 's/^ID_BUS=//p')"
         dpath=
@@ -68,8 +74,8 @@ get_disk_dev () { # translate disk id to device (sdX)
             esac
         esac
 
+        # distinguish sata from ata(ide) disks
         if [ "$_disk_type" = "ata" ]; then
-            # distinguish sata from ata(ide) disks
             dpath2="$($UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | sed -n 's/^DEVPATH=/\/sys/; s/\/target.*//p')"
             if ls ${dpath2}/scsi_host/host*/link_power_management_policy > /dev/null 2>&1; then
                 _disk_type=sata
@@ -81,7 +87,30 @@ get_disk_dev () { # translate disk id to device (sdX)
             _disk_apm=1
         fi
 
-        echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath"
+        # determine if single- or multi-queue scheduler
+        if [ -d /sys/block/$_disk_dev/mq ]; then
+            _disk_mq="1"
+        else
+            _disk_mq="0"
+        fi
+
+        # determine if runtime pm is safe for sata/ata disks
+        if [ "$_disk_mq" = "0" ] || kernel_version_ge 4.19; then
+            # singlequeue scheduler is considered safe for all kernels,
+            # multiqueue and kernel >= 4.19 too
+            _disk_runpm="1"
+        else
+            # multiqueue scheduler and kernel < 4.19 is considered unsafe,
+            # because system freezes and data loss may occur when enabling
+            # runtime pm for a sata or ata disk.
+            # only with kernel 4.19 a lock was introduced which prevents that mq
+            # is forced via command line options:
+            # https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?h=v4.19&id=b233f127042dba991229e3882c6217c80492f6ef
+            # distribution kernels < 4.19 may be patched too, but better safe than sorry.
+            _disk_runpm="0"
+        fi
+
+        echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath; mq=$_disk_mq; runpm=$_disk_runpm"
         return 0
     else
         _disk_type="none"
@@ -356,24 +385,32 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
         if [ -f ${device}/device/power/control ]; then
             devbn=${device##/*/}
             get_disk_dev $devbn
-            # consider only ahci == ata disks
+            # consider only ahci == [s]ata disks
             if [ "$_disk_type" = "sata" ] || [ "$_disk_type" = "ata" ]; then
-                # write timeout first because writing "auto" with the default
-                # timeout -1 still active will lockup the machine!
-                rc=0
-                if write_sysf "$timeout" ${device}/device/power/autosuspend_delay_ms; then
-                    # writing timeout was successful --> proceed with activation;
-                    if ! write_sysf "$control" ${device}/device/power/control; then
-                        # writing control failed
-                        rc=2
+                if [ "$_disk_runpm" = "1" ]; then
+                    # singlequeue scheduler is considered safe for all kernels,
+                    # multiqueue and kernel >= 4.19 too
+
+                    # write timeout first because writing "auto" with the default
+                    # timeout -1 still active will lockup the machine!
+                    rc=0
+                    if write_sysf "$timeout" ${device}/device/power/autosuspend_delay_ms; then
+                        # writing timeout was successful --> proceed with activation;
+                        if ! write_sysf "$control" ${device}/device/power/control; then
+                            # writing control failed
+                            rc=2
+                            ec=$((ec+1))
+                        fi
+                    else
+                        # writing timeout failed (or file not present)
+                        rc=1
                         ec=$((ec+1))
                     fi
+                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).$control: disk=$device timeout=$timeout; rc=$rc"
                 else
-                    # writing timeout failed (or file not present)
-                    rc=1
-                    ec=$((ec+1))
+                    # multiqueue scheduler and kernel < 4.19 is considered unsafe
+                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).unsafe_kernel_mq: disk=$device"
                 fi
-                echo_debug "pm" "set_ahci_disk_runtime_pm($1).$control: disk=$device timeout=$timeout; rc=$rc"
             else
                 # ignore non-ata
                 echo_debug "pm" "set_ahci_disk_runtime_pm($1).non-ata: disk=$device"
