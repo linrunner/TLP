@@ -17,6 +17,7 @@
         - Distinguish SATA from ATA(IDE) disks
         - Show disks attached to SATA links/ports
         - Show a disk's host (for SATA_LINKPWR_BLACKLIST)
+        - Explain why runtime pm is blocked
         - Show ALPM state in the sysfs directory of the AHCI host
         - Remove "No AHCI-enabled host controller detected." message
     General:
