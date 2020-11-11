@@ -13,6 +13,11 @@
     Disks:
       - DISK_APM_CLASS_DENYLIST: exclude disk classes from APM, i.e. you may
         now activate it for USB and IEEE1394 drives (Issue #523)
+      - AHCI_RUNTIME_PM_ON_AC/BAT: no longer experimental, now enabled by
+        default; the previously existing risk of system freezes with the
+        multiqueue scheduler is now effectively prevented:
+        - Kernel >= 4.19 itself blocks unsafe runtime pm
+        - TLP generally blocks it for kernel < 4.19
       - tlp-stat -d
         - Distinguish SATA from ATA(IDE) disks
         - Show disks attached to SATA links/ports
