@@ -13,16 +13,20 @@
     Disks:
       - DISK_APM_CLASS_DENYLIST: exclude disk classes from APM, i.e. you may
         now activate it for USB and IEEE1394 drives (Issue #523)
-      - AHCI_RUNTIME_PM_ON_AC/BAT: no longer experimental, now enabled by
-        default; the previously existing risk of system freezes with the
-        multiqueue scheduler is now effectively prevented:
-        - Kernel >= 4.19 itself blocks unsafe runtime pm
-        - TLP generally blocks it for kernel < 4.19
+      - AHCI_RUNTIME_PM_ON_AC/BAT:
+        - Works only on disks defined in DISK_DEVICES
+        - Works on NVMe (new) and SATA/ATA disks
+        - Works on SATA ports
+        - No longer experimental, now enabled by default; the previously
+          existing risk of system freezes with the multiqueue scheduler is now
+          effectively prevented:
+          - Kernel >= 4.19 itself locks unsafe disk runtime pm
+          - TLP generally locks it for kernel < 4.19
       - tlp-stat -d
         - Distinguish SATA from ATA(IDE) disks
         - Show disks attached to SATA links/ports
         - Show a disk's host (for SATA_LINKPWR_BLACKLIST)
-        - Explain why runtime pm is blocked
+        - Explain why runtime pm is locked for a disk
         - Show ALPM state in the sysfs directory of the AHCI host
         - Remove "No AHCI-enabled host controller detected." message
     General:

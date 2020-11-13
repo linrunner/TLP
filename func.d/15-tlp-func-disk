@@ -13,7 +13,6 @@
 
 readonly AHCID=$PCID'/*/ata*'
 readonly ALPMD=$AHCID'/host*/scsi_host/host*'
-readonly BLOCKD='/sys/block/sd*'
 
 readonly DISK_NOP_WORDS="_ keep"
 
@@ -25,12 +24,12 @@ readonly DISK_NOP_WORDS="_ keep"
 get_disk_dev () { # translate disk id to device (sdX)
     # and determine disk type and capabilities
     # $1: id or device basename
-    # retval: $_disk_dev:   device basename - below /dev or /sys/block;
-    #         $_disk_id:    id basename - below /dev/disk/by-id;
-    #         $_disk_type:  nvme/ata/sata/usb/ieee1394;
-    #         $_disk_apm:   0=no apm/1=apm capable;
-    #         $_disk_mq:    0=single/1=multi-queue scheduler;
-    #         $_disk_runpm: 0=unsafe/safe for ahci runtime pm
+    # retval: $_disk_dev:       device basename - below /dev or /sys/block;
+    #         $_disk_id:        id basename - below /dev/disk/by-id;
+    #         $_disk_type:      nvme/ata/sata/usb/ieee1394;
+    #         $_disk_apm:       0=no apm/1=apm capable;
+    #         $_disk_mq:        scheduler: 0=single queue/1=multi queue;
+    #         $_disk_runpm:     runtime pm: 0=allowed/1=denied by kernel/2=denied by tlp/3=incapable
 
     local bus dpath dpath2 path
 
@@ -94,20 +93,49 @@ get_disk_dev () { # translate disk id to device (sdX)
             _disk_mq="0"
         fi
 
-        # determine if runtime pm is safe for sata/ata disks
-        if [ "$_disk_mq" = "0" ] || kernel_version_ge 4.19; then
-            # singlequeue scheduler is considered safe for all kernels,
-            # multiqueue and kernel >= 4.19 too
-            _disk_runpm="1"
+        # determine if runtime pm is possible and allowed
+        if [ -f /sys/block/$_disk_dev/device/power/control ]; then
+            # disk has a runtime pm control sysfile
+            case "$_disk_type" in
+                nvme)
+                    # nvme disks do not have a readable autosuspend_delay_ms,
+                    # nevertheless runtime pm changes are safe
+                    _disk_runpm="0"
+                    ;;
+
+                sata|ata)
+                    if ! readable_sysf /sys/block/$_disk_dev/device/power/autosuspend_delay_ms; then
+                        # autosuspend_delay_ms is missing or not readable
+                        # --> kernel itself denies runtime pm for the disk
+                        _disk_runpm="1"
+                    else
+                        # kernel allows runtime pm for the disk
+                        # --> tlp decides if it is safe
+                        if [ "$_disk_mq" = "0" ] || kernel_version_ge 4.19; then
+                            # singlequeue scheduler is considered safe for all kernels,
+                            # multiqueue and kernel >= 4.19 too
+                            _disk_runpm="0"
+                        else
+                            # multiqueue scheduler and kernel < 4.19 is considered unsafe,
+                            # because system freezes and data loss may occur when enabling
+                            # runtime pm for a sata or ata disk.
+                            # only with kernel 4.19 a lock was introduced which prevents that mq
+                            # is forced via command line options:
+                            # https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?h=v4.19&id=b233f127042dba991229e3882c6217c80492f6ef
+                            # distribution kernels < 4.19 may be patched too, but better safe than sorry.
+                            _disk_runpm="2"
+                        fi
+                    fi
+                    ;;
+
+                *)
+                    # tlp shall not (yet) touch runtime pm for usb, ieee1394 disks
+                    _disk_runpm="2"
+                    ;;
+            esac
         else
-            # multiqueue scheduler and kernel < 4.19 is considered unsafe,
-            # because system freezes and data loss may occur when enabling
-            # runtime pm for a sata or ata disk.
-            # only with kernel 4.19 a lock was introduced which prevents that mq
-            # is forced via command line options:
-            # https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?h=v4.19&id=b233f127042dba991229e3882c6217c80492f6ef
-            # distribution kernels < 4.19 may be patched too, but better safe than sorry.
-            _disk_runpm="0"
+            # disk is not runtime pm capable
+            _disk_runpm="3"
         fi
 
         echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath; mq=$_disk_mq; runpm=$_disk_runpm"
@@ -349,7 +377,7 @@ set_sata_link_power () { # set ahci link power management
 set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
     # $1: 0=ac mode, 1=battery mode
 
-    local control devbn device ec timeout rc
+    local control dev timeout rc
 
     if [ "$1" = "1" ]; then
         control=${AHCI_RUNTIME_PM_ON_BAT:-}
@@ -379,42 +407,34 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
         return 0
     fi
 
-    # iterate disks
-    ec=0
-    for device in $BLOCKD; do
-        if [ -f ${device}/device/power/control ]; then
-            devbn=${device##/*/}
-            get_disk_dev $devbn
-            # consider only ahci == [s]ata disks
-            if [ "$_disk_type" = "sata" ] || [ "$_disk_type" = "ata" ]; then
-                if [ "$_disk_runpm" = "1" ]; then
-                    # singlequeue scheduler is considered safe for all kernels,
-                    # multiqueue and kernel >= 4.19 too
-
-                    # write timeout first because writing "auto" with the default
-                    # timeout -1 still active will lockup the machine!
+    # iterate DISK_DEVICES
+    for dev in $DISK_DEVICES; do
+        if get_disk_dev $dev; then
+            case "$_disk_runpm" in
+                0) # runtime pm allowed for disk
                     rc=0
-                    if write_sysf "$timeout" ${device}/device/power/autosuspend_delay_ms; then
-                        # writing timeout was successful --> proceed with activation;
-                        if ! write_sysf "$control" ${device}/device/power/control; then
-                            # writing control failed
-                            rc=2
-                            ec=$((ec+1))
-                        fi
-                    else
-                        # writing timeout failed (or file not present)
+                    # write timeout first to prevent lockups
+                    if ! write_sysf "$timeout" /sys/block/$_disk_dev/device/power/autosuspend_delay_ms; then
+                        # writing timeout failed
                         rc=1
-                        ec=$((ec+1))
                     fi
-                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).$control: disk=$device timeout=$timeout; rc=$rc"
-                else
-                    # multiqueue scheduler and kernel < 4.19 is considered unsafe
-                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).unsafe_kernel_mq: disk=$device"
-                fi
-            else
-                # ignore non-ata
-                echo_debug "pm" "set_ahci_disk_runtime_pm($1).non-ata: disk=$device"
-            fi
+                    # proceed with activation
+                    if ! write_sysf "$control" /sys/block/$_disk_dev/device/power/control; then
+                        # activation failed
+                        rc=2
+                    fi
+                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc"
+                    ;;
+
+                1|2) # runtime pm denied for disk
+                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).denied: disk=$_disk_dev; runpm=$_disk_runpm"
+                    ;;
+
+                3) # disk not runtime pm capable
+                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).incapable: disk=$_disk_dev; runpm=$_disk_runpm"
+                    ;;
+
+            esac
         fi
     done
 

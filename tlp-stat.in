@@ -569,8 +569,8 @@ if [ "$show_all" = "1" ]; then
 fi # show_all
 
 if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
-    # --- show storage device info
-    echo "+++ Storage Devices"
+    # --- show disk info
+    echo "+++ Disks"
     # list for storage device iteration
     disklist="$DISK_DEVICES"
     # list for output: print "(disabled)" when empty
@@ -579,16 +579,15 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
 
     # iterate over list
     if [ -n "$disklist" ]; then
-        cnt=0
         for dev in $disklist; do # iterate all devices
-            show_disk_data $dev && cnt=$((cnt+1))
+            show_disk_data $dev
         done
     fi
     echo
 
     # --- show sata alpm mode
     if stat -t ${ALPMD}/link_power_management_policy > /dev/null 2>&1; then
-        echo "+++ AHCI Link Power Management (ALPM) :: Links"
+        echo "+++ AHCI Link Power Management (ALPM) :: SATA Links"
         for i in ${ALPMD} ; do
             printparm_ahci $i/link_power_management_policy
         done
@@ -597,7 +596,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show ahci runtime pm
     if stat -t ${AHCID}/power > /dev/null 2>&1; then
-        echo "+++ AHCI Port Runtime Power Management :: Ports"
+        echo "+++ AHCI Port Runtime Power Management :: SATA/ATA Ports"
         for dev in ${AHCID}/power ; do
             printparm_ahci $dev/control
         done

@@ -449,16 +449,16 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
         fi
     fi
 
-    local pdev=/sys/block/$_disk_dev/device/power
-    if [ -f $pdev/control ]; then
+    if [ "$_disk_runpm" != "3" ]; then
+        # disk has runtime pm capability
         echo
-        if [ "$_disk_runpm" = "1" ]; then
-            printf "  Runtime PM:\n"
-        else
-            printf "  Runtime PM (blocked for kernel < 4.19 with multiqueue scheduler):\n"
-        fi
-        print_sysf "    $pdev/control = %s, "    $pdev/control
-        print_sysf "autosuspend_delay_ms = %s\n" $pdev/autosuspend_delay_ms
+        case "$_disk_runpm" in
+            0) printf "  Runtime PM:\n";;
+            1) printf "  Runtime PM: locked by kernel\n";;
+            2) printf "  Runtime PM: locked by TLP\n" ;;
+        esac
+        print_sysf "    /sys/block/$_disk_dev/control = %s, " /sys/block/$_disk_dev/device/power/control
+        print_sysf "autosuspend_delay_ms = %s\n"              /sys/block/$_disk_dev/device/power/autosuspend_delay_ms
     fi
 
     # --- show SMART data
