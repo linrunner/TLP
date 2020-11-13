@@ -297,11 +297,13 @@ case "$_cmd" in
                 # clear saved power state
                 clear_saved_power_state
 
-                # apply ac settings for faster shutdown
-                echo -n "Applying power save settings..."
-                apply_common_settings 0
-                poweroff_drivebay $pwrmode 0
-                echo "done."
+                # DISABLED: apply ac settings
+                if [ "$X_TLP_SHUTDOWN_ACMODE" = "1" ]; then
+                    echo -n "Applying power save settings..."
+                    apply_common_settings 0
+                    poweroff_drivebay $pwrmode 0
+                    echo "done."
+                fi
 
                 # disable usb autosuspend if configured
                 if [ "$USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN" = "1" ]; then
@@ -398,13 +400,16 @@ case "$_cmd" in
 
     suspend) # handle suspend/hibernate
         check_root
-        if lock_tlp; then
-            save_device_states "bluetooth wwan"
+        save_device_states "bluetooth wwan"
+        suspend_drivebay $pwrmode
 
-            apply_common_settings 0
-            suspend_drivebay $pwrmode
-            save_runconf
-            unlock_tlp
+        # DISABLED: apply ac settings
+        if [ "$X_TLP_SUSPEND_ACMODE" = "1" ]; then
+            if lock_tlp; then
+                apply_common_settings 0
+                save_runconf
+                unlock_tlp
+            fi
         fi
         ;;
 
