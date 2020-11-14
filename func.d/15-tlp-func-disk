@@ -138,7 +138,7 @@ get_disk_dev () { # translate disk id to device (sdX)
             _disk_runpm="3"
         fi
 
-        echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath; mq=$_disk_mq; runpm=$_disk_runpm"
+        echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath; apm=$_disk_apm; mq=$_disk_mq; runpm=$_disk_runpm"
         return 0
     else
         _disk_type="none"
@@ -166,8 +166,10 @@ show_disk_ids () { # show disk id's
 
 set_disk_apm_level () { # set disk apm level
     # $1: 0=ac mode, 1=battery mode
+    # $2: target device (optional)
 
     local pwrmode="$1"
+    local target="$2"
     local dev log_message
 
     # quit when disabled
@@ -189,24 +191,35 @@ set_disk_apm_level () { # set disk apm level
         return 0
     fi
 
+    if [ -z "$target" ]; then
+        echo_debug "disk" "set_disk_apm_level($pwrmode).all"
+    else
+        echo_debug "disk" "set_disk_apm_level($pwrmode).target: $target"
+    fi
+
     # pairwise iteration DISK_DEVICES[1,n], apmlist[1,m]; m > 0
     #  for j in [1,n]: disk_dev[j], apmlist[min(j,m)]
-    #
+    # operation modes:
+    # 1. work on all disks in $DISK_DEVICES
+    # 2. work on $target only -- when called by udev event
+
     for dev in $DISK_DEVICES; do
         : ${1:?BUG: broken DISK_APM_LEVEL list handling}
 
         if get_disk_dev $dev; then
-            log_message="set_disk_apm_level($pwrmode): $_disk_dev [$_disk_id] $1"
+            if [ -z "$target" ] || [ "$target" = "$_disk_dev" ]; then
+                log_message="set_disk_apm_level($pwrmode): $_disk_dev [$_disk_id] $1"
 
-            if wordinlist "$_disk_type" "$DISK_APM_CLASS_DENYLIST"; then
-                echo_debug "disk" "${log_message}; class denylist"
-            elif [ "$_disk_apm" = "1" ]; then
-                echo_debug "disk" "${log_message}; not supported"
-            elif wordinlist "$1" "$DISK_NOP_WORDS"; then
-                echo_debug "disk" "${log_message}; keep as is"
-            else
-                $HDPARM -B $1 /dev/$_disk_dev > /dev/null 2>&1
-                echo_debug "disk" "${log_message}; rc=$?"
+                if wordinlist "$_disk_type" "$DISK_APM_CLASS_DENYLIST"; then
+                    echo_debug "disk" "${log_message}; class denylist"
+                elif [ "$_disk_apm" = "0" ]; then
+                    echo_debug "disk" "${log_message}; not supported"
+                elif wordinlist "$1" "$DISK_NOP_WORDS"; then
+                    echo_debug "disk" "${log_message}; keep as is"
+                else
+                    $HDPARM -B $1 /dev/$_disk_dev > /dev/null 2>&1
+                    echo_debug "disk" "${log_message}; rc=$?"
+                fi
             fi
         fi
         # last entry in apmlist applies to all remaining disks

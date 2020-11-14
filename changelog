@@ -13,6 +13,9 @@
     Disks:
       - DISK_APM_CLASS_DENYLIST: exclude disk classes from APM, i.e. you may
         now activate it for USB and IEEE1394 drives (Issue #523)
+      - DISK_APM_LEVEL_ON_AC/BAT: now also works when plugging in USB disks;
+        provided 'usb' is removed from DISK_APM_CLASS_DENYLIST and disk is
+        contained in DISK_DEVICES
       - AHCI_RUNTIME_PM_ON_AC/BAT:
         - Works only on disks defined in DISK_DEVICES
         - Works on NVMe (new) and SATA/ATA disks

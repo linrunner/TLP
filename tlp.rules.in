@@ -7,4 +7,7 @@
 ACTION=="change", SUBSYSTEM=="power_supply", RUN+="@TLP_SBIN@/tlp auto"
 
 # handle added usb devices (exclude subdevices via DRIVER=="USB")
-ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ENV{DEVTYPE}=="usb_device", RUN+="@TLP_ULIB@/tlp-usb-udev %p"
+ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ENV{DEVTYPE}=="usb_device", RUN+="@TLP_ULIB@/tlp-usb-udev usb %p"
+
+# handle added usb (s)ata disk devices (exclude partitions via ENV{DEVTYPE}=="disk")
+ACTION=="add", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ENV{ID_ATA}=="1", RUN+="@TLP_ULIB@/tlp-usb-udev disk %p"
