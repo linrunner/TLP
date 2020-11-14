@@ -379,8 +379,8 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
     case "$_disk_type" in
         nvme) # NVMe disk
             printf     "\n%s:\n" /dev/$_disk_dev
-            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
             printf     "  Type       = NVMe\n"
+            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
             print_sysf "  Model      = %s\n" /sys/block/$_disk_dev/device/model
             print_sysf "  Firmware   = %s\n" /sys/block/$_disk_dev/device/firmware_rev
             # TODO: more features?
@@ -389,9 +389,8 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
         sata|ata|usb|ieee1394)
             # ATA/USB/IEEE1394 disk
             printf     "\n%s:\n" /dev/$_disk_dev
-            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
-
             printf     "  Type       = %s\n" "$(toupper $_disk_type)"
+            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
 
             # save spindle state
             get_disk_state $_disk_dev
