@@ -31,7 +31,7 @@ get_disk_dev () { # translate disk id to device (sdX)
     #         $_disk_mq:        scheduler: 0=single queue/1=multi queue;
     #         $_disk_runpm:     runtime pm: 0=allowed/1=denied by kernel/2=denied by tlp/3=incapable
 
-    local bus dpath dpath2 path
+    local bus dev dpath dpath2 id idpath path
 
     if [ -h /dev/disk/by-id/$1 ]; then
         # $1 is disk id
@@ -43,8 +43,37 @@ get_disk_dev () { # translate disk id to device (sdX)
         # $1 is disk dev
         _disk_dev=$1
         _disk_id=""
+        if [ -b /dev/$_disk_dev ]; then
+            # disk exists, lookup id
+            for idpath in /dev/disk/by-id/*; do
+                id="${idpath##*/}"
+                # filter partitions
+                [ -n "${id%%*-part[1-9]*}" ] || continue
+                case "$id" in
+                    ata-*|usb-*)
+                        dev=$(readlink $idpath)
+                        dev=${dev##*/}
+                        if [ "$dev" = "$_disk_dev" ]; then
+                            _disk_id="$id"
+                            break
+                        fi
+                        ;;
+
+                    nvme-*)
+                        # filter 'nvme-eui.*'
+                        if [ -n "${id##nvme-eui.*}" ]; then
+                            dev=$(readlink $idpath)
+                            dev=${dev##*/}
+                            if [ "$dev" = "$_disk_dev" ]; then
+                                _disk_id="$id"
+                                break
+                            fi
+                        fi
+                        ;;
+                esac
+            done
+        fi
     fi
-    _disk_apm=0
 
     if [ -b /dev/$_disk_dev ]; then
         # determine device type (bus)
@@ -82,6 +111,7 @@ get_disk_dev () { # translate disk id to device (sdX)
         fi
 
         # determine APM capability
+        _disk_apm=0
         if $UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | grep -q 'ID_ATA_FEATURE_SET_PM_ENABLED=1'; then
             _disk_apm=1
         fi
@@ -138,7 +168,7 @@ get_disk_dev () { # translate disk id to device (sdX)
             _disk_runpm="3"
         fi
 
-        echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath; apm=$_disk_apm; mq=$_disk_mq; runpm=$_disk_runpm"
+        echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; id=$_disk_id; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath; apm=$_disk_apm; mq=$_disk_mq; runpm=$_disk_runpm"
         return 0
     else
         _disk_type="none"

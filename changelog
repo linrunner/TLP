@@ -26,6 +26,7 @@
           - Kernel >= 4.19 itself locks unsafe disk runtime pm
           - TLP generally locks it for kernel < 4.19
       - tlp-stat -d
+        - Show IDs for all disks configured in DISK_DEVICES
         - Distinguish SATA from ATA(IDE) disks
         - Show disks attached to SATA links/ports
         - Show a disk's host (for SATA_LINKPWR_BLACKLIST)
