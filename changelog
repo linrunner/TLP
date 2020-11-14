@@ -13,12 +13,12 @@
     Disks:
       - DISK_APM_CLASS_DENYLIST: exclude disk classes from APM, i.e. you may
         now activate it for USB and IEEE1394 drives (Issue #523)
-      - DISK_APM_LEVEL_ON_AC/BAT: now also works when plugging in USB disks;
-        provided 'usb' is removed from DISK_APM_CLASS_DENYLIST and disk is
-        contained in DISK_DEVICES
+      - DISK_APM_LEVEL_ON_AC/BAT, DISK_SPINDOWN_TIMEOUT_ON_AC, DISK_IOSCHED:
+        now also work when plugging in USB disks; provided disk is contained in
+        DISK_DEVICES and 'usb' is removed from DISK_APM_CLASS_DENYLIST and
       - AHCI_RUNTIME_PM_ON_AC/BAT:
         - Works only on disks defined in DISK_DEVICES
-        - Works on NVMe (new) and SATA/ATA disks
+        - Works on NVMe (new), SATA/ATA and plugged in USB (new) disks
         - Works on SATA ports
         - No longer experimental, now enabled by default; the previously
           existing risk of system freezes with the multiqueue scheduler is now

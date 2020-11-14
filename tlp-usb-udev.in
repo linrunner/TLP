@@ -56,7 +56,11 @@ case "$1" in
 
     disk) # (s)ata disks attached via usb
         get_power_mode; pwrmode=$?
-        set_disk_apm_level $pwrmode ${2##*/block/}
+        dev="${2##*/block/}"
+        set_disk_apm_level $pwrmode $dev
+        set_disk_spindown_timeout $pwrmode $dev
+        set_disk_iosched $dev
+        set_ahci_disk_runtime_pm $pwrmode $dev
         ;;
 esac
 

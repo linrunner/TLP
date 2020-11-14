@@ -133,7 +133,7 @@ get_disk_dev () { # translate disk id to device (sdX)
                     _disk_runpm="0"
                     ;;
 
-                sata|ata)
+                sata|ata|usb)
                     if ! readable_sysf /sys/block/$_disk_dev/device/power/autosuspend_delay_ms; then
                         # autosuspend_delay_ms is missing or not readable
                         # --> kernel itself denies runtime pm for the disk
@@ -159,7 +159,7 @@ get_disk_dev () { # translate disk id to device (sdX)
                     ;;
 
                 *)
-                    # tlp shall not (yet) touch runtime pm for usb, ieee1394 disks
+                    # tlp shall not (yet) touch runtime pm for other disk types
                     _disk_runpm="2"
                     ;;
             esac
@@ -196,7 +196,7 @@ show_disk_ids () { # show disk id's
 
 set_disk_apm_level () { # set disk apm level
     # $1: 0=ac mode, 1=battery mode
-    # $2: target device (optional)
+    # $2: target disk device (optional)
 
     local pwrmode="$1"
     local target="$2"
@@ -261,8 +261,10 @@ set_disk_apm_level () { # set disk apm level
 
 set_disk_spindown_timeout () { # set disk spindown timeout
     # $1: 0=ac mode, 1=battery mode
+    # $2: target disk device (optional)
 
     local pwrmode="$1"
+    local target="$2"
     local dev log_message
 
     # quit when disabled
@@ -284,20 +286,31 @@ set_disk_spindown_timeout () { # set disk spindown timeout
         return 0
     fi
 
+    if [ -z "$target" ]; then
+        echo_debug "disk" "set_disk_spindowm_timeout($pwrmode).all"
+    else
+        echo_debug "disk" "set_disk_spindown_timeout($pwrmode).target: $target"
+    fi
+
     # pairwise iteration DISK_DEVICES[1,n], timeoutlist[1,m]; m > 0
     #  for j in [1,n]: disk_dev[j], timeoutlist[min(j,m)]
-    #
+    # operation modes:
+    # 1. work on all disks in $DISK_DEVICES
+    # 2. work on $target only -- when called by udev event
+
     for dev in $DISK_DEVICES; do
         : ${1:?BUG: broken DISK_SPINDOWN_TIMEOUT list handling}
 
         if get_disk_dev $dev; then
-            log_message="set_disk_spindown_timeout($pwrmode): $_disk_dev [$_disk_id] $1"
+            if [ -z "$target" ] || [ "$target" = "$_disk_dev" ]; then
+                log_message="set_disk_spindown_timeout($pwrmode): $_disk_dev [$_disk_id] $1"
 
-            if wordinlist "$1" "$DISK_NOP_WORDS"; then
-                echo_debug "disk" "${log_message}; keep as is"
-            else
-                $HDPARM -S $1 /dev/$_disk_dev > /dev/null 2>&1
-                echo_debug "disk" "${log_message}; rc=$?"
+                if wordinlist "$1" "$DISK_NOP_WORDS"; then
+                    echo_debug "disk" "${log_message}; keep as is"
+                else
+                    $HDPARM -S $1 /dev/$_disk_dev > /dev/null 2>&1
+                    echo_debug "disk" "${log_message}; rc=$?"
+                fi
             fi
         fi
         # last entry in timeoutlist applies to all remaining disks
@@ -314,6 +327,9 @@ spindown_disk () { # stop spindle motor -- $1: dev
 }
 
 set_disk_iosched () { # set disk io scheduler
+    # $1: target disk device (optional)
+
+    local target="$1"
     local dev log_message
 
     # quit when disabled
@@ -331,24 +347,36 @@ set_disk_iosched () { # set disk io scheduler
         return 0
     fi
 
+    if [ -z "$target" ]; then
+        echo_debug "disk" "set_disk_iosched($pwrmode).all"
+    else
+        echo_debug "disk" "set_disk_iosched($pwrmode).target: $target"
+    fi
+
     # pairwise iteration DISK_DEVICES[1,n], schedlist[1,m]; m > 0
     #  for j in [1,min(n,m)]   : disk_dev[j], schedlistj]
     #  for j in [min(n,m)+1,n] : disk_dev[j], %keep
+    # operation modes:
+    # 1. work on all disks in $DISK_DEVICES
+    # 2. work on $target only -- when called by udev event
+
     for dev in $DISK_DEVICES; do
         local sched schedctrl
         if get_disk_dev $dev; then
-            # get sched from argv, use "keep" when list is too short
-            sched=${1:-keep}
-            schedctrl="/sys/block/$_disk_dev/queue/scheduler"
-            log_message="set_disk_iosched: $_disk_dev [$_disk_id] $sched"
+            if [ -z "$target" ] || [ "$target" = "$_disk_dev" ]; then
+                # get sched from argv, use "keep" when list is too short
+                sched=${1:-keep}
+                schedctrl="/sys/block/$_disk_dev/queue/scheduler"
+                log_message="set_disk_iosched: $_disk_dev [$_disk_id] $sched"
 
-            if [ ! -f $schedctrl ]; then
-                echo_debug "disk" "${log_message}; not supported"
-            elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
-                echo_debug "disk" "${log_message}; keep as is"
-            else
-                write_sysf "$sched" $schedctrl
-                echo_debug "disk" "${log_message}; rc=$?"
+                if [ ! -f $schedctrl ]; then
+                    echo_debug "disk" "${log_message}; not supported"
+                elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
+                    echo_debug "disk" "${log_message}; keep as is"
+                else
+                    write_sysf "$sched" $schedctrl
+                    echo_debug "disk" "${log_message}; rc=$?"
+                fi
             fi
         fi
         # using "keep" when argv is empty
@@ -419,7 +447,9 @@ set_sata_link_power () { # set ahci link power management
 
 set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
     # $1: 0=ac mode, 1=battery mode
+    # $2: target disk device (optional)
 
+    local target="$2"
     local control dev timeout rc
 
     if [ "$1" = "1" ]; then
@@ -450,34 +480,42 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
         return 0
     fi
 
+    if [ -z "$target" ]; then
+        echo_debug "disk" "set_ahci_disk_runtime_pm($pwrmode).all"
+    else
+        echo_debug "disk" "set_ahci_disk_runtime_pm($pwrmode).target: $target"
+    fi
+
     # iterate DISK_DEVICES
     for dev in $DISK_DEVICES; do
         if get_disk_dev $dev; then
-            case "$_disk_runpm" in
-                0) # runtime pm allowed for disk
-                    rc=0
-                    # write timeout first to prevent lockups
-                    if ! write_sysf "$timeout" /sys/block/$_disk_dev/device/power/autosuspend_delay_ms; then
-                        # writing timeout failed
-                        rc=1
-                    fi
-                    # proceed with activation
-                    if ! write_sysf "$control" /sys/block/$_disk_dev/device/power/control; then
-                        # activation failed
-                        rc=2
-                    fi
-                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc"
-                    ;;
+            if [ -z "$target" ] || [ "$target" = "$_disk_dev" ]; then
+                case "$_disk_runpm" in
+                    0) # runtime pm allowed for disk
+                        rc=0
+                        # write timeout first to prevent lockups
+                        if ! write_sysf "$timeout" /sys/block/$_disk_dev/device/power/autosuspend_delay_ms; then
+                            # writing timeout failed
+                            rc=1
+                        fi
+                        # proceed with activation
+                        if ! write_sysf "$control" /sys/block/$_disk_dev/device/power/control; then
+                            # activation failed
+                            rc=2
+                        fi
+                        echo_debug "pm" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc"
+                        ;;
 
-                1|2) # runtime pm denied for disk
-                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).denied: disk=$_disk_dev; runpm=$_disk_runpm"
-                    ;;
+                    1|2) # runtime pm denied for disk
+                        echo_debug "pm" "set_ahci_disk_runtime_pm($1).denied: disk=$_disk_dev; runpm=$_disk_runpm"
+                        ;;
 
-                3) # disk not runtime pm capable
-                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).incapable: disk=$_disk_dev; runpm=$_disk_runpm"
-                    ;;
+                    3) # disk not runtime pm capable
+                        echo_debug "pm" "set_ahci_disk_runtime_pm($1).incapable: disk=$_disk_dev; runpm=$_disk_runpm"
+                        ;;
 
-            esac
+                esac
+            fi
         fi
     done
 
