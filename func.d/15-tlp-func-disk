@@ -250,6 +250,8 @@ set_disk_apm_level () { # set disk apm level
                     $HDPARM -B $1 /dev/$_disk_dev > /dev/null 2>&1
                     echo_debug "disk" "${log_message}; rc=$?"
                 fi
+                # quit the loop after reaching the target
+                [ "$target" = "$_disk_dev" ] && break
             fi
         fi
         # last entry in apmlist applies to all remaining disks
@@ -311,6 +313,8 @@ set_disk_spindown_timeout () { # set disk spindown timeout
                     $HDPARM -S $1 /dev/$_disk_dev > /dev/null 2>&1
                     echo_debug "disk" "${log_message}; rc=$?"
                 fi
+                # quit the loop after reaching the target
+                [ "$target" = "$_disk_dev" ] && break
             fi
         fi
         # last entry in timeoutlist applies to all remaining disks
@@ -377,6 +381,8 @@ set_disk_iosched () { # set disk io scheduler
                     write_sysf "$sched" $schedctrl
                     echo_debug "disk" "${log_message}; rc=$?"
                 fi
+                # quit the loop after reaching the target
+                [ "$target" = "$_disk_dev" ] && break
             fi
         fi
         # using "keep" when argv is empty
@@ -515,6 +521,8 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
                         ;;
 
                 esac
+                # quit the loop after reaching the target
+                [ "$target" = "$_disk_dev" ] && break
             fi
         fi
     done
