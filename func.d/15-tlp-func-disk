@@ -222,9 +222,9 @@ set_disk_apm_level () { # set disk apm level
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "set_disk_apm_level($pwrmode).all"
+        echo_debug "disk" "*** set_disk_apm_level($pwrmode).all"
     else
-        echo_debug "disk" "set_disk_apm_level($pwrmode).target: $target"
+        echo_debug "disk" "*** set_disk_apm_level($pwrmode).target: $target"
     fi
 
     # pairwise iteration DISK_DEVICES[1,n], apmlist[1,m]; m > 0
@@ -289,9 +289,9 @@ set_disk_spindown_timeout () { # set disk spindown timeout
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "set_disk_spindowm_timeout($pwrmode).all"
+        echo_debug "disk" "*** set_disk_spindown_timeout($pwrmode).all"
     else
-        echo_debug "disk" "set_disk_spindown_timeout($pwrmode).target: $target"
+        echo_debug "disk" "*** set_disk_spindown_timeout($pwrmode).target: $target"
     fi
 
     # pairwise iteration DISK_DEVICES[1,n], timeoutlist[1,m]; m > 0
@@ -352,9 +352,9 @@ set_disk_iosched () { # set disk io scheduler
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "set_disk_iosched($pwrmode).all"
+        echo_debug "disk" "*** set_disk_iosched($pwrmode).all"
     else
-        echo_debug "disk" "set_disk_iosched($pwrmode).target: $target"
+        echo_debug "disk" "*** set_disk_iosched($pwrmode).target: $target"
     fi
 
     # pairwise iteration DISK_DEVICES[1,n], schedlist[1,m]; m > 0
@@ -487,9 +487,9 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "set_ahci_disk_runtime_pm($pwrmode).all"
+        echo_debug "disk" "*** set_ahci_disk_runtime_pm($pwrmode).all"
     else
-        echo_debug "disk" "set_ahci_disk_runtime_pm($pwrmode).target: $target"
+        echo_debug "disk" "*** set_ahci_disk_runtime_pm($pwrmode).target: $target"
     fi
 
     # iterate DISK_DEVICES
