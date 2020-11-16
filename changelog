@@ -34,6 +34,16 @@
         - Show ALPM state in the sysfs directory of the AHCI host
         - Remove "No AHCI-enabled host controller detected." message
     General:
+        - Rename parameters (backwards compatible to legacy config files):
+            SATA_LINKPWR_BLACKLIST      -> SATA_LINKPWR_DENYLIST
+            RUNTIME_PM_BLACKLIST        -> RUNTIME_PM_DENYLIST
+            RUNTIME_PM_DRIVER_BLACKLIST -> RUNTIME_PM_DRIVER_DENYLIST
+            USB_BLACKLIST               -> USB_DENYLIST
+            USB_BLACKLIST_BTUSB         -> USB_EXCLUDE_BTUSB
+            USB_BLACKLIST_PHONE         -> USB_EXCLUDE_PHONE
+            USB_BLACKLIST_PRINTER       -> USB_EXCLUDE_PRINTER
+            USB_BLACKLIST_WWAN          -> USB_EXCLUDE_WWAN
+            USB_WHITELIST               -> USB_ALLOWLIST
         - tlp-stat -s: determine OS release without the lsb_release utility
     Graphics:
         - Add support for amdgpu (#498)
