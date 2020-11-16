@@ -11,6 +11,7 @@ TLP_NMDSP   ?= /etc/NetworkManager/dispatcher.d
 TLP_CONFUSR ?= /etc/tlp.conf
 TLP_CONFDIR ?= /etc/tlp.d
 TLP_CONFDEF ?= /usr/share/tlp/defaults.conf
+TLP_CONFREN ?= /usr/share/tlp/rename.conf
 TLP_CONF    ?= /etc/default/tlp
 TLP_SYSD    ?= /lib/systemd/system
 TLP_SDSL    ?= /lib/systemd/system-sleep
@@ -33,6 +34,7 @@ _NMDSP   = $(DESTDIR)$(TLP_NMDSP)
 _CONFUSR = $(DESTDIR)$(TLP_CONFUSR)
 _CONFDIR = $(DESTDIR)$(TLP_CONFDIR)
 _CONFDEF = $(DESTDIR)$(TLP_CONFDEF)
+_CONFREN = $(DESTDIR)$(TLP_CONFREN)
 _CONF    = $(DESTDIR)$(TLP_CONF)
 _SYSD    = $(DESTDIR)$(TLP_SYSD)
 _SDSL    = $(DESTDIR)$(TLP_SDSL)
@@ -54,6 +56,7 @@ SED = sed \
 	-e "s|@TLP_CONFUSR@|$(TLP_CONFUSR)|g" \
 	-e "s|@TLP_CONFDIR@|$(TLP_CONFDIR)|g" \
 	-e "s|@TLP_CONFDEF@|$(TLP_CONFDEF)|g" \
+	-e "s|@TLP_CONFREN@|$(TLP_CONFREN)|g" \
 	-e "s|@TLP_CONF@|$(TLP_CONF)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"   \
 	-e "s|@TLP_VAR@|$(TLP_VAR)|g"   \
@@ -142,6 +145,7 @@ endif
 	install -D -m 644 README.d $(_CONFDIR)/README
 	install -D -m 644 00-template.conf $(_CONFDIR)/00-template.conf
 	install -D -m 644 defaults.conf $(_CONFDEF)
+	install -D -m 644 rename.conf $(_CONFREN)
 ifneq ($(TLP_NO_INIT),1)
 	install -D -m 755 tlp.init $(_SYSV)/tlp
 endif

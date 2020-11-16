@@ -25,11 +25,16 @@ use Getopt::Long;
 use constant CONF_USR => "@TLP_CONFUSR@";
 use constant CONF_DIR => "@TLP_CONFDIR@";
 use constant CONF_DEF => "@TLP_CONFDEF@";
+use constant CONF_REN => "@TLP_CONFREN@";
 use constant CONF_OLD => "@TLP_CONF@";
 
 # --- Global vars
-my @config_val = (); # 2-dim array: parameter name, value, source
-my %config_idx = (); # hash: parameter name ==> index into the name-value array
+my @config_val = ();  # 2-dim array: parameter name, value, source
+my %config_idx = ();  # hash: parameter name => index into the name-value array
+
+my %rename = ();      # hash: old => new parameter
+my $renrex;           # compiled regex for renaming old to new parameter
+my $do_rename = 0;    # enable renaming (when $renrex not empty)
 
 my $notrace = 0;
 my $debug   = 0;
@@ -79,10 +84,11 @@ sub store_name_value_source {
 
 # Parse whole config file and store parameters
 # $_[0]: filepath
-
+# $_[1]: 0=no change/1=rename parameters
 # return: 0=ok/1=file non-existent
 sub parse_configfile {
-    my $fname = $_[0];
+    my $fname  = $_[0];
+    my $do_ren = $_[1];
     my $source;
     if ( $fname eq CONF_DEF ) {
         $source = basename ($fname);
@@ -96,6 +102,9 @@ sub parse_configfile {
     while ( my $line = <$cf> ) {
         chomp $line;
         $ln += 1;
+        if ( $do_ren ) {
+            $line =~ s/($renrex)/$rename{$1}/g;
+        }
         if ( $line =~ /^(?<name>[A-Z_]+[0-9]*)=(?:(?<val_bare>[0-9a-zA-Z_\-:\.]*)|"(?<val_dquoted>[0-9a-zA-Z _\-:\.]*)")\s*$/ ) {
             my $name = $+{name};
             my $value = $+{val_dquoted} // $+{val_bare};
@@ -134,22 +143,55 @@ sub write_runconf {
     return 0
 }
 
+# Parse parameter renaming rules from file
+# $_[0]: rules file
+# return: 0=ok/1=file non-existent
+sub parse_renfile {
+    my $fname = $_[0];
+
+    open (my $rf, "<", $fname) or return 1;
+
+    # accumulate renaming
+    while ( my $line = <$rf> ) {
+        chomp $line;
+        if ( $line =~ /^(?<old_name>[A-Z_]+[0-9]*)\s+(?<new_name>[A-Z_]+[0-9]*)\s*$/ ) {
+            my $old_name = $+{old_name} . "=";
+            my $new_name = $+{new_name} . "=";
+            $rename{$old_name} = $new_name;
+        }
+    }
+    close ($rf);
+
+    if ( keys %rename > 0 ) {
+        # renaming hash not empty --> compile to renaming regex
+        $renrex = qr/@{[join '|', map { quotemeta($_) } keys %rename]}/;
+        # enable renaming
+        $do_rename = 1;
+    }
+
+    return 0;
+}
+
 # --- MAIN
 my $outfile = '';
 
 # parse arguments
 GetOptions ('outfile=s' => \$outfile, 'notrace' => \$notrace);
 
-# 1. read intrinsic defaults
-parse_configfile (CONF_DEF) == 0 or exit 6;
+# 0. read parameter renaming rules
+parse_renfile (CONF_REN);
 
-# 2. read customization
+# 1. read intrinsic defaults (no renaming)
+parse_configfile (CONF_DEF, 0) == 0 or exit 6;
+
+# 2. read customization (with renaming)
 foreach my $conffile ( grep { -f $_ } glob CONF_DIR . "/*.conf" ) {
-    parse_configfile ($conffile);
+    parse_configfile ($conffile, $do_rename);
 }
 
-# 3. read user settings
-parse_configfile (CONF_USR) == 0 or parse_configfile (CONF_OLD) == 0 or exit 5;
+# 3. read user settings (with renaming)
+parse_configfile (CONF_USR, $do_rename) == 0
+    or parse_configfile (CONF_OLD, $do_rename) == 0 or exit 5;
 
 # save result
 write_runconf ($outfile);
