@@ -19,6 +19,7 @@ usr/share/bash-completion/completions/tlp-stat
 usr/share/bash-completion/completions/wifi
 usr/share/bash-completion/completions/wwan
 usr/share/tlp/defaults.conf
+usr/share/tlp/rename.conf
 usr/share/tlp/func.d/*
 usr/share/tlp/tlp-func-base
 usr/share/tlp/tlp-pcilist
