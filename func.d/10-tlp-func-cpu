@@ -134,9 +134,9 @@ set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
     local cnt cpuf ec perf pnum
 
     if [ "$1" = "1" ]; then
-        perf=${CPU_ENERGY_PERF_POLICY_ON_BAT:-${ENERGY_PERF_BIAS_ON_BAT:-${CPU_HWP_ON_BAT:-}}}
+        perf=${CPU_ENERGY_PERF_POLICY_ON_BAT:-}
     else
-        perf=${CPU_ENERGY_PERF_POLICY_ON_AC:-${ENERGY_PERF_BIAS_ON_AC:-${CPU_HWP_ON_AC:-}}}
+        perf=${CPU_ENERGY_PERF_POLICY_ON_AC:-}
     fi
     # translate alphanumeric values from EPB to HWP.EPP syntax
     case "$perf" in

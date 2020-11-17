@@ -64,6 +64,9 @@
          PCI(e) devices based on address (independent of the power source)
        - RUNTIME_PM_BLACKLIST: remove amdgpu, nvidia, pcieport from defaults
     Processor:
+      - Remove backwards compatibility of CPU_ENERGY_PERF_POLICY_ON_AC/BAT with
+        ENERGY_PERF_POLICY_ON_AC/BAT to prevent performance issues caused by the
+        value 'power' in legacy configurations
       - tlp-stat -p:
         - cpu1..cpuN omitted for clarity, use -v to show all
         - Sort more than 10 CPU cores in proper numerical order
