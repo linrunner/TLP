@@ -597,7 +597,7 @@ show_gpu_data () { # show GPU data for all drivers
             amdgpu) # AMD GPU
                 if [ "$hdr" != "amdgpu" ]; then
                     echo "+++ AMD Radeon Graphics"
-                    printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                    printf "%-65s = %s\n" "$gpu/device/driver" "$driver"
                     hdr="amdgpu"
                 fi
                 printparm "%-65s = ##%s##" $gpu/device/power_dpm_force_performance_level
@@ -607,7 +607,7 @@ show_gpu_data () { # show GPU data for all drivers
             radeon) # AMD GPU
                 if [ "$hdr" != "radeon" ]; then
                     echo "+++ AMD Radeon Graphics"
-                    printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                    printf "%-65s = %s\n" "$gpu/device/driver" "$driver"
                     hdr="radeon"
                 fi
                 if [ -f $gpu/device/power_dpm_force_performance_level ]; then
