@@ -56,19 +56,28 @@ sub printf_debug {
 # Store parameter name, value, source in array/hash
 # $_[0]: parameter name  (non-null string)
 # $_[1]: parameter value (maybe null string)
-# $_[2]: parameter source e.g. filepath + line no.
+# $_[2]: 0=replace/1=append parameter value
+# $_[3]: parameter source e.g. filepath + line no.
 # return: 0=new name/1=known name
 sub store_name_value_source {
     my $name = $_[0];
     my $value = $_[1];
-    my $source = $_[2];
+    my $append = $_[2];
+    my $source = $_[3];
 
     $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
 
     if ( defined $config_idx{$name} ) {
-        # existing name --> overwrite value, source only
-        $config_val[$config_idx{$name}][1] = $value;
-        $config_val[$config_idx{$name}][2] = $source;
+        # existing name
+        if ( $append ) {
+            # append value, source
+            $config_val[$config_idx{$name}][1] .= " $value";
+            $config_val[$config_idx{$name}][2] .= " & $source";
+        } else {
+            # replace value, source
+            $config_val[$config_idx{$name}][1] = $value;
+            $config_val[$config_idx{$name}][2] = $source;
+        }
 
         printf_debug ("tlp-readconfs.replace [%s]: %s=\"%s\" %s\n", $config_idx{$name}, $name, $value, $source);
     } else {
@@ -103,14 +112,15 @@ sub parse_configfile {
         chomp $line;
         $ln += 1;
         # select lines with format 'PARAMETER=value' or 'PARAMETER="value"'
-        if ( $line =~ /^(?<name>[A-Z_]+[0-9]*)=(?:(?<val_bare>[0-9a-zA-Z_\-:\.]*)|"(?<val_dquoted>[0-9a-zA-Z _\-:\.]*)")\s*$/ ) {
+        if ( $line =~ /^(?<name>[A-Z_]+[0-9]*)(?<op>(=|\+=))(?:(?<val_bare>[0-9a-zA-Z_\-:\.]*)|"(?<val_dquoted>[0-9a-zA-Z _\-:\.]*)")\s*$/ ) {
             my $name = $+{name};
             if ( $do_ren ) {
                 # rename PARAMETER
                 $name =~ s/($renrex)/$rename{$1}/;
             }
             my $value = $+{val_dquoted} // $+{val_bare};
-            store_name_value_source ($name, $value, $source . " L" . sprintf ("%04d", $ln) );
+            my $append = $+{op} eq "+=";
+            store_name_value_source ($name, $value, $append, $source . " L" . sprintf ("%04d", $ln) );
         }
     }
     close ($cf);

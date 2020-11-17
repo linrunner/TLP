@@ -11,6 +11,8 @@
         - Map battery state "Unknown" to "Idle" for clarity
         - Flag ThinkPad L512 as "unsupported"
     Configuration:
+        - PARAMETER+="add values": append values to a parameter already defined
+          as intrinsic default or in a *previously* read file (Issue #457)
         - Rename parameters (backwards compatible to legacy config files):
             SATA_LINKPWR_BLACKLIST      -> SATA_LINKPWR_DENYLIST
             RUNTIME_PM_BLACKLIST        -> RUNTIME_PM_DENYLIST
