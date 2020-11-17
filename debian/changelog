@@ -5,10 +5,11 @@ tlp (1.4.0~alpha.0-1) unstable; urgency=medium
   [Thomas Koch]
     * debian/control: remove Depends: lsb-base
     * debian/tlp.docs: README.md -> README.rst
+    * debian/tlp.examples: tlp.conf
     * debian/tlp.install: add
       - /usr/share/tlp/rename.conf
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 16 Nov 2020 20:11:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 17 Nov 2020 21:42:00 +0100
 
 tlp (1.3.1-1) unstable; urgency=medium
 
