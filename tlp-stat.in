@@ -780,10 +780,10 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
 
     # -- show runtime pm
     echo "+++ PCIe Runtime Power Management"
-    echo "Enable devices   = ${RUNTIME_PM_ENABLE:-(disabled)}"
-    echo "Disable devices  = ${RUNTIME_PM_DISABLE:-(disabled)}"
-    echo "Device blacklist = ${RUNTIME_PM_BLACKLIST:=(disabled)}"
-    echo "Driver blacklist = ${RUNTIME_PM_DRIVER_BLACKLIST:-(disabled)}"
+    echo "Enable devices    = ${RUNTIME_PM_ENABLE:-(disabled)}"
+    echo "Disable devices   = ${RUNTIME_PM_DISABLE:-(disabled)}"
+    echo "Device denylist   = ${RUNTIME_PM_DENYLIST:=(disabled)}"
+    echo "Driver denylist   = ${RUNTIME_PM_DRIVER_DENYLIST:-(disabled)}"
     echo
 
     if cmd_exists $TLPPCI; then
@@ -799,29 +799,31 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show usb autosuspend
     echo "+++ USB"
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
-        echo "Autosuspend         = enabled"
+        echo "Autosuspend       = enabled"
     else
-        echo "Autosuspend         = disabled"
+        echo "Autosuspend       = disabled"
     fi
-    echo "Device whitelist    = ${USB_WHITELIST:=(not configured)}"
-    echo "Device blacklist    = ${USB_BLACKLIST:=(not configured)}"
-    if [ "${USB_BLACKLIST_BTUSB:-0}" = "1" ]; then
-        echo "Bluetooth blacklist = enabled"
+    echo "Device allowlist  = ${USB_ALLOWLIST:=(not configured)}"
+    echo "Device denylist   = ${USB_DENYLIST:=(not configured)}"
+    if [ "${USB_EXCLUDE_BTUSB:-0}" = "1" ]; then
+        echo "Exclude bluetooth = enabled"
     else
-        echo "Bluetooth blacklist = disabled"
+        echo "Exclude bluetooth = disabled"
     fi
-    if [ "${USB_BLACKLIST_PHONE:-0}" = "1" ]; then
-        echo "Phone blacklist     = enabled"
+    if [ "${USB_EXCLUDE_PHONE:-0}" = "1" ]; then
+        echo "Exclude phones    = enabled"
     else
-        echo "Phone blacklist     = disabled"
+        echo "Exclude phones    = disabled"
     fi
-    if [ "${USB_BLACKLIST_WWAN:-1}" = "1" ]; then
-        echo "WWAN blacklist      = enabled"
+    if [ "${USB_EXCLUDE_PRINTER:-0}" = "1" ]; then
+        echo "Exclude printers  = enabled"
     else
-        echo "WWAN blacklist      = disabled"
+        echo "Exclude printers  = disabled"
     fi
-    if [ -n "$USB_DRIVER_BLACKLIST" ] && [ "$USB_DRIVER_BLACKLIST" != "usbhid" ]; then
-        echo "Notice: USB_DRIVER_BLACKLIST is no longer supported, use USB_BLACKLIST."
+    if [ "${USB_EXCLUDE_WWAN:-1}" = "1" ]; then
+        echo "Exclude WWAN      = enabled"
+    else
+        echo "Exclude WWAN      = disabled"
     fi
     echo
 

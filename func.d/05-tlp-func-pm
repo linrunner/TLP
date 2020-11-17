@@ -44,18 +44,18 @@ set_runtime_pm () { # set runtime power management
     pci_enable_adr=${RUNTIME_PM_ENABLE:-}
     pci_disable_adr=${RUNTIME_PM_DISABLE:-}
 
-    # driver specific blacklist:
+    # driver specific denylist:
     # - undefined = use intrinsic default from /usr/share/tlp/defaults.conf
     # - empty     = disable feature
-    drv_bl="$RUNTIME_PM_DRIVER_BLACKLIST"
+    drv_bl="$RUNTIME_PM_DRIVER_DENYLIST"
 
-    # pci address blacklisting
-    pci_bl_adr=${RUNTIME_PM_BLACKLIST:-}
+    # pci address denylisting
+    pci_bl_adr=${RUNTIME_PM_DENYLIST:-}
 
-    # pci driver blacklisting: corresponding pci addresses
+    # pci driver denylisting: corresponding pci addresses
     pci_bl_drv=""
 
-    # cumulate pci addresses for devices with blacklisted drivers
+    # cumulate pci addresses for devices with denylisted drivers
     for driver in $drv_bl; do # iterate list
         if [ -n "$driver" ] && [ -d $PCIDRV/$driver ]; then
             # driver is active --> iterate over assigned devices
@@ -88,11 +88,11 @@ set_runtime_pm () { # set runtime power management
                     write_sysf "on" $device/power/control
                     echo_debug "pm" "set_runtime_pm($1).perm_on: $device [$class]; rc=$?"
                 elif wordinlist "$address" "$pci_bl_adr"; then
-                    # device is in address blacklist
-                    echo_debug "pm" "set_runtime_pm($1).black_address: $device [$class]"
+                    # device is in address denylist
+                    echo_debug "pm" "set_runtime_pm($1).deny_address: $device [$class]"
                 elif wordinlist "$address" "$pci_bl_drv"; then
-                    # device is in driver blacklist
-                    echo_debug "pm" "set_runtime_pm($1).black_driver: $device [$class]"
+                    # device is in driver denylist
+                    echo_debug "pm" "set_runtime_pm($1).deny_driver: $device [$class]"
                 else
                     control=$ccontrol
                     case $control in
@@ -101,11 +101,11 @@ set_runtime_pm () { # set runtime power management
                             echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]; rc=$?"
                             ;;
 
-                        *) # black_* --> do nothing
+                        *) # deny_* --> do nothing
                             echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]"
                             ;;
                     esac
-                fi # if blacklist
+                fi # if denylist
             fi # if control
         done # for device
     done # for type

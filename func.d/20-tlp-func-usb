@@ -22,7 +22,7 @@ readonly USB_DONE=usb_done
 # --- USB Autosuspend
 
 usb_suspend_device () { # enable/disable usb autosuspend for a single device
-    # except input and blacklisted
+    # except input, scanners and denylisted
     # $1: device syspath, $2: batch/udev, $3: auto=enable/on=disable
     local usbdev=$1
 
@@ -46,14 +46,14 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
             drvlist="(${drvlist% })"
         fi
 
-        if wordinlist "$usbid" "$USB_WHITELIST"; then
-            # device is in whitelist -- whitelist always wins
+        if wordinlist "$usbid" "$USB_ALLOWLIST"; then
+            # device is in allowlist -- allowlist always wins
             control="auto"
-            exc="_dev_white"
-        elif wordinlist "$usbid" "$USB_BLACKLIST"; then
-            # device is in blacklist
+            exc="_dev_allow"
+        elif wordinlist "$usbid" "$USB_DENYLIST"; then
+            # device is in denylist
             control="on"
-            exc="_dev_black"
+            exc="_dev_deny"
         else
             local subdev
 
@@ -64,19 +64,19 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
             for subdev in "$usbdev"/*:*; do
                 if [ "$(read_sysf $subdev/bInterfaceClass)" = "03" ]; then
                     control="on"
-                    exc="_hid_black"
+                    exc="_hid_deny"
                     break
                 fi
             done
 
             if [ -z "$exc" ]; then
                 # check for bluetooth devices
-                if [ "$USB_BLACKLIST_BTUSB" = "1" ] \
+                if [ "$USB_EXCLUDE_BTUSB" = "1" ] \
                     && [ "$dclass" = "e0" ] \
                     && [ "$(read_sysf $usbdev/bDeviceSubClass)" = "01" ] \
                     && [ "$(read_sysf $usbdev/bDeviceProtocol)" = "01" ]; then
                     control="on"
-                    exc="_btusb_black"
+                    exc="_btusb_deny"
                 fi
             fi # bluetooth
 
@@ -87,27 +87,27 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
                 if [ "$libsane_matched" = "yes" ] || [ "$2" = "batch" ] \
                     && $UDEVADM info -q property $usbdev 2>/dev/null | grep -q 'libsane_matched=yes'; then
                     # do not touch this device
-                    control="black"
+                    control="deny"
                     exc="_libsane"
                 fi
             fi
 
             if [ -z "$exc" ]; then
                 # check for phone devices
-                if [ "$USB_BLACKLIST_PHONE" = "1" ]; then
+                if [ "$USB_EXCLUDE_PHONE" = "1" ]; then
                     if [ "$vendor" = "0fca" ]; then
                         # RIM
                         if [ "$dclass" = "ef" ]; then
                             # RIM / BlackBerry
                             control="on"
-                            exc="_phone_black"
+                            exc="_phone_deny"
                         elif [ "$dclass" = "00" ]; then
                            for subdev in "$usbdev"/*:*; do
                                 if [ -d $subdev ]; then
                                     if [ "$(read_sysf $subdev/interface)" = "BlackBerry" ]; then
                                         # Blackberry
                                         control="on"
-                                        exc="_phone_black"
+                                        exc="_phone_deny"
                                         break
                                     fi
                                 fi
@@ -117,12 +117,12 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
                     elif [ "$vendor" = "045e" ] && [ "$dclass" = "ef" ]; then
                         # Windows Phone
                         control="on"
-                        exc="_phone_black"
+                        exc="_phone_deny"
 
                     elif [ "$vendor" = "05ac" ] && [ "$(read_sysf $usbdev/product)" = "iPhone" ]; then
                         # iPhone
                         control="on"
-                        exc="_phone_black"
+                        exc="_phone_deny"
 
                     elif [ "$dclass" = "00" ]; then
                         # class defined at interface level, iterate subdevices
@@ -131,14 +131,14 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
                                 if [ "$(read_sysf $subdev/interface)" = "MTP" ]; then
                                     # MTP: mostly Android
                                     control="on"
-                                    exc="_phone_black"
+                                    exc="_phone_deny"
                                     break
                                 elif [ "$(read_sysf $subdev/bInterfaceClass)" = "ff" ] \
                                     && [ "$(read_sysf $subdev/bInterfaceSubClass)" = "42" ] \
                                     && [ "$(read_sysf $subdev/bInterfaceProtocol)" = "01" ]; then
                                     # ADB: Android
                                     control="on"
-                                    exc="_phone_black"
+                                    exc="_phone_deny"
                                     break
                                 elif [ "$(read_sysf $subdev/bInterfaceClass)" = "06" ] \
                                     && [ "$(read_sysf $subdev/bInterfaceSubClass)" = "01" ] \
@@ -146,25 +146,25 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
                                     # PTP: iPhone, Lumia et al.
                                     # caveat: may also be a camera
                                     control="on"
-                                    exc="_phone_black"
+                                    exc="_phone_deny"
                                     break
                                 fi
                             fi
                         done
 
                     fi # dclass 00
-                fi # blacklist phone
+                fi # exclude phone
             fi # phone
 
             if [ -z "$exc" ]; then
                 # check for printers
-                if [ "$USB_BLACKLIST_PRINTER" = "1" ]; then
+                if [ "$USB_EXCLUDE_PRINTER" = "1" ]; then
                     if [ "$dclass" = "00" ]; then
                         # check for printer subdevices
                         for subdev in "$usbdev"/*:*; do
                             if [ "$(read_sysf $subdev/bInterfaceClass)" = "07" ]; then
                                 control="on"
-                                exc="_printer_black"
+                                exc="_printer_deny"
                                 break
                             fi
                         done
@@ -174,13 +174,13 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
 
             if [ -z "$exc" ]; then
                 # check for wwan devices
-                if [ "$USB_BLACKLIST_WWAN" = "1" ]; then
+                if [ "$USB_EXCLUDE_WWAN" = "1" ]; then
                     if [ "$dclass" != "00" ]; then
                         # check for cdc subdevices
                         for subdev in "$usbdev"/*:*; do
                             if [ "$(read_sysf $subdev/bInterfaceClass)" = "0a" ]; then
                                 control="on"
-                                exc="_wwan_black"
+                                exc="_wwan_deny"
                                 break
                             fi
                         done
@@ -190,12 +190,12 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
                         # check for vendors
                         if wordinlist "$vendor" "$USB_WWAN_VENDORS"; then
                             control="on"
-                            exc="_wwan_black"
+                            exc="_wwan_deny"
                         fi
                     fi
-                fi # blacklist wwan
+                fi # exclude wwan
             fi # wwan
-        fi # !device blacklist
+        fi # !device denylist
 
         if [ "$(read_sysf $usbdev/power/control)" != "$control" ]; then
             # set control, write actual changes only
@@ -205,7 +205,7 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
                     chg=1
                     ;;
 
-                black) # do not touch blacklisted device
+                deny) # do not touch denylisted device
                     ;;
             esac
         fi
