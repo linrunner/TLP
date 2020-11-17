@@ -32,8 +32,8 @@ use constant CONF_OLD => "@TLP_CONF@";
 my @config_val = ();  # 2-dim array: parameter name, value, source
 my %config_idx = ();  # hash: parameter name => index into the name-value array
 
-my %rename = ();      # hash: old => new parameter
-my $renrex;           # compiled regex for renaming old to new parameter
+my %rename = ();      # hash: OLD_PARAMETER => NEW_PARAMETER
+my $renrex;           # compiled regex for renaming parameters
 my $do_rename = 0;    # enable renaming (when $renrex not empty)
 
 my $notrace = 0;
@@ -102,11 +102,13 @@ sub parse_configfile {
     while ( my $line = <$cf> ) {
         chomp $line;
         $ln += 1;
-        if ( $do_ren ) {
-            $line =~ s/($renrex)/$rename{$1}/g;
-        }
+        # select lines with format 'PARAMETER=value' or 'PARAMETER="value"'
         if ( $line =~ /^(?<name>[A-Z_]+[0-9]*)=(?:(?<val_bare>[0-9a-zA-Z_\-:\.]*)|"(?<val_dquoted>[0-9a-zA-Z _\-:\.]*)")\s*$/ ) {
             my $name = $+{name};
+            if ( $do_ren ) {
+                # rename PARAMETER
+                $name =~ s/($renrex)/$rename{$1}/;
+            }
             my $value = $+{val_dquoted} // $+{val_bare};
             store_name_value_source ($name, $value, $source . " L" . sprintf ("%04d", $ln) );
         }
@@ -154,9 +156,10 @@ sub parse_renfile {
     # accumulate renaming
     while ( my $line = <$rf> ) {
         chomp $line;
+        # select lines with format 'OLD_PARAMETER<whitespace>NEW_PARAMETER'
         if ( $line =~ /^(?<old_name>[A-Z_]+[0-9]*)\s+(?<new_name>[A-Z_]+[0-9]*)\s*$/ ) {
-            my $old_name = $+{old_name} . "=";
-            my $new_name = $+{new_name} . "=";
+            my $old_name = $+{old_name};
+            my $new_name = $+{new_name};
             $rename{$old_name} = $new_name;
         }
     }
@@ -178,7 +181,7 @@ my $outfile = '';
 # parse arguments
 GetOptions ('outfile=s' => \$outfile, 'notrace' => \$notrace);
 
-# 0. read parameter renaming rules
+# read parameter renaming rules
 parse_renfile (CONF_REN);
 
 # 1. read intrinsic defaults (no renaming)
