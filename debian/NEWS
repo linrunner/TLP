@@ -1,0 +1,24 @@
+tlp (1.3.0-1) unstable; urgency=medium
+
+  TLP version 1.3.0 introduces important changes to its configuration scheme.
+
+  The main configuration file has been renamed from "/etc/default/tlp" to
+  "/etc/tlp.conf". This file should be automatically renamed during upgrade,
+  so any local modification will be carried over.
+
+  Additionally, it's now possible to add local modifications via configuration
+  snippets in directory "/etc/tlp.d". Any file present in this directory and
+  ending with the ".conf" extension will be read by TLP when it starts. This
+  relieves the burden of merging local modifications to the main configuration
+  file with each package upgrade, and is now the recommended way to add local
+  modifications to TLP's configuration.
+
+  Settings are read in this order:
+
+  - /usr/share/tlp/defaults.conf (intrinsic defaults)
+  - /etc/tlp.d/*.conf (drop-in customizations)
+  - /etc/tlp.conf (user configuration)
+
+  In case of identical parameters, the last occurrence has precedence.
+
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Mon, 03 Feb 2020 12:22:39 +0100

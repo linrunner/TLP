@@ -8,53 +8,163 @@ tlp (1.4.0~alpha.0-1) unstable; urgency=medium
     * debian/tlp.examples: tlp.conf
     * debian/tlp.install: add
       - /usr/share/tlp/rename.conf
+    * Merge changes from Debian packaging
 
  -- Thomas Koch <linrunner@gmx.net>  Tue, 17 Nov 2020 21:42:00 +0100
 
+tlp (1.3.1-2) unstable; urgency=medium
+
+  * [ac00297] debian/control: fix typo (Closes: #951364)
+
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Tue, 18 Feb 2020 13:09:27 +0100
+
 tlp (1.3.1-1) unstable; urgency=medium
 
-  * New upstream version 1.3.1
+  * [de3f913] New upstream version 1.3.1 (bugfix release)
+    (Closes: #950702) (LP: #1861966)
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 02 Feb 2020 14:54:42 +0100
+    Bugfixes:
+      - Issue #460: default CPU_ENERGY_PERF_POLICY_ON_BAT=power too aggressive
 
-tlp (1.3.0-1) unstable; urgency=low
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Fri, 07 Feb 2020 08:43:42 +0100
 
-  * New upstream version 1.3.0
+tlp (1.3.0-1) unstable; urgency=medium
 
-  [Thomas Koch]
-  * debian/control: change description "Wifi" to "Wi-Fi" (fixes lintian msg)
-  * debian/rules: remove tlp-sleep.service
-  * debian/source/options: extend-diff-ignore=.github|.perlcriticrc
-  * debian/tlp.install: add
-    - /etc/tlp.d
-    - /lib/systemd/system-sleep/tlp
-    - /usr/share/tlp/defaults.conf
-    - /usr/share/tlp/tlp-pcilist (moved)
-    - /usr/share/tlp/tlp-usblist (moved)
+  * [8601123] New upstream version 1.3.0
 
-  * debian/tlp.maintscript: add
-    - mv_conffile /etc/default/tlp /etc/tlp.conf
+    New Features:
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 31 Jan 2020 17:21:21 +0100
+      - New configuration scheme
+        + /etc/default/tlp is replaced by /etc/tlp.conf
+        + Settings are read in the following order:
+          - Intrinsic defaults
+          - /etc/tlp.d/*.conf - Drop-in customization snippets
+          - /etc/tlp.conf - User configuration
+          In case of identical parameters, the last occurrence has precedence
+        + Parse config files instead of sourcing --> no more shell expansion
 
-tlp (1.2.2-1) unstable; urgency=low
+      - Battery Features, tlp-stat -b
+        + Charge thresholds: better checks for command line and configuration;
+          clearer error messages
+        + tlp discharge: error message "check your hardware" when battery
+          wasn't completely discharged (Issue #438)
+        + Distinguish between "no kernel support" for natacpi (< 4.17) and
+          "laptop not supported" (>= 4.17)
+        + Supplement battery status "Unknown" with "threshold may prevent
+          charging" when thresholds are available only
 
-  * New upstream version 1.2.2 (bugfix release)
+      - General
+        + systemd: replace tlp-sleep.service with /lib/systemd/system-sleep/tlp
 
-  [Thomas Koch]
-  * debian/rules: remove override_dh_auto_install,
-    TLP_WITH_SYSTEMD=1 TLP_WITH_ELOGIND=1 is default now
-  * debian/postinst,postrm: remove mask/unmask of upstart jobs
-  * debian/tlp.install: add /var/lib/tlp
+      - Operation Mode AC/BAT
+        + TLP_PS_IGNORE: power supply class to ignore when determining operation
+          mode; workaround for laptops reporting incorrect AC or battery status
+          (Issue #446)
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 04 May 2019 18:42:51 +0200
+      - PCI(e) devices
+        + PCIE_ASPM_ON_AC/BAT: add method 'powersupersave' (Issue #425)
+
+      - Processor
+        + CPU_ENERGY_PERF_POLICY_ON_AC/BAT: backward compatible merge of
+          settings for Intel energy vs. performance policies EPB
+          (ENERGY_PERF_POLICY_ON_AC/BAT) and HWP.EPP (CPU_HWP_ON_AC/BAT); when
+          HWP.EPP is available, EPB is not set; validate parameters; eliminate
+          external tool x86_energy_perf_policy for kernel >= 5.2
+
+      - tlp-stat
+        + Configuration: show file where the parameter comes from System Info:
+          - Show SELinux status
+          - Show RDW as 'disabled' when TLP is disabled as a whole
+          - Indicate persistent mode
+        + Intel CPU: don't show EPB values when HWP.EPP is active (see above)
+        + PCIe ASPM: show available policies
+        + Undervolting: remove "PHC kernel not available" message
+
+    Bugfixes:
+
+      - Battery Features
+        + Issue #415: ThinkPad X240 discharge BAT1 malfunction when BAT0 is not
+          installed
+
+      - Disks
+        + Fix NVMe detection on Linux 4.15
+
+      - tlp-stat
+        + Issue #430: ignore HID device batteries
+
+  * [66ef9d4] Merge changes from upstream Debian packaging
+  * [7071a4e] debian/copyright: update copyrights years
+  * [fcab431] Silence lintian about tlp.service manpage without executable
+  * [7222802] Bump Standards-Version to 4.5.0
+  * [85708e0] Add debian/NEWS entry to explain new configuration scheme
+
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Mon, 03 Feb 2020 13:04:49 +0100
+
+tlp (1.2.2-1) unstable; urgency=medium
+
+  * [e8bc815] New upstream version 1.2.2 (bugfix release)
+
+  Fixed bugs:
+
+  - Battery Features, tlp-stat -b
+    + Show data for batteries named other than BAT0/BAT1 (non-ThinkPads)
+    + Fix ThinkPad X1C6 discharge malfunction
+    + Separate checks for charge thresholds and recalibration
+    + Intelligible recommendation for tp-smapi on ThinkPad X220/T420 et al.
+    + Explain "Battery Features: Charge Thresholds and Recalibrate"
+
+  - Disks
+    + Fix type determination
+
+  - Operation Mode AC/BAT
+    + MacBookPro 5.3: workaround for false AC offline status
+
+  - Processor, tlp-stat -p
+    + Fix read of /sys/devices/system/cpu/cpufreq/boost
+    + x86_energy_perf_policy: detect unsupported CPUs in newer versions
+
+  - Radio Devices
+    + Make RESTORE_DEVICE_STATE_ON_STARTUP=1 persistent again
+
+  [ Thomas Koch ]
+  * [33ccb36] tlp.postinst/rm: remove mask/unmask of upstart hooks.
+  * [2102e62] debian/tlp.install: add /var/lib/tlp
+
+  [ Raphaël Halimi ]
+  * [15f1cb6] debian/rules: remove useless override_dh_auto_install
+    (TLP_WITH_SYSTEMD and TLP_WITH_ELOGIND are now enabled by default)
+
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Wed, 22 May 2019 16:52:45 +0200
 
 tlp (1.2.1-1) unstable; urgency=medium
 
-  * Merge changes from Debian
-
   * [9c53a90] New upstream version 1.2 (LP: #1814083)
   * [c273e03] New upstream version 1.2.1 (bugfix release)
+
+  Highlights:
+
+  - Disks
+    + Support for NVMe, USB, IEEE1394 devices
+    + Support for multi queue I/O schedulers (blk-mq)
+
+  - General
+    + Manual mode: keep tlp ac/bat power settings (until reboot or tlp start)
+
+  - Graphics
+    + Intel GPU frequency limits
+
+  - Radio Devices
+    + tlp-rdw: new command to disable RDW actions temporarily (until reboot)
+    + USB_BLACKLIST_WWAN: disable by default
+
+  - ThinkPad Battery
+    + New native kernel API for battery features "natacpi"; used by default
+      for kernels >= 4.17
+    + Support ThinkPad 25, *80 (Coffee Lake) and all newer models
+    + tlp-stat: improved recommendations for external kernel modules
+
+  - USB
+    + Exclude scanners managed by libsane from autosuspend
 
   [ Thomas Koch ]
   * [047ba95] Remove all pm-utils related stuff
@@ -73,40 +183,84 @@ tlp (1.2.1-1) unstable; urgency=medium
     (fixed in lintian 2.5.118)
   * [4178f68] Include upstream elogind sleep hook
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 04 Apr 2019 08:24:42 +0200
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Tue, 02 Apr 2019 19:05:16 +0200
 
 tlp (1.1-2) unstable; urgency=medium
 
-  Merge changes from Debian.
-
-  [Raphaël Halimi]
   * [59b316a] Demote smartmontools from Recommends to Suggests
     smartmontools dependencies end up pulling in a mail server, which may
-    not be wanted on desktop installations (LP: 1758798)
+    not be wanted on desktop installations (Closes: 894150) (LP: 1758798)
   * [56bc43f] debian/control: cosmetic changes
+  * [b407a57] debian/control: update Vcs-* URLs for Salsa migration
+  * [5538eec] README.Debian: fix mix up between stable/oldstable/oldoldstable
   * [a78888a] Override lintian warning about unusual WantedBy target
   * [7b94358] Override lintian warning about missing test suite
 
-  [Thomas Koch]
-  * [b407a57] debian/control: point Vcs-* to github.com/linrunner/tlp
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Tue, 27 Mar 2018 15:02:15 +0200
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 10 Apr 2018 07:11:42 +0200
+tlp (1.1-1) unstable; urgency=medium
 
-tlp (1.1-1) unstable; urgency=low
+  * [44a3801] New upstream version 1.1
 
-  [Thomas Koch]
-  * New upstream version
-  * Make it work with Ubuntu 16.04 again:
-    - debian/control: Build-Depends: debhelper (>= 9), dh-systemd
-    - debian/rules: dh_installinit --onlyscripts
-    - debian/changelog: change Maintainer
-  * Use upstream de.linrunner.tlp.metainfo.xml
+    Highlights:
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 24 Jan 2018 06:51:42 +0100
+    - Disks
+      + SATA_LINKPWR_ON_AC/BAT: try multiple values to support new recommended
+        ALPM policy "med_power_with_dipm" in kernel 4.15
+
+    - Processor
+      + ENERGY_PERF_POLICY_ON_AC/BAT: support changed values performance,
+        balance-performance, default, balance-power, power
+
+    - ThinkPad Battery
+      + Support ThinkPad 13 1st & 2nd Gen, E130; new tpacpi-bat version
+      + tlp-stat --psup: show ASLbase for tpacpi-bat (in device/path)
+      + tlp discharge: show state of battery and force_discharge
+
+    - USB
+      + USB_BLACKLIST_PRINTER: exclude printers from autosuspend
+
+  [ Thomas Koch ]
+  * [05ce2a3] Use upstream de.linrunner.tlp.metainfo.xml
+
+  [ Raphaël Halimi ]
+  * [484d00d] debian/gbp.conf: enforce pristine-tar usage
+  * [60287fa] debian/copyright: update copyrights years
+  * [2095e80] Bump Standards-Version to 4.1.3
+
+ -- Raphaël Halimi <raphael.halimi@gmail.com>  Thu, 25 Jan 2018 11:03:15 +0100
 
 tlp (1.0-1) unstable; urgency=medium
 
   * [b811fae] New upstream version 1.0 (Closes: #850293)
+
+    Highlights:
+
+    - General
+      + TLP_PERSISTENT_DEFAULT: force battery settings on AC power
+        (or vice versa)
+
+    - Device bays
+      + BAY_POWEROFF_ON_AC: power off optical drive on AC power
+
+    - Graphics
+      + Blacklist all dGPU's by default and use kernel default for Runtime PM
+      + Improved compatibility with Bumblebee
+
+    - Processor
+      + CPU_HWP_ON_AC/BAT: HWP energy performance hints for Intel Skylake or
+        newer
+
+    - ThinkPad Battery
+      + RESTORE_THRESHOLDS_ON_BAT: restore charge thresholds when unplugging
+        AC
+      + Detect Intel Kaby Lake (*70) models
+      + tlp-stat: show "Charge total %" when more than one battery is present
+
+    - USB
+      Exclude certain devices from autosuspend to:
+      + Solve stability issues with bluetooth devices (USB_BLACKLIST_BTUSB)
+      + Enable phone charging (USB_BLACKLIST_PHONE)
 
   [ Thomas Koch ]
   * [639a7fe] debian/copyright,tlp.init: update copyright year
