@@ -42,7 +42,7 @@
         - Show IDs for all disks configured in DISK_DEVICES
         - Distinguish SATA from ATA(IDE) disks
         - Show disks attached to SATA links/ports
-        - Show a disk's host (for SATA_LINKPWR_BLACKLIST)
+        - Show a disk's host (for SATA_LINKPWR_DENYLIST)
         - Explain why runtime pm is locked for a disk
         - Show ALPM state in the sysfs directory of the AHCI host
         - Remove "No AHCI-enabled host controller detected." message
@@ -62,7 +62,7 @@
     PCI(e) devices:
        - RUNTIME_PM_ENABLE/DISABLE: permanently enable/disable runtime PM for
          PCI(e) devices based on address (independent of the power source)
-       - RUNTIME_PM_BLACKLIST: remove amdgpu, nvidia, pcieport from defaults
+       - RUNTIME_PM_DENYLIST: remove amdgpu, nvidia, pcieport from defaults
     Processor:
       - Remove backwards compatibility of CPU_ENERGY_PERF_POLICY_ON_AC/BAT with
         ENERGY_PERF_POLICY_ON_AC/BAT to prevent performance issues caused by the
