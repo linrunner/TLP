@@ -116,7 +116,7 @@ sub parse_configfile {
             my $name = $+{name};
             if ( $do_ren ) {
                 # rename PARAMETER
-                $name =~ s/($renrex)/$rename{$1}/;
+                $name =~ s/$renrex/$rename{$1}/;
             }
             my $value = $+{val_dquoted} // $+{val_bare};
             my $append = $+{op} eq "+=";
@@ -176,8 +176,8 @@ sub parse_renfile {
     close ($rf);
 
     if ( keys %rename > 0 ) {
-        # renaming hash not empty --> compile to renaming regex
-        $renrex = qr/@{[join '|', map { quotemeta($_) } keys %rename]}/;
+        # renaming hash not empty --> compile OLD_PARAMETER keys to match regex
+        $renrex = qr/^(@{[join '|', map { quotemeta($_) } keys %rename]})$/;
         # enable renaming
         $do_rename = 1;
     }
