@@ -7,6 +7,7 @@ TLP_BIN     ?= /usr/bin
 TLP_TLIB    ?= /usr/share/tlp
 TLP_FLIB    ?= /usr/share/tlp/func.d
 TLP_ULIB    ?= /lib/udev
+TLP_BATD    ?= /usr/share/tlp/bat.d
 TLP_NMDSP   ?= /etc/NetworkManager/dispatcher.d
 TLP_CONFUSR ?= /etc/tlp.conf
 TLP_CONFDIR ?= /etc/tlp.d
@@ -30,6 +31,7 @@ _BIN     = $(DESTDIR)$(TLP_BIN)
 _TLIB    = $(DESTDIR)$(TLP_TLIB)
 _FLIB    = $(DESTDIR)$(TLP_FLIB)
 _ULIB    = $(DESTDIR)$(TLP_ULIB)
+_BATD    = $(DESTDIR)$(TLP_BATD)
 _NMDSP   = $(DESTDIR)$(TLP_NMDSP)
 _CONFUSR = $(DESTDIR)$(TLP_CONFUSR)
 _CONFDIR = $(DESTDIR)$(TLP_CONFDIR)
@@ -53,6 +55,7 @@ SED = sed \
 	-e "s|@TLP_TLIB@|$(TLP_TLIB)|g" \
 	-e "s|@TLP_FLIB@|$(TLP_FLIB)|g" \
 	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
+	-e "s|@TLP_BATD@|$(TLP_BATD)|g" \
 	-e "s|@TLP_CONFUSR@|$(TLP_CONFUSR)|g" \
 	-e "s|@TLP_CONFDIR@|$(TLP_CONFDIR)|g" \
 	-e "s|@TLP_CONFDEF@|$(TLP_CONFDEF)|g" \
@@ -97,6 +100,7 @@ SHFILES = \
 	tlp.in \
 	tlp-func-base.in \
 	func.d/* \
+	bat.d/* \
 	tlp-rdw.in \
 	tlp-rdw-nm.in \
 	tlp-rdw-udev.in \
@@ -132,6 +136,7 @@ install-tlp: all
 	install -m 755 tlp-stat $(_BIN)/
 	install -D -m 755 -t $(_TLIB)/func.d func.d/*
 	install -m 755 tlp-func-base $(_TLIB)/
+	install -D -m 755 -t $(_TLIB)/bat.d bat.d/*
 	install -m 755 tlp-pcilist $(_TLIB)/
 	install -m 755 tlp-readconfs $(_TLIB)/
 	install -m 755 tlp-usblist $(_TLIB)/

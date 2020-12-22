@@ -242,6 +242,16 @@ case "$pwrmode" in
     *) echo_debug "run" "power_mode=unknown ($pwrmode)" ;;
 esac
 
+# source and initialize all battery feature drivers until a matching one is found
+for batdrv in @TLP_BATD@/[0-9][0-9]*; do
+    # shellcheck disable=SC1090
+    . $batdrv || exit 70
+
+    # end iteration when a matching driver is found
+    batdrv_init && break
+done
+
+# process command
 exitcode=0
 
 case "$_cmd" in

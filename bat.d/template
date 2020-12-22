@@ -1,0 +1,17 @@
+#!/bin/sh
+# template - Battery Feature Driver
+#
+# Copyright (c) 2020 Thomas Koch <linrunner at gmx.net> and others.
+# This software is licensed under the GPL v2 or later.
+
+# Needs: tlp-func-base, 34-tlp-func-platform, 35-tlp-func-batt
+
+# shellcheck disable=
+
+batdrv_init () { # detect hardware and initialize driver
+    # rc: 0=matching hardware detected/1=not detected
+
+    echo_debug "bat" "batdrv_init.template.no_match"
+
+    return 1
+}
