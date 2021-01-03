@@ -1,6 +1,6 @@
 # tlp - systemd startup/shutdown service
 #
-# Copyright (c) 2020 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
 [Unit]
