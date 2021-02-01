@@ -1,7 +1,7 @@
 ## How to submit a bug report
 
 ### Before you report a bug
-Make shure you have:
+Make sure you have:
 
 * Followed the appropiate [Installation instructions](https://linrunner.de/tlp/installation)
 * Read the [Settings guide](https://linrunner.de/tlp/settings)
