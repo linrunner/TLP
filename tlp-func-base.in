@@ -372,6 +372,23 @@ create_rundir () { # make sure $RUNDIR exists
     [ -d $RUNDIR ] || mkdir -p $RUNDIR 2> /dev/null 1>&2
 }
 
+# -- Battery Feature Drivers
+
+select_batdrv () { # source battery feature drivers and
+                   # activate the one that matches the hardware
+
+    # iterate until a matching driver is found
+    for batdrv in @TLP_BATD@/[0-9][0-9]*; do
+        # shellcheck disable=SC1090
+        . $batdrv || exit 70
+
+        # end iteration when a matching driver is found
+        batdrv_init && break
+    done
+
+    return 0
+}
+
 # --- Configuration
 
 read_config () { # read all config files and write temporary runconf file
