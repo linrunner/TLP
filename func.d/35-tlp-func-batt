@@ -18,21 +18,13 @@
 set_charge_thresholds () {
     # apply configured thresholds from configuration to all batteries
     # rc: 0=ok/
-    #     1=error/
-    #     255=no thresh api
+    #     1=error
 
     local rc
 
     # select battery feature driver
     select_batdrv
-    # shellcheck disable=SC2154
-    if [ "$_bm_thresh" = "none" ]; then
-        # thresholds not available --> quit
-        printf "Error: battery charge thresholds not available.\n" 1>&2
-        echo_debug "bat" "set_charge_thresholds.no_method"
-        return 255
-    fi
-
+    # apply thresholds
     batdrv_apply_configured_thresholds; rc=$?
 
     return $rc
