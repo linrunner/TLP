@@ -382,7 +382,7 @@ batdrv_read_threshold () {
     if [ "$X_THRESH_SIMULATE_READERR" != "1" ]; then
         printf "%s" "$out"
     else
-        rc=1
+        rc=4
     fi
 
     echo_debug "bat" "batdrv.thinkpad.read_threshold($1): bm_thresh=$_bm_thresh; bf=$bf; bat_idx=$_bat_idx; out=$out; rc=$rc"
@@ -593,11 +593,11 @@ batdrv_chargeonce () {
             ;; # natacpi, tpacpi
 
         tpsmapi) # use tp-smapi sysfile
-            ccharge=$(read_sysval $_bd_read/remaining_percent)
+            ccharge=$(read_sysval $_bd_read/remaining_percent) || ccharge=-1
             ;; # tpsmapi
     esac
 
-    if [ $ccharge -eq -1 ] ; then
+    if [ $ccharge -eq -1 ]; then
         printf "Error: cannot determine charge level for %s.\n" "$_bat_str" 1>&2
         echo_debug "bat" "batdrv.thinkpad.chargeonce($_bat_str).charge_level_unknown: enow=$enow; efull=$efull; rc=2"
         return 2
@@ -1019,7 +1019,7 @@ batdrv_show_battery_data () { # output battery data
         esac # $_bm_read
 
         # --- show battery features: thresholds, force_discharge
-        local th dc
+        local dc th lf=0
         case $_bm_thresh in
             natacpi)
                 if th=$(batdrv_read_threshold start "$_bf_start" ""); then
@@ -1032,6 +1032,7 @@ batdrv_show_battery_data () { # output battery data
                 else
                     printf "%-59s = %s [%%]\n"  "$_bf_stop"  "(not available)"
                 fi
+                lf=1
                 ;;
 
             tpacpi)
@@ -1045,9 +1046,9 @@ batdrv_show_battery_data () { # output battery data
                 else
                     printf "%-59s = %s [%%]\n"  "tpacpi-bat.${_bat_str}.stopThreshold" "(not available)"
                 fi
+                lf=1
                 ;;
         esac
-
         if [ "$_bm_dischg" != "none" ]; then
             if dc=$(batdrv_read_force_discharge ""); then
                 # valid force_discharge read
@@ -1062,9 +1063,9 @@ batdrv_show_battery_data () { # output battery data
                     tpacpi)  printf "%-59s = %6d\n" "tpacpi-bat.${_bat_str}.forceDischarge" "(not available)" ;;
                 esac
             fi
+            lf=1
         fi
-
-        printf "\n"
+        [ $lf -gt 0 ] && printf "\n"
 
         # --- show charge level (SOC) and capacity
         local lcnt=0
