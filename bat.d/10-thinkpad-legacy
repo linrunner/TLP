@@ -8,12 +8,756 @@
 
 # Needs: tlp-func-base, 34-tlp-func-platform, 35-tlp-func-batt
 
-# shellcheck disable=
+# shellcheck disable=SC2086
 
-batdrv_init () { # detect hardware and initialize driver
-    # rc: 0=matching hardware detected/1=not detected
+batdrv_init () {
+    # detect hardware and initialize driver
+    # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
+    #
+    # 1. check for tp-smapi external kernel module
+    #    --> retval $_tpsmapi
+    #       0=supported/
+    #       32=disabled/
+    #       64=tp_smapi module not loaded/
+    #       128=tp_smapi module not installed/
+    #       254=ThinkPad not supported
+    #
+    # 2. determine method for
+    #    reading battery data                   --> retval $_bm_read,
+    #    reading/writing charging thresholds    --> retval $_bm_thresh,
+    #    reading/writing force discharge        --> retval $_bm_dischg:
+    #       none/natacpi/tpacpi/tpsmapi
+    #
+    # 3. determine sysfile basenames for tpsmapi
+    #    start threshold                        --> retval $_bn_start,
+    #    stop threshold                         --> retval $_bn_stop,
+    #    force discharge                        --> retval $_bn_dischg;
+    #
+    # 4. determine present batteries
+    #    list of battery sysdirs (space sep.)   --> retval $_battdirs
+    #    list of batteries (space separated)    --> retval $_batteries;
+    #
+    # 5. define charge threshold defaults
+    #    start threshold                        --> retval $_bt_def_start,
+    #    stop threshold                         --> retval $_bt_def_stop;
 
-    echo_debug "bat" "batdrv_init.thinkpad-legacy.no_match"
+    # check if hardware matches and load necessary kernel modules
+    if ! check_thinkpad; then
+        echo_debug "bat" "batdrv_init.thinkpad-legacy.not_a_thinkpad"
+        return 1
+    elif ! supports_tpsmapi_only; then
+        echo_debug "bat" "batdrv_init.thinkpad-legacy.unsupported_model"
+        return 1
+    fi
 
-    return 1
+    # presume no features at all
+    _tpsmapi=254
+    _bm_read="natacpi"
+    _bm_thresh="none"
+    _bm_dischg="none"
+    _bn_start="start_charge_thresh"
+    _bn_stop="stop_charge_thresh"
+    _bn_dischg="force_discharge"
+    _battdirs=""
+    _batteries=""
+    # shellcheck disable=SC2034
+    _bt_def_start=96
+    # shellcheck disable=SC2034
+    _bt_def_stop=100
+
+    local bs bd
+
+    # determine present batteries
+    for bd in "$ACPIBATDIR"/BAT[01]; do
+        if [ "$(read_sysf $bd/present)" = "1" ]; then
+            # record detected batteries and directories
+            bs=${bd##/*/}
+            if [ -n "$_batteries" ]; then
+                _batteries="$_batteries $bs"
+            else
+                _batteries="$bs"
+            fi
+            if [ -n "$_battdirs" ]; then
+                _battdirs="$_battdirs $bd"
+            else
+                _battdirs="$bd"
+            fi
+        fi
+    done
+
+    # quit if no battery detected, there is no point in selecting a driver
+    if [ -z "$_batteries" ]; then
+        echo_debug "bat" "batdrv_init.thinkpad-legacy.no_batteries"
+        return 2
+    fi
+
+    # --- check for tp-smapi external kernel module (relevant models only)
+    if [ -d $SMAPIBATDIR ]; then
+        # module loaded --> tp-smapi available
+        if [ "$TPSMAPI_ENABLE" = "0" ]; then
+            # tpsmapi disabled by configuration
+            _tpsmapi=32
+        else
+            # check if all required sysfiles exist for 1st battery
+            for bs in $_batteries; do
+                bds="$SMAPIBATDIR/$bs"
+                if readable_sysf "$bds/$_bn_start" \
+                   && readable_sysf "$bds/$_bn_stop" \
+                   && readable_sysf "$bds/$_bn_dischg"; then
+                    # all sysfiles are actually readable
+                    _tpsmapi=0
+                    _bm_read="tpsmapi"
+                    _bm_thresh="tpsmapi"
+                    _bm_dischg="tpsmapi"
+                    break # quit loop
+                fi
+            done
+        fi
+    elif $MODINFO $MOD_TPSMAPI > /dev/null 2>&1; then
+        # module installed but not loaded
+        _tpsmapi=64
+    else
+        # module neither installed nor builtin
+        _tpsmapi=128
+    fi
+
+    echo_debug "bat" "batdrv_init.thinkpad-legacy: batteries=$_batteries; tpsmapi=$_tpsmapi"
+    echo_debug "bat" "batdrv_init.thinkpad-legacy: read=$_bm_read; thresh=$_bm_thresh; start=$_bn_start; stop=$_bn_stop; dischg=$_bm_dischg; force=$_bn_dischg"
+    return 0
+}
+
+batdrv_select_battery () {
+    # determine battery sysfiles and bat index
+    # $1: BAT0/BAT1/DEF
+    # global param: $_bm_read
+    # rc: 0=bat exists/1=bat non-existent
+    # retval: $_bat_str:   BAT0/BAT1;
+    #         $_bat_idx:   1/2;
+    #         $_bd_read:   directory with battery data sysfiles;
+    #         $_bf_start:  sysfile for start threshold;
+    #         $_bf_stop:   sysfile for stop threshold;
+    #         $_bf_dischg: sysfile for force discharge
+    # prerequisite: batdrv_init()
+
+    # defaults
+    _bat_idx=0    # no index
+    _bat_str=""   # no bat
+    _bd_read=""   # no directories
+    _bf_start=""
+    _bf_stop=""
+    _bf_dischg=""
+
+    # validate battery param
+    local bs
+    case $1 in
+        DEF) # 1st battery is default
+            bs="${_batteries%% *}"
+            ;;
+
+        *)
+            if wordinlist "$1" "$_batteries"; then
+                bs=$1
+            else
+                # battery not present --> quit
+                echo_debug "bat" "batdrv.thinkpad-legacy.select_battery($1).not_present"
+                return 1
+            fi
+            ;;
+    esac
+
+    # determine bat index for main/aux distinction
+    _bat_str="$bs"
+    case $bs in
+        BAT0) _bat_idx=1 ;;
+        BAT1) _bat_idx=2 ;;
+    esac
+
+    # determine tpsmapi sysfiles
+    if [ "$_bm_thresh" = "tpsmapi" ]; then
+        _bf_start="$SMAPIBATDIR/$bs/$_bn_start"
+        _bf_stop="$SMAPIBATDIR/$bs/$_bn_stop"
+    fi
+
+    if [ "$_bm_dischg" = "tpsmapi" ]; then
+        _bf_dischg="$SMAPIBATDIR/$bs/$_bn_dischg"
+    fi
+
+    case "$_bm_read" in
+        natacpi) _bd_read="$ACPIBATDIR/$bs" ;;
+        tpsmapi) _bd_read="$SMAPIBATDIR/$bs" ;;
+    esac
+
+    echo_debug "bat" "batdrv.thinkpad-legacy.select_battery($1): bat_str=$_bat_str; bat_idx=$_bat_idx; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg"
+    return 0
+}
+
+batdrv_read_threshold () {
+    # read and print charge threshold
+    # $1: start/stop
+    # $2: error string
+    # global param: $_bm_thresh, $_bf_start, $_bf_stop
+    # out: threshold 0..100/"$2" on error
+    # rc: 0=ok/4=read error/255=no api
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local bf out="" rc=0
+
+    case $1 in
+        start) out="$X_THRESH_SIMULATE_START" ;;
+        stop)  out="$X_THRESH_SIMULATE_STOP"  ;;
+    esac
+    if [ -n "$out" ]; then
+        printf "%s" "$out"
+        echo_debug "bat" "batdrv.thinkpad-legacy.read_threshold($1).simulate: bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
+        return 0
+    fi
+
+    case $_bm_thresh in
+        tpsmapi)
+            # read threshold from sysfile, "$2" if not readable/non-existent
+            case $1 in
+                start) out=$(read_sysf $_bf_start "$2") || rc=4 ;;
+                stop)  out=$(read_sysf $_bf_stop  "$2") || rc=4 ;;
+            esac
+            ;;
+    esac
+
+    # "return" threshold
+    if [ "$X_THRESH_SIMULATE_READERR" != "1" ]; then
+        printf "%s" "$out"
+    else
+        rc=4
+    fi
+
+    echo_debug "bat" "batdrv.thinkpad-legacy.read_threshold($1): bm_thresh=$_bm_thresh; bf=$bf; bat_idx=$_bat_idx; out=$out; rc=$rc"
+    return $rc
+}
+
+batdrv_write_thresholds () {
+    # write both charge thresholds for a battery
+    # use pre-determined method and sysfiles from global parms
+    # $1: new start threshold 0(disabled)..99/DEF(default)
+    # $2: new stop threshold 1..100/DEF(default)
+    # $3: 0=quiet/1=output parameter errors/2=output progress and errors
+    # global param: $_bm_thresh, $_bat_str, $_bf_start, $_bf_stop
+    # rc: 0=ok/
+    #     2=threshold(s) out of range or non-numeric/
+    #     3=minimum start stop diff violated/
+    #     4=threshold read error/
+    #     5=threshold write error
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+    local new_start=$1
+    local new_stop=$2
+    local verb=${3:-0}
+    local old_start old_stop
+
+    # insert defaults
+    [ "$new_start" = "DEF" ] && new_start=$_bt_def_start
+    [ "$new_stop" = "DEF" ] && new_stop=$_bt_def_stop
+
+    # --- validate thresholds
+    local rc
+
+    # start: check for 3 digits max, ensure min 2 / max 96
+    if ! is_uint "$new_start" 3 || \
+       ! is_within_bounds $new_start 2 96; then
+        # threshold out of range
+        echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).invalid_start: bat=$_bat_str"
+        case $verb in
+            1) printf "Warning: charge start threshold %s for %s invalid or out of range (1..96). Skipped.\n" "$new_start" $_bat_str 1>&2 ;;
+            2) printf "Error: charge start threshold %s for %s invalid or out of range (1..96). Aborted.\n" "$new_start" $_bat_str 1>&2 ;;
+        esac
+        return 2
+    fi
+
+    # stop: check for 3 digits max, ensure min 6 / max 100
+    if ! is_uint "$new_stop" 3 || \
+       ! is_within_bounds $new_stop 6 100; then
+        # threshold out of range
+        echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).invalid_stop: bat=$_bat_str"
+        case $verb in
+            1) printf "Warning: charge stop threshold %s for %s invalid or out of range (6..100). Skipped.\n" "$new_stop" $_bat_str 1>&2 ;;
+            2) printf "Error: charge stop threshold %s for %s invalid or out of range (6..100). Aborted.\n" "$new_stop" $_bat_str 1>&2 ;;
+        esac
+        return 2
+    fi
+
+    # check minimum start - stop difference
+    if [ $((new_start + 4)) -gt $new_stop ]; then
+        echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).invalid_diff: bat=$_bat_str"
+        case $verb in
+            1) printf "Warning: charge start threshold > stop threshold - 4 for %s. Skipped.\n" $_bat_str 1>&2 ;;
+            2) printf "Error: start threshold > stop threshold - 4 for %s. Aborted.\n" $_bat_str 1>&2 ;;
+        esac
+        return 3
+    fi
+
+    # read active threshold values
+    if ! old_start=$(batdrv_read_threshold start) || \
+       ! old_stop=$(batdrv_read_threshold stop); then
+        echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).read_error: bat=$_bat_str"
+        case $verb in
+            1) printf "Warning: could not read current charge thresholds for %s. Skipped.\n" $_bat_str 1>&2 ;;
+            2) printf "Error: could not read current charge thresholds for %s. Aborted.\n" $_bat_str 1>&2 ;;
+        esac
+        return 4
+    fi
+
+    # determine write sequence because driver's intrinsic boundary conditions
+    # must be met in all write stages:
+    #   - tpsmapi: start <= stop - 4 (changes value for compliance)
+    local rc=0 steprc tseq
+
+    if [ $new_start -gt $old_stop ]; then
+        tseq="stop start"
+    else
+        tseq="start stop"
+    fi
+
+    # write new thresholds in determined sequence
+    if [ "$verb" = "2" ]; then
+        echo "Setting temporary charge thresholds for $_bat_str:"
+    fi
+
+    for step in $tseq; do
+        local old_thresh new_thresh steprc
+
+        case $step in
+            start)
+                old_thresh=$old_start
+                new_thresh=$new_start
+                ;;
+
+            stop)
+                old_thresh=$old_stop
+                new_thresh=$new_stop
+                ;;
+        esac
+
+        if [ "$old_thresh" != "$new_thresh" ]; then
+            # new threshold differs from effective one --> write it
+            case $_bm_thresh in
+                tpsmapi)
+                    case $step in
+                        start) write_sysf "$new_thresh" $_bf_start ;;
+                        stop)  write_sysf "$new_thresh" $_bf_stop  ;;
+                    esac
+                    steprc=$?; [ $steprc -ne 0 ] && [ $rc -eq 0 ] && rc=5
+                    ;; # tpsmapi
+            esac
+            echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).$step.write: bat=$_bat_str; old=$old_thresh; new=$new_thresh; steprc=$steprc"
+
+            case $verb in
+                2)
+                    if [ $steprc -eq 0 ]; then
+                        printf "  %-5s = %3d\n" $step $new_thresh
+                    else
+                        printf "  %-5s = %3d (Error: write failed)\n" $step $new_thresh 1>&2
+                    fi
+                    ;;
+                1)
+                    if [ $steprc -gt 0 ]; then
+                        printf "Warning: writing charge %s threshold for %s failed. Skipped.\n" $step $new_thresh 1>&2
+                    fi
+                    ;;
+            esac
+        else
+            echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).$step.no_change: bat=$_bat_str; old=$old_thresh; new=$new_thresh"
+
+            if [ "$verb" = "2" ]; then
+                printf "  %-5s = %3d (no change)\n" $step $new_thresh
+            fi
+        fi
+    done # for step
+
+    echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).complete: bat=$_bat_str; rc=$rc"
+    return $rc
+}
+
+batdrv_chargeonce () {
+    # charge battery to stop threshold once
+    # use pre-determined method and sysfiles from global parms
+    # global param: $_bm_thresh, $_bat_str, $_bf_start, $_bf_stop
+    # rc: 0=ok/
+    #     2=charge level read error
+    #     3=charge level too high/
+    #     4=threshold read error/
+    #     5=threshold write error/
+    #     6=stop threshold too low
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local ccharge cur_stop efull enow temp_start
+    local rc=0
+
+    if ! cur_stop=$(batdrv_read_threshold stop); then
+        printf "Error: reading charge stop threshold for %s failed. Aborted.\n" $_bat_str 1>&2
+        echo_debug "bat" "batdrv.thinkpad-legacy.chargeonce($_bat_str).thresh_unknown: stop=$cur_stop; rc=4"
+        return 4
+    elif [ $cur_stop -lt 6 ]; then
+        printf "Error: the %s charge stop threshold is %s. " "$_bat_str" "$ccharge"  1>&2
+        printf "For this command to work, it must be 6 at least.\n"  1>&2
+        echo_debug "bat" "batdrv.thinkpad-legacy.chargeonce($_bat_str).stop_thresh_too_low: stop=$cur_stop; rc=6"
+        return 6
+    fi
+
+    # get current charge level (in %)
+    case $_bm_read in
+        tpsmapi) # use tp-smapi sysfile
+            ccharge=$(read_sysval $_bd_read/remaining_percent) || ccharge=-1
+            ;;
+    esac
+
+    if [ $ccharge -eq -1 ] ; then
+        printf "Error: cannot determine charge level for %s.\n" "$_bat_str" 1>&2
+        echo_debug "bat" "batdrv.thinkpad-legacy.chargeonce($_bat_str).charge_level_unknown: enow=$enow; efull=$efull; rc=2"
+        return 2
+    fi
+
+    temp_start=$(( cur_stop - 4 ))
+    if [ $ccharge -gt $temp_start ]; then
+        printf "Error: the %s charge level is %s%%. " "$_bat_str" "$ccharge"  1>&2
+        printf "For this command to work, it must not exceed %s%% (stop threshold - 4).\n" "$temp_start" 1>&2
+        echo_debug "bat" "batdrv.thinkpad-legacy.chargeonce($_bat_str).charge_level_too_high: soc=$ccharge; stop=$cur_stop; rc=3"
+        return 3
+    fi
+
+    echo "Setting temporary charge threshold for $_bat_str:"
+    case $_bm_thresh in
+        tpsmapi)
+            write_sysf "$temp_start" $_bf_start || rc=5
+            ;;
+    esac
+
+    if [ $rc -eq 0 ]; then
+        printf "  start = %3d\n" $temp_start
+    else
+        printf "  start = %3d (Error: write failed)\n" $temp_start 1>&2
+    fi
+    echo_debug "bat" "batdrv.thinkpad-legacy.chargeonce($_bat_str): soc=$ccharge; start=$temp_start; stop=$cur_stop; rc=$rc"
+
+    return $rc
+}
+
+batdrv_apply_configured_thresholds () {
+    # apply configured thresholds from configuration to all batteries
+    # output parameter errors only
+
+    if batdrv_select_battery BAT0; then
+        batdrv_write_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0" 1; rc=$?
+    fi
+    if batdrv_select_battery BAT1; then
+        # write configured thresholds, output parameter errors
+        batdrv_write_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1" 1; rc=$?
+    fi
+
+    return 0
+}
+
+batdrv_read_force_discharge () {
+    # read and print force discharge state
+    # $1: error string
+    # global param: $_bm_dischg, $_bf_dischg
+    # out: 0=off/1=on/"$1" on error
+    # rc: 0=ok/4=read error
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local rc=0 out="$1"
+
+    case $_bm_dischg in
+        tpsmapi)
+            # read force discharge from sysfile, "$1" if not readable/non-existent
+            out=$(read_sysf $_bf_dischg "$1");
+            ;;
+    esac
+    printf "%s" "$out"
+
+    echo_debug "bat" "batdrv.thinkpad-legacy.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; out=$out; rc=$rc"
+    return $rc
+}
+
+batdrv_write_force_discharge () {
+    # write force discharge state
+    # $1: 0=off/1=on
+    # global param: $_bat_str, $_bat_idx, $_bm_dischg, $_bf_dischg
+    # rc: 0=done/5=write error
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local rc=0
+
+    case $_bm_dischg in
+        tpsmapi)
+            # write force_discharge
+            write_sysf "$1" $_bf_dischg || rc=5
+            ;;
+    esac
+
+    echo_debug "bat" "batdrv.thinkpad-legacy.write_force_discharge($_bat_str, $1): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; bat_idx=$_bat_idx; rc=$rc"
+    return $rc
+}
+
+batdrv_cancel_force_discharge () {
+    # trap: called from batdrv_discharge
+    # global param: $_bat_str
+    # prerequisite: batdrv_discharge()
+
+    batdrv_write_force_discharge 0
+    unlock_tlp tlp_discharge
+    echo_debug "bat" "batdrv.thinkpad-legacy.discharge.cancelled($_bat_str)"
+    echo " Cancelled."
+
+    do_exit 0
+}
+
+batdrv_force_discharge_active () { # check if battery is in 'force_discharge' state
+    # global param: $_bat_str, $_bm_read, $_bd_read
+    # rc: 0=discharging/1=not discharging or read error
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local rc=1
+
+    # check if force_discharge is on
+    [ "$(batdrv_read_force_discharge "")" = "1" ] && rc=0
+
+    echo_debug "bat" "batdrv.thinkpad-legacy.force_discharge_active($_bat_str): bm_read=$_bm_read; rc=$rc"
+    return $rc
+}
+
+batdrv_discharge () {
+    # discharge battery
+    # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
+    # rc: 0=done/1=malfunction/2=not emptied/3=ac removed/255=no api
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local rc rp wt
+
+    # start discharge
+    if ! batdrv_write_force_discharge 1; then
+        echo_debug "bat" "batdrv.thinkpad-legacy.discharge.force_discharge_malfunction($_bat_str)"
+        echo "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
+        return 1
+    fi
+
+    trap batdrv_cancel_force_discharge INT # enable ^C hook
+    rc=0; rp=0
+
+    # wait for start == while status not "discharging" -- 15.0 sec timeout
+    printf "Initiating discharge of battery %s " $_bat_str
+    wt=15
+    while ! batdrv_force_discharge_active && [ $wt -gt 0 ] ; do
+        sleep 1
+        printf "."
+        wt=$((wt - 1))
+    done
+    printf "\n"
+
+    if batdrv_force_discharge_active; then
+        # discharge initiated sucessfully --> wait for completion == while status "discharging"
+        echo_debug "bat" "batdrv.thinkpad-legacy.discharge.running($_bat_str)"
+
+        while batdrv_force_discharge_active; do
+            clear
+            echo "Currently discharging battery $_bat_str:"
+
+            # show current battery state
+            case $_bm_read in
+                tpsmapi) # use tp-smapi sysfiles
+                    printf "voltage            = %6s [mV]\n"  "$(read_sysf $_bd_read/voltage)"
+                    printf "remaining capacity = %6s [mWh]\n" "$(read_sysf $_bd_read/remaining_capacity)"
+                    rp=$(read_sysf $_bd_read/remaining_percent)
+                    printf "remaining percent  = %6s [%%]\n"  "$rp"
+                    printf "remaining time     = %6s [min]\n" "$(read_sysf $_bd_read/remaining_running_time_now)"
+                    printf "power              = %6s [mW]\n"  "$(read_sysf $_bd_read/power_avg)"
+                    printf "state              = %s\n"  "$(read_sysf $_bd_read/state)"
+                    ;; # tpsmapi
+
+            esac
+            printf "force discharge    = %s\n"  "$(batdrv_read_force_discharge \"\")"
+
+            echo "Press Ctrl+C to cancel."
+            sleep 5
+        done
+        unlock_tlp tlp_discharge
+
+        if [ $rp -gt 0 ]; then
+            # battery not emptied --> determine cause
+            get_sys_power_supply
+            # shellcheck disable=SC2154
+            if [ $_syspwr -eq 1 ]; then
+                # system on battery --> AC power removed
+                echo_debug "bat" "batdrv.thinkpad-legacy.discharge.ac_removed($_bat_str)"
+                echo "Warning: battery $_bat_str was not discharged completely -- AC/charger removed." 1>&2
+                rc=3
+            else
+                # discharging terminated by unknown reason
+                echo_debug "bat" "batdrv.thinkpad-legacy.discharge.not_emptied($_bat_str)"
+                echo "Error: battery $_bat_str was not discharged completely -- check your hardware (battery, charger)." 1>&2
+                rc=2
+            fi
+        fi
+    else
+        # discharge malfunction --> cancel discharge and abort
+        batdrv_write_force_discharge 0
+        echo_debug "bat" "batdrv.thinkpad-legacy.discharge.malfunction($_bat_str)"
+        echo "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
+        rc=1
+    fi
+
+    trap - INT # remove ^C hook
+
+    if [ $rc -eq 0 ]; then
+        echo
+        echo "Done: battery $_bat_str was completely discharged."
+        echo_debug "bat" "batdrv.thinkpad-legacy.discharge.complete($_bat_str)"
+    fi
+    return $rc
+}
+
+batdrv_show_battery_data () { # output battery data
+    # $1: 1=verbose
+    echo "+++ ThinkPad Battery Features: Charge Thresholds and Recalibrate"
+
+    # ThinkPad-specific
+    case $_tpsmapi in
+        0)   printf "tp-smapi   = active "; print_methods_per_driver "tpsmapi" ;;
+        32)  echo "tp-smapi   = inactive (disabled by configuration)" ;;
+        64)  echo "tp-smapi   = inactive (kernel module 'tp_smapi' load error)" ;;
+        128) echo "tp-smapi   = inactive (kernel module 'tp_smapi' not installed)" ;;
+        254) echo "tp-smapi   = inactive (ThinkPad not supported)" ;;
+        *)   echo "tp-smapi   = unknown status" ;;
+    esac
+    echo
+
+    # -- show battery data
+    local bat
+    local bcnt=0
+    local ed ef en
+    local efsum=0
+    local ensum=0
+    local verbose=${1:-0}
+    for bat in $_batteries; do # iterate detected batteries
+        batdrv_select_battery $bat
+
+        case $_bat_idx in
+            1) echo "+++ ThinkPad Battery Status: $bat (Main / Internal)" ;;
+            2) echo "+++ ThinkPad Battery Status: $bat (Ultrabay / Slice / Replaceable)" ;;
+            0) echo "+++ ThinkPad Battery Status: $bat" ;;
+        esac
+
+        # --- show basic data
+        case $_bm_read in
+            natacpi) # use ACPI data
+                printparm "%-59s = ##%s##" $_bd_read/manufacturer
+                printparm "%-59s = ##%s##" $_bd_read/model_name
+
+                if cc=$(read_sysval $_bd_read/cycle_count) && [ $cc -gt 0 ]; then
+                    printf "%-59s = %6d\n" "$_bd_read/cycle_count" "$cc"
+                else
+                    printf "%-59s = (not supported)\n" "$_bd_read/cycle_count"
+                fi
+
+                if [ -f $_bd_read/energy_full ]; then
+                    printparm "%-59s = ##%6d## [mWh]" $_bd_read/energy_full_design "" 000
+                    printparm "%-59s = ##%6d## [mWh]" $_bd_read/energy_full "" 000
+                    printparm "%-59s = ##%6d## [mWh]" $_bd_read/energy_now "" 000
+                    printparm "%-59s = ##%6d## [mW]"  $_bd_read/power_now "" 000
+
+                    # store values for charge / capacity calculation below
+                    ed=$(read_sysval $_bd_read/energy_full_design)
+                    ef=$(read_sysval $_bd_read/energy_full)
+                    en=$(read_sysval $_bd_read/energy_now)
+                    efsum=$((efsum + ef))
+                    ensum=$((ensum + en))
+                else
+                    ed=0
+                    ef=0
+                    en=0
+                fi
+
+                print_batstate $_bd_read/status
+                echo
+
+                if [ $verbose -eq 1 ]; then
+                    printparm "%-59s = ##%6s## [mV]" $_bd_read/voltage_min_design "" 000
+                    printparm "%-59s = ##%6s## [mV]" $_bd_read/voltage_now "" 000
+                    echo
+                fi
+                ;; # natacpi
+
+            tpsmapi) # ThinkPad with active tp-smapi
+                printparm "%-59s = ##%s##" $_bd_read/manufacturer
+                printparm "%-59s = ##%s##" $_bd_read/model
+                printparm "%-59s = ##%s##" $_bd_read/manufacture_date
+                printparm "%-59s = ##%s##" $_bd_read/first_use_date
+                printparm "%-59s = ##%6d##" $_bd_read/cycle_count
+
+                if [ -f $_bd_read/temperature ]; then
+                    # shellcheck disable=SC2046
+                    perl -e 'printf ("%-59s = %6d [°C]\n", "'$_bd_read/temperature'", '$(read_sysval $_bd_read/temperature)' / 1000.0);'
+                fi
+
+                printparm "%-59s = ##%6d## [mWh]" $_bd_read/design_capacity
+                printparm "%-59s = ##%6d## [mWh]" $_bd_read/last_full_capacity
+                printparm "%-59s = ##%6d## [mWh]" $_bd_read/remaining_capacity
+                printparm "%-59s = ##%6d## [%%]" $_bd_read/remaining_percent
+                printparm "%-59s = ##%6s## [min]" $_bd_read/remaining_running_time_now
+                printparm "%-59s = ##%6s## [min]" $_bd_read/remaining_charging_time
+                printparm "%-59s = ##%6d## [mW]" $_bd_read/power_now
+                printparm "%-59s = ##%6d## [mW]" $_bd_read/power_avg
+                print_batstate $_bd_read/state
+                echo
+                if [ $verbose -eq 1 ]; then
+                    printparm "%-59s = ##%6s## [mV]" $_bd_read/design_voltage
+                    printparm "%-59s = ##%6s## [mV]" $_bd_read/voltage
+                    printparm "%-59s = ##%6s## [mV]" $_bd_read/group0_voltage
+                    printparm "%-59s = ##%6s## [mV]" $_bd_read/group1_voltage
+                    printparm "%-59s = ##%6s## [mV]" $_bd_read/group2_voltage
+                    printparm "%-59s = ##%6s## [mV]" $_bd_read/group3_voltage
+                    echo
+                fi
+
+                # store values for charge / capacity calculation below
+                ed=$(read_sysval $_bd_read/design_capacity)
+                ef=$(read_sysval $_bd_read/last_full_capacity)
+                en=$(read_sysval $_bd_read/remaining_capacity)
+                efsum=$((efsum + ef))
+                ensum=$((ensum + en))
+                ;; # tp-smapi
+
+        esac # $_bm_read
+
+        # --- show battery features: thresholds, force_discharge
+        local lf=0
+        if [ "$_bm_thresh" = "tpsmapi" ]; then
+            printf "%-59s = %6d [%%]\n" "$_bf_start" "$(batdrv_read_threshold start \"$_bf_start\" \"\(not available\)\")"
+            printf "%-59s = %6d [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop  \"$_bf_stop\"  \"\(not available\)\")"
+            lf=1
+        fi
+        if [ "$_bm_dischg" = "tpsmapi" ]; then
+            printf "%-59s = %6d\n" "$_bf_dischg" "$(batdrv_read_force_discharge  \"\(not available\)\")"
+            lf=1
+        fi
+        [ $lf -gt 0 ] && printf "\n"
+
+        # --- show charge level (SOC) and capacity
+       if [ $ef -ne 0 ]; then
+            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'
+            lf=1
+        fi
+        if [ $ed -ne 0 ]; then
+            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '$ef' / '$ed');'
+            lf=1
+        fi
+        [ $lf -gt 0 ] && printf "\n"
+
+        bcnt=$((bcnt+1))
+
+    done # for bat
+
+    if [ $bcnt -gt 1 ] && [ $efsum -ne 0 ]; then
+        # more than one battery detected --> show charge total
+        perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '$ensum' / '$efsum');'
+    fi
+    printf "\n"
+
+    return 0
 }
