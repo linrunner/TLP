@@ -5,9 +5,12 @@
   * Features
     Audio:
       - SOUND_POWER_SAVE_ON_AC: change default to enabled (Issue #495)
-    Battery Features:
+    Battery:
+      - Introduce plugins to support charge thresholds on non-ThinkPads
       - Discharge malfunction: hint to check battery, charger
       - tlp-stat -b
+        - "Battery Features" renamed to "Battery Wear Control"
+        - Wear Control: show plugin, supported features, driver usage
         - Map battery state "Unknown" to "Idle" for clarity
         - Flag ThinkPad L512 as "unsupported"
     Configuration:
