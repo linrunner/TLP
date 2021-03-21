@@ -487,7 +487,7 @@ case "$_cmd" in
         if check_ac_power recalibrate; then
             check_root
             if lock_tlp_nb tlp_discharge; then
-                if setcharge_battery DEF DEF $_carg1; then
+                if setcharge_battery DEF DEF "$_carg1" "/discharge/recalibrate"; then
                     sleep 1
                     discharge_battery $_carg1
                     exitcode=$?

@@ -32,7 +32,10 @@ set_charge_thresholds () {
 
 setcharge_battery () {
     # write charge thresholds (called from cmd line)
-    # $1: start charge threshold, $2: stop charge threshold, $3: battery
+    # $1: start charge threshold,
+    # $2: stop charge threshold
+    # $3: battery
+    # $4: error msg addenum
     # rc: 0=ok/
     #     1=battery not present/
     #     2=threshold(s) out of range or non-numeric/
@@ -49,7 +52,7 @@ setcharge_battery () {
     # shellcheck disable=SC2154
     if [ "$_bm_thresh" = "none" ]; then
         # thresholds not available --> quit
-        printf "Error: battery charge thresholds not available.\n" 1>&2
+        printf "Error: battery charge thresholds%s not available.\n" "${4:-}" 1>&2
         echo_debug "bat" "setcharge_battery.no_method"
         return 255
     fi
@@ -72,10 +75,10 @@ setcharge_battery () {
             bat=DEF # use default(1st) battery
             ;;
 
-        3) # assume $1,$2 are thresholds, $3 is battery
+        3|4) # assume $1,$2 are thresholds, $3 is battery
             start_thresh=$1
             stop_thresh=$2
-            bat=$3
+            bat=${3:-DEF}
             ;;
     esac
 
