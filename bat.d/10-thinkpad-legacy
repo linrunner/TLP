@@ -614,16 +614,27 @@ batdrv_discharge () {
 
 batdrv_show_battery_data () { # output battery data
     # $1: 1=verbose
-    echo "+++ ThinkPad Battery Features: Charge Thresholds and Recalibrate"
+    echo "+++ Battery Wear Control"
+    echo "Plugin: ThinkPad Legacy"
 
-    # ThinkPad-specific
+    local fs=""
+    [ "$_bm_thresh" != "none" ] && fs="charge thresholds"
+    if [ "$_bm_dischg" != "none" ]; then
+        [ -n "$fs" ] && fs="${fs}, "
+        fs="${fs}recalibration"
+    fi
+    [ -n "$fs" ] || fs="none"
+    echo "Supported features: $fs"
+
+    echo "Driver usage:"
+    # ThinkPad-specific battery API
     case $_tpsmapi in
-        0)   printf "tp-smapi   = active "; print_methods_per_driver "tpsmapi" ;;
-        32)  echo "tp-smapi   = inactive (disabled by configuration)" ;;
-        64)  echo "tp-smapi   = inactive (kernel module 'tp_smapi' load error)" ;;
-        128) echo "tp-smapi   = inactive (kernel module 'tp_smapi' not installed)" ;;
-        254) echo "tp-smapi   = inactive (ThinkPad not supported)" ;;
-        *)   echo "tp-smapi   = unknown status" ;;
+        0)   printf "* tp-smapi   = active "; print_methods_per_driver "tpsmapi" ;;
+        32)  echo "* tp-smapi   = inactive (disabled by configuration)" ;;
+        64)  echo "* tp-smapi   = inactive (kernel module 'tp_smapi' load error)" ;;
+        128) echo "* tp-smapi   = inactive (kernel module 'tp_smapi' not installed)" ;;
+        254) echo "* tp-smapi   = inactive (ThinkPad not supported)" ;;
+        *)   echo "* tp-smapi   = unknown status" ;;
     esac
     echo
 

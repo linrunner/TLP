@@ -105,7 +105,13 @@ batdrv_init () {
             # skip natacpi detection for 2nd and subsequent batteries
             [ $done -eq 1 ] && continue
 
-            # battery detected
+            done=1
+            if [ "$NATACPI_ENABLE" = "0" ]; then
+                # natacpi disabled in configuration --> skip actual detection
+                _natacpi=32
+                continue
+            fi
+
             if [ -f $bd/charge_control_start_threshold ] \
                 && [ -f $bd/charge_control_end_threshold ]; then
                 # sysfiles for thresholds exist (kernel 5.9 and newer)
@@ -121,27 +127,22 @@ batdrv_init () {
             else
                 # nothing detected
                 _natacpi=254
-                break
+                continue
             fi
 
             if readable_sysf $bd/$_bn_start \
                && readable_sysf $bd/$_bn_stop; then
                 # start/stop thresholds are actually readable
-                if [ "$NATACPI_ENABLE" = "1" ]; then
-                    _natacpi=1
-                    _bm_thresh="natacpi"
-                else
-                    _natacpi=32
-                fi
+                _natacpi=1
+                _bm_thresh="natacpi"
 
-                if [ $_natacpi != 32 ] && readable_sysf $bd/force_discharge; then
+                if readable_sysf $bd/force_discharge; then
                     # forced discharge exists and is actually readable
                     _natacpi=0
                     _bm_dischg="natacpi"
                     _bn_dischg="force_discharge"
                 fi
             fi
-            done=1
         fi
     done
 
@@ -195,12 +196,6 @@ batdrv_init () {
                 fi
             fi
         fi
-    fi
-
-    if [ $_natacpi -gt 1 ] && [ $_tpacpi -gt 1 ]; then
-        # neither natacpi nor tpacpi capable and enabled
-        echo_debug "bat" "batdrv_init.thinkpad.no_match: natacpi=$_natacpi; tpacpi=$_tpacpi"
-        return 1
     fi
 
     # --- 3. check for tp-smapi external kernel module (relevant models only)
@@ -888,35 +883,44 @@ batdrv_discharge () {
 
 batdrv_show_battery_data () { # output battery data
     # $1: 1=verbose
-    echo "+++ ThinkPad Battery Features: Charge Thresholds and Recalibrate"
+    echo "+++ Battery Wear Control"
+    echo "Plugin: ThinkPad"
 
-    # native ACPI kernel battery API
+    local fs=""
+    [ "$_bm_thresh" != "none" ] && fs="charge thresholds"
+    if [ "$_bm_dischg" != "none" ]; then
+        [ -n "$fs" ] && fs="${fs}, "
+        fs="${fs}recalibration"
+    fi
+    [ -n "$fs" ] || fs="none"
+    echo "Supported features: $fs"
+
+    echo "Driver usage:"
+    # native kernel ACPI battery API
     case $_natacpi in
-        0|1) printf "natacpi    = active "; print_methods_per_driver "natacpi" ;;
-        32)  echo "natacpi    = inactive (disabled by configuration)" ;;
-        128) echo "natacpi    = inactive (no kernel support)" ;;
-        254) echo "natacpi    = inactive (ThinkPad not supported)" ;;
-        *)   echo "natacpi    = unknown status" ;;
+        0|1) printf "* natacpi    = active "; print_methods_per_driver "natacpi" ;;
+        32)  echo "* natacpi    = inactive (disabled by configuration)" ;;
+        128) echo "* natacpi    = inactive (no kernel support)" ;;
+        254) echo "* natacpi    = inactive (ThinkPad not supported)" ;;
+        *)   echo "* natacpi    = unknown status" ;;
     esac
 
-    # ThinkPad-specific
+    # ThinkPad-specific battery APIs
     case $_tpacpi in
-        0)   printf "tpacpi-bat = active "; print_methods_per_driver "tpacpi" ;;
-        32)  echo "tpacpi-bat = inactive (disabled by configuration)" ;;
-        64)  echo "tpacpi-bat = inactive (kernel module 'acpi_call' load error)" ;;
-        127) echo "tpacpi-bat = inactive (program 'tpacpi-bat' not installed)" ;;
-        128) echo "tpacpi-bat = inactive (kernel module 'acpi_call' not installed)" ;;
-        254) echo "tpacpi-bat = inactive (ThinkPad not supported)" ;;
-        255) echo "tpacpi-bat = inactive (superseded by natacpi)" ;;
-        *)   echo "tpacpi-bat = unknown status" ;;
+        0)   printf "* tpacpi-bat = active "; print_methods_per_driver "tpacpi" ;;
+        32)  echo "* tpacpi-bat = inactive (disabled by configuration)" ;;
+        64)  echo "* tpacpi-bat = inactive (kernel module 'acpi_call' load error)" ;;
+        127) echo "* tpacpi-bat = inactive (program 'tpacpi-bat' not installed)" ;;
+        128) echo "* tpacpi-bat = inactive (kernel module 'acpi_call' not installed)" ;;
+        254) echo "* tpacpi-bat = inactive (ThinkPad not supported)" ;;
+        255) echo "* tpacpi-bat = inactive (superseded by natacpi)" ;;
+        *)   echo "* tpacpi-bat = unknown status" ;;
     esac
     case $_tpsmapi in
-        1)   printf "tp-smapi   = readonly "; print_methods_per_driver "tpsmapi" ;;
-        32)  echo "tp-smapi   = inactive (disabled by configuration)" ;;
-        64)  echo "tp-smapi   = inactive (kernel module 'tp_smapi' load error)" ;;
-        128) echo "tp-smapi   = inactive (kernel module 'tp_smapi' not installed)" ;;
-        254) echo "tp-smapi   = inactive (ThinkPad not supported)" ;;
-        *)   echo "tp-smapi   = unknown status" ;;
+        1)   printf "* tp-smapi   = readonly "; print_methods_per_driver "tpsmapi" ;;
+        32)  echo "* tp-smapi   = inactive (disabled by configuration)" ;;
+        64)  echo "* tp-smapi   = inactive (kernel module 'tp_smapi' load error)" ;;
+        128) echo "* tp-smapi   = inactive (kernel module 'tp_smapi' not installed)" ;;
     esac
     echo
 

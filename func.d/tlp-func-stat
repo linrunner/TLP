@@ -649,7 +649,7 @@ show_gpu_data () { # show GPU data for all drivers
 }
 
 
-# --- Battery Features
+# --- Battery
 
 print_methods_per_driver () { # show features provided by a battery driver
     # $1: driver = natacpi, tpacpi, tpsmapi
@@ -659,16 +659,13 @@ print_methods_per_driver () { # show features provided by a battery driver
         if [ "$(eval echo \$$bm)" = "$1" ]; then
             # method matches driver
             case $bm in
-                _bm_read)   m="data" ;;
-                _bm_thresh) m="thresholds" ;;
-                _bm_dischg) m="recalibrate" ;;
+                _bm_read)   m="status" ;;
+                _bm_thresh) m="charge thresholds" ;;
+                _bm_dischg) m="recalibration" ;;
             esac
             # concat method to output
-            if [ -n "$mlist" ]; then
-                mlist="$mlist, $m"
-            else
-                mlist="$m"
-            fi
+            [ -n "$mlist" ] && mlist="${mlist}, "
+            mlist="${mlist}${m}"
         fi
     done
 
