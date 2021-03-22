@@ -14,6 +14,11 @@ batdrv_init () {
     #
     # 1. determine present batteries
     #    list of batteries (space separated)    --> retval $_batteries;
+    #
+    # 2. designate wear control as unsupported
+    #    reading battery data                   --> retval $_bm_read = "none",
+    #    reading/writing charging thresholds    --> retval $_bm_thresh = "none",
+    #    reading/writing force discharge        --> retval $_bm_dischg = "none":
 
     # determine present batteries
     local bs bd
@@ -29,6 +34,10 @@ batdrv_init () {
             fi
         fi
     done
+
+    _bm_read="none"
+    _bm_thresh="none"
+    _bm_dischg="none"
 
     echo_debug "bat" "batdrv_init.generic: batteries=$_batteries"
     # catchall: always return 0
