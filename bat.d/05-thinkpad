@@ -474,7 +474,7 @@ batdrv_write_thresholds () {
 
     # write new thresholds in determined sequence
     if [ "$verb" = "2" ]; then
-        echo "Setting temporary charge thresholds for $_bat_str:"
+        printf "Setting temporary charge thresholds for %s:\n" "$_bat_str"
     fi
 
     for step in $tseq; do
@@ -606,7 +606,7 @@ batdrv_chargeonce () {
         return 3
     fi
 
-    echo "Setting temporary charge threshold for $_bat_str:"
+    printf "Setting temporary charge threshold for %s:\n" "$_bat_str"
     case $_bm_thresh in
         natacpi)
             write_sysf "$temp_start" $_bf_start || rc=5
@@ -716,7 +716,7 @@ batdrv_cancel_force_discharge () {
     batdrv_write_force_discharge 0
     unlock_tlp tlp_discharge
     echo_debug "bat" "batdrv.thinkpad.discharge.cancelled($_bat_str)"
-    echo " Cancelled."
+    printf " Cancelled.\n"
 
     do_exit 0
 }
@@ -797,7 +797,7 @@ batdrv_discharge () {
 
         while batdrv_force_discharge_active; do
             clear
-            echo "Currently discharging battery $_bat_str:"
+            printf "Currently discharging battery %s:\n" "$_bat_str"
 
             # show current battery state
             case $_bm_read in
@@ -883,8 +883,12 @@ batdrv_discharge () {
 
 batdrv_show_battery_data () { # output battery data
     # $1: 1=verbose
-    echo "+++ Battery Wear Control"
-    echo "Plugin: ThinkPad"
+    # global param: $_batteries
+    # prerequisite: batdrv_init()
+    local verbose=${1:-0}
+
+    printf "+++ Battery Wear Control\n"
+    printf "Plugin: ThinkPad\n"
 
     local fs=""
     [ "$_bm_thresh" != "none" ] && fs="charge thresholds"
@@ -893,36 +897,36 @@ batdrv_show_battery_data () { # output battery data
         fs="${fs}recalibration"
     fi
     [ -n "$fs" ] || fs="none"
-    echo "Supported features: $fs"
+    printf "Supported features: %s\n" "$fs"
 
-    echo "Driver usage:"
+    printf "Driver usage:\n"
     # native kernel ACPI battery API
     case $_natacpi in
         0|1) printf "* natacpi    = active "; print_methods_per_driver "natacpi" ;;
-        32)  echo "* natacpi    = inactive (disabled by configuration)" ;;
-        128) echo "* natacpi    = inactive (no kernel support)" ;;
-        254) echo "* natacpi    = inactive (ThinkPad not supported)" ;;
-        *)   echo "* natacpi    = unknown status" ;;
+        32)  printf "* natacpi    = inactive (disabled by configuration)\n" ;;
+        128) printf "* natacpi    = inactive (no kernel support)\n" ;;
+        254) printf "* natacpi    = inactive (ThinkPad not supported)\n" ;;
+        *)   printf "* natacpi    = unknown status\n" ;;
     esac
 
     # ThinkPad-specific battery APIs
     case $_tpacpi in
         0)   printf "* tpacpi-bat = active "; print_methods_per_driver "tpacpi" ;;
-        32)  echo "* tpacpi-bat = inactive (disabled by configuration)" ;;
-        64)  echo "* tpacpi-bat = inactive (kernel module 'acpi_call' load error)" ;;
-        127) echo "* tpacpi-bat = inactive (program 'tpacpi-bat' not installed)" ;;
-        128) echo "* tpacpi-bat = inactive (kernel module 'acpi_call' not installed)" ;;
-        254) echo "* tpacpi-bat = inactive (ThinkPad not supported)" ;;
-        255) echo "* tpacpi-bat = inactive (superseded by natacpi)" ;;
-        *)   echo "* tpacpi-bat = unknown status" ;;
+        32)  printf "* tpacpi-bat = inactive (disabled by configuration)\n" ;;
+        64)  printf "* tpacpi-bat = inactive (kernel module 'acpi_call' load error)\n" ;;
+        127) printf "* tpacpi-bat = inactive (program 'tpacpi-bat' not installed)\n" ;;
+        128) printf "* tpacpi-bat = inactive (kernel module 'acpi_call' not installed\n)" ;;
+        254) printf "* tpacpi-bat = inactive (ThinkPad not supported)\n" ;;
+        255) printf "* tpacpi-bat = inactive (superseded by natacpi)\n" ;;
+        *)   printf "* tpacpi-bat = unknown status" ;;
     esac
     case $_tpsmapi in
         1)   printf "* tp-smapi   = readonly "; print_methods_per_driver "tpsmapi" ;;
-        32)  echo "* tp-smapi   = inactive (disabled by configuration)" ;;
-        64)  echo "* tp-smapi   = inactive (kernel module 'tp_smapi' load error)" ;;
-        128) echo "* tp-smapi   = inactive (kernel module 'tp_smapi' not installed)" ;;
+        32)  printf "* tp-smapi   = inactive (disabled by configuration)\n" ;;
+        64)  printf "* tp-smapi   = inactive (kernel module 'tp_smapi' load error)\n" ;;
+        128) printf "* tp-smapi   = inactive (kernel module 'tp_smapi' not installed)\n" ;;
     esac
-    echo
+    printf "\n"
 
     # -- show battery data
     local bat
@@ -930,14 +934,14 @@ batdrv_show_battery_data () { # output battery data
     local ed ef en
     local efsum=0
     local ensum=0
-    local verbose=${1:-0}
+
     for bat in $_batteries; do # iterate detected batteries
         batdrv_select_battery $bat
 
         case $_bat_idx in
-            1) echo "+++ ThinkPad Battery Status: $bat (Main / Internal)" ;;
-            2) echo "+++ ThinkPad Battery Status: $bat (Ultrabay / Slice / Replaceable)" ;;
-            0) echo "+++ ThinkPad Battery Status: $bat" ;;
+            1) printf "+++ ThinkPad Battery Status: %s (Main / Internal)\n" "$bat" ;;
+            2) printf "+++ ThinkPad Battery Status: %s (Ultrabay / Slice / Replaceable)\n" "$bat" ;;
+            0) printf "+++ ThinkPad Battery Status: %s\n" "$bat" ;;
         esac
 
         # --- show basic data
@@ -971,12 +975,12 @@ batdrv_show_battery_data () { # output battery data
                 fi
 
                 print_batstate $_bd_read/status
-                echo
+                printf "\n"
 
                 if [ $verbose -eq 1 ]; then
                     printparm "%-59s = ##%6s## [mV]" $_bd_read/voltage_min_design "" 000
                     printparm "%-59s = ##%6s## [mV]" $_bd_read/voltage_now "" 000
-                    echo
+                    printf "\n"
                 fi
                 ;; # natacpi
 
@@ -1001,7 +1005,7 @@ batdrv_show_battery_data () { # output battery data
                 printparm "%-59s = ##%6d## [mW]" $_bd_read/power_now
                 printparm "%-59s = ##%6d## [mW]" $_bd_read/power_avg
                 print_batstate $_bd_read/state
-                echo
+                printf "\n"
                 if [ $verbose -eq 1 ]; then
                     printparm "%-59s = ##%6s## [mV]" $_bd_read/design_voltage
                     printparm "%-59s = ##%6s## [mV]" $_bd_read/voltage
@@ -1009,7 +1013,7 @@ batdrv_show_battery_data () { # output battery data
                     printparm "%-59s = ##%6s## [mV]" $_bd_read/group1_voltage
                     printparm "%-59s = ##%6s## [mV]" $_bd_read/group2_voltage
                     printparm "%-59s = ##%6s## [mV]" $_bd_read/group3_voltage
-                    echo
+                    printf "\n"
                 fi
 
                 # store values for charge / capacity calculation below
