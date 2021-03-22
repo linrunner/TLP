@@ -705,4 +705,3 @@ print_batstate () { # print battery charging state with
 
     return 0
 }
-
