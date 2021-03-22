@@ -22,10 +22,6 @@ batdrv_init () {
         if [ "$(read_sysf $bd/present)" = "1" ]; then
             # record detected batteries and directories
             bs=${bd##/*/}
-            # ignore atypical batteries
-            printf '%s\n' "$bs" | grep -E -q -v "$RE_PS_IGNORE" || continue
-
-            # add battery to list
             if [ -n "$_batteries" ]; then
                 _batteries="$_batteries $bs"
             else
