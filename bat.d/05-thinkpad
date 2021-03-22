@@ -52,7 +52,6 @@ batdrv_init () {
     #    force discharge                        --> retval $_bn_dischg;
     #
     # 6. determine present batteries
-    #    list of battery sysdirs (space sep.)   --> retval $_battdirs
     #    list of batteries (space separated)    --> retval $_batteries;
     #
     # 7. define charge threshold defaults
@@ -78,7 +77,6 @@ batdrv_init () {
     _bn_start=""
     _bn_stop=""
     _bn_dischg=""
-    _battdirs=""
     _batteries=""
     # shellcheck disable=SC2034
     _bt_def_start=96
@@ -96,11 +94,6 @@ batdrv_init () {
                 _batteries="$_batteries $bs"
             else
                 _batteries="$bs"
-            fi
-            if [ -n "$_battdirs" ]; then
-                _battdirs="$_battdirs $bd"
-            else
-                _battdirs="$bd"
             fi
             # skip natacpi detection for 2nd and subsequent batteries
             [ $done -eq 1 ] && continue
