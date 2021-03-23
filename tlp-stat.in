@@ -869,7 +869,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         reout="${reout}Reconfigure your Linux kernel with PM_RUNTIME=y to reduce your laptop's power consumption.\n"
     fi
 
-    # battery driver specific recommendations
+    # battery plugin specific recommendations
     reout="${reout}$(batdrv_recommendations)"
 
     if [ "$show_all" = "1" ]; then

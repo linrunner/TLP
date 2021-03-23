@@ -24,18 +24,21 @@ readonly RE_ATA_ERROR='ata[0-9]+: SError: {.*CommWake }'
 
 # --- Checks
 
-check_systemd () { # check if systemd is the active init system (PID 1) and systemctl is installed
-                   # rc: 0=yes, 1=no
+check_systemd () {
+    # check if systemd is the active init system (PID 1) and systemctl is installed
+    # rc: 0=yes, 1=no
     [ -d /run/systemd/system ] && cmd_exists $SYSTEMCTL
 }
 
-check_upstart () { # check if upstart is active init system (PID 1)
-                   # rc: 0=yes, 1=no
+check_upstart () {
+    # check if upstart is active init system (PID 1)
+    # rc: 0=yes, 1=no
     cmd_exists $INITCTL && $INITCTL --version | grep -q upstart
 }
 
-check_openrc () { # check if openrc is the active init system (PID 1)
-                  # rc: 0=yes, 1=no
+check_openrc () {
+    # check if openrc is the active init system (PID 1)
+    # rc: 0=yes, 1=no
     [ -e /run/openrc/softlevel ]
 }
 
@@ -46,7 +49,8 @@ check_ac_quirk () { # check for hardware known not to expose AC device
 
 # --- Formatted Output
 
-printparm () { # formatted output of sysfile - general
+printparm () {
+    # formatted output of sysfile - general
     # $1: format, $2: sysfile, $3: n/a message, $4: cutoff
     local format="$1"
     local sysf="$2"
@@ -86,7 +90,8 @@ printparm () { # formatted output of sysfile - general
     return 0
 }
 
-printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
+printparm_i915 () {
+    # formatted output of sysfile - i915 kernel module variant
     # $1: sysfile; $2: alternative; $3: 1=psr/0=other
     local sysf val
 
@@ -137,7 +142,8 @@ printparm_i915 () { # formatted output of sysfile - i915 kernel module variant
     return 0
 }
 
-printparm_epb () { # formatted output of sysfile - Intel EPB variant
+printparm_epb () {
+    # formatted output of sysfile - Intel EPB variant
     # $1: sysfile
     local val strval
 
@@ -164,7 +170,8 @@ printparm_epb () { # formatted output of sysfile - Intel EPB variant
     return 0
 }
 
-printparm_ml () { # indented output of a multiline sysfile
+printparm_ml () {
+    # indented output of a multiline sysfile
     # $1: indent str, $2: sysfile, $3: n/a message
     local ind="$1"
     local sysf="$2"
@@ -184,7 +191,8 @@ printparm_ml () { # indented output of a multiline sysfile
     fi
 }
 
-print_sysf () { # formatted output of a sysfile
+print_sysf () {
+    # formatted output of a sysfile
     # $1: format; $2: sysfile
     local val
 
@@ -199,7 +207,8 @@ print_sysf () { # formatted output of a sysfile
     return 0
 }
 
-print_sysf_trim () { # formatted output of a sysfile, trim leading and trailing
+print_sysf_trim () {
+    # formatted output of a sysfile, trim leading and trailing
     # blanks -- $1: format; $2: sysfile
     local val
 
@@ -214,7 +223,8 @@ print_sysf_trim () { # formatted output of a sysfile, trim leading and trailing
     return 0
 }
 
-print_file_modtime_and_age () { # show a file's last modification time
+print_file_modtime_and_age () {
+    # show a file's last modification time
     #  and age in secs -- $1: file
     local mtime age
 
@@ -227,7 +237,8 @@ print_file_modtime_and_age () { # show a file's last modification time
     fi
 }
 
-print_saved_powerstate () { # read and print saved state
+print_saved_powerstate () {
+    # read and print saved state
     local sps
 
     sps="$(read_sysf $PWRRUNFILE)"
@@ -254,7 +265,8 @@ print_saved_powerstate () { # read and print saved state
     return 0
 }
 
-print_selinux () { # print SELinux status and mode
+print_selinux () {
+    # print SELinux status and mode
     if cmd_exists $SESTATUS; then
         $SESTATUS | awk -F '[ \t\n]+' '/SELinux status:/ { printf "SELinux status = %s", $3 } ; \
                                        /Current mode:/   { printf " (%s)", $3 }'
@@ -264,7 +276,8 @@ print_selinux () { # print SELinux status and mode
 
 # --- Storage Devices
 
-print_disk_model () { # print disk model -- $1: dev
+print_disk_model () {
+    # print disk model -- $1: dev
     local model vendor
 
     model=$($HDPARM -I /dev/$1 2> /dev/null | grep 'Model Number' | \
@@ -282,7 +295,8 @@ print_disk_model () { # print disk model -- $1: dev
     return 0
 }
 
-print_disk_firmware () { # print firmware version --- $1: dev
+print_disk_firmware () {
+    # print firmware version --- $1: dev
     local firmware
 
     firmware=$($HDPARM -I /dev/$1 2> /dev/null | grep 'Firmware Revision' | \
@@ -292,14 +306,16 @@ print_disk_firmware () { # print firmware version --- $1: dev
     return 0
 }
 
-get_disk_state () { # get disk power state -- $1: dev; retval: $_disk_state
+get_disk_state () {
+    # get disk power state -- $1: dev; retval: $_disk_state
     _disk_state=$($HDPARM -C /dev/$1 2> /dev/null | awk -F ':' '/drive state is/ { gsub(/ /,"",$2); print $2; }')
     [ -z "$_disk_state" ] && _disk_state="(not available)"
 
     return 0
 }
 
-get_disk_apm_level () { # get disk apm level -- $1: dev; rc: apm
+get_disk_apm_level () {
+    # get disk apm level -- $1: dev; rc: apm
     local apm
 
     apm=$($HDPARM -I /dev/$1 2> /dev/null | grep 'Advanced power management level' | \
@@ -312,7 +328,8 @@ get_disk_apm_level () { # get disk apm level -- $1: dev; rc: apm
 
 }
 
-get_disk_trim_capability () { # check for trim capability
+get_disk_trim_capability () {
+    # check for trim capability
     # $1: dev; rc: 0=no, 1=yes, 254=no ssd device
     local trim
 
@@ -329,7 +346,8 @@ get_disk_trim_capability () { # check for trim capability
     return $trim
 }
 
-check_ata_errors () { # check kernel log for ata errors
+check_ata_errors () {
+    # check kernel log for ata errors
     # (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
     # stdout: error count
 
@@ -347,7 +365,8 @@ check_ata_errors () { # check kernel log for ata errors
     return 0
 }
 
-get_ahci_host () { # get host associated with a disk
+get_ahci_host () {
+    # get host associated with a disk
     # $1: device
     # retval: $_ahci_host
 
@@ -365,7 +384,8 @@ get_ahci_host () { # get host associated with a disk
     fi
 }
 
-show_disk_data () { # formatted output of NVMe / SATA disk data
+show_disk_data () {
+    # formatted output of NVMe / SATA disk data
     # $1: disk device
 
     # translate disk name and check presence
@@ -507,7 +527,8 @@ show_disk_data () { # formatted output of NVMe / SATA disk data
     return 0
 }
 
-get_ahci_disk () { # get disk associated with an alpm or ahci port runtime pm sysfile
+get_ahci_disk () {
+    # get disk associated with an alpm or ahci port runtime pm sysfile
     # $1: sysfile
     # retval: $_ahci_disk
     local aport
@@ -529,7 +550,8 @@ get_ahci_disk () { # get disk associated with an alpm or ahci port runtime pm sy
     fi
 }
 
-printparm_ahci () { # print alpm or ahci port runtime pm sysfile
+printparm_ahci () {
+    # print alpm or ahci port runtime pm sysfile
     # accompanied by the attached disk device
     # $1: sysfile
     local val
@@ -552,7 +574,8 @@ printparm_ahci () { # print alpm or ahci port runtime pm sysfile
 
 # --- Graphics
 
-show_gpu_data () { # show GPU data for all drivers
+show_gpu_data () {
+    # show GPU data for all drivers
     local driver gpu hdr=
 
     for gpu in "${BASE_DRMD}"/card?; do
@@ -651,7 +674,8 @@ show_gpu_data () { # show GPU data for all drivers
 
 # --- Battery
 
-print_methods_per_driver () { # show features provided by a battery driver
+print_methods_per_driver () {
+    # show features provided by a Thinkpad battery plugin
     # $1: driver = natacpi, tpacpi, tpsmapi
     local bm m mlist=""
 
@@ -678,7 +702,8 @@ print_methods_per_driver () { # show features provided by a battery driver
     return 0
 }
 
-print_batstate () { # print battery charging state with
+print_batstate () {
+    # print battery charging state with
     # an explanation when a threshold inhibits charging
     # $1: sysfile
     # global param: $_bm_thresh, $_syspwr

@@ -1,11 +1,11 @@
 #!/bin/sh
-# 05-thinkpad - Battery Feature Driver for ThinkPads using natacpi and/or
+# 05-thinkpad - Battery Plugin for ThinkPads using natacpi and/or
 # tpacpi-bat/acpi-call for thresholds and forced discharge, i.e. X220/T420 and newer.
 #
 # Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# Needs: tlp-func-base, 34-tlp-func-platform, 35-tlp-func-batt
+# Needs: tlp-func-base, 34-tlp-func-platform, 35-tlp-func-batt, tlp-func-stat
 
 # shellcheck disable=SC2086
 

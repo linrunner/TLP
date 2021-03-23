@@ -1,6 +1,6 @@
 #!/bin/sh
-# 90-generic - Catchall for laptops that either not provide a kernel interface
-# for battery wear control or TLP doesn't support it yet.
+# 90-generic - Battery plugin catchall for laptops that either not provide
+# a kernel interface for battery wear control or TLP doesn't support it yet.
 #
 # Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
@@ -92,7 +92,6 @@ batdrv_cancel_force_discharge () {
     # function not implemented for generic hardware
     echo_debug "bat" "batdrv_init.cancel_force_discharge.not_implemented"
     return 255
-
 }
 
 batdrv_force_discharge_active () {

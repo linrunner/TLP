@@ -1,12 +1,12 @@
 #!/bin/sh
-# 10-thinkpad-legacy - Battery Feature Driver for ThinkPads using tp_smapi
+# 10-thinkpad-legacy - Battery Plugin for ThinkPads using tp_smapi
 # for thresholds and forced discharge,
 # i.e. X201/T410 and older.
 #
 # Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# Needs: tlp-func-base, 34-tlp-func-platform, 35-tlp-func-batt
+# Needs: tlp-func-base, 34-tlp-func-platform, 35-tlp-func-batt, tlp-func-stat
 
 # shellcheck disable=SC2086
 
