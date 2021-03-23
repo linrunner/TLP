@@ -35,8 +35,11 @@ batdrv_init () {
         fi
     done
 
+    # shellcheck disable=SC2034
     _bm_read="none"
+    # shellcheck disable=SC2034
     _bm_thresh="none"
+    # shellcheck disable=SC2034
     _bm_dischg="none"
 
     echo_debug "bat" "batdrv_init.generic: batteries=$_batteries"

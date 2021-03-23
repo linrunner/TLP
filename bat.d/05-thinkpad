@@ -1114,8 +1114,8 @@ batdrv_recommendations () {
         case "$_natacpi" in
             "") ;;  # undefined
             0) ;; # natacpi covers it all
-            1) printf "Install $missing for ThinkPad battery recalibration\n" "$missing";;
-            *) printf "Install $missing for ThinkPad battery thresholds and recalibration\n" "$missing";;
+            1) printf "Install %s for ThinkPad battery recalibration\n" "$missing" ;;
+            *) printf "Install %s for ThinkPad battery thresholds and recalibration\n" "$missing";;
         esac
     fi
     if [ "$_tpsmapi" = "128" ]; then
