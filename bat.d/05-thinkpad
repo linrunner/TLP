@@ -31,7 +31,8 @@ batdrv_init () {
     #       127=tpacpi-bat not installed/
     #       128=acpi_call module not installed/
     #       254=ThinkPad not supported/
-    #       255=superseded by natacpi
+    #       255=superseded by natacpi/
+    #       256=superseded and kernel module not loaded
     #
     # 3. check for tp-smapi external kernel module
     #    --> retval $_tpsmapi:
@@ -189,6 +190,9 @@ batdrv_init () {
                 fi
             fi
         fi
+    elif [ ! -e /proc/acpi/call ]; then
+         # superseded and kernel module not loaded
+        _tpacpi=256
     fi
 
     # --- 3. check for tp-smapi external kernel module (relevant models only)
@@ -912,6 +916,7 @@ batdrv_show_battery_data () {
         128) printf "* tpacpi-bat = inactive (kernel module 'acpi_call' not installed)\n" ;;
         254) printf "* tpacpi-bat = inactive (ThinkPad not supported)\n" ;;
         255) printf "* tpacpi-bat = inactive (superseded by natacpi)\n" ;;
+        256) ;; # superseded and kernel module not loaded--> be quiet
         *)   printf "* tpacpi-bat = unknown status" ;;
     esac
     case $_tpsmapi in
