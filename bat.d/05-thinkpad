@@ -874,7 +874,8 @@ batdrv_discharge () {
     return $rc
 }
 
-batdrv_show_battery_data () { # output battery data
+batdrv_show_battery_data () {
+    # output battery status
     # $1: 1=verbose
     # global param: $_batteries
     # prerequisite: batdrv_init()
@@ -908,7 +909,7 @@ batdrv_show_battery_data () { # output battery data
         32)  printf "* tpacpi-bat = inactive (disabled by configuration)\n" ;;
         64)  printf "* tpacpi-bat = inactive (kernel module 'acpi_call' load error)\n" ;;
         127) printf "* tpacpi-bat = inactive (program 'tpacpi-bat' not installed)\n" ;;
-        128) printf "* tpacpi-bat = inactive (kernel module 'acpi_call' not installed\n)" ;;
+        128) printf "* tpacpi-bat = inactive (kernel module 'acpi_call' not installed)\n" ;;
         254) printf "* tpacpi-bat = inactive (ThinkPad not supported)\n" ;;
         255) printf "* tpacpi-bat = inactive (superseded by natacpi)\n" ;;
         *)   printf "* tpacpi-bat = unknown status" ;;
@@ -1069,16 +1070,16 @@ batdrv_show_battery_data () { # output battery data
         [ $lf -gt 0 ] && printf "\n"
 
         # --- show charge level (SOC) and capacity
-        local lcnt=0
+        lf=0
         if [ $ef -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'
-            lcnt=$((lcnt+1))
+            lf=1
         fi
         if [ $ed -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '$ef' / '$ed');'
-            lcnt=$((lcnt+1))
+            lf=1
         fi
-        [ $lcnt -gt 0 ] && printf "\n"
+        [ $lf -gt 0 ] && printf "\n"
 
         bcnt=$((bcnt+1))
 
@@ -1087,8 +1088,34 @@ batdrv_show_battery_data () { # output battery data
     if [ $bcnt -gt 1 ] && [ $efsum -ne 0 ]; then
         # more than one battery detected --> show charge total
         perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '$ensum' / '$efsum');'
+        printf "\n"
     fi
-    printf "\n"
+
+    return 0
+}
+
+batdrv_recommendations () {
+    # output ThinkPad specific recommendations
+    # prerequisite: batdrv_init()
+
+    local missing
+
+    case "$_tpacpi" in
+        127) missing="tpacpi-bat program" ;;
+        128) missing="acpi_call kernel module" ;;
+        *)   missing="" ;;
+    esac
+    if [ -n "$missing" ]; then
+        case "$_natacpi" in
+            "") ;;  # undefined
+            0) ;; # natacpi covers it all
+            1) printf "Install $missing for ThinkPad battery recalibration\n" "$missing";;
+            *) printf "Install $missing for ThinkPad battery thresholds and recalibration\n" "$missing";;
+        esac
+    fi
+    if [ "$_tpsmapi" = "128" ]; then
+      printf "Install tp-smapi kernel modules for extended battery status (e.g. the cycle count)\n"
+    fi
 
     return 0
 }

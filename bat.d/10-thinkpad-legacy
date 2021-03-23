@@ -605,7 +605,8 @@ batdrv_discharge () {
     return $rc
 }
 
-batdrv_show_battery_data () { # output battery data
+batdrv_show_battery_data () {
+    # output battery data
     # $1: 1=verbose
     # global param: $_batteries
     # prerequisite: batdrv_init()
@@ -746,7 +747,8 @@ batdrv_show_battery_data () { # output battery data
         [ $lf -gt 0 ] && printf "\n"
 
         # --- show charge level (SOC) and capacity
-       if [ $ef -ne 0 ]; then
+        lf=0
+        if [ $ef -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'
             lf=1
         fi
@@ -763,8 +765,19 @@ batdrv_show_battery_data () { # output battery data
     if [ $bcnt -gt 1 ] && [ $efsum -ne 0 ]; then
         # more than one battery detected --> show charge total
         perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '$ensum' / '$efsum');'
+        printf "\n"
     fi
-    printf "\n"
+
+    return 0
+}
+
+batdrv_recommendations () {
+    # output Legacy ThinkPad specific recommendations
+    # prerequisite: batdrv_init()
+
+    if [ "$_tpsmapi" = "128" ]; then
+       printf "Install tp-smapi kernel modules for ThinkPad battery thresholds and recalibration\n"
+    fi
 
     return 0
 }

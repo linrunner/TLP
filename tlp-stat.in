@@ -869,29 +869,8 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         reout="${reout}Reconfigure your Linux kernel with PM_RUNTIME=y to reduce your laptop's power consumption.\n"
     fi
 
-    if is_thinkpad; then
-        # add ThinkPad specific recommendations
-        if [ "$_tpsmapi" = "128" ]; then
-            if supports_tpsmapi_and_tpacpi; then
-                reout="${reout}Install tp-smapi kernel modules for extended battery info (e.g. the cycle count)\n"
-            else
-                reout="${reout}Install tp-smapi kernel modules for ThinkPad battery thresholds and recalibration\n"
-            fi
-        fi
-        case "$_tpacpi" in
-            127) missing="tpacpi-bat program" ;;
-            128) missing="acpi_call kernel module" ;;
-            *)   missing="" ;;
-        esac
-        if [ -n "$missing" ]; then
-            case "$_natacpi" in
-                "") ;;  # undefined
-                0) ;; # natacpi covers it all
-                1) reout="${reout}Install $missing for ThinkPad battery recalibration\n" ;;
-                *) reout="${reout}Install $missing for ThinkPad battery thresholds and recalibration\n" ;;
-            esac
-        fi
-    fi # if ThinkPad
+    # battery driver specific recommendations
+    reout="${reout}$(batdrv_recommendations)"
 
     if [ "$show_all" = "1" ]; then
         # add other recommendations
@@ -903,7 +882,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         echo "+++ Recommendations"
         # shellcheck disable=SC2059
         # don't change to %s, $reout contains blanks and \n!
-        printf "$reout" | sed -r 's/^/\* /'
+        printf "$reout\n" | sed -r 's/^/\* /'
         echo
     fi
 

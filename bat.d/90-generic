@@ -212,3 +212,8 @@ batdrv_show_battery_data () { # output battery data
 
     return 0
 }
+
+batdrv_recommendations () {
+    # no recommendations for generic hardware
+    return 0
+}
