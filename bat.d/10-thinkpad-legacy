@@ -13,6 +13,7 @@
 batdrv_init () {
     # detect hardware and initialize driver
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
+    # retval: $_batdrv_plugin
     #
     # 1. check for tp-smapi external kernel module
     #    --> retval $_tpsmapi
@@ -40,13 +41,28 @@ batdrv_init () {
     #    start threshold                        --> retval $_bt_def_start,
     #    stop threshold                         --> retval $_bt_def_stop;
 
-    # check if hardware matches and load necessary kernel modules
-    if ! check_thinkpad; then
-        echo_debug "bat" "batdrv_init.thinkpad-legacy.not_a_thinkpad"
+    _batdrv_plugin="thinkpad-legacy"
+
+    # check plugin simulation override and denylist
+    if [ -n "$X_BAT_PLUGIN_SIMULATE" ]; then
+        if [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
+            echo_debug "bat" "batdrv_init.${_batdrv_plugin}.simulate"
+        else
+            echo_debug "bat" "batdrv_init.${_batdrv_plugin}.simulate_skip"
+            return 1
+        fi
+    elif wordinlist "$_batdrv_plugin" "$X_BAT_PLUGIN_DENYLIST"; then
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.denylist"
         return 1
-    elif ! supports_tpsmapi_only; then
-        echo_debug "bat" "batdrv_init.thinkpad-legacy.unsupported_model"
-        return 1
+    else
+        # check if hardware matches and load necessary kernel modules
+        if ! check_thinkpad; then
+            echo_debug "bat" "batdrv_init.${_batdrv_plugin}.not_a_thinkpad"
+            return 1
+        elif ! supports_tpsmapi_only; then
+            echo_debug "bat" "batdrv_init.${_batdrv_plugin}.unsupported_model"
+            return 1
+        fi
     fi
 
     # presume no features at all
@@ -80,7 +96,7 @@ batdrv_init () {
 
     # quit if no battery detected, there is no point in selecting a driver
     if [ -z "$_batteries" ]; then
-        echo_debug "bat" "batdrv_init.thinkpad-legacy.no_batteries"
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
         return 2
     fi
 
@@ -114,8 +130,8 @@ batdrv_init () {
         _tpsmapi=128
     fi
 
-    echo_debug "bat" "batdrv_init.thinkpad-legacy: batteries=$_batteries; tpsmapi=$_tpsmapi"
-    echo_debug "bat" "batdrv_init.thinkpad-legacy: read=$_bm_read; thresh=$_bm_thresh; start=$_bn_start; stop=$_bn_stop; dischg=$_bm_dischg; force=$_bn_dischg"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; tpsmapi=$_tpsmapi"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: read=$_bm_read; thresh=$_bm_thresh; start=$_bn_start; stop=$_bn_stop; dischg=$_bm_dischg; force=$_bn_dischg"
     return 0
 }
 
@@ -152,7 +168,7 @@ batdrv_select_battery () {
                 bs=$1
             else
                 # battery not present --> quit
-                echo_debug "bat" "batdrv.thinkpad-legacy.select_battery($1).not_present"
+                echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1).not_present"
                 return 1
             fi
             ;;
@@ -180,7 +196,7 @@ batdrv_select_battery () {
         tpsmapi) _bd_read="$SMAPIBATDIR/$bs" ;;
     esac
 
-    echo_debug "bat" "batdrv.thinkpad-legacy.select_battery($1): bat_str=$_bat_str; bat_idx=$_bat_idx; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; bat_idx=$_bat_idx; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg"
     return 0
 }
 
@@ -201,7 +217,7 @@ batdrv_read_threshold () {
     esac
     if [ -n "$out" ]; then
         printf "%s" "$out"
-        echo_debug "bat" "batdrv.thinkpad-legacy.read_threshold($1).simulate: bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1).simulate: bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
         return 0
     fi
 
@@ -222,7 +238,7 @@ batdrv_read_threshold () {
         rc=4
     fi
 
-    echo_debug "bat" "batdrv.thinkpad-legacy.read_threshold($1): bm_thresh=$_bm_thresh; bf=$bf; bat_idx=$_bat_idx; out=$out; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1): bm_thresh=$_bm_thresh; bf=$bf; bat_idx=$_bat_idx; out=$out; rc=$rc"
     return $rc
 }
 
@@ -255,7 +271,7 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_start" 3 || \
        ! is_within_bounds $new_start 2 96; then
         # threshold out of range
-        echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).invalid_start: bat=$_bat_str"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).invalid_start: bat=$_bat_str"
         case $verb in
             1) printf "Warning: charge start threshold %s for %s invalid or out of range (1..96). Skipped.\n" "$new_start" $_bat_str 1>&2 ;;
             2) printf "Error: charge start threshold %s for %s invalid or out of range (1..96). Aborted.\n" "$new_start" $_bat_str 1>&2 ;;
@@ -267,7 +283,7 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_stop" 3 || \
        ! is_within_bounds $new_stop 6 100; then
         # threshold out of range
-        echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).invalid_stop: bat=$_bat_str"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).invalid_stop: bat=$_bat_str"
         case $verb in
             1) printf "Warning: charge stop threshold %s for %s invalid or out of range (6..100). Skipped.\n" "$new_stop" $_bat_str 1>&2 ;;
             2) printf "Error: charge stop threshold %s for %s invalid or out of range (6..100). Aborted.\n" "$new_stop" $_bat_str 1>&2 ;;
@@ -277,7 +293,7 @@ batdrv_write_thresholds () {
 
     # check minimum start - stop difference
     if [ $((new_start + 4)) -gt $new_stop ]; then
-        echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).invalid_diff: bat=$_bat_str"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).invalid_diff: bat=$_bat_str"
         case $verb in
             1) printf "Warning: charge start threshold > stop threshold - 4 for %s. Skipped.\n" $_bat_str 1>&2 ;;
             2) printf "Error: start threshold > stop threshold - 4 for %s. Aborted.\n" $_bat_str 1>&2 ;;
@@ -288,7 +304,7 @@ batdrv_write_thresholds () {
     # read active threshold values
     if ! old_start=$(batdrv_read_threshold start) || \
        ! old_stop=$(batdrv_read_threshold stop); then
-        echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).read_error: bat=$_bat_str"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).read_error: bat=$_bat_str"
         case $verb in
             1) printf "Warning: could not read current charge thresholds for %s. Skipped.\n" $_bat_str 1>&2 ;;
             2) printf "Error: could not read current charge thresholds for %s. Aborted.\n" $_bat_str 1>&2 ;;
@@ -338,7 +354,7 @@ batdrv_write_thresholds () {
                     steprc=$?; [ $steprc -ne 0 ] && [ $rc -eq 0 ] && rc=5
                     ;; # tpsmapi
             esac
-            echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).$step.write: bat=$_bat_str; old=$old_thresh; new=$new_thresh; steprc=$steprc"
+            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).$step.write: bat=$_bat_str; old=$old_thresh; new=$new_thresh; steprc=$steprc"
 
             case $verb in
                 2)
@@ -355,7 +371,7 @@ batdrv_write_thresholds () {
                     ;;
             esac
         else
-            echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).$step.no_change: bat=$_bat_str; old=$old_thresh; new=$new_thresh"
+            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).$step.no_change: bat=$_bat_str; old=$old_thresh; new=$new_thresh"
 
             if [ "$verb" = "2" ]; then
                 printf "  %-5s = %3d (no change)\n" $step $new_thresh
@@ -363,7 +379,7 @@ batdrv_write_thresholds () {
         fi
     done # for step
 
-    echo_debug "bat" "batdrv.thinkpad-legacy.write_thresholds($1, $2, $3).complete: bat=$_bat_str; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).complete: bat=$_bat_str; rc=$rc"
     return $rc
 }
 
@@ -384,12 +400,12 @@ batdrv_chargeonce () {
 
     if ! cur_stop=$(batdrv_read_threshold stop); then
         printf "Error: reading charge stop threshold for %s failed. Aborted.\n" $_bat_str 1>&2
-        echo_debug "bat" "batdrv.thinkpad-legacy.chargeonce($_bat_str).thresh_unknown: stop=$cur_stop; rc=4"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).thresh_unknown: stop=$cur_stop; rc=4"
         return 4
     elif [ $cur_stop -lt 6 ]; then
         printf "Error: the %s charge stop threshold is %s. " "$_bat_str" "$ccharge"  1>&2
         printf "For this command to work, it must be 6 at least.\n"  1>&2
-        echo_debug "bat" "batdrv.thinkpad-legacy.chargeonce($_bat_str).stop_thresh_too_low: stop=$cur_stop; rc=6"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).stop_thresh_too_low: stop=$cur_stop; rc=6"
         return 6
     fi
 
@@ -402,7 +418,7 @@ batdrv_chargeonce () {
 
     if [ $ccharge -eq -1 ] ; then
         printf "Error: cannot determine charge level for %s.\n" "$_bat_str" 1>&2
-        echo_debug "bat" "batdrv.thinkpad-legacy.chargeonce($_bat_str).charge_level_unknown: enow=$enow; efull=$efull; rc=2"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_unknown: enow=$enow; efull=$efull; rc=2"
         return 2
     fi
 
@@ -410,7 +426,7 @@ batdrv_chargeonce () {
     if [ $ccharge -gt $temp_start ]; then
         printf "Error: the %s charge level is %s%%. " "$_bat_str" "$ccharge"  1>&2
         printf "For this command to work, it must not exceed %s%% (stop threshold - 4).\n" "$temp_start" 1>&2
-        echo_debug "bat" "batdrv.thinkpad-legacy.chargeonce($_bat_str).charge_level_too_high: soc=$ccharge; stop=$cur_stop; rc=3"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_too_high: soc=$ccharge; stop=$cur_stop; rc=3"
         return 3
     fi
 
@@ -426,7 +442,7 @@ batdrv_chargeonce () {
     else
         printf "  start = %3d (Error: write failed)\n" $temp_start 1>&2
     fi
-    echo_debug "bat" "batdrv.thinkpad-legacy.chargeonce($_bat_str): soc=$ccharge; start=$temp_start; stop=$cur_stop; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str): soc=$ccharge; start=$temp_start; stop=$cur_stop; rc=$rc"
 
     return $rc
 }
@@ -464,7 +480,7 @@ batdrv_read_force_discharge () {
     esac
     printf "%s" "$out"
 
-    echo_debug "bat" "batdrv.thinkpad-legacy.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; out=$out; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; out=$out; rc=$rc"
     return $rc
 }
 
@@ -484,7 +500,7 @@ batdrv_write_force_discharge () {
             ;;
     esac
 
-    echo_debug "bat" "batdrv.thinkpad-legacy.write_force_discharge($_bat_str, $1): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; bat_idx=$_bat_idx; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_force_discharge($_bat_str, $1): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; bat_idx=$_bat_idx; rc=$rc"
     return $rc
 }
 
@@ -495,7 +511,7 @@ batdrv_cancel_force_discharge () {
 
     batdrv_write_force_discharge 0
     unlock_tlp tlp_discharge
-    echo_debug "bat" "batdrv.thinkpad-legacy.discharge.cancelled($_bat_str)"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.cancelled($_bat_str)"
     printf " Cancelled.\n"
 
     do_exit 0
@@ -511,7 +527,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
     # check if force_discharge is on
     [ "$(batdrv_read_force_discharge "")" = "1" ] && rc=0
 
-    echo_debug "bat" "batdrv.thinkpad-legacy.force_discharge_active($_bat_str): bm_read=$_bm_read; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active($_bat_str): bm_read=$_bm_read; rc=$rc"
     return $rc
 }
 
@@ -525,7 +541,7 @@ batdrv_discharge () {
 
     # start discharge
     if ! batdrv_write_force_discharge 1; then
-        echo_debug "bat" "batdrv.thinkpad-legacy.discharge.force_discharge_malfunction($_bat_str)"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_malfunction($_bat_str)"
         printf "Error: discharge %s malfunction -- check your hardware (battery, charger).\n" "$_bat_str" 1>&2
         return 1
     fi
@@ -545,7 +561,7 @@ batdrv_discharge () {
 
     if batdrv_force_discharge_active; then
         # discharge initiated sucessfully --> wait for completion == while status "discharging"
-        echo_debug "bat" "batdrv.thinkpad-legacy.discharge.running($_bat_str)"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.running($_bat_str)"
 
         while batdrv_force_discharge_active; do
             clear
@@ -577,12 +593,12 @@ batdrv_discharge () {
             # shellcheck disable=SC2154
             if [ $_syspwr -eq 1 ]; then
                 # system on battery --> AC power removed
-                echo_debug "bat" "batdrv.thinkpad-legacy.discharge.ac_removed($_bat_str)"
+                echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.ac_removed($_bat_str)"
                 printf "Warning: battery %s was not discharged completely -- AC/charger removed.\n" "$_bat_str" 1>&2
                 rc=3
             else
                 # discharging terminated by unknown reason
-                echo_debug "bat" "batdrv.thinkpad-legacy.discharge.not_emptied($_bat_str)"
+                echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_emptied($_bat_str)"
                 printf "Error: battery %s was not discharged completely -- check your hardware (battery, charger).\n" "$_bat_str" 1>&2
                 rc=2
             fi
@@ -590,7 +606,7 @@ batdrv_discharge () {
     else
         # discharge malfunction --> cancel discharge and abort
         batdrv_write_force_discharge 0
-        echo_debug "bat" "batdrv.thinkpad-legacy.discharge.malfunction($_bat_str)"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.malfunction($_bat_str)"
         printf "Error: discharge %s malfunction -- check your hardware (battery, charger).\n" "$_bat_str" 1>&2
         rc=1
     fi
@@ -600,7 +616,7 @@ batdrv_discharge () {
     if [ $rc -eq 0 ]; then
         printf "\n"
         printf "Done: battery %s was completely discharged.\n" "$_bat_str"
-        echo_debug "bat" "batdrv.thinkpad-legacy.discharge.complete($_bat_str)"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.complete($_bat_str)"
     fi
     return $rc
 }
@@ -613,7 +629,7 @@ batdrv_show_battery_data () {
     local verbose=${1:-0}
 
     printf "+++ Battery Wear Control\n"
-    printf "Plugin: ThinkPad Legacy\n"
+    printf "Plugin: %s\n" "$_batdrv_plugin"
 
     local fs=""
     [ "$_bm_thresh" != "none" ] && fs="charge thresholds"

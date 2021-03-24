@@ -11,6 +11,8 @@
 
 batdrv_init () {
     # detect hardware and initialize driver
+    # rc: 0 (catchall)
+    # retval: $_batdrv_plugin
     #
     # 1. determine present batteries
     #    list of batteries (space separated)    --> retval $_batteries;
@@ -19,6 +21,8 @@ batdrv_init () {
     #    reading battery data                   --> retval $_bm_read = "none",
     #    reading/writing charging thresholds    --> retval $_bm_thresh = "none",
     #    reading/writing force discharge        --> retval $_bm_dischg = "none":
+
+    _batdrv_plugin="generic"
 
     # determine present batteries
     local bs bd
@@ -42,7 +46,7 @@ batdrv_init () {
     # shellcheck disable=SC2034
     _bm_dischg="none"
 
-    echo_debug "bat" "batdrv_init.generic: batteries=$_batteries"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries"
     # catchall: always return 0
     return 0
 }
@@ -57,55 +61,55 @@ batdrv_select_battery () {
 
 batdrv_read_threshold () {
     # function not implemented for generic hardware
-    echo_debug "bat" "batdrv_init.generic.read_treshold.not_implemented"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_treshold.not_implemented"
     return 255
 }
 
 batdrv_write_thresholds () {
     # function not implemented for generic hardware
-    echo_debug "bat" "batdrv_init.generic.write_tresholds.not_implemented"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_tresholds.not_implemented"
     return 255
 }
 
 batdrv_chargeonce () {
     # function not implemented for generic hardware
-    echo_debug "bat" "batdrv_init.chargeonce.not_implemented"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce.not_implemented"
     return 255
     }
 
 batdrv_apply_configured_thresholds () {
     # function not implemented for generic hardware
-    echo_debug "bat" "batdrv_init.apply_configured_thresholds.not_implemented"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.apply_configured_thresholds.not_implemented"
     return 255
 }
 
 batdrv_read_force_discharge () {
     # function not implemented for generic hardware
-    echo_debug "bat" "batdrv_init.read_force_discharge.not_implemented"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge.not_implemented"
     return 255
 }
 
 batdrv_write_force_discharge () {
     # function not implemented for generic hardware
-    echo_debug "bat" "batdrv_init._write_force_discharge.not_implemented"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_force_discharge.not_implemented"
     return 255
 }
 
 batdrv_cancel_force_discharge () {
     # function not implemented for generic hardware
-    echo_debug "bat" "batdrv_init.cancel_force_discharge.not_implemented"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.cancel_force_discharge.not_implemented"
     return 255
 }
 
 batdrv_force_discharge_active () {
     # function not implemented for generic hardware
-    echo_debug "bat" "batdrv_init.force_discharge_active.not_implemented"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active.not_implemented"
     return 255
 }
 
 batdrv_discharge () {
     # function not implemented for generic hardware
-    echo_debug "bat" "batdrv_init.discharge.not_implemented"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_implemented"
     return 255
 }
 
@@ -115,9 +119,8 @@ batdrv_show_battery_data () { # output battery data
     # rc: 0=ok/1=no batteries specified
     local verbose=${1:-0}
 
-
     printf "+++ Battery Wear Control\n"
-    printf "Plugin: Generic\n"
+    printf "Plugin: %s\n" "$_batdrv_plugin"
     printf "Supported features: none\n\n"
 
     local bat cc lf
