@@ -427,7 +427,7 @@ batdrv_write_thresholds () {
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).invalid_start: bat=$_bat_str"
         case $verb in
-            1) printf "Warning: charge start threshold %s for %s invalid or out of range (0..99). Skipped.\n" "$new_start" $_bat_str 1>&2 ;;
+            1) printf "Warning: charge start threshold %s for %s invalid or out of range (0..99). Battery skipped.\n" "$new_start" $_bat_str 1>&2 ;;
             2) printf "Error: charge start threshold %s for %s invalid or out of range (0..99). Aborted.\n" "$new_start" $_bat_str 1>&2 ;;
         esac
         return 2
@@ -439,7 +439,7 @@ batdrv_write_thresholds () {
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).invalid_stop: bat=$_bat_str"
         case $verb in
-            1) printf "Warning: charge stop threshold %s for %s invalid or out of range (1..100). Skipped.\n" "$new_stop" $_bat_str 1>&2 ;;
+            1) printf "Warning: charge stop threshold %s for %s invalid or out of range (1..100). Battery skipped.\n" "$new_stop" $_bat_str 1>&2 ;;
             2) printf "Error: charge stop threshold %s for %s invalid or out of range (1..100). Aborted.\n" "$new_stop" $_bat_str 1>&2 ;;
         esac
         return 2
@@ -449,7 +449,7 @@ batdrv_write_thresholds () {
     if [ $((new_start + 4)) -gt $new_stop ]; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).invalid_diff: bat=$_bat_str"
         case $verb in
-            1) printf "Warning: charge start threshold > stop threshold - 4 for %s. Skipped.\n" $_bat_str 1>&2 ;;
+            1) printf "Warning: charge start threshold > stop threshold - 4 for %s. Battery skipped.\n" $_bat_str 1>&2 ;;
             2) printf "Error: start threshold > stop threshold - 4 for %s. Aborted.\n" $_bat_str 1>&2 ;;
         esac
         return 3
@@ -460,7 +460,7 @@ batdrv_write_thresholds () {
        ! old_stop=$(batdrv_read_threshold stop); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).read_error: bat=$_bat_str"
         case $verb in
-            1) printf "Warning: could not read current charge thresholds for %s. Skipped.\n" $_bat_str 1>&2 ;;
+            1) printf "Warning: could not read current charge thresholds for %s. Battery skipped.\n" $_bat_str 1>&2 ;;
             2) printf "Error: could not read current charge thresholds for %s. Aborted.\n" $_bat_str 1>&2 ;;
         esac
         return 4
@@ -546,7 +546,7 @@ batdrv_write_thresholds () {
                     ;;
                 1)
                     if [ $steprc -gt 0 ]; then
-                        printf "Warning: writing charge %s threshold for %s failed. Skipped.\n" $step $new_thresh 1>&2
+                        printf "Warning: writing charge %s threshold for %s failed. Battery skipped.\n" $step $_bat_str 1>&2
                     fi
                     ;;
             esac
