@@ -13,7 +13,7 @@
 batdrv_init () {
     # detect hardware and initialize driver
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
-    # retval: $_batdrv_plugin
+    # retval: $_batdrv_plugin, $batdrv_kmod
     #
     # 1. check for tp-smapi external kernel module
     #    --> retval $_tpsmapi
@@ -42,6 +42,7 @@ batdrv_init () {
     #    stop threshold                         --> retval $_bt_def_stop;
 
     _batdrv_plugin="thinkpad-legacy"
+    _batdrv_kmod="tp_smapi"
 
     # check plugin simulation override and denylist
     if [ -n "$X_BAT_PLUGIN_SIMULATE" ]; then
@@ -643,12 +644,12 @@ batdrv_show_battery_data () {
     printf "Driver usage:\n"
     # ThinkPad-specific battery API
     case $_tpsmapi in
-        0)   printf "* tp-smapi   = active "; print_methods_per_driver "tpsmapi" ;;
-        32)  printf "* tp-smapi   = inactive (disabled by configuration)\n" ;;
-        64)  printf "* tp-smapi   = inactive (kernel module 'tp_smapi' load error)\n" ;;
-        128) printf "* tp-smapi   = inactive (kernel module 'tp_smapi' not installed)\n" ;;
-        254) printf "* tp-smapi   = inactive (ThinkPad not supported)\n" ;;
-        *)   printf "* tp-smapi   = unknown status\n" ;;
+        0)   printf "* tp-smapi (${_batdrv_kmod}) = active "; print_methods_per_driver "tpsmapi" ;;
+        32)  printf "* tp-smapi (${_batdrv_kmod}) = inactive (disabled by configuration)\n" ;;
+        64)  printf "* tp-smapi (${_batdrv_kmod}) = inactive (kernel module 'tp_smapi' load error)\n" ;;
+        128) printf "* tp-smapi (${_batdrv_kmod}) = inactive (kernel module 'tp_smapi' not installed)\n" ;;
+        254) printf "* tp-smapi (${_batdrv_kmod}) = inactive (ThinkPad not supported)\n" ;;
+        *)   printf "* tp-smapi (${_batdrv_kmod}) = unknown status\n" ;;
     esac
     printf "\n"
 

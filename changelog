@@ -10,7 +10,8 @@
       - Discharge malfunction: hint to check battery, charger
       - tlp-stat -b
         - "Battery Features" renamed to "Battery Wear Control"
-        - Wear Control: show plugin, supported features, driver usage
+        - Wear Control: show plugin, supported features, driver usage and
+          related kernel module
         - Map battery state "Unknown" to "Idle" for clarity
         - Flag ThinkPad L512 as "unsupported"
     Configuration:

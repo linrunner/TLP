@@ -36,6 +36,7 @@ batdrv_init () {
     #    stop threshold                         --> retval $_bt_def_stop;
 
     _batdrv_plugin="asus"
+    _batdrv_kmod="asus_wmi" # kernel module for natacpi
 
     # check plugin simulation override and denylist
     if [ -n "$X_BAT_PLUGIN_SIMULATE" ]; then
@@ -340,7 +341,7 @@ batdrv_show_battery_data () {
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     if [ "$_bm_thresh" != "none" ]; then
-        printf "Supported features: charge threshold\n"
+        printf "Supported features: charge thresholds\n"
     else
         printf "Supported features: none\n"
     fi
@@ -348,11 +349,11 @@ batdrv_show_battery_data () {
     printf "Driver usage:\n"
     # native kernel ACPI battery API
     case $_natacpi in
-        0) printf "* natacpi    = active (charge thresholds)\n" ;;
-        32)  printf "* natacpi    = inactive (disabled by configuration)\n" ;;
-        128) printf "* natacpi    = inactive (no kernel support)\n" ;;
-        254) printf "* natacpi    = inactive (ASUS laptop not supported)\n" ;;
-        *)   printf "* natacpi    = unknown status\n" ;;
+        0)   printf "* natacpi (${_batdrv_kmod}) = active (charge thresholds)\n" ;;
+        32)  printf "* natacpi (${_batdrv_kmod}) = inactive (disabled by configuration)\n" ;;
+        128) printf "* natacpi (${_batdrv_kmod}) = inactive (no kernel support)\n" ;;
+        254) printf "* natacpi (${_batdrv_kmod}) = inactive (ASUS laptop not supported)\n" ;;
+        *)   printf "* natacpi (${_batdrv_kmod}) = unknown status\n" ;;
     esac
     printf "\n"
 

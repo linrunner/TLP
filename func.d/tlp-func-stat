@@ -682,14 +682,17 @@ print_methods_per_driver () {
     for bm in _bm_read _bm_thresh _bm_dischg; do
         if [ "$(eval echo \$$bm)" = "$1" ]; then
             # method matches driver
+            m=""
             case $bm in
-                _bm_read)   m="status" ;;
+                _bm_read)   [ "$1" = "tpsmapi" ] && m="status" ;;
                 _bm_thresh) m="charge thresholds" ;;
                 _bm_dischg) m="recalibration" ;;
             esac
-            # concat method to output
-            [ -n "$mlist" ] && mlist="${mlist}, "
-            mlist="${mlist}${m}"
+            if [ -n "$m" ]; then
+                # concat method to output
+                [ -n "$mlist" ] && mlist="${mlist}, "
+                mlist="${mlist}${m}"
+            fi
         fi
     done
 
