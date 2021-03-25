@@ -18,6 +18,7 @@ readonly MOD_TPACPI="acpi_call"
 readonly ACPIBATDIR=/sys/class/power_supply
 readonly SMAPIBATDIR=/sys/devices/platform/smapi
 readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
+readonly ASUSWMIDIR=/sys/module/asus_wmi
 
 readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T23|T[346][0123][p]?|T[45][01]0[s]?|W[57]0[01]|X[346][012][s]?( Tablet)?|X1[02]0e|X[23]0[01][s]?( Tablet)?|Z6[01][mpt])$'
 readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
@@ -54,10 +55,11 @@ supports_tpacpi () {
     ! supports_no_tp_bat_funcs && ! supports_tpsmapi_only
 }
 
-check_thinkpad () { # check for ThinkPad hardware and save model string,
-                 # load ThinkPad specific kernel modules
-                 # rc: 0=ThinkPad, 1=other hardware
-                 # retval: $_tpmodel
+check_thinkpad () {
+    # check for ThinkPad hardware and save model string,
+    # load ThinkPad specific kernel modules
+    # rc: 0=ThinkPad, 1=other hardware
+    # retval: $_tpmodel
     local pv
 
     _tpmodel=""
@@ -103,8 +105,15 @@ check_thinkpad () { # check for ThinkPad hardware and save model string,
     return 1
 }
 
-is_thinkpad () { # check for ThinkPad by saved model string
-                 # rc: 0=ThinkPad, 1=other hardware
+is_thinkpad () {
+    # check for ThinkPad by saved model string
+    # rc: 0=ThinkPad, 1=other hardware
     [ -n "$_tpmodel" ]
+}
+
+is_asus () {
+    # check for ASUS laptop w/ asus_wmi kernel module loaded
+    # rc: 0=ASUS laptop, 1=other hardware
+    [ -d $ASUSWMIDIR ] || [ "$X_SIMULATE_ASUS" ]
 }
 
