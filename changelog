@@ -9,6 +9,7 @@
       - Introduce plugins to support wear control on non-ThinkPads:
         - ASUS laptops: stop threshold only, no recalibration
         - Huawei MateBooks: start+stop threshold, no recalibration
+        - Lenovo Ideapads: stop threshold aka "battery conservation mode"
       - Use standard sysfs attributes for ThinkPad charge thresholds
         (Issue #513)
       - Discharge malfunction: hint to check battery, charger
