@@ -19,6 +19,7 @@ readonly ACPIBATDIR=/sys/class/power_supply
 readonly SMAPIBATDIR=/sys/devices/platform/smapi
 readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly ASUSWMIDIR=/sys/module/asus_wmi
+readonly HUAWEIWMIDIR=/sys/module/huawei_wmi
 
 readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T23|T[346][0123][p]?|T[45][01]0[s]?|W[57]0[01]|X[346][012][s]?( Tablet)?|X1[02]0e|X[23]0[01][s]?( Tablet)?|Z6[01][mpt])$'
 readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
@@ -114,6 +115,11 @@ is_thinkpad () {
 is_asus () {
     # check for ASUS laptop w/ asus_wmi kernel module loaded
     # rc: 0=ASUS laptop, 1=other hardware
-    [ -d $ASUSWMIDIR ] || [ "$X_SIMULATE_ASUS" ]
+    [ -d $ASUSWMIDIR ]
 }
 
+is_huawei () {
+    # check for Huawei MateBook w/ huawei_wmi kernel module loaded
+    # rc: 0=ASUS laptop, 1=other hardware
+    [ -d $HUAWEIWMIDIR ]
+}
