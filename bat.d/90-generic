@@ -5,7 +5,7 @@
 # Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# Needs: tlp-func-base, 34-tlp-func-platform, 35-tlp-func-batt, tlp-func-stat
+# Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat
 
 # shellcheck disable=SC2086
 

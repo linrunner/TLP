@@ -4,16 +4,28 @@
 # Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# Needs: tlp-func-base, 34-tlp-func-platform, 35-tlp-func-batt, tlp-func-stat
+# Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat
 
 # shellcheck disable=SC2086
+
+# --- Hardware Detection
+
+readonly HUAWEIWMIDIR=/sys/module/huawei_wmi
+
+is_huawei () {
+    # check for Huawei MateBook w/ huawei_wmi kernel module loaded
+    # rc: 0=Huawei MateBook, 1=other hardware
+    [ -d $HUAWEIWMIDIR ]
+}
+
+# --- Plugin API functions
 
 batdrv_init () {
     # detect hardware and initialize driver
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
     # retval: $_batdrv_plugin, $_batdrv_kmod
     #
-    # 1. check for native kernel acpi (Linux 4.17 or higher required)
+    # 1. check for native kernel acpi (Linux 5.4 or higher required)
     #    --> retval $_natacpi:
     #       0=thresholds/
     #       32=disabled/

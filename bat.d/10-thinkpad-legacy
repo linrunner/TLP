@@ -6,9 +6,11 @@
 # Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# Needs: tlp-func-base, 34-tlp-func-platform, 35-tlp-func-batt, tlp-func-stat
+# Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat, 05-thinkpad
 
 # shellcheck disable=SC2086
+
+# --- Plugin API functions
 
 batdrv_init () {
     # detect hardware and initialize driver
