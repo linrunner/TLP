@@ -6,7 +6,11 @@
     Audio:
       - SOUND_POWER_SAVE_ON_AC: change default to enabled (Issue #495)
     Battery:
-      - Introduce plugins to support charge thresholds on non-ThinkPads
+      - Introduce plugins to support wear control on non-ThinkPads:
+        - ASUS laptops: stop threshold only, no recalibration
+        - Huawei MateBooks: start+stop threshold, no recalibration
+      - Use standard sysfs attributes for ThinkPad charge thresholds
+        (Issue #513)
       - Discharge malfunction: hint to check battery, charger
       - tlp-stat -b
         - "Battery Features" renamed to "Battery Wear Control"
