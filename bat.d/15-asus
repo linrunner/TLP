@@ -11,7 +11,7 @@
 batdrv_init () {
     # detect hardware and initialize driver
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
-    # retval: $_batdrv_plugin
+    # retval: $_batdrv_plugin, $batdrv_kmod
     #
     # 1. check for native kernel acpi (Linux 4.17 or higher required)
     #    --> retval $_natacpi:
@@ -159,8 +159,8 @@ batdrv_read_threshold () {
     # read and print charge threshold (stop only)
     # $1: error string
     # global param: $_bf_stop
-    # out: threshold 0..100/"$2" on error
-    # rc: 0=ok/4=read error
+    # out: threshold 0..100/"$1" on error
+    # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
     local out="" rc=0
@@ -172,7 +172,12 @@ batdrv_read_threshold () {
         return 0
     fi
 
-    out=$(read_sysf $_bf_stop "$2") || rc=4
+    if [ "$_bm_thresh" = "natacpi" ]; then
+        out=$(read_sysf $_bf_stop "$1") || rc=4
+    else
+        # no threshold api
+        rc=255
+    fi
 
     # "return" threshold
     if [ "$X_THRESH_SIMULATE_READERR" != "1" ]; then
@@ -349,11 +354,11 @@ batdrv_show_battery_data () {
     printf "Driver usage:\n"
     # native kernel ACPI battery API
     case $_natacpi in
-        0)   printf "* natacpi (${_batdrv_kmod}) = active (charge thresholds)\n" ;;
-        32)  printf "* natacpi (${_batdrv_kmod}) = inactive (disabled by configuration)\n" ;;
-        128) printf "* natacpi (${_batdrv_kmod}) = inactive (no kernel support)\n" ;;
-        254) printf "* natacpi (${_batdrv_kmod}) = inactive (ASUS laptop not supported)\n" ;;
-        *)   printf "* natacpi (${_batdrv_kmod}) = unknown status\n" ;;
+        0)   printf "* natacpi (%s) = active (charge thresholds)\n" "$_batdrv_kmod" ;;
+        32)  printf "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
+        128) printf "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
+        254) printf "* natacpi (%s) = inactive (ASUS laptop not supported)\n" "$_batdrv_kmod" ;;
+        *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
     printf "\n"
 

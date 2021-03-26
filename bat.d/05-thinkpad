@@ -326,7 +326,7 @@ batdrv_read_threshold () {
     # $2: error string
     # global param: $_bm_thresh, $_bf_start, $_bf_stop, $_bat_idx
     # out: threshold 0..100/"$2" on error
-    # rc: 0=ok/4=read error
+    # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
     local bf out="" rc=0
@@ -353,9 +353,9 @@ batdrv_read_threshold () {
             # the annoying firmware issue on ThinkPad A/E/L/S series
             # (refer to issue #369 and FAQ)
             out=$(read_sysf $bf "$2") || rc=4
-            ;; # natacpi
+            ;;
 
-        tpacpi) # use tpacpi-bat
+        tpacpi)
             case $1 in
                 start)
                     out=$($TPACPIBAT -g ST $_bat_idx 2> /dev/null | cut -f1 -d' ')
@@ -383,7 +383,11 @@ batdrv_read_threshold () {
                 out="$2"
                 rc=4
             fi
-            ;; # tpacpi
+            ;;
+
+        *) # no threshold api
+            rc=255
+            ;;
     esac
 
     # "return" threshold
@@ -514,7 +518,7 @@ batdrv_write_thresholds () {
                         stop)  write_sysf "$new_thresh" $_bf_stop  ;;
                     esac
                     steprc=$?; [ $steprc -ne 0 ] && [ $rc -eq 0 ] && rc=5
-                    ;; # natacpi
+                    ;;
 
                 tpacpi)
                     case $step in
@@ -528,8 +532,13 @@ batdrv_write_thresholds () {
                             fi
                             ;;
                     esac
-                    steprc=$?; [ $steprc -ne 0 ] && [ $rc -eq 0 ] && rc=5
-                    ;; # tpacpi
+                    steprc=$?; [ $steprc -ne 0 ] && rc=5
+                    ;;
+
+                *) # no threshold api
+                    steprc=255
+                    rc=5
+                    ;;
             esac
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).$step.write: bat=$_bat_str; old=$old_thresh; new=$new_thresh; steprc=$steprc"
 
@@ -598,11 +607,11 @@ batdrv_chargeonce () {
             else
                 ccharge=-1
             fi
-            ;; # natacpi, tpacpi
+            ;;
 
         tpsmapi) # use tp-smapi sysfile
             ccharge=$(read_sysval $_bd_read/remaining_percent) || ccharge=-1
-            ;; # tpsmapi
+            ;;
     esac
 
     if [ $ccharge -eq -1 ]; then
@@ -669,7 +678,7 @@ batdrv_read_force_discharge () {
         natacpi)
             # read force discharge from sysfile, "$1" if not readable/non-existent
             out=$(read_sysf $_bf_dischg "$1");
-            ;; # natacpi
+            ;;
 
         tpacpi) # read via tpacpi-bat
             case $($TPACPIBAT -g FD $_bat_idx 2> /dev/null) in
@@ -680,7 +689,7 @@ batdrv_read_force_discharge () {
                     rc=4
                     ;;
             esac
-            ;; # tpacpi
+            ;;
 
         *) # no discharge api
             out="$1"
@@ -712,7 +721,7 @@ batdrv_write_force_discharge () {
             $TPACPIBAT -s FD $_bat_idx $1 > /dev/null 2>&1 || rc=5
             ;; # tpcpaci
 
-        *) # invalid discharge method
+        *) # no discharge api
             rc=255
             ;;
     esac
@@ -750,7 +759,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
     # force_discharge is still on, but quirky firmware (e.g. ThinkPad E-series)
     # may keep force_discharge on --> check battery status sysfile too
     case $_bm_read in
-        natacpi|tpacpi)
+        natacpi)
             bsys=$_bd_read/status # use ACPI sysfile
             ;;
 
@@ -758,7 +767,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
             bsys=$_bd_read/state # use tpsmapi sysfile
             ;;
 
-        *) # invalid read method
+        *) # no read api
             bsys=""
             rc=255
             ;;
@@ -916,11 +925,11 @@ batdrv_show_battery_data () {
     printf "Driver usage:\n"
     # native kernel ACPI battery API
     case $_natacpi in
-        0|1) printf "* natacpi (${_batdrv_kmod}) = active "; print_methods_per_driver "natacpi" ;;
-        32)  printf "* natacpi (${_batdrv_kmod}) = inactive (disabled by configuration)\n" ;;
-        128) printf "* natacpi (${_batdrv_kmod}) = inactive (no kernel support)\n" ;;
-        254) printf "* natacpi (${_batdrv_kmod}) = inactive (ThinkPad not supported)\n" ;;
-        *)   printf "* natacpi (${_batdrv_kmod}) = unknown status\n" ;;
+        0|1) printf "* natacpi (%s) = active " "$_batdrv_kmod"; print_methods_per_driver "natacpi" ;;
+        32)  printf "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
+        128) printf "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
+        254) printf "* natacpi (%s) = inactive (ThinkPad not supported)\n" "$_batdrv_kmod" ;;
+        *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
     # ThinkPad-specific battery APIs

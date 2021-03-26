@@ -218,7 +218,7 @@ batdrv_read_threshold () {
     esac
     if [ -n "$out" ]; then
         printf "%s" "$out"
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1).simulate: bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1, $2).simulate: bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
         return 0
     fi
 
@@ -230,6 +230,10 @@ batdrv_read_threshold () {
                 stop)  out=$(read_sysf $_bf_stop  "$2") || rc=4 ;;
             esac
             ;;
+
+        *) # no threshold api
+            rc=255
+            ;;
     esac
 
     # "return" threshold
@@ -239,7 +243,7 @@ batdrv_read_threshold () {
         rc=4
     fi
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1): bm_thresh=$_bm_thresh; bf=$bf; bat_idx=$_bat_idx; out=$out; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1, $2): bm_thresh=$_bm_thresh; bf=$bf; bat_idx=$_bat_idx; out=$out; rc=$rc"
     return $rc
 }
 
@@ -353,7 +357,12 @@ batdrv_write_thresholds () {
                         stop)  write_sysf "$new_thresh" $_bf_stop  ;;
                     esac
                     steprc=$?; [ $steprc -ne 0 ] && [ $rc -eq 0 ] && rc=5
-                    ;; # tpsmapi
+                    ;;
+
+                *) # no threshold api
+                    steprc=255
+                    rc=5
+                    ;;
             esac
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).$step.write: bat=$_bat_str; old=$old_thresh; new=$new_thresh; steprc=$steprc"
 
@@ -468,7 +477,7 @@ batdrv_read_force_discharge () {
     # $1: error string
     # global param: $_bm_dischg, $_bf_dischg
     # out: 0=off/1=on/"$1" on error
-    # rc: 0=ok/4=read error
+    # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
     local rc=0 out="$1"
@@ -477,6 +486,11 @@ batdrv_read_force_discharge () {
         tpsmapi)
             # read force discharge from sysfile, "$1" if not readable/non-existent
             out=$(read_sysf $_bf_dischg "$1");
+            ;;
+
+        *) # no discharge api
+            out="$1"
+            rc=255
             ;;
     esac
     printf "%s" "$out"
@@ -487,7 +501,7 @@ batdrv_read_force_discharge () {
 
 batdrv_write_force_discharge () {
     # write force discharge state
-    # $1: 0=off/1=on
+    # $1: 0=off/1=on/255=no api
     # global param: $_bat_str, $_bat_idx, $_bm_dischg, $_bf_dischg
     # rc: 0=done/5=write error
     # prerequisite: batdrv_init(), batdrv_select_battery()
@@ -498,6 +512,10 @@ batdrv_write_force_discharge () {
         tpsmapi)
             # write force_discharge
             write_sysf "$1" $_bf_dischg || rc=5
+            ;;
+
+        *) # no discharge api
+            rc=255
             ;;
     esac
 
@@ -644,12 +662,12 @@ batdrv_show_battery_data () {
     printf "Driver usage:\n"
     # ThinkPad-specific battery API
     case $_tpsmapi in
-        0)   printf "* tp-smapi (${_batdrv_kmod}) = active "; print_methods_per_driver "tpsmapi" ;;
-        32)  printf "* tp-smapi (${_batdrv_kmod}) = inactive (disabled by configuration)\n" ;;
-        64)  printf "* tp-smapi (${_batdrv_kmod}) = inactive (kernel module 'tp_smapi' load error)\n" ;;
-        128) printf "* tp-smapi (${_batdrv_kmod}) = inactive (kernel module 'tp_smapi' not installed)\n" ;;
-        254) printf "* tp-smapi (${_batdrv_kmod}) = inactive (ThinkPad not supported)\n" ;;
-        *)   printf "* tp-smapi (${_batdrv_kmod}) = unknown status\n" ;;
+        0)   printf "* tp-smapi (%s) = active " "$_batdrv_kmod"; print_methods_per_driver "tpsmapi" ;;
+        32)  printf "* tp-smapi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
+        64)  printf "* tp-smapi (%s) = inactive (kernel module 'tp_smapi' load error)\n" "$_batdrv_kmod" ;;
+        128) printf "* tp-smapi (%s) = inactive (kernel module 'tp_smapi' not installed)\n" "$_batdrv_kmod" ;;
+        254) printf "* tp-smapi (%s) = inactive (ThinkPad not supported)\n" "$_batdrv_kmod" ;;
+        *)   printf "* tp-smapi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
     printf "\n"
 

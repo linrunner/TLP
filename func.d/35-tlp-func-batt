@@ -145,6 +145,11 @@ chargeonce_battery () {
 
     # apply temporary start threshold
     batdrv_chargeonce; rc=$?
+    if [ $rc -eq 255 ]; then
+        printf "Error: chargeonce not available for your hardware.\n" 1>&2
+        echo_debug "bat" "chargeonce_battery.no_supported"
+        return 255
+    fi
 
     return $rc
 }
