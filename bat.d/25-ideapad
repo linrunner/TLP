@@ -307,6 +307,10 @@ batdrv_force_discharge_active () {
 
 batdrv_discharge () {
     # function not implemented for Ideapads
+
+    # Important: release lock from caller
+    unlock_tlp tlp_discharge
+
     echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_implemented"
     return 255
 }
