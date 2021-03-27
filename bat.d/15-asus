@@ -83,7 +83,7 @@ batdrv_init () {
     # --- check for native kernel ACPI
     local bd bs
     local done=0
-    for bd in "$ACPIBATDIR"/BAT[01T]; do
+    for bd in "$ACPIBATDIR"/BAT[01CT]; do
         if [ "$(read_sysf $bd/present)" = "1" ]; then
             # record detected batteries and directories
             bs=${bd##/*/}
@@ -126,7 +126,7 @@ batdrv_init () {
 
 batdrv_select_battery () {
     # determine battery sysfiles and tpacpi-bat index
-    # $1: BAT0/BAT1/BATT/DEF
+    # $1: BAT0/BATC/BATT/BAT1/DEF
     # # rc: 0=bat exists/1=bat non-existent
     # retval: $_bat_str:   BAT0/BAT1/BATT;
     #         $_bd_read:   directory with battery data sysfiles;
@@ -292,8 +292,11 @@ batdrv_apply_configured_thresholds () {
     if batdrv_select_battery BAT0; then
         batdrv_write_thresholds "DEF" "$STOP_CHARGE_THRESH_BAT0" 1; rc=$?
     fi
+    # BATC, BATT use BAT0 settings
+    if batdrv_select_battery BATC; then
+        batdrv_write_thresholds "DEF" "$STOP_CHARGE_THRESH_BAT0" 1; rc=$?
+    fi
     if batdrv_select_battery BATT; then
-        # BATT uses BAT0 settings
         batdrv_write_thresholds "DEF" "$STOP_CHARGE_THRESH_BAT0" 1; rc=$?
     fi
     if batdrv_select_battery BAT1; then
@@ -329,6 +332,10 @@ batdrv_force_discharge_active () {
 
 batdrv_discharge () {
     # function not implemented for ASUS laptops
+
+    # Important: release lock from caller
+    unlock_tlp tlp_discharge
+
     echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_implemented"
     return 255
 }
