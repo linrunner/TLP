@@ -218,7 +218,6 @@ add_sbin2path
 if [ "$needs_root_priv" = "1" ]; then
     check_root
     load_modules $MOD_MSR $MOD_TEMP
-    check_thinkpad
 fi
 get_sys_power_supply
 
