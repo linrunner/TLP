@@ -372,10 +372,13 @@ create_rundir () { # make sure $RUNDIR exists
     [ -d $RUNDIR ] || mkdir -p $RUNDIR 2> /dev/null 1>&2
 }
 
-# -- Battery Feature Drivers
+# -- Battery Plugins
 
 select_batdrv () { # source battery feature drivers and
                    # activate the one that matches the hardware
+
+    # do not execute twice
+    [ -z "$_batdrv_selected" ] || return 0
 
     # iterate until a matching driver is found
     for batdrv in @TLP_BATD@/[0-9][0-9]*[a-z]; do

@@ -324,6 +324,7 @@ batdrv_init () {
         fi
     fi
 
+    _batdrv_selected=$_batdrv_plugin
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; tpacpi=$_tpacpi; tpsmapi=$_tpsmapi"
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: read=$_bm_read; thresh=$_bm_thresh; start=$_bn_start; stop=$_bn_stop; dischg=$_bm_dischg; force=$_bn_dischg"
     return 0
