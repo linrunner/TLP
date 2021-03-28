@@ -217,8 +217,8 @@ batdrv_write_thresholds () {
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3).invalid_stop"
         case $verb in
-            1) printf "Warning: conservation mode %s invalid (must be 0 or 1). Skipped.\n" "$new_stop" 1>&2 ;;
-            2) printf "Error: conservation mode %s invalid (must be 0 or 1). Aborted.\n" "$new_stop" 1>&2 ;;
+            1) printf "Warning: conservation mode (%s) not specified or invalid (must be 0 or 1). Skipped.\n" "$new_stop" 1>&2 ;;
+            2) printf "Error: conservation mode (%s) not specified or invalid (must be 0 or 1). Aborted.\n" "$new_stop" 1>&2 ;;
         esac
         return 2
     fi

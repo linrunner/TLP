@@ -524,8 +524,8 @@ batdrv_write_thresholds () {
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).invalid_start: bat=$_bat_str"
         case $verb in
-            1) printf "Warning: charge start threshold %s for %s invalid or out of range (0..99). Battery skipped.\n" "$new_start" $_bat_str 1>&2 ;;
-            2) printf "Error: charge start threshold %s for %s invalid or out of range (0..99). Aborted.\n" "$new_start" $_bat_str 1>&2 ;;
+            1) printf "Warning: charge start threshold (%s) for %s not specified, invalid or out of range (0..99). Battery skipped.\n" "$new_start" $_bat_str 1>&2 ;;
+            2) printf "Error: charge start threshold (%s) for %s not specified, invalid or out of range (0..99). Aborted.\n" "$new_start" $_bat_str 1>&2 ;;
         esac
         return 2
     fi
@@ -536,8 +536,8 @@ batdrv_write_thresholds () {
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3).invalid_stop: bat=$_bat_str"
         case $verb in
-            1) printf "Warning: charge stop threshold %s for %s invalid or out of range (1..100). Battery skipped.\n" "$new_stop" $_bat_str 1>&2 ;;
-            2) printf "Error: charge stop threshold %s for %s invalid or out of range (1..100). Aborted.\n" "$new_stop" $_bat_str 1>&2 ;;
+            1) printf "Warning: charge stop threshold (%s) for %s not specified, invalid or out of range (1..100). Battery skipped.\n" "$new_stop" $_bat_str 1>&2 ;;
+            2) printf "Error: charge stop threshold (%s) for %s not specified, invalid or out of range (1..100). Aborted.\n" "$new_stop" $_bat_str 1>&2 ;;
         esac
         return 2
     fi
