@@ -378,6 +378,7 @@ select_batdrv () { # source battery feature drivers and
                    # activate the one that matches the hardware
 
     # do not execute twice
+    # shellcheck disable=SC2154
     [ -z "$_batdrv_selected" ] || return 0
 
     # iterate until a matching driver is found

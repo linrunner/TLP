@@ -112,6 +112,7 @@ batdrv_init () {
         _natacpi=254
     fi
 
+    # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bf_stop=$_bf_stop"
     return 0

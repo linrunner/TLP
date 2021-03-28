@@ -46,6 +46,7 @@ batdrv_init () {
     # shellcheck disable=SC2034
     _bm_dischg="none"
 
+    # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries"
     # catchall: always return 0
