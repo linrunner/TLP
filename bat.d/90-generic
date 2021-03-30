@@ -24,7 +24,7 @@ batdrv_init () {
 
     _batdrv_plugin="generic"
 
-    # determine present batteries
+    # iterate batteries
     local bs bd
     _batteries=""
     for bd in "$ACPIBATDIR"/BAT[01]; do
@@ -54,6 +54,7 @@ batdrv_init () {
 }
 
 batdrv_select_battery () {
+    # determine battery acpidir
     # $1: battery
     # retval: $_bd_read:   directory with battery data sysfiles
 

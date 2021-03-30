@@ -84,7 +84,7 @@ batdrv_init () {
     _bt_def_start=0
     _bt_def_stop=100
 
-    # --- check for native kernel ACPI
+    # iterate batteries and check for native kernel ACPI
     local bd bs
     local done=0
     for bd in "$ACPIBATDIR"/BAT[01]; do
@@ -136,7 +136,7 @@ batdrv_init () {
 }
 
 batdrv_select_battery () {
-    # determine battery sysfiles and tpacpi-bat index
+    # determine battery acpidir and sysfiles
     # $1: BAT0/BAT1/DEF
     # # rc: 0=bat exists/1=bat non-existent
     # retval: $_bat_str:   BAT0/BAT1/BATT;

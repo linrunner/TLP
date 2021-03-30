@@ -84,7 +84,7 @@ batdrv_init () {
 
     local bs bd
 
-    # determine present batteries
+    # iterate batteries
     for bd in "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf $bd/present)" = "1" ]; then
             # record detected batteries and directories

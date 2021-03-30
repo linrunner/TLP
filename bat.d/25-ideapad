@@ -27,7 +27,7 @@ batdrv_init () {
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
     # retval: $_batdrv_plugin, $batdrv_kmod
     #
-    # 1. check for native kernel acpi (Linux 4.14 or higher required)
+    # 1. check for kernel api (Linux 4.14 or higher required)
     #    --> retval $_natacpi:
     #       0=thresholds/
     #       32=disabled/

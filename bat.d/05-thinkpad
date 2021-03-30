@@ -191,7 +191,7 @@ batdrv_init () {
     # shellcheck disable=SC2034
     _bt_def_stop=100
 
-    # --- 1. check for native kernel ACPI
+    # --- 1. iterate batteries and check for native kernel ACPI
     local bd bs
     local done=0
     for bd in "$ACPIBATDIR"/BAT[01]; do
