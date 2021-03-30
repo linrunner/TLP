@@ -80,7 +80,7 @@ batdrv_init () {
     _bf_stop=""
     _bt_def_stop=0
 
-    # --- check for native kernel ACPI
+    # iterate batteries
     local bd bs
     for bd in "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf $bd/present)" = "1" ]; then
@@ -94,10 +94,11 @@ batdrv_init () {
         fi
     done
 
+    # check for kernel API
     if [ "$NATACPI_ENABLE" = "0" ]; then
         # natacpi disabled in configuration --> skip actual detection
         _natacpi=32
-    elif [ -f "IDEAPADCMODE" ] && readable_sysf "IDEAPADCMODE"; then
+    elif [ -f "$IDEAPADCMODE" ] && readable_sysf "$IDEAPADCMODE"; then
         # sysfile for exists and is actually readable
         _natacpi=0
         _bm_thresh="natacpi"
@@ -119,7 +120,7 @@ batdrv_init () {
 }
 
 batdrv_select_battery () {
-    # determine battery sysfiles and tpacpi-bat index
+    # determine battery acpidir
     # $1: BAT0/BAT1/DEF
     # # rc: 0=bat exists/1=bat non-existent
     # retval: $_bat_str:   BAT0/BAT1;
@@ -247,9 +248,9 @@ batdrv_write_thresholds () {
         case $verb in
             2)
                 if [ $rc -eq 0 ]; then
-                    printf "  conservation mode = %3d\n" $new_stop
+                    printf "  conservation mode = %d\n" $new_stop
                 else
-                    printf "  conservation mode = %3d (Error: write failed)\n" $new_stop 1>&2
+                    printf "  conservation mode = %d (Error: write failed)\n" $new_stop 1>&2
                 fi
                 ;;
             1)
@@ -261,7 +262,7 @@ batdrv_write_thresholds () {
     else
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3).no_change: old=$old_stop; new=$new_stop"
         if [ "$verb" = "2" ]; then
-                printf "  conservation mode = %3d (no change)\n" $new_stop
+                printf "  conservation mode = %d (no change)\n" $new_stop
         fi
     fi
 
@@ -269,7 +270,7 @@ batdrv_write_thresholds () {
 }
 
 batdrv_chargeonce () {
-    # function not implemented for
+    # function not implemented for Ideapads
     echo_debug "bat" "batdrv.${_batdrv_plugin}.charge_once.not_implemented"
     return 255
 }
