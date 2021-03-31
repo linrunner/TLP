@@ -20,14 +20,14 @@ is_samsung () {
 
 # --- Plugin API functions
 
-readonly SAMSUNGBLE="/sys/devices/platform/samsung/battery_life_extender"
+readonly SAMSUNGBLE="${SAMSUNGDIR}/battery_life_extender"
 
 batdrv_init () {
     # detect hardware and initialize driver
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
     # retval: $_batdrv_plugin, $batdrv_kmod
     #
-    # 1. check for kernel api
+    # 1. check for vendor specific kernel api
     #    --> retval $_natacpi:
     #       0=thresholds/
     #       32=disabled/
@@ -94,7 +94,7 @@ batdrv_init () {
         fi
     done
 
-    # check for kernel API
+    # check for vendor specific kernel api
     if [ "$NATACPI_ENABLE" = "0" ]; then
         # natacpi disabled in configuration --> skip actual detection
         _natacpi=32
@@ -329,19 +329,19 @@ batdrv_show_battery_data () {
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     if [ "$_bm_thresh" != "none" ]; then
-        printf "Supported features: charge thresholds\n"
+        printf "Supported features: charge threshold\n"
     else
         printf "Supported features: none\n"
     fi
 
     printf "Driver usage:\n"
-    # native kernel ACPI battery API
+    # vendor specific kernel api
     case $_natacpi in
-        0)   printf "* natacpi (%s) = active (charge thresholds)\n" "$_batdrv_kmod" ;;
-        32)  printf "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
-        128) printf "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
-        254) printf "* natacpi (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
-        *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
+        0)   printf "* vendor (%s) = active (charge threshold)\n" "$_batdrv_kmod" ;;
+        32)  printf "* vendor (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
+        128) printf "* vendor (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
+        254) printf "* vendor (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
+        *)   printf "* vendor (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
     printf "\n"
 

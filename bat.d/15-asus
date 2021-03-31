@@ -353,7 +353,7 @@ batdrv_show_battery_data () {
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     if [ "$_bm_thresh" != "none" ]; then
-        printf "Supported features: charge thresholds\n"
+        printf "Supported features: charge threshold\n"
     else
         printf "Supported features: none\n"
     fi
@@ -361,7 +361,7 @@ batdrv_show_battery_data () {
     printf "Driver usage:\n"
     # native kernel ACPI battery API
     case $_natacpi in
-        0)   printf "* natacpi (%s) = active (charge thresholds)\n" "$_batdrv_kmod" ;;
+        0)   printf "* natacpi (%s) = active (charge threshold)\n" "$_batdrv_kmod" ;;
         32)  printf "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
         128) printf "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
         254) printf "* natacpi (%s) = inactive (ASUS laptop not supported)\n" "$_batdrv_kmod" ;;
