@@ -257,6 +257,8 @@ case "$_cmd" in
         fi
 
         # do init business ...
+        # shellcheck disable=SC2034
+        _bgtask=1
         case $_cmd2 in
             start)
                 # apply power save settings
@@ -334,6 +336,8 @@ case "$_cmd" in
         check_root
         if lock_tlp_nb; then
             if compare_and_save_power_state $pwrmode; then
+                # shellcheck disable=SC2034
+                _bgtask=1
                 apply_common_settings $pwrmode
                 poweroff_drivebay $pwrmode 0
                 set_radio_device_states $pwrmode

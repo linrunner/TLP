@@ -17,6 +17,8 @@ for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/15-tlp-func-disk @TLP_FLIB@/20-tl
 done
 
 # --- MAIN
+# shellcheck disable=SC2034
+_bgtask=1
 
 # read configuration: quit on error, trace allowed
 read_config 1 0
@@ -28,7 +30,6 @@ check_tlp_enabled || do_exit 0
 if [ "$X_USB_ENV_TRACE" = "1" ]; then
     echo_debug "usb" "tlp_usb_udev.env = $(printenv)"
 fi
-
 
 case "$1" in
     usb) # usb devices in general
@@ -63,6 +64,5 @@ case "$1" in
         set_disk_iosched $dev
         ;;
 esac
-
 
 do_exit 0

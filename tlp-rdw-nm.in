@@ -54,6 +54,8 @@ get_iface_type () { # get saved interface type -- $1: interface
 }
 
 # --- MAIN
+# shellcheck disable=SC2034
+_bgtask=1
 
 # read configuration: quit on error, trace allowed
 read_config 1 0
@@ -66,7 +68,6 @@ add_sbin2path
 iface="$1"
 action="$2"
 itype=""
-
 
 # Quit for invalid interfaces
 # shellcheck disable=SC2015

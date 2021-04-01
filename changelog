@@ -7,8 +7,8 @@
       - SOUND_POWER_SAVE_ON_AC: change default to enabled (Issue #495)
     Battery:
       - Introduce plugins to support wear control on non-ThinkPads:
-        - ASUS laptops: stop threshold only, no recalibration
-        - Huawei MateBooks: start+stop threshold, no recalibration
+        - ASUS laptops: stop threshold
+        - Huawei MateBooks: start and stop threshold
         - Lenovo Ideapads: stop threshold aka "battery conservation mode"
         - Samsung laptops: stop threshold aka "battery life extender"
       - Use standard sysfs attributes for ThinkPad charge thresholds
@@ -57,6 +57,8 @@
         - Show ALPM state in the sysfs directory of the AHCI host
         - Remove "No AHCI-enabled host controller detected." message
     General:
+        - TLP_WARN_LEVEL: warn about invalid user settings, configurable for
+          background tasks and command line
         - tlp-stat -s: determine OS release without the lsb_release utility
     Graphics:
         - Add support for amdgpu (#498)

@@ -66,13 +66,35 @@ do_exit () { # cleanup and exit  -- $1: rc
     exit $1
 }
 
-# --- Debug
+# --- Messages
 
 echo_debug () { # write debug msg if tag matches -- $1: tag; $2: msg;
     [ "$_nodebug" = "1" ] && return 0
 
     if wordinlist "$1" "$TLP_DEBUG"; then
         $LOGGER -p debug -t "tlp" --id=$$ -- "$2" > /dev/null 2>&1
+    fi
+}
+
+echo_message () {
+    # output message according to TLP_MSG_LEVEL
+    # $1: message
+    # $2: loglevel for syslog
+
+    # shellcheck disable=SC2154
+    if [ "$_bgtask" = "1" ]; then
+        # called from background task --> use syslog
+        case "$TLP_WARN_LEVEL" in
+            1|3) $LOGGER -p "${2:-warning}" -t "tlp" --id=$$ -- "$1" > /dev/null 2>&1 ;;
+        esac
+    else
+        # called from command line task --> use stderr
+        case "$TLP_WARN_LEVEL" in
+            2|3)
+                # shellcheck disable=SC2059
+                printf "$1\n" 1>&2
+                ;;
+        esac
     fi
 }
 

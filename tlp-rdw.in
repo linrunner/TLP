@@ -14,12 +14,15 @@ for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/25-tlp-func-rf @TLP_FLIB@/30-tlp-
 done
 
 # --- MAIN
+# shellcheck disable=SC2034
+_bgtask=1
 
 # read configuration: quit on error, trace allowed
 read_config 1 0
 
 carg1=$1
 parse_args4config "$@"
+
 
 case $carg1 in
     enable)
