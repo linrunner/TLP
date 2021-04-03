@@ -197,6 +197,7 @@ batdrv_write_thresholds () {
     # $1: new start threshold -- unused dummy for plugin api compatibility
     # $2: new stop threshold 1..100/DEF(default)
     # $3: 0=quiet/1=output parameter errors/2=output progress and errors
+    # $4: battery - non-empty string indicates thresholds stem from configuration
     # global param: $_bat_str, $_bf_stop
     # rc: 0=ok/
     #     2=threshold out of range or non-numeric/
@@ -204,8 +205,9 @@ batdrv_write_thresholds () {
     #     5=threshold write error
     # prerequisite: batdrv_init(), batdrv_select_battery()
     local new_stop=$2
-    local old_stop
     local verb=${3:-0}
+    local cfg_bat="$4"
+    local old_stop
 
     # insert defaults
     [ "$new_stop" = "DEF" ] && new_stop=$_bt_def_stop
@@ -217,17 +219,28 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_stop" 3 || \
        ! is_within_bounds $new_stop 0 1; then
         # threshold out of range
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3).invalid_stop"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).invalid_stop"
         case $verb in
-            1) echo_message "Warning: life extender ($new_stop) not specified or invalid (must be 0 or 1). Skipped." ;;
-            2) printf "Error: life extender (%s) not specified or invalid (must be 0 or 1). Aborted.\n" "$new_stop" 1>&2 ;;
+            1)
+                if [ -n "$cfg_bat" ]; then
+                    echo_message "Error in configuration at STOP_CHARGE_THRESH_${cfg_bat}=\"${new_stop}\": life extender not specified or invalid (must be 0 or 1). Skipped."
+                fi
+                ;;
+
+            2)
+                if [ -n "$cfg_bat" ]; then
+                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": life extender not specified or invalid (must be 0 or 1). Aborted.\n" "$cfg_bat" "$new_stop" 1>&2
+                else
+                    printf "Error: life extender (%s) not specified or invalid (must be 0 or 1). Aborted.\n" "$new_stop" 1>&2
+                fi
+                ;;
         esac
         return 2
     fi
 
     # read active stop threshold value
     if ! old_stop=$(batdrv_read_threshold); then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3).read_error"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).read_error"
         case $verb in
             1) echo_message "Warning: could not read current life extender. Skipped." ;;
             2) printf "Error: could not read current life extender. Aborted.\n" 1>&2 ;;
@@ -244,7 +257,7 @@ batdrv_write_thresholds () {
     if [ "$old_stop" != "$new_stop" ]; then
         # new threshold differs from effective one --> write it
         write_sysf "$new_stop" $_bf_stop || rc=5
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3).write: old=$old_stop; new=$new_stop; rc=$rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).write: old=$old_stop; new=$new_stop; rc=$rc"
         case $verb in
             2)
                 if [ $rc -eq 0 ]; then
@@ -260,7 +273,7 @@ batdrv_write_thresholds () {
                 ;;
         esac
     else
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3).no_change: old=$old_stop; new=$new_stop"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).no_change: old=$old_stop; new=$new_stop"
         if [ "$verb" = "2" ]; then
                 printf "  life extender = %d (no change)\n" $new_stop
         fi
@@ -279,7 +292,7 @@ batdrv_apply_configured_thresholds () {
     # apply configured battery life extender from configuration (concerns all batteries)
     # output parameter errors only
 
-    batdrv_write_thresholds "DEF" "$STOP_CHARGE_THRESH_BAT0" 1; rc=$?
+    batdrv_write_thresholds "DEF" "$STOP_CHARGE_THRESH_BAT0" 1 "BAT0"; rc=$?
 
     return 0
 }

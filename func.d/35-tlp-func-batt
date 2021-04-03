@@ -106,8 +106,13 @@ setcharge_battery () {
     fi
 
     # apply thresholds
-    batdrv_write_thresholds $start_thresh $stop_thresh 2; rc=$?
-
+    if [ $use_cfg -eq 1 ]; then
+        # from configuration
+        batdrv_write_thresholds "$start_thresh" "$stop_thresh" 2 "$_bat_str"; rc=$?
+    else
+        # from command line
+        batdrv_write_thresholds "$start_thresh" "$stop_thresh" 2; rc=$?
+    fi
     return $rc
 }
 
