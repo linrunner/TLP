@@ -21,6 +21,7 @@ usr/share/bash-completion/completions/wwan
 usr/share/tlp/defaults.conf
 usr/share/tlp/rename.conf
 usr/share/tlp/func.d/*
+usr/share/tlp/bat.d/*
 usr/share/tlp/tlp-func-base
 usr/share/tlp/tlp-pcilist
 usr/share/tlp/tlp-readconfs
