@@ -19,6 +19,8 @@ readonly ACPIBATDIR=/sys/class/power_supply
 
 set_charge_thresholds () {
     # apply configured thresholds from configuration to all batteries
+    # optional depending on active plugin when specified in $1
+    # $1: plugin list (space separated)
     # rc: 0=ok/
     #     1=error
 
@@ -26,8 +28,14 @@ set_charge_thresholds () {
 
     # select battery feature driver
     select_batdrv
+
     # apply thresholds
-    batdrv_apply_configured_thresholds; rc=$?
+    # shellcheck disable=SC2154
+    if [ -z "$1" ]; then
+        batdrv_apply_configured_thresholds; rc=$?
+    elif wordinlist $_batdrv_plugin "$1"; then
+        batdrv_apply_configured_thresholds; rc=$?
+    fi
 
     return $rc
 }

@@ -81,7 +81,7 @@ batdrv_init () {
     _bn_start=""
     _bn_stop=""
     _batteries=""
-    _bt_def_start=0
+    _bt_def_start=95
     _bt_def_stop=100
 
     # iterate batteries and check for native kernel ACPI
