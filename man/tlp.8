@@ -1,4 +1,4 @@
-.TH tlp 8 2021-03-31 "TLP 1.4.0" "Power Management"
+.TH tlp 8 2021-04-05 "TLP 1.4.0" "Power Management"
 .
 .SH NAME
 tlp \- apply laptop power saving settings
@@ -44,31 +44,36 @@ eject button on newer models.
 .
 .TP
 .B setcharge [START_CHARGE STOP_CHARGE] [BAT0|BAT1|BATx]
-Change charge thresholds of the battery temporarily. Possible thresholds values
-depend on the laptop vendor and model. Configured thresholds are restored upon
-next system boot-up. When called without arguments, configured thresholds are
-applied. For details on charge thresholds refer to the link below.
+Changes the charge thresholds for the battery temporarily. Possible thresholds
+values depend on the laptop vendor and model. Configured charge thresholds will
+be restored at the next boot or by using \fBtlp setcharge\fR again but without
+the threshold arguments.
+For details on charge thresholds refer to the link below.
 .
 .TP
 .B fullcharge [BAT0|BAT1|BATx]
-Change charge thresholds of the battery to vendor presets temporarily
-(causing a full charge).
-Configured thresholds are restored upon next system boot-up.
+Charge the battery to full capacity.
+This is done by applying vendor presets to the charge thresholds temporarily.
+Configured charge thresholds will be restored at the next boot or by using
+\fBtlp setcharge\fR without the threshold arguments.
 .
 .TP
 .B chargeonce [BAT0|BAT1] \fR(ThinkPads only)
-Charge main (BAT0) or auxiliary (BAT1) battery to the stop charge threshold once
-(bypassing start threshold).
-Configured thresholds are restored upon next system boot-up.
+Charge the battery to the stop threshold once.
+This is done by temporarily lifting the start charge threshold.
+The configured start charge threshold will be restored at the next boot or by
+using \fBtlp setcharge\fR without the threshold arguments.
 .
 .TP
 .B discharge [BAT0|BAT1] \fR(ThinkPads only)
-Force complete discharge of main (BAT0) or auxiliary (BAT1) battery.
+Force complete discharge of the battery.
 .
 .TP
 .B recalibrate [BAT0|BAT1] \fR(ThinkPads only)
-Battery recalibration: completely discharge main (BAT0) or auxiliary (BAT1)
-battery and recharge to 100%.
+Battery recalibration: completely discharge the battery and recharge to 100%.
+The latter is done by temporarily applying vendor presets to the thresholds.
+Configured thresholds will be restored at the next boot or by using
+\fBtlp setcharge\fR.
 .
 .TP
 .B diskid
