@@ -607,13 +607,8 @@ show_gpu_data () {
                     printparm "%-44s = ##%5d## [MHz]" $gpu/$IGPU_MIN_FREQ
                     printparm "%-44s = ##%5d## [MHz]" $gpu/$IGPU_MAX_FREQ
                     printparm "%-44s = ##%5d## [MHz]" $gpu/$IGPU_BOOST_FREQ
-                    if readable_sysf $_intel_gpu_dbg/$IGPU_FREQ_TABLE; then
-                        # available frequencies
-                        printf "%s: " $_intel_gpu_dbg/$IGPU_FREQ_TABLE
-                        awk -F ' ' '{ if (NR >= 2) { printf "%d ", $1 } }; ' $_intel_gpu_dbg/$IGPU_FREQ_TABLE
-                        printf "[MHz] \n"
-                    fi
-                    echo
+                    printparm "%-44s = ##%5d## [MHz] (GPU min)" $gpu/$IGPU_RPN_FREQ
+                    printparm "%-44s = ##%5d## [MHz] (GPU max)" $gpu/$IGPU_RP0_FREQ
                 fi
                 ;;
 
