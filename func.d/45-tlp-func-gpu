@@ -19,14 +19,17 @@ readonly IGPU_MIN_FREQ=gt_min_freq_mhz
 readonly IGPU_MAX_FREQ=gt_max_freq_mhz
 readonly IGPU_BOOST_FREQ=gt_boost_freq_mhz
 # shellcheck disable=SC2034
-readonly IGPU_FREQ_TABLE=i915_ring_freq_table
+readonly IGPU_RPN_FREQ=gt_RPn_freq_mhz
+# shellcheck disable=SC2034
+readonly IGPU_RP0_FREQ=gt_RP0_freq_mhz
 
 # ----------------------------------------------------------------------------
 # Functions
 
 # --- Intel GPU
 
-get_intel_gpu_sysdirs () { # determine Intel GPU sysdirs
+get_intel_gpu_sysdirs () {
+    # determine Intel GPU sysdirs
     # $1: drm sysdir, $2: driver
     # retval: $_intel_gpu_parm: parameter sysdir;
     #         $_intel_gpu_dbg:  debug sysdir
@@ -38,18 +41,29 @@ get_intel_gpu_sysdirs () { # determine Intel GPU sysdirs
     return 0
 }
 
-set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mode, 1=battery mode
-    local minfreq maxfreq boostfreq
-    local conf
+set_intel_gpu_min_max_boost_freq () {
+    # set gpu frequency limits
+    # $1: 0=ac mode, 1=battery mode
+    # rc: 0=ok/1=parameter error
+    local new_min new_max new_boost
+    local old_min old_max old_boost gpu_min gpu_max
+    local driver suffix
 
     if [ "$1" = "1" ]; then
-        minfreq=${INTEL_GPU_MIN_FREQ_ON_BAT:-}
-        maxfreq=${INTEL_GPU_MAX_FREQ_ON_BAT:-}
-        boostfreq=${INTEL_GPU_BOOST_FREQ_ON_BAT:-}
+        new_min=${INTEL_GPU_MIN_FREQ_ON_BAT:-}
+        new_max=${INTEL_GPU_MAX_FREQ_ON_BAT:-}
+        new_boost=${INTEL_GPU_BOOST_FREQ_ON_BAT:-}
+        suffix="BAT"
     else
-        minfreq=${INTEL_GPU_MIN_FREQ_ON_AC:-}
-        maxfreq=${INTEL_GPU_MAX_FREQ_ON_AC:-}
-        boostfreq=${INTEL_GPU_BOOST_FREQ_ON_AC:-}
+        new_min=${INTEL_GPU_MIN_FREQ_ON_AC:-}
+        new_max=${INTEL_GPU_MAX_FREQ_ON_AC:-}
+        new_boost=${INTEL_GPU_BOOST_FREQ_ON_AC:-}
+        suffix="AC"
+    fi
+
+    if [ -z "$new_min" ] && [ -z "$new_max" ] && [ -z "$new_boost" ]; then
+        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_configured"
+        return 0
     fi
 
     for gpu in "${BASE_DRMD}"/card?; do
@@ -57,32 +71,54 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
         driver=${driver##*/}
         case "$driver" in
             i915*) # Intel GPU found
-                conf=0
                 get_intel_gpu_sysdirs "$gpu" "$driver"
 
-                if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
-                    write_sysf "$minfreq" $gpu/$IGPU_MIN_FREQ
-                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$minfreq; rc=$?"
-                    conf=1
-                fi
+                # shellcheck disable=SC2034
+                if old_min=$(read_sysf $gpu/$IGPU_MIN_FREQ) \
+                    && old_max=$(read_sysf $gpu/$IGPU_MAX_FREQ) \
+                    && old_boost=$(read_sysf $gpu/$IGPU_BOOST_FREQ) \
+                    && gpu_min=$(read_sysf $gpu/$IGPU_RPN_FREQ) \
+                    && gpu_max=$(read_sysf $gpu/$IGPU_RP0_FREQ); then
+                    # frequencies actually readable, check new ones against hardware limits and boundary conditions
+                    if ! is_uint "$new_min" 5 || [ $new_min -lt $gpu_min ] || [ $new_min -gt $gpu_max ]; then
+                        echo_message "Error in configuration at INTEL_GPU_MIN_FREQ_ON_${suffix}=\"${new_min}\": frequency invalid or out of range (see 'tlp-stat -g')."
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min hw_max=$gpu_max; rc=1"
+                        return 1
+                    elif ! is_uint "$new_max" 5 || [ $new_max -lt $gpu_min ] || [ $new_max -gt $gpu_max ]; then
+                        echo_message "Error in configuration at INTEL_GPU_MAX_FREQ_ON_${suffix}=\"${new_max}\": frequency invalid or out of range (see 'tlp-stat -g')."
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min gpu_max=$gpu_max; rc=1"
+                        return 1
+                    elif ! is_uint "$new_boost" 5 || [ $new_boost -lt $gpu_min ] || [ $new_boost -gt $gpu_max ]; then
+                        echo_message "Error in configuration at INTEL_GPU_BOOST_FREQ_ON_${suffix}=\"${new_boost}\": frequency invalid or out of range (see 'tlp-stat -g')."
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu boost=$new_boost gpu_min=$gpu_min gpu_max=$gpu_max; rc=1"
+                        return 1
+                    elif [ $new_min -gt $new_max ]; then
+                        echo_message "Error in configuration: INTEL_GPU_MIN_FREQ_ON_${suffix} > INTEL_GPU_MAX_FREQ_ON_${suffix}."
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min_gt_max: gpu=$gpu min=$new_min max=$new_max; rc=1"
+                        return 1
+                    elif [ $new_max -gt $new_boost ]; then
+                        echo_message "Error in configuration: INTEL_GPU_MAX_FREQ_ON_${suffix} > INTEL_GPU_BOOST_FREQ_ON_${suffix}."
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max_gt_boost: gpu=$gpu max=$new_max boost=$new_boost; rc=1"
+                        return 1
+                    fi
 
-                if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
-                    write_sysf "$maxfreq" $gpu/$IGPU_MAX_FREQ
-                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$maxfreq; rc=$?"
-                    conf=1
+                    # all parameters valid --> write min, max in proper sequence
+                    if [ $new_min -gt $old_max ]; then
+                        write_sysf "$new_max" $gpu/$IGPU_MAX_FREQ
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$?"
+                        write_sysf "$new_min" $gpu/$IGPU_MIN_FREQ
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$?"
+                    else
+                        write_sysf "$new_min" $gpu/$IGPU_MIN_FREQ
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$?"
+                        write_sysf "$new_max" $gpu/$IGPU_MAX_FREQ
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$?"
+                    fi
+                    write_sysf "$new_boost" $gpu/$IGPU_BOOST_FREQ
+                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: gpu=$gpu freq=$new_boost; rc=$?"
+                else
+                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_available: gpu=$gpu"
                 fi
-
-                if [ -n "$boostfreq" ] && [ "$boostfreq" != "0" ]; then
-                    write_sysf "$boostfreq" $gpu/$IGPU_BOOST_FREQ
-                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: gpu=$gpu freq=$boostfreq; rc=$?"
-                    conf=1
-                fi
-
-                if [ $conf -eq 0 ]; then
-                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_configured: gpu=$gpu"
-                    return 0
-                fi
-                ;;
         esac
     done
 
@@ -91,7 +127,8 @@ set_intel_gpu_min_max_boost_freq () { # set gpu frequency limits -- $1: 0=ac mod
 
 # --- AMD Radeon GPU
 
-set_amdgpu_profile () { # set amdgpu/radeon power profile
+set_amdgpu_profile () {
+    # set amdgpu/radeon power profile
     # $1: 0=ac mode, 1=battery mode
 
     local driver gpu level pwr rc1 rc2
