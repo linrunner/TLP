@@ -15,7 +15,7 @@ readonly IDEAPADDIR=/sys/bus/platform/drivers/ideapad_acpi
 is_ideapad () {
     # check for Lenovo Laptop w/ ideapad_acpi kernel module loaded
     # rc: 0=Ideapad, 1=other hardware
-    [ -d $IDEAPADACPIDIR ]
+    [ -d $IDEAPADDIR ]
 }
 
 # --- Plugin API functions
