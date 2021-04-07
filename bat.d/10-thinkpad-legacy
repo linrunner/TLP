@@ -260,13 +260,14 @@ batdrv_write_thresholds () {
     # $4: battery - non-empty string indicates thresholds stem from configuration
     # global param: $_bm_thresh, $_bat_str, $_bf_start, $_bf_stop
     # rc: 0=ok/
+    #     1=not configured/
     #     2=threshold(s) out of range or non-numeric/
     #     3=minimum start stop diff violated/
     #     4=threshold read error/
     #     5=threshold write error
     # prerequisite: batdrv_init(), batdrv_select_battery()
-    local new_start=$1
-    local new_stop=$2
+    local new_start=${1:-}
+    local new_stop=${2:-}
     local verb=${3:-0}
     local cfg_bat="$4"
     local old_start old_stop
@@ -277,6 +278,12 @@ batdrv_write_thresholds () {
 
     # --- validate thresholds
     local rc
+
+    if [ -n "$cfg_bat" ] && [ -z "$new_start" ] && [ -z "$new_stop" ]; then
+        # do nothing if unconfigured
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).not_configured: bat=$_bat_str"
+        return 1
+    fi
 
     # start: check for 3 digits max, ensure min 2 / max 96
     if ! is_uint "$new_start" 3 || \
