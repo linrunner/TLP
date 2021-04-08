@@ -579,8 +579,7 @@ show_gpu_data () {
                 # power managment data
                 if [ "$hdr" != "i915" ]; then
                     printf "+++ Intel Graphics\n"
-                    printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
-                    echo
+                    printf "%-44s = %s\n\n" "$gpu/device/driver" "$driver"
                     hdr="i915"
                 fi
                 printparm_i915 $gpu/power/rc6_enable $_intel_gpu_parm/enable_rc6 $_intel_gpu_parm/i915_enable_rc6
@@ -595,6 +594,7 @@ show_gpu_data () {
                     printparm "%-44s = ##%5d## [MHz]" $gpu/$IGPU_BOOST_FREQ
                     printparm "%-44s = ##%5d## [MHz] (GPU min)" $gpu/$IGPU_RPN_FREQ
                     printparm "%-44s = ##%5d## [MHz] (GPU max)" $gpu/$IGPU_RP0_FREQ
+                    printf "\n"
                 fi
                 ;;
 
