@@ -116,7 +116,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
             "-g"|"--graphics")
                 show_all=0
                 show_graf=1
-                needs_root_priv=0
+                needs_root_priv=1
                 ;;
 
             "-p"|"--processor")

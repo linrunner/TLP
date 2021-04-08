@@ -90,58 +90,6 @@ printparm () {
     return 0
 }
 
-printparm_i915 () {
-    # formatted output of sysfile - i915 kernel module variant
-    # $1: sysfile; $2: alternative; $3: 1=psr/0=other
-    local sysf val
-
-    # Check if sysfile or alternative exist
-    if [ -f "$1" ]; then
-        sysf=$1
-    elif [ -f "$2" ]; then
-        sysf=$2
-    else
-        # neither file exists --> quit silently
-        return 0
-    fi
-
-    if val=$(read_sysf $sysf); then
-        # sysfile exists and is actually readable, output content
-        printf "%-44s = %2d " "$sysf" "$val"
-        # Explain content
-        if [ "$val" = "-1" ]; then
-            echo "(use per-chip default)"
-        else
-            echo -n "("
-            if [ "$3" = "1" ]; then
-                # enable_psr
-                case $val in
-                    0) echo -n "disabled" ;;
-                    1) echo -n "enabled" ;;
-                    2) echo -n "force link-standby mode" ;;
-                    3) echo -n "force link-off mode" ;;
-                    *) echo -n "unknown" ;;
-                esac
-            else
-                # other parms
-                if [ $((val & 1)) -ne 0 ]; then
-                    echo -n "enabled"
-                else
-                    echo -n "disabled"
-                fi
-                [ $((val & 2)) -ne 0 ] && echo -n " + deep"
-                [ $((val & 4)) -ne 0 ] && echo -n " + deepest"
-            fi
-            echo ")"
-        fi
-    else
-        # sysfile was not readable
-        printf "%-44s = (not available)\n" "$sysf"
-    fi
-
-    return 0
-}
-
 printparm_epb () {
     # formatted output of sysfile - Intel EPB variant
     # $1: sysfile
@@ -574,6 +522,49 @@ printparm_ahci () {
 
 # --- Graphics
 
+printparm_i915 () {
+    # formatted output of sysfile - i915 kernel module variant
+    # $*: sysfile alternatives
+    local sysf val
+
+    for sysf in "$@"; do
+        if val=$(read_sysf $sysf); then
+            # sysfile exists and is actually readable, output content
+            printf "%-44s = %2d " "$sysf" "$val"
+            # explain content
+            if [ "$val" = "-1" ]; then
+                printf "(use per-chip default)\n"
+            else
+                printf "("
+                if [ "${sysf##/*/}" = "enable_psr" ]; then
+                    # enable_psr
+                    case $val in
+                        0) printf "disabled" ;;
+                        1) printf "enabled" ;;
+                        2) printf "force link-standby mode" ;;
+                        3) printf "force link-off mode" ;;
+                        *) printf "unknown" ;;
+                    esac
+                else
+                    # other parms
+                    if [ $((val & 1)) -ne 0 ]; then
+                        printf "enabled"
+                    else
+                        printf "disabled"
+                    fi
+                    [ $((val & 2)) -ne 0 ] && printf " + deep"
+                    [ $((val & 4)) -ne 0 ] && printf " + deepest"
+                fi
+                printf ")\n"
+            fi
+            # print first match only
+            break
+        fi
+    done
+
+    return 0
+}
+
 show_gpu_data () {
     # show GPU data for all drivers
     local driver gpu hdr=
@@ -587,20 +578,15 @@ show_gpu_data () {
 
                 # power managment data
                 if [ "$hdr" != "i915" ]; then
-                    echo "+++ Intel Graphics"
+                    printf "+++ Intel Graphics\n"
                     printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
                     echo
                     hdr="i915"
                 fi
-                printparm_i915 $_intel_gpu_parm/powersave
-                printparm_i915 $_intel_gpu_parm/enable_rc6 $_intel_gpu_parm/i915_enable_rc6
-                printparm_i915 $_intel_gpu_parm/enable_dc
+                printparm_i915 $gpu/power/rc6_enable $_intel_gpu_parm/enable_rc6 $_intel_gpu_parm/i915_enable_rc6
                 printparm_i915 $_intel_gpu_parm/enable_fbc $_intel_gpu_parm/i915_enable_fbc
-                printparm_i915 $_intel_gpu_parm/enable_psr "" 1
-                printparm_i915 $_intel_gpu_parm/lvds_downclock
-                printparm_i915 $_intel_gpu_parm/modeset
-                printparm_i915 $_intel_gpu_parm/semaphores
-                echo
+                printparm_i915 $_intel_gpu_parm/enable_psr
+                printf "\n"
 
                 # frequency parameters
                 if readable_sysf $gpu/$IGPU_MIN_FREQ; then
@@ -614,17 +600,17 @@ show_gpu_data () {
 
             amdgpu) # AMD GPU
                 if [ "$hdr" != "amdgpu" ]; then
-                    echo "+++ AMD Radeon Graphics"
+                    printf "+++ AMD Radeon Graphics\n"
                     printf "%-65s = %s\n" "$gpu/device/driver" "$driver"
                     hdr="amdgpu"
                 fi
                 printparm "%-65s = ##%s##" $gpu/device/power_dpm_force_performance_level
-                echo
+                printf "\n"
                 ;;
 
             radeon) # AMD GPU
                 if [ "$hdr" != "radeon" ]; then
-                    echo "+++ AMD Radeon Graphics"
+                    printf "+++ AMD Radeon Graphics\n"
                     printf "%-65s = %s\n" "$gpu/device/driver" "$driver"
                     hdr="radeon"
                 fi
@@ -632,32 +618,32 @@ show_gpu_data () {
                     # AMD hardware
                     printparm "%-65s = ##%s##" $gpu/device/power_dpm_force_performance_level
                     printparm "%-65s = ##%s##" $gpu/device/power_dpm_state
-                    echo
+                    printf "\n"
 
                 elif [ -f $gpu/device/power_method ]; then
                     # legacy ATI hardware
                     printparm "%-65s = ##%s##" $gpu/device/power_method
                     printparm "%-65s = ##%s##" $gpu/device/power_profile
-                    echo
+                    printf "\n"
                 fi
                 ;;
 
             nouveau|nvidia) # Nvidia GPU
                 if [ "$hdr" != "$driver" ]; then
-                    echo "+++ Nvidia Graphics"
+                    printf "+++ Nvidia Graphics\n"
                     printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
                     hdr="$driver"
                 fi
-                echo
+                printf "\n"
                 ;;
 
             *) # Other GPU
                 if [ "$hdr" != "$driver" ]; then
-                    echo "+++ Other Graphics"
+                    printf "+++ Other Graphics\n"
                     printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
                     hdr="$driver"
                 fi
-                echo
+                printf "\n"
                 ;;
 
         esac
