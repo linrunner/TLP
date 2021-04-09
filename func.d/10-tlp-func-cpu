@@ -17,6 +17,7 @@ readonly INTEL_PSTATED=${CPUD}/intel_pstate
 readonly CPU_MIN_PERF_PCT=$INTEL_PSTATED/min_perf_pct
 readonly CPU_MAX_PERF_PCT=$INTEL_PSTATED/max_perf_pct
 readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
+readonly CPU_HWP_DYN_BOOST=$INTEL_PSTATED/hwp_dynamic_boost
 
 readonly CPU_INFO=/proc/cpuinfo
 readonly ENERGYPERF=x86_energy_perf_policy
@@ -26,12 +27,14 @@ readonly ENERGYPERF=x86_energy_perf_policy
 
 # --- Scaling Governor
 
-check_intel_pstate () { # detect intel_pstate driver -- rc: 0=present/1=absent
-    #  Note: intel_pstate requires Linux 3.9 or higher
+check_intel_pstate () {
+    # detect intel_pstate driver -- rc: 0=present/1=absent
+    # note: intel_pstate requires Linux 3.9 or higher
     [ -d $INTEL_PSTATED ]
 }
 
-set_cpu_scaling_governor () { # set CPU scaling governor -- $1: 0=ac mode, 1=battery mode
+set_cpu_scaling_governor () {
+    # set CPU scaling governor -- $1: 0=ac mode, 1=battery mode
     local gov cpu ec
 
     if [ "$1" = "1" ]; then
@@ -56,7 +59,8 @@ set_cpu_scaling_governor () { # set CPU scaling governor -- $1: 0=ac mode, 1=bat
     return 0
 }
 
-set_cpu_scaling_min_max_freq () { # set CPU scaling limits -- $1: 0=ac mode, 1=battery mode
+set_cpu_scaling_min_max_freq () {
+    # set CPU scaling limits -- $1: 0=ac mode, 1=battery mode
     local minfreq maxfreq cpu ec
     local conf=0
 
@@ -108,7 +112,8 @@ supports_intel_cpu_epp () {
     grep -E -q -m 1 '^flags.+hwp_epp' $CPU_INFO
 }
 
-set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
+set_intel_cpu_perf_policy () {
+    # set Intel CPU energy vs. performance policies
     # $1: 0=ac mode, 1=battery mode
     #
     # depending on the CPU model the values
@@ -247,8 +252,9 @@ set_intel_cpu_perf_policy () { # set Intel CPU energy vs. performance policies
     return 0
 }
 
-set_intel_cpu_perf_pct () { # set Intel P-state performance limits
-                      # $1: 0=ac mode, 1=battery mode
+set_intel_cpu_perf_pct () {
+    # set Intel P-state performance limits
+    # $1: 0=ac mode, 1=battery mode
     local min max
 
 
@@ -332,6 +338,33 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
     return 0
 }
 
+set_intel_cpu_hwp_dyn_boost () {
+    # set the Intel CPU dynamic boost feature (available in HWP active mode)
+    # $1: 0=ac mode, 1=battery mode
+    local val
+
+    if ! check_intel_pstate; then
+        echo_debug "pm" "set_intel_cpu_hwp_dyn_boost($1).no_intel_pstate"
+        return 0
+    fi
+
+    if [ "$1" = "1" ]; then
+        val=${CPU_HWP_DYN_BOOST_ON_BAT:-}
+    else
+        val=${CPU_HWP_DYN_BOOST_ON_AC:-}
+    fi
+
+    if [ ! -f $CPU_HWP_DYN_BOOST ]; then
+        echo_debug "pm" "set_intel_cpu_hwp_dyn_boost($1).not_supported"
+    elif [ -n "$val" ]; then
+        write_sysf "$val" $CPU_HWP_DYN_BOOST
+        echo_debug "pm" "set_intel_cpu_hwp_dyn_boost($1): $val; rc=$?"
+    else
+        echo_debug "pm" "set_intel_cpu_hwp_dyn_boost($1).not_configured"
+    fi
+
+    return 0
+}
 set_sched_powersave () { # set multi-core/-thread powersave policy
     # $1: 0=ac mode, 1=battery mode
 
@@ -363,7 +396,6 @@ set_sched_powersave () { # set multi-core/-thread powersave policy
 
     return 0
 }
-
 
 # --- Misc
 

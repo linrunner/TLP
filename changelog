@@ -80,10 +80,12 @@
          PCI(e) devices based on address (independent of the power source)
        - RUNTIME_PM_DENYLIST: remove amdgpu, nvidia, pcieport from defaults
     Processor:
+      - CPU_HWP_DYN_BOOST_ON_AC/BAT: Intel CPU HWP dynamic boost (Issue #468)
       - Remove backwards compatibility of CPU_ENERGY_PERF_POLICY_ON_AC/BAT with
         ENERGY_PERF_POLICY_ON_AC/BAT to prevent performance issues caused by the
         value 'power' in legacy configurations
       - tlp-stat -p:
+        - Show intel_pstate operation mode ("status")
         - cpu1..cpuN omitted for clarity, use -v to show all
         - Sort more than 10 CPU cores in proper numerical order
 
