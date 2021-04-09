@@ -69,8 +69,11 @@
         - tlp-stat -g:
           - Show hybrid graphics switch state (switcheroo)
           - List all GPUs with at least the driver info
-          - Intel GPU: show hardware min/max frequency instead of
-            list of available frequencies (kernel change)
+          - Intel GPU:
+            - Show hardware min/max frequency instead of
+              list of available frequencies (kernel change)
+            - Show more informative FBC and PSR status where available
+              (Issue #203)
     Operation Mode AC/BAT:
       - Speed up power source detection (obsolete delayed battery state check
         removed)
