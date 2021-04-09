@@ -443,7 +443,7 @@ batdrv_read_threshold () {
             esac
             out=$(read_sysf $bf "$2") || rc=4
             # workaround: read threshold sysfile a second time to mitigate
-            # the annoying firmware issue on ThinkPad A/E/L/S series
+            # the annoying firmware issue on ThinkPad A/E/L/S/X series
             # (refer to issue #369 and FAQ)
             out=$(read_sysf $bf "$2") || rc=4
             ;;

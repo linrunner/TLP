@@ -93,7 +93,7 @@
     Battery Features:
       - tlp discharge/recalibrate: terminate properly when AC/charger is removed
       - [Try to] mitigate false threshold readouts caused by the annoying
-        firmware issue on ThinkPad A/E/L/S series (Issue #369)
+        firmware issue on ThinkPad A/E/L/S/X series (Issue #369)
     Disks:
       - Issue #474: confine AHCI_RUNTIME_PM_ON_AC/BAT to SATA disks
     Graphics:
