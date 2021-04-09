@@ -247,7 +247,7 @@ batdrv_init () {
         fi
     done
 
-    # quit if no battery detected, there is no point in selecting a driver
+    # quit if no battery detected, there is no point in activating the plugin
     if [ -z "$_batteries" ]; then
         echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
         return 2

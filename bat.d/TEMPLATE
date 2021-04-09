@@ -134,6 +134,12 @@ batdrv_init () {
         fi
     done
 
+    # quit if no battery detected, there is no point in activating the plugin
+    if [ -z "$_batteries" ]; then
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
+        return 2
+    fi
+
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; start=$_bn_start; stop=$_bn_stop;"
