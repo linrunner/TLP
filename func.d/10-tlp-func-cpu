@@ -51,7 +51,7 @@ set_cpu_scaling_governor () {
                 ec=$((ec+1))
             fi
         done
-        echo_debug "pm" "set_cpu_scaling_governor($1): $gov; ec=$?"
+        echo_debug "pm" "set_cpu_scaling_governor($1): $gov; ec=$ec"
     else
         echo_debug "pm" "set_cpu_scaling_governor($1).not_configured"
     fi
