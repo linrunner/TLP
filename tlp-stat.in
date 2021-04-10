@@ -101,6 +101,12 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 : ${needs_root_priv:=0}
                 ;;
 
+            "--cdiff")
+                show_all=0
+                show_cdiff=1
+                : ${needs_root_priv:=0}
+                ;;
+
             "-d"|"--disk")
                 show_all=0
                 show_disk=1
@@ -188,8 +194,8 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 echo "                  -r | --rfkill    | -s | --system    |"
                 echo "                  -t | --temp      | -u | --usb       |"
                 echo "                  -w | --warn      | -v | --verbose   |"
-                echo "                  -P | --pev       |    | --psup      |"
-                echo "                  -T | --trace ]"
+                echo "                     | --cdiff     | -T | --trace     |"
+                echo "                  -P | --pev       |    | --psup ]"
                 do_exit 3
                 ;;
         esac
@@ -227,7 +233,13 @@ echo
 # --- show configuration
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Configured Settings:"
-    print_config
+    $READCONFS --notrace
+    echo
+fi # show_conf
+
+if [ "$show_cdiff" = "1" ]; then
+    echo "+++ Configured Settings (only differences to defaults):"
+    $READCONFS --notrace --cdiff
     echo
 fi # show_conf
 

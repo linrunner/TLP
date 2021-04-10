@@ -37,6 +37,7 @@
             USB_BLACKLIST_PRINTER       -> USB_EXCLUDE_PRINTER
             USB_BLACKLIST_WWAN          -> USB_EXCLUDE_WWAN
             USB_WHITELIST               -> USB_ALLOWLIST
+        - tlp-stat --cdiff: show configuration differing from defaults
     Disks:
       - DISK_APM_CLASS_DENYLIST: exclude disk classes from APM, i.e. you may
         now activate it for USB and IEEE1394 drives (Issue #523)

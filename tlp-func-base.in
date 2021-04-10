@@ -492,11 +492,6 @@ parse_args4config () { # parse command-line arguments: everything after the
     return 0
 }
 
-print_config () { # print runtime conf based on all config files
-    # external perl script: merge all config files to $cf
-    $READCONFS --notrace
-}
-
 save_runconf () { # copy temporary to final runconf
     create_rundir
     if cp --preserve=timestamps "$_conf_tmp" $CONF_RUN > /dev/null 2>&1; then
