@@ -41,13 +41,15 @@ my $notrace = 0;
 my $debug   = 0;
 my $cdiff   = 0;
 
+my $defsrc = basename (CONF_DEF);
+
 # --- Subroutines
 
 # Format and write debug message
 # @_: printf arguments including format string
 sub printf_debug {
-    if ( not $notrace and $debug ) {
-        open (my $logpipe, "|-", "logger -p debug -t \"tlp\" --id=\$\$ --") or return 1;
+    if ( ! $notrace && $debug ) {
+        open (my $logpipe, "|-", "logger -p debug -t \"tlp\" --id=\$\$ --") || return 1;
         printf {$logpipe} @_;
         close ($logpipe);
     }
@@ -69,7 +71,7 @@ sub store_name_value_source {
     my $source = $_[3];
     my $is_def = $_[4];
 
-    $debug = 1 if ( $name eq "TLP_DEBUG" ) && ( $value =~ /\bcfg\b/ );
+    $debug = 1 if ( $name eq "TLP_DEBUG" && $value =~ /\bcfg\b/ );
 
     if ( defined $config_idx{$name} ) {
         # existing name
@@ -80,7 +82,7 @@ sub store_name_value_source {
         } else {
             # replace value, source
             # --cdiff: only when differing from default
-            if ( ( not $cdiff ) || ( not $is_def ) && ( $value ne $config_val[$config_idx{$name}][1] ) ) {
+            if ( ! $cdiff || ! $is_def && $value ne $config_val[$config_idx{$name}][1] ) {
                 $config_val[$config_idx{$name}][1] = $value;
                 $config_val[$config_idx{$name}][2] = $source;
             }
@@ -108,14 +110,14 @@ sub parse_configfile {
     my $source;
     my $is_def;
     if ( $fname eq CONF_DEF ) {
-        $source = basename ($fname);
+        $source = $defsrc;
         $is_def = 1;
     } else {
         $source = $fname;
         $is_def = 0;
     }
 
-    open (my $cf, "<", $fname) or return 1;
+    open (my $cf, "<", $fname) || return 1;
 
     my $ln = 0;
     while ( my $line = <$cf> ) {
@@ -144,20 +146,19 @@ sub parse_configfile {
 # return: 0=ok/1=file open error
 sub write_runconf {
     my $fname = $_[0];
-    my $defsrc = basename (CONF_DEF);
 
     my $runconf;
-    if ( not $fname ) {
+    if ( ! $fname ) {
         $runconf = *STDOUT;
     } else {
-        open ($runconf, ">", $fname) or return 1;
+        open ($runconf, ">", $fname) || return 1;
     }
 
     foreach ( @config_val ) {
-	my ($name, $value, $source) = @$_;
+        my ($name, $value, $source) = @$_;
         if ( $runconf eq *STDOUT ) {
             # --cdiff: output only when source != "defaults.conf ..."
-            if ( ( not $cdiff ) || ( not $source =~ /^($defsrc)/ ) ) {
+            if ( ! $cdiff || $source !~ /^($defsrc)/ ) {
                 printf {$runconf} "%s: %s=\"%s\"\n", $source, $name, $value;
             }
         } else  {
@@ -175,7 +176,7 @@ sub write_runconf {
 sub parse_renfile {
     my $fname = $_[0];
 
-    open (my $rf, "<", $fname) or return 1;
+    open (my $rf, "<", $fname) || return 1;
 
     # accumulate renaming
     while ( my $line = <$rf> ) {
@@ -209,7 +210,7 @@ GetOptions ('outfile=s' => \$outfile, 'notrace' => \$notrace, 'cdiff' => \$cdiff
 parse_renfile (CONF_REN);
 
 # 1. read intrinsic defaults (no renaming)
-parse_configfile (CONF_DEF, 0) == 0 or exit 6;
+parse_configfile (CONF_DEF, 0) == 0 || exit 6;
 
 # 2. read customization (with renaming)
 foreach my $conffile ( grep { -f $_ } glob CONF_DIR . "/*.conf" ) {
@@ -218,7 +219,7 @@ foreach my $conffile ( grep { -f $_ } glob CONF_DIR . "/*.conf" ) {
 
 # 3. read user settings (with renaming)
 parse_configfile (CONF_USR, $do_rename) == 0
-    or parse_configfile (CONF_OLD, $do_rename) == 0 or exit 5;
+    || parse_configfile (CONF_OLD, $do_rename) == 0 || exit 5;
 
 # save result
 write_runconf ($outfile);
