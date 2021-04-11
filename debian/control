@@ -14,20 +14,21 @@ Depends: hdparm, iw | wireless-tools, pciutils, rfkill, usbutils, ${misc:Depends
 Recommends: tlp-rdw, ethtool
 Suggests: tp-smapi-dkms, acpi-call-dkms, smartmontools, ${dist:Suggests}
 Conflicts: laptop-mode-tools
-Description: Save battery power on laptops
- TLP is an advanced power management tool for Linux. It comes with a
- default configuration already optimized for battery life. At the same
- time it is highly customizable to fulfil specific user requirements.
+Description: Optimize laptop battery life
+ TLP is a feature-rich command-line utility, saving laptop battery power
+ without the need to delve deeper into technical details.
  .
- TLP supplies separate settings profiles for AC and battery power and can
- enable or disable Bluetooth, Wi-Fi and WWAN radio devices upon system startup.
+ TLP’s default settings are already optimized for battery life and implement
+ Powertop’s recommendations out of the box. Moreover TLP is highly
+ customizable to fulfil specific user requirements.
  .
- For ThinkPads it provides a unified way to configure charging thresholds and
- recalibrate the battery for all models which support it (via tp-smapi or
- acpi-call).
+ Settings are organized into two profiles, allowing to adjust between
+ savings and performance independently for battery (BAT) and AC operation.
+ In addition TLP can enable or disable Bluetooth, Wi-Fi and WWAN radio
+ devices on boot.
  .
- TLP is a pure command line tool with automated background tasks, it
- does not contain a GUI.
+ For ThinkPads and selected other laptops it provides a unified way
+ to configure charge thresholds and recalibrate the battery.
 
 Package: tlp-rdw
 Architecture: all
@@ -35,7 +36,6 @@ Pre-Depends: dpkg (>= 1.17.14)
 Depends: network-manager, tlp, ${misc:Depends}
 Description: Radio device wizard
  Radio device wizard is an add-on to TLP. It provides event based
- switching of:
-  - Bluetooth, Wi-Fi, WWAN radio devices
-  - upon network connect/disconnect
-  - and dock/undock.
+ switching of bluetooth, Wi-Fi and WWAN radio devices on:
+  - network connect/disconnect
+  - dock/undock
