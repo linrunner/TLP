@@ -29,6 +29,10 @@ use constant CONF_DEF => "@TLP_CONFDEF@";
 use constant CONF_REN => "@TLP_CONFREN@";
 use constant CONF_OLD => "@TLP_CONF@";
 
+# Exit codes
+use constant EXIT_TLPCONF => 5;
+use constant EXIT_DEFCONF => 6;
+
 # --- Global vars
 my @config_val = ();  # 2-dim array: parameter name, value, source
 my %config_idx = ();  # hash: parameter name => index into the name-value array
@@ -40,6 +44,8 @@ my $do_rename = 0;    # enable renaming (when $renrex not empty)
 my $notrace = 0;
 my $debug   = 0;
 my $cdiff   = 0;
+
+my $outfile;
 
 my $defsrc = basename (CONF_DEF);
 
@@ -201,8 +207,6 @@ sub parse_renfile {
 }
 
 # --- MAIN
-my $outfile = '';
-
 # parse arguments
 GetOptions ('outfile=s' => \$outfile, 'notrace' => \$notrace, 'cdiff' => \$cdiff);
 
@@ -210,16 +214,16 @@ GetOptions ('outfile=s' => \$outfile, 'notrace' => \$notrace, 'cdiff' => \$cdiff
 parse_renfile (CONF_REN);
 
 # 1. read intrinsic defaults (no renaming)
-parse_configfile (CONF_DEF, 0) == 0 || exit 6;
+parse_configfile (CONF_DEF, 0) == 0 || exit EXIT_DEFCONF;
 
 # 2. read customization (with renaming)
-foreach my $conffile ( grep { -f $_ } glob CONF_DIR . "/*.conf" ) {
+foreach my $conffile ( grep { -f } glob CONF_DIR . "/*.conf" ) {
     parse_configfile ($conffile, $do_rename);
 }
 
 # 3. read user settings (with renaming)
 parse_configfile (CONF_USR, $do_rename) == 0
-    || parse_configfile (CONF_OLD, $do_rename) == 0 || exit 5;
+    || parse_configfile (CONF_OLD, $do_rename) == 0 || exit EXIT_TLPCONF;
 
 # save result
 write_runconf ($outfile);
