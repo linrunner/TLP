@@ -1070,6 +1070,7 @@ batdrv_show_battery_data () {
     # ThinkPad-specific battery APIs
     case $_tpacpi in
         0)   printf "* tpacpi-bat (acpi_call)  = active "; print_methods_per_driver "tpacpi" ;;
+        1)   printf "* tpacpi-bat (acpi_call)  = inactive (none)\n" ;;
         32)  printf "* tpacpi-bat (acpi_call)  = inactive (disabled by configuration)\n" ;;
         64)  printf "* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' load error)\n" ;;
         127) printf "* tpacpi-bat (acpi_call)  = inactive (program 'tpacpi-bat' not installed)\n" ;;
