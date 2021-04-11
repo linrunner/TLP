@@ -95,7 +95,9 @@
 
   * Bugfixes
     Battery Features:
-      - tlp discharge/recalibrate: terminate properly when AC/charger is removed
+      - tlp discharge/recalibrate:
+        - Terminate properly when AC/charger is removed
+        - Check support on ThinkPads because of Coreboot (Issue #547)
       - [Try to] mitigate false threshold readouts caused by the annoying
         firmware issue on ThinkPad A/E/L/S/X series (Issue #369)
     Disks:
