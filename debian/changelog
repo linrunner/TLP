@@ -4,8 +4,11 @@ tlp (1.4.0~alpha.1-1) unstable; urgency=medium
 
   [Thomas Koch]
     * debian/control:
+      - Build-Depends: debhelper-compat (= 12)
       - remove Depends: lsb-base
       - update Description
+    * debian/compat removed
+    * debian/rules: use dh_installsystemd
     * debian/tlp.docs: README.md -> README.rst
     * debian/tlp.examples: tlp.conf
     * debian/tlp.install: add
@@ -13,7 +16,7 @@ tlp (1.4.0~alpha.1-1) unstable; urgency=medium
       - /usr/share/tlp/rename.conf
     * Merge changes from Debian packaging
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 11 Apr 2021 20:42:20 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 12 Apr 2021 18:21:21 +0200
 
 tlp (1.3.1-2) unstable; urgency=medium
 
