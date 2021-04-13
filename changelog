@@ -79,6 +79,7 @@
       - Speed up power source detection (obsolete delayed battery state check
         removed)
       - Speed up system shutdown/suspend by not applying AC settings anymore
+      - tlp-stat --psup: check TLP's udev rule for power source changes
     PCI(e) devices:
        - RUNTIME_PM_ENABLE/DISABLE: permanently enable/disable runtime PM for
          PCI(e) devices based on address (independent of the power source)

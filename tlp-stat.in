@@ -915,10 +915,17 @@ fi # show_pev
 if [ "$show_psup" = "1" ]; then
     # --- show power_supply diagnostic
     echo "+++ Power supply diagnostic"
+    # iterate power supplies
     for ps in /sys/class/power_supply/*; do
         # shellcheck disable=SC2063
         grep -s '.*' $ps/type $ps/online $ps/present $ps/status $ps/device/path
     done
+    # check if udev rule for power source changes draws
+    if [  -n "$_acdev" ]; then
+        if ! udevadm test -a change $_acdev 2>&1 | grep -E '^Reading rules file: .*tlp.rules$|^run: .*tlp auto'; then
+            printf "Fatal Error: TLP's udev rule for power source changes (85-tlp.rules) is not active -- package bug.\n"
+        fi
+    fi
 fi # show_sup
 
 if [ "$show_trace" = "1" ]; then

@@ -548,9 +548,12 @@ read_dmi () { # read DMI data -- $*: keywords; stdout: dmi strings
 
 # --- Power Source
 
-get_sys_power_supply () { # get current power supply
-                          # retval/rc: $_syspwr (0=ac, 1=battery, 2=unknown)
-
+get_sys_power_supply () {
+    # get current power supply
+    # rc: 0=ac/1=battery/2=unknown
+    # retval: $_syspwr == rc
+    #         $_acdev: AC device
+    #
     # _syspwr is determined by iterating all power sources:
     #
     #             AC status:  | none  | 1       | 0       |
@@ -574,6 +577,7 @@ get_sys_power_supply () { # get current power supply
 
     local bs psrc psrc_name
     local ac0seen=
+    _acdev=""
 
     _syspwr="$X_SIMULATE_PS"
     if [ -n "$_syspwr" ]; then
@@ -592,6 +596,7 @@ get_sys_power_supply () { # get current power supply
         case "$(read_sysf $psrc/type)" in
             Mains|USB)
                 # AC detected
+                _acdev="$psrc"
                 # skip device to ignore incorrect AC status
                 if [ "$TLP_PS_IGNORE" = "AC" ]; then
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_ignored: syspwr=$_syspwr"
