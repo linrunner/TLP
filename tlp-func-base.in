@@ -552,7 +552,7 @@ get_sys_power_supply () {
     # get current power supply
     # rc: 0=ac/1=battery/2=unknown
     # retval: $_syspwr == rc
-    #         $_acdev: AC device
+    #         $_psdev: 1st power supply found (for udev rule check)
     #
     # _syspwr is determined by iterating all power sources:
     #
@@ -577,7 +577,7 @@ get_sys_power_supply () {
 
     local bs psrc psrc_name
     local ac0seen=
-    _acdev=""
+    _psdev=""
 
     _syspwr="$X_SIMULATE_PS"
     if [ -n "$_syspwr" ]; then
@@ -596,7 +596,7 @@ get_sys_power_supply () {
         case "$(read_sysf $psrc/type)" in
             Mains|USB)
                 # AC detected
-                _acdev="$psrc"
+                _psdev="${psdev:-$psrc}"
                 # skip device to ignore incorrect AC status
                 if [ "$TLP_PS_IGNORE" = "AC" ]; then
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_ignored: syspwr=$_syspwr"
@@ -619,6 +619,7 @@ get_sys_power_supply () {
 
             Battery)
                 # battery detected
+                _psdev="${psdev:-$psrc}"
                 # skip device to ignore incorrect battery status
                 if [ "$TLP_PS_IGNORE" = "BAT" ]; then
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_ignored: syspwr=$_syspwr"

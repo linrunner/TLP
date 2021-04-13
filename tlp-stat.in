@@ -58,6 +58,7 @@ show_rfkill=0
 show_system=0
 show_temp=0
 show_trace=0
+show_udev=0
 show_usb=0
 show_verbose=0
 show_warn=0
@@ -183,6 +184,12 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 needs_root_priv=1
                 ;;
 
+            "--udev")
+                show_all=0
+                show_udev=1
+                : ${needs_root_priv:=0}
+                ;;
+
             "--") # config values follow --> quit loop
                 break
                 ;;
@@ -194,8 +201,9 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 echo "                  -r | --rfkill    | -s | --system    |"
                 echo "                  -t | --temp      | -u | --usb       |"
                 echo "                  -w | --warn      | -v | --verbose   |"
-                echo "                     | --cdiff     | -T | --trace     |"
-                echo "                  -P | --pev       |    | --psup ]"
+                echo "                     | --cdiff     |    | --pev       |"
+                echo "                  -P | --psup      | -T | --trace     |"
+                echo "                     | --udev ]"
                 do_exit 3
                 ;;
         esac
@@ -914,18 +922,20 @@ fi # show_pev
 
 if [ "$show_psup" = "1" ]; then
     # --- show power_supply diagnostic
-    echo "+++ Power supply diagnostic"
-    # iterate power supplies
+    printf "+++ Power supply diagnostic\n"
     for ps in /sys/class/power_supply/*; do
         # shellcheck disable=SC2063
         grep -s '.*' $ps/type $ps/online $ps/present $ps/status $ps/device/path
     done
-    # check if udev rule for power source changes draws
-    if [  -n "$_acdev" ]; then
-        if ! udevadm test -a change $_acdev 2>&1 | grep -E '^Reading rules file: .*tlp.rules$|^run: .*tlp auto'; then
-            printf "Fatal Error: TLP's udev rule for power source changes (85-tlp.rules) is not active -- package bug.\n"
-        fi
-    fi
+    printf "\n+++ udev diagnostic\n"
+    check_udev_rule_ps
+fi # show_psup
+
+if [ "$show_udev" = "1" ]; then
+    # --- show udev diagnostic
+    printf "+++ udev diagnostic\n"
+    check_udev_rule_ps
+    check_udev_rule_usb
 fi # show_sup
 
 if [ "$show_trace" = "1" ]; then

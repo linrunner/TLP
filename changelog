@@ -23,21 +23,21 @@
         - Map battery state "Unknown" to "Idle" for clarity
         - Flag ThinkPad L512 as "unsupported"
     Configuration:
-        - TLP_WARN_LEVEL: warn about invalid user settings, configurable for
-          background tasks and command line
-        - PARAMETER+="add values": append values to a parameter already defined
-          as intrinsic default or in a *previously* read file (Issue #457)
-        - Rename parameters (backwards compatible to legacy config files):
-            SATA_LINKPWR_BLACKLIST      -> SATA_LINKPWR_DENYLIST
-            RUNTIME_PM_BLACKLIST        -> RUNTIME_PM_DENYLIST
-            RUNTIME_PM_DRIVER_BLACKLIST -> RUNTIME_PM_DRIVER_DENYLIST
-            USB_BLACKLIST               -> USB_DENYLIST
-            USB_BLACKLIST_BTUSB         -> USB_EXCLUDE_BTUSB
-            USB_BLACKLIST_PHONE         -> USB_EXCLUDE_PHONE
-            USB_BLACKLIST_PRINTER       -> USB_EXCLUDE_PRINTER
-            USB_BLACKLIST_WWAN          -> USB_EXCLUDE_WWAN
-            USB_WHITELIST               -> USB_ALLOWLIST
-        - tlp-stat --cdiff: show configuration differing from defaults
+      - TLP_WARN_LEVEL: warn about invalid user settings, configurable for
+        background tasks and command line
+      - PARAMETER+="add values": append values to a parameter already defined
+        as intrinsic default or in a *previously* read file (Issue #457)
+      - Rename parameters (backwards compatible to legacy config files):
+          SATA_LINKPWR_BLACKLIST      -> SATA_LINKPWR_DENYLIST
+          RUNTIME_PM_BLACKLIST        -> RUNTIME_PM_DENYLIST
+          RUNTIME_PM_DRIVER_BLACKLIST -> RUNTIME_PM_DRIVER_DENYLIST
+          USB_BLACKLIST               -> USB_DENYLIST
+          USB_BLACKLIST_BTUSB         -> USB_EXCLUDE_BTUSB
+          USB_BLACKLIST_PHONE         -> USB_EXCLUDE_PHONE
+          USB_BLACKLIST_PRINTER       -> USB_EXCLUDE_PRINTER
+          USB_BLACKLIST_WWAN          -> USB_EXCLUDE_WWAN
+          USB_WHITELIST               -> USB_ALLOWLIST
+      - tlp-stat --cdiff: show configuration differing from defaults
     Disks:
       - DISK_APM_CLASS_DENYLIST: exclude disk classes from APM, i.e. you may
         now activate it for USB and IEEE1394 drives (Issue #523)
@@ -62,28 +62,29 @@
         - Show ALPM state in the sysfs directory of the AHCI host
         - Remove "No AHCI-enabled host controller detected." message
     General:
-        - tlp-stat -s: determine OS release without the lsb_release utility
+      - tlp-stat -s: determine OS release without the lsb_release utility
+      - tlp-stat --psup/udev: check if udev rules for power source changes and
+        connecting USB devices are active
     Graphics:
-        - Add support for amdgpu (#498)
-        - Improve powerdown of unused GPUs with drivers amdgpu, nouveau,
-          nvidia and without driver (Issues #488, #495, #498)
-        - tlp-stat -g:
-          - Show hybrid graphics switch state (switcheroo)
-          - List all GPUs with at least the driver info
-          - Intel GPU:
-            - Show hardware min/max frequency instead of
-              list of available frequencies (kernel change)
-            - Show more informative RC6, FBC and PSR status where available
-              (Issue #203)
+      - Add support for amdgpu (#498)
+      - Improve powerdown of unused GPUs with drivers amdgpu, nouveau,
+        nvidia and without driver (Issues #488, #495, #498)
+      - tlp-stat -g:
+        - Show hybrid graphics switch state (switcheroo)
+        - List all GPUs with at least the driver info
+        - Intel GPU:
+          - Show hardware min/max frequency instead of
+            list of available frequencies (kernel change)
+          - Show more informative RC6, FBC and PSR status where available
+            (Issue #203)
     Operation Mode AC/BAT:
       - Speed up power source detection (obsolete delayed battery state check
         removed)
       - Speed up system shutdown/suspend by not applying AC settings anymore
-      - tlp-stat --psup: check TLP's udev rule for power source changes
     PCI(e) devices:
-       - RUNTIME_PM_ENABLE/DISABLE: permanently enable/disable runtime PM for
-         PCI(e) devices based on address (independent of the power source)
-       - RUNTIME_PM_DENYLIST: remove amdgpu, nvidia, pcieport from defaults
+      - RUNTIME_PM_ENABLE/DISABLE: permanently enable/disable runtime PM for
+        PCI(e) devices based on address (independent of the power source)
+      - RUNTIME_PM_DENYLIST: remove amdgpu, nvidia, pcieport from defaults
     Processor:
       - CPU_HWP_DYN_BOOST_ON_AC/BAT: Intel CPU HWP dynamic boost (Issue #468)
       - Remove backwards compatibility of CPU_ENERGY_PERF_POLICY_ON_AC/BAT with
