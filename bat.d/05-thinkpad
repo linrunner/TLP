@@ -1086,6 +1086,10 @@ batdrv_show_battery_data () {
         64)  printf "* tp-smapi (tp_smapi)     = inactive (kernel module 'tp_smapi' load error)\n" ;;
         128) printf "* tp-smapi (tp_smapi)     = inactive (kernel module 'tp_smapi' not installed)\n" ;;
     esac
+
+    printf "Parameter value ranges:\n"
+    printf "* START_CHARGE_THRESH_BAT0/1:  0(off)..96(default)..99\n"
+    printf "* STOP_CHARGE_THRESH_BAT0/1:   1..100(default)\n"
     printf "\n"
 
     # -- show battery data

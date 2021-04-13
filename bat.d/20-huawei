@@ -496,6 +496,10 @@ batdrv_show_battery_data () {
         254) printf "* natacpi (%s) = inactive (Huawei MateBook not supported)\n" "$_batdrv_kmod" ;;
         *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
+
+    printf "Parameter value ranges:\n"
+    printf "* START_CHARGE_THRESH_BAT0/1:  0(off)..95(default)..100\n"
+    printf "* STOP_CHARGE_THRESH_BAT0/1:   0(off)..100(default)\n"
     printf "\n"
 
     # -- show battery data
