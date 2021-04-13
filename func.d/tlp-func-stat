@@ -6,7 +6,7 @@
 
 # Needs: tlp-func-base, 15-tlp-func-disk, 35-tlp-func-batt
 
-# shellcheck disable=SC1004,SC2059,SC2086,SC2154
+# shellcheck disable=SC1004,SC2086,SC2154
 
 # ----------------------------------------------------------------------------
 # Constants
@@ -80,10 +80,12 @@ printparm () {
             format=$(echo $format | sed -r -e "s/##(.*)##/(not available)/" -e "s/\[.*\]//")
         fi
         # output n/a text or skip
+        # shellcheck disable=SC2059
         [ -n "$sysf" ] && printf "$format\n" "$sysf"
     else
         # non empty value: strip delimiters from format str
         format=$(echo $format | sed -r "s/##(.*)##/\1/")
+        # shellcheck disable=SC2059
         printf "$format\n" "$sysf" "$val"
     fi
 
@@ -106,7 +108,7 @@ printparm_epb () {
                                      s/^15/power/;
                                      s/[0-9]+//')
         if [ -n "$strval" ]; then
-            printf "($strval) [EPB]\n"
+            printf "(%s) [EPB]\n" "$strval"
         else
             printf " [EPB]\n"
         fi
@@ -145,10 +147,12 @@ print_sysf () {
     local val
 
     if val=$(read_sysf $2); then
-         # sysfile readable
+        # sysfile readable
+        # shellcheck disable=SC2059
         printf "$1" "$val"
     else
         # sysfile not readable
+        # shellcheck disable=SC2059
         printf "$1" "(not available)"
     fi
 
@@ -162,9 +166,11 @@ print_sysf_trim () {
 
     if val=$(read_sysf $2); then
          # sysfile readable
+        # shellcheck disable=SC2059
         printf "$1" "$(printf "%s" "$val" | sed -r 's/^[[:blank:]]*//;s/[[:blank:]]*$//')"
     else
         # sysfile not readable
+        # shellcheck disable=SC2059
         printf "$1" "(not available)"
     fi
 
@@ -424,8 +430,8 @@ show_disk_data () {
             1) printf "  Runtime PM: locked by kernel\n";;
             2) printf "  Runtime PM: locked by TLP\n" ;;
         esac
-        print_sysf "    /sys/block/$_disk_dev/control = %s, " /sys/block/$_disk_dev/device/power/control
-        print_sysf "autosuspend_delay_ms = %s\n"              /sys/block/$_disk_dev/device/power/autosuspend_delay_ms
+        print_sysf "    /sys/block/$_disk_dev/power/control = %s, " /sys/block/$_disk_dev/device/power/control
+        print_sysf "autosuspend_delay_ms = %s\n" /sys/block/$_disk_dev/device/power/autosuspend_delay_ms
     fi
 
     # --- show SMART data
