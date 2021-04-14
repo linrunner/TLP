@@ -12,19 +12,21 @@
           resume from S3/S4)
         - Lenovo Ideapads: stop threshold aka "battery conservation mode"
         - Samsung laptops: stop threshold aka "battery life extender"
-      - Use standard sysfs attributes for ThinkPad charge thresholds
-        (Issue #513)
+      - ThinkPads
+        - Allow deactivation of the start threshold (START_CHARGE_THRESH_BATx=0)
+        - Discharge malfunction: hint to check battery, charger
+        - Use standard sysfs attributes for charge thresholds
+          (Issue #513)
+        - Flag ThinkPad L512 as "unsupported"
       - Validate charge threshold configuration, don't fail silently
-      - Discharge malfunction: hint to check battery, charger
       - tlp-stat -b
         - "Battery Features" renamed to "Battery Wear Control"
         - Wear Control: show plugin, supported features, driver usage and
           related kernel module
         - Map battery state "Unknown" to "Idle" for clarity
-        - Flag ThinkPad L512 as "unsupported"
     Configuration:
-      - TLP_WARN_LEVEL: warn about invalid user settings, configurable for
-        background tasks and command line
+      - TLP_WARN_LEVEL: warn about invalid settings, configurable for background
+        tasks and command line
       - PARAMETER+="add values": append values to a parameter already defined
         as intrinsic default or in a *previously* read file (Issue #457)
       - Rename parameters (backwards compatible to legacy config files):
@@ -100,8 +102,8 @@
       - tlp discharge/recalibrate:
         - Terminate properly when AC/charger is removed
         - Check support on ThinkPads because of Coreboot (Issue #547)
-      - [Try to] mitigate false threshold readouts caused by the annoying
-        firmware issue on ThinkPad A/E/L/S/X series (Issue #369)
+      - [Try to] mitigate false threshold readouts caused by a firmware issue
+        on ThinkPad A/E/L/S/X series (Issue #369)
     Disks:
       - Issue #474: confine AHCI_RUNTIME_PM_ON_AC/BAT to SATA disks
     Graphics:
