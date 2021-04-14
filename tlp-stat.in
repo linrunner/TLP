@@ -530,21 +530,16 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show temperatures
     echo "+++ Temperatures"
     if [ -f $IBMTHERMAL ]; then
-        # use thinkpad-specific sysfile
+        # use ThinkPad-specific sysfile
         echo "$IBMTHERMAL = $(read_sysf $IBMTHERMAL | cut -f2  ) [°C]"
     else
-        # use sensors
+        # use coretemp sensors
         cmax=0
-        for sens in $(glob_files '/temp?*_input' $CORETEMP_DIRS); do
-            if grep -q -- 'Physical' ${sens%input}label 2>/dev/null; then
-                # package info is available -> ignore remaining sensors
-                cmax=$(read_sysval $sens)
-                break
-            else
-                # core info -> find max value
-                ctemp=$(read_sysval $sens)
-                [ $ctemp -gt $cmax ] && cmax=$ctemp
-            fi
+        # find max value of all packages (just in case there are several)
+        # temp1_input is "Package"
+        for sens in $(glob_files '/temp1_input' $CORETEMP_DIRS); do
+            ctemp=$(read_sysval $sens)
+            [ $ctemp -gt $cmax ] && cmax=$ctemp
         done
         if [ $cmax -gt 0 ]; then
             perl -e 'printf ("CPU temp               = %5d [°C]\n", '$cmax' / 1000.0);'
