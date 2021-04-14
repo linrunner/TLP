@@ -181,8 +181,7 @@ show_disk_ids () { # show disk id's
     local dev
 
     { # iterate SATA and NVMe disks
-      # shellcheck disable=SC2010
-        for dev in $(ls /dev/disk/by-id/ | grep -E '^(ata|ieee1394|nvme|usb)' | grep -E -v '(^nvme-eui|\-part[1-9]+)'); do
+        for dev in $(glob_dirs '*' /dev/disk/by-id/ | sed -rn 's/.*\/((ata|ieee1394|nvme|usb))/\1/p' | grep -E -v '(^nvme-eui|\-part[1-9]+)'); do
             if [ -n "$dev" ]; then
                 get_disk_dev $dev && printf '%s: %s\n' "$_disk_dev" "$_disk_id"
             fi

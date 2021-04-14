@@ -512,8 +512,8 @@ get_ahci_disk () {
 
     # the directory /sys/bus/pci/devices/0000:00:XY.Z/ataN/host*/target*/*/block
     # lists the actual block device name pointing to /dev/sdX resp. /sys/block/sdX
-    # shellcheck disable=SC2012
-    _ahci_disk="$(ls ${aport}/host*/target*/*/block 2> /dev/null | head -1)"
+    _ahci_disk="$(glob_dirs '/*' ${aport}/host*/target*/*/block 2> /dev/null | head -1)"
+    _ahci_disk="${_ahci_disk##/*/}"
 
     if [ -n "$_ahci_disk" ]; then
         echo_debug "disk" "get_ahci_disk($1): port=$aport ahci_disk=$_ahci_disk"
@@ -771,11 +771,10 @@ check_udev_rule_usb () {
     # check if udev rule for connecting USB device draws
     local ud
 
-    # shellcheck disable=SC2010
-    ud="$(ls /sys/bus/usb/devices 2> /dev/null | grep -v ':' | head -1)"
+    ud="$(glob_dirs '/*' /sys/bus/usb/devices 2> /dev/null | grep -v ':' | head -1)"
     if [ -n "$ud" ]; then
-        $UDEVADM test -a change $ud 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
-        if $UDEVADM test -a add /sys/bus/usb/devices/$ud 2> /dev/null | grep -E '^run: .*tlp-usb-udev usb'; then
+        $UDEVADM test -a add $ud 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
+        if $UDEVADM test -a add $ud 2> /dev/null | grep -E '^run: .*tlp-usb-udev usb'; then
             printf "OK.\n\n"
         else
             printf "Fatal Error: TLP's udev rule for connecting USB devices (85-tlp.rules) is not active -- possible package bug.\n\n"

@@ -159,6 +159,46 @@ write_sysf () { # write string to a sysfile
     { printf '%s\n' "$1" > "$2"; } 2> /dev/null
 }
 
+# --- Globbing
+
+glob_files () {
+    # @stdout glob_files ( glob_pattern, dir[, dir...] )
+    #
+    # Nested loop that applies a glob expression to several directories
+    # (or path prefixes) and prints matching file paths to stdout.
+
+    [ -n "${1-}" ] || return 64
+    local glob_pattern file_iter
+
+    glob_pattern="${1}"
+
+    while shift && [ $# -gt 0 ]; do
+        for file_iter in ${1}${glob_pattern}; do
+            [ ! -f "${file_iter}" ] || printf '%s\n' "${file_iter}"
+        done
+    done
+}
+
+glob_dirs () {
+    # @stdout glob_dirs ( glob_pattern, dir[, dir...] )
+    #
+    # Nested loop that applies a glob expression to several directories
+    # (or path prefixes) and prints matching directory paths to stdout.
+
+    [ -n "${1-}" ] || return 64
+    local glob_pattern dir_iter
+
+    glob_pattern="${1}"
+
+    while shift && [ $# -gt 0 ]; do
+        for dir_iter in ${1}${glob_pattern}; do
+            if [ -d "${dir_iter}" ]; then
+                printf '%s\n' "${dir_iter}"
+            fi
+        done
+    done
+}
+
 # --- Tests
 
 cmd_exists () { # test if command exists -- $1: command

@@ -67,24 +67,6 @@ no_runtimepm=0
 
 # --- Functions
 
-# @stdout glob_files ( glob_pattern, dir[, dir...] )
-#
-#  Nested for-loop that applies a glob expression to several directories
-#  (or file path prefixes) and prints matching file paths to stdout.
-#
-glob_files () {
-    [ -n "${1-}" ] || return 64
-    local glob_pattern file_iter
-
-    glob_pattern="${1}"
-
-    while shift && [ $# -gt 0 ]; do
-        for file_iter in ${1}${glob_pattern}; do
-            [ ! -f "${file_iter}" ] || printf '%s\n' "${file_iter}"
-        done
-    done
-}
-
 parse_args () { # parse command-line -- $@: arguments to parse
 
     # iterate arguments until delimiter '--' reached
@@ -362,8 +344,8 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     epp=0
     cpu2nd=""
     cpulast=""
-    # shellcheck disable=SC2010
-    for cn in $(ls ${CPUD} | grep '^cpu[0-9]' | cut -c4- | sort -n); do
+    for cn in $(glob_dirs '/cpu[0-9]*' $CPUD | sed 's/.*\/cpu//' | sort -n); do
+
         cpuf="${CPUD}/cpu${cn}/cpufreq"
         if [ -f $cpuf/scaling_driver ]; then
             cpu="cpu${cn}"
@@ -453,8 +435,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         if supports_intel_cpu_epb; then
             # CPU supports EPB: try native kernel API first (5.2 and later)
             cnt=0
-            # shellcheck disable=SC2010
-            for cn in $(ls ${CPUD} | grep '^cpu[0-9]' | cut -c4- | sort -n); do
+            for cn in $(glob_dirs '/cpu[0-9]*' $CPUD | sed 's/.*\/cpu//' | sort -n); do
                 cpuf="${CPUD}/cpu${cn}/power/energy_perf_bias"
                 if [ -f $cpuf ]; then
                     # show only cpu0, unless verbose mode is enabled
