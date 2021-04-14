@@ -758,8 +758,8 @@ check_udev_rule_ps () {
     # check if udev rule for power source changes draws
 
     if [  -n "$_psdev" ]; then
-        udevadm test -a change $_psdev 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
-        if udevadm test -a change $_psdev 2> /dev/null | grep -E '^run: .*tlp auto'; then
+        $UDEVADM test -a change $_psdev 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
+        if $UDEVADM test -a change $_psdev 2> /dev/null | grep -E '^run: .*tlp auto'; then
             printf "OK.\n\n"
         else
             printf "Fatal Error: TLP's udev rule for power source changes (85-tlp.rules) is not active -- possible package bug.\n\n"
@@ -774,8 +774,8 @@ check_udev_rule_usb () {
     # shellcheck disable=SC2010
     ud="$(ls /sys/bus/usb/devices 2> /dev/null | grep -v ':' | head -1)"
     if [ -n "$ud" ]; then
-        udevadm test -a change $ud 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
-        if udevadm test -a add /sys/bus/usb/devices/$ud 2> /dev/null | grep -E '^run: .*tlp-usb-udev usb'; then
+        $UDEVADM test -a change $ud 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
+        if $UDEVADM test -a add /sys/bus/usb/devices/$ud 2> /dev/null | grep -E '^run: .*tlp-usb-udev usb'; then
             printf "OK.\n\n"
         else
             printf "Fatal Error: TLP's udev rule for connecting USB devices (85-tlp.rules) is not active -- possible package bug.\n\n"
