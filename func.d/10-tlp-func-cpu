@@ -123,13 +123,6 @@ set_intel_cpu_perf_policy () {
     # (2) energy-performance bias (EPB) in MSR_IA32_ENERGY_PERF_BIAS
     # when HWP.EPP is available, EPB is not set (unless forced)
     #
-    # full backwards compatibility for the replaced parameters:
-    # (1) CPU_HWP_ON_AC/BAT: no translation needed
-    # (2) ENERGY_PERF_POLICY_ON_AC/BAT: translate
-    #     balance-performance --> balance_perfomance
-    #     normal              --> default
-    #     balance-power       --> balance_power
-    #
     # References:
     # - https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html#energy-vs-performance-hints
     # - https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_epb.html
