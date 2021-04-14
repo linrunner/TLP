@@ -338,6 +338,26 @@ get_ahci_host () {
     fi
 }
 
+print_nvme_temp () {
+    # print NVMe disk temperature from hwmon API
+    # $1: device
+    #
+    # Reference:
+    # - https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=400b6a7b13a3fd71cff087139ce45dd1e5fff444
+
+    local sens ts
+
+    # temp1_input is "Composite"
+    for sens in $(glob_files '/hwmon*/temp1_input' /sys/block/$1/device); do
+        if ts=$(read_sysval $sens); then
+            perl -e 'printf ("  Temp       = %-2.0f °C\n", '$ts' / 1000.0);'
+            break
+        fi
+    done
+
+    return 0
+}
+
 show_disk_data () {
     # formatted output of NVMe / SATA disk data
     # $1: disk device
@@ -357,7 +377,7 @@ show_disk_data () {
             [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
             print_sysf "  Model      = %s\n" /sys/block/$_disk_dev/device/model
             print_sysf "  Firmware   = %s\n" /sys/block/$_disk_dev/device/firmware_rev
-            # TODO: more features?
+            print_nvme_temp $_disk_dev
             ;;
 
         sata|ata|usb|ieee1394)
