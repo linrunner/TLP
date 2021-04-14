@@ -825,6 +825,11 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
     fi
     echo "Device allowlist  = ${USB_ALLOWLIST:=(not configured)}"
     echo "Device denylist   = ${USB_DENYLIST:=(not configured)}"
+    if [ "${USB_EXCLUDE_AUDIO:-0}" = "1" ]; then
+        echo "Exclude audio     = enabled"
+    else
+        echo "Exclude audio     = disabled"
+    fi
     if [ "${USB_EXCLUDE_BTUSB:-0}" = "1" ]; then
         echo "Exclude bluetooth = enabled"
     else

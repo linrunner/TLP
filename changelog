@@ -96,6 +96,8 @@
         - Show intel_pstate operation mode ("status")
         - cpu1..cpuN omitted for clarity, use -v to show all
         - Sort more than 10 CPU cores in proper numerical order
+    USB:
+      - USB_EXCLUDE_AUDIO: exclude audio devices from autosuspend (Issue #556)
 
   * Bugfixes
     Battery Features:

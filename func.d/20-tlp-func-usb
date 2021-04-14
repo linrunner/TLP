@@ -81,6 +81,19 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
             fi # bluetooth
 
             if [ -z "$exc" ]; then
+                # check for audio devices
+                if [ "$USB_EXCLUDE_AUDIO" = "1" ]; then
+                    for subdev in "$usbdev"/*:*; do
+                        if [ "$(read_sysf $subdev/bInterfaceClass)" = "01" ]; then
+                            control="on"
+                            exc="_audio_deny"
+                            break
+                        fi
+                    done
+                fi
+            fi # audio
+
+            if [ -z "$exc" ]; then
                 # check for scanners:
                 # libsane_matched envvar is set by libsane's udev rules
                 # shellcheck disable=SC2154
