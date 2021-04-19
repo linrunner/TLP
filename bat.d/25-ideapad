@@ -1,5 +1,5 @@
 #!/bin/sh
-# 25-ideapad - Battery Plugin for Lenovo laptops w/ ideapad_wmi driver
+# 25-ideapad - Battery Plugin for Lenovo laptops w/ ideapad_laptop driver
 #
 # Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
@@ -13,7 +13,7 @@
 readonly IDEAPADDIR=/sys/bus/platform/drivers/ideapad_acpi
 
 is_ideapad () {
-    # check for Lenovo Laptop w/ ideapad_acpi kernel module loaded
+    # check if kernel module loaded
     # rc: 0=Ideapad, 1=other hardware
     [ -d $IDEAPADDIR ]
 }
@@ -48,7 +48,7 @@ batdrv_init () {
     #    stop threshold                         --> retval $_bt_def_stop;
 
     _batdrv_plugin="ideapad"
-    _batdrv_kmod="ideapad_wmi" # kernel module for natacpi
+    _batdrv_kmod="ideapad_laptop" # kernel module for natacpi
 
     # check plugin simulation override and denylist
     if [ -n "$X_BAT_PLUGIN_SIMULATE" ]; then

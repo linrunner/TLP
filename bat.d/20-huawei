@@ -13,8 +13,8 @@
 readonly HUAWEIWMIDIR=/sys/module/huawei_wmi
 
 is_huawei () {
-    # check for Huawei MateBook w/ huawei_wmi kernel module loaded
-    # rc: 0=Huawei MateBook, 1=other hardware
+    # check if kernel module loaded
+    # rc: 0=Huawei, 1=other hardware
     [ -d $HUAWEIWMIDIR ]
 }
 

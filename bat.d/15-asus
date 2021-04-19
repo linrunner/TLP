@@ -13,8 +13,8 @@
 readonly ASUSWMIDIR=/sys/module/asus_wmi
 
 is_asus () {
-    # check for ASUS laptop w/ asus_wmi kernel module loaded
-    # rc: 0=ASUS laptop, 1=other hardware
+    # check if kernel module loaded
+    # rc: 0=ASUS, 1=other hardware
     [ -d $ASUSWMIDIR ]
 }
 

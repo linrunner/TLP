@@ -13,8 +13,8 @@
 readonly SAMSUNGDIR=/sys/devices/platform/samsung
 
 is_samsung () {
-    # check for Lenovo Laptop w/ ideapad_acpi kernel module loaded
-    # rc: 0=Ideapad, 1=other hardware
+    # check if kernel module loaded
+    # rc: 0=Samsung, 1=other hardware
     [ -d $SAMSUNGDIR ]
 }
 
