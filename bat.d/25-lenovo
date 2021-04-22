@@ -47,7 +47,7 @@ batdrv_init () {
     #    conservation mode                      --> retval $_bf_stop,
     #    stop threshold                         --> retval $_bt_def_stop;
 
-    _batdrv_plugin="ideapad"
+    _batdrv_plugin="lenovo"
     _batdrv_kmod="ideapad_laptop" # kernel module for natacpi
 
     # check plugin simulation override and denylist

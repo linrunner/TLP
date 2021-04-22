@@ -183,36 +183,36 @@ $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="6
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)
-$ # +++ Ideapad ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=ideapad START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ # +++ Lenovo ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=ideapad START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": conservation mode not specified or invalid (must be 0 or 1). Skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=ideapad START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Warning: writing conservation mode failed.
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=ideapad START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=ideapad START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": conservation mode not specified or invalid (must be 0 or 1). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=ideapad START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_THRESH_SIMULATE_STOP="0"
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_THRESH_SIMULATE_STOP="0"
 Setting temporary charge threshold for all batteries:
   conservation mode = 1 (Error: write failed)
-$ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=ideapad
+$ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=lenovo
 Error: conservation mode (24) not specified or invalid (must be 0 or 1). Aborted.
-$ sudo tlp setcharge 42 1 -- X_BAT_PLUGIN_SIMULATE=ideapad  X_THRESH_SIMULATE_STOP="0"
+$ sudo tlp setcharge 42 1 -- X_BAT_PLUGIN_SIMULATE=lenovo  X_THRESH_SIMULATE_STOP="0"
 Setting temporary charge threshold for all batteries:
   conservation mode = 1 (Error: write failed)
-$ sudo tlp setcharge 42 1 -- X_BAT_PLUGIN_SIMULATE=ideapad  X_THRESH_SIMULATE_STOP="1"
+$ sudo tlp setcharge 42 1 -- X_BAT_PLUGIN_SIMULATE=lenovo  X_THRESH_SIMULATE_STOP="1"
 Setting temporary charge threshold for all batteries:
   conservation mode = 1 (no change)
-$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=ideapad  X_THRESH_SIMULATE_STOP="0"
+$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=lenovo  X_THRESH_SIMULATE_STOP="0"
 Setting temporary charge threshold for all batteries:
   conservation mode = 0 (no change)
-$ sudo tlp setcharge 42 24 BAT1 -- X_BAT_PLUGIN_SIMULATE=ideapad
+$ sudo tlp setcharge 42 24 BAT1 -- X_BAT_PLUGIN_SIMULATE=lenovo
 Error: battery BAT1 not present.
-$ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=ideapad
+$ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=lenovo
 Error: battery 2 not present.
 $ # +++ Samsung ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=

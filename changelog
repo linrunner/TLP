@@ -10,7 +10,7 @@
         - ASUS laptops: stop threshold
         - Huawei MateBooks: start and stop threshold (also reinstated after
           resume from S3/S4)
-        - Lenovo Ideapads: stop threshold aka "battery conservation mode"
+        - Lenovo laptops: stop threshold aka "battery conservation mode"
         - Samsung laptops: stop threshold aka "battery life extender"
       - ThinkPads
         - Allow deactivation of the start threshold (START_CHARGE_THRESH_BATx=0)
