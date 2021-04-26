@@ -370,10 +370,15 @@ batdrv_show_battery_data () {
     fi
     printf "\n"
 
-    local th lf=0
+    local th lf=0 sfx=
     if [ "$_bm_thresh" = "natacpi" ]; then
         if th=$(batdrv_read_threshold stop "$_bf_stop" ""); then
-            printf "%-59s = %d\n" "$_bf_stop" "$th"
+            case $th in
+                0) sfx=" (100%)" ;;
+                1) sfx=" (60%)" ;;
+                *) sfx="" ;;
+            esac
+            printf "%-59s = %d%s\n" "$_bf_stop" "$th" "$sfx"
         else
             printf "%-59s = %s\n" "$_bf_stop" "(not available)"
         fi
