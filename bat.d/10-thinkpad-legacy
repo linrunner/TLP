@@ -716,9 +716,11 @@ batdrv_show_battery_data () {
         *)   printf "* tp-smapi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
-    printf "Parameter value ranges:\n"
-    printf "* START_CHARGE_THRESH_BAT0/1:  2..96(default)\n"
-    printf "* STOP_CHARGE_THRESH_BAT0/1:   6..100(default)\n"
+    if [ "$_bm_thresh" != "none" ]; then
+        printf "Parameter value ranges:\n"
+        printf "* START_CHARGE_THRESH_BAT0/1:  2..96(default)\n"
+        printf "* STOP_CHARGE_THRESH_BAT0/1:   6..100(default)\n"
+    fi
     printf "\n"
 
     local bat

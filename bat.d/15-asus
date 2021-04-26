@@ -394,8 +394,10 @@ batdrv_show_battery_data () {
         *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
-    printf "Parameter value range:\n"
-    printf "* STOP_CHARGE_THRESH_BAT0/1: 0(off)..100(default)\n"
+    if [ "$_bm_thresh" != "none" ]; then
+        printf "Parameter value range:\n"
+        printf "* STOP_CHARGE_THRESH_BAT0/1: 0(off)..100(default)\n"
+    fi
     printf "\n"
 
     # -- show battery data

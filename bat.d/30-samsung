@@ -364,10 +364,11 @@ batdrv_show_battery_data () {
         *)   printf "* vendor (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
-    printf "Parameter value range:\n"
-    printf "* STOP_CHARGE_THRESH_BAT0: 0(off)..1(on) -- battery life extender\n"
+    if [ "$_bm_thresh" != "none" ]; then
+        printf "Parameter value range:\n"
+        printf "* STOP_CHARGE_THRESH_BAT0: 0(off)..1(on) -- battery life extender\n"
+    fi
     printf "\n"
-
 
     local th lf=0
     if [ "$_bm_thresh" = "natacpi" ]; then
