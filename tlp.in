@@ -181,10 +181,6 @@ add_sbin2path
 
 check_laptop_mode_tools
 
-# get current power state
-get_power_mode; pwrmode=$?
-get_manual_mode
-
 if [ -z "$_cmd2" ]; then
     echo_debug "run" "+++ $_cmd ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
 else
@@ -199,6 +195,10 @@ else
     # shellcheck disable=SC2154
     echo_debug "path" "PATH=${_oldpath}"
 fi
+
+# get current power state
+get_power_mode; pwrmode=$?
+get_manual_mode
 
 # determine new power state
 case "$_cmd" in
