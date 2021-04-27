@@ -907,7 +907,11 @@ if [ "$show_psup" = "1" ]; then
     for ps in /sys/class/power_supply/*; do
         # shellcheck disable=SC2063
         printparm "%s: ##%s##" $ps/type "_"
+        printparm "%s: ##%s##" $ps/usb_type "_"
         printparm "%s: ##%s##" $ps/online "_"
+        printparm "%s: ##%s##" $ps/voltage_max "_"
+        printparm "%s: ##%s##" $ps/voltage_min "_"
+        printparm "%s: ##%s##" $ps/voltage_now "_"
         printparm "%s: ##%s##" $ps/present "_"
         printparm "%s: ##%s##" $ps/charge_control_start_threshold "_"
         printparm "%s: ##%s##" $ps/charge_control_end_threshold "_"
