@@ -197,7 +197,7 @@ else
 fi
 
 # get current power state
-get_power_mode; pwrmode=$?
+get_power_mode "$_cmd"; pwrmode=$?
 get_manual_mode
 
 # determine new power state

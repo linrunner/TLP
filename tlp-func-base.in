@@ -590,6 +590,7 @@ read_dmi () { # read DMI data -- $*: keywords; stdout: dmi strings
 
 get_sys_power_supply () {
     # get current power supply
+    # $1: command
     # rc: 0=ac/1=battery/2=unknown
     # retval: $_syspwr == rc
     #         $_psdev: 1st power supply found (for udev rule check)
@@ -608,7 +609,7 @@ get_sys_power_supply () {
     # special cases:
     #   *o) if battery status "Unknown" was seen previously then _syspwr=1;
     #       else remember AC offline state
-    #   *r) re-check battery status after 0.5 sec -> if battery status
+    #   *r) recheck battery status after a short wait: if battery status
     #       "Discharging" (not forced) then _syspwr=1 and stop looking;
     #       else _syspwr=0
     #   *d) if forced discharge in progress then _syspwr=0; else _syspwr=1;
@@ -668,6 +669,13 @@ get_sys_power_supply () {
 
                 # check battery status
                 bs="$(read_sysf $psrc/status)"
+                if [ "$bs" != "Discharging" ] && [ "$1" = "auto" ]; then
+                    # when command is 'tlp auto', not "Discharging" might be caused by lagging battery status updates
+                    # --> recheck after a short wait
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging_wait: bs=$bs; syspwr=$_syspwr"
+                    sleep ${X_PS_WAIT:-0.8} 2> /dev/null
+                    bs="$(read_sysf $psrc/status)"
+                fi
                 case "$bs" in
                     Discharging)
                         if ! lockpeek_tlp tlp_discharge; then
@@ -682,12 +690,11 @@ get_sys_power_supply () {
                         break # --> end iteration
                         ;;
 
-                    *) # assume AC mode for everything else - e.g. "Charging", "Full", "Unknown"
+                    *) # assume AC mode for everything else, e.g. "Charging", "Full", "Not charging", "Unknown"
                        # --> continue looking
                         _syspwr=0
                         echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging: bs=$bs; syspwr=$_syspwr"
                         ;;
-
                 esac
                 ;;
 
@@ -729,12 +736,15 @@ get_persist_mode () { # get persistent operation mode
     return $rc
 }
 
-get_power_mode () { # get current operation mode -- rc: 0=AC, 1=battery
+get_power_mode () {
+    # get current operation mode
+    # $1: command
+    # rc: 0=AC/1=battery
     # similar to get_sys_power_supply(),
     # but maps unknown power source to TLP_DEFAULT_MODE or returns
     # persistent mode when enabled
 
-    get_sys_power_supply
+    get_sys_power_supply $1
     local rc=$?
 
     if get_persist_mode; then
