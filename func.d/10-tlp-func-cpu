@@ -416,30 +416,7 @@ set_nmi_watchdog () { # enable/disable nmi watchdog
     return 0
 }
 
-set_phc_controls () { # set core voltages
-    local control
-    local ctrl_avail="0"
-
-    phc_controls=${PHC_CONTROLS:-}
-
-    if [ -z "$phc_controls" ]; then
-        # do nothing if unconfigured
-        echo_debug "pm" "set_phc_controls.not_configured"
-        return 0
-    fi
-
-    for control in "${CPUD}"/cpu*/cpufreq/phc_controls; do
-        if [ -f "$control" ]; then
-            write_sysf "$phc_controls" $control
-            echo_debug "pm" "set_phc_controls: $control $phc_controls; rc=$?"
-            ctrl_avail="1"
-        fi
-    done
-
-    [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_phc_controls.not_available"
-
-    return 0
-}
+# --- Platform
 
 set_platform_profile () { # set platform profile
     # $1: 0=ac mode, 1=battery mode

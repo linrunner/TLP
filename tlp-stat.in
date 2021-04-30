@@ -492,20 +492,6 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     printparm "%-54s = ##%d##" $NMIWD
     echo
 
-    # --- show PHC voltages
-    phc_avail=0
-    for cpuf in "${CPUD}"/cpu*/cpufreq; do
-        if [ -f $cpuf/phc_controls ]; then
-            if [ $phc_avail = 0 ]; then
-                echo "+++ Undervolting"
-                phc_avail=1
-            fi
-            printparm "%-58s = ##%s##" $cpuf/phc_controls
-            printparm "%-58s = ##%s##" $cpuf/phc_default_controls
-            echo
-        fi
-    done
-
     # --- show platform profile
     if [ -f $FWACPID/platform_profile ]; then
         printf "+++ Platform Profile\n"

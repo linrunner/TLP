@@ -95,6 +95,7 @@
       - Remove backwards compatibility of CPU_ENERGY_PERF_POLICY_ON_AC/BAT with
         ENERGY_PERF_POLICY_ON_AC/BAT to prevent performance issues caused by the
         value 'power' in legacy configurations
+      - PHC_CONTROLS removed (obsolete)
       - tlp-stat -p:
         - Show intel_pstate operation mode ("status")
         - cpu1..cpuN omitted for clarity, use -v to show all
