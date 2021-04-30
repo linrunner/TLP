@@ -22,6 +22,8 @@ readonly CPU_HWP_DYN_BOOST=$INTEL_PSTATED/hwp_dynamic_boost
 readonly CPU_INFO=/proc/cpuinfo
 readonly ENERGYPERF=x86_energy_perf_policy
 
+readonly FWACPID=/sys/firmware/acpi
+
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -435,6 +437,36 @@ set_phc_controls () { # set core voltages
     done
 
     [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_phc_controls.not_available"
+
+    return 0
+}
+
+set_platform_profile () { # set platform profile
+    # $1: 0=ac mode, 1=battery mode
+
+    local pwr
+
+    if [ "$1" = "1" ]; then
+        pwr=${PLATFORM_PROFILE_ON_BAT:-}
+    else
+        pwr=${PLATFORM_PROFILE_ON_AC:-}
+    fi
+
+    if [ -z "$pwr" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_platform_profile($1).not_configured"
+        return 0
+    fi
+
+    if [ -f $FWACPID/platform_profile ]; then
+        if write_sysf "$pwr" $FWACPID/platform_profile; then
+            echo_debug "pm" "set_platform_profile($1): $pwr"
+        else
+            echo_debug "pm" "set_platform_profile($1).write_error"
+        fi
+    else
+        echo_debug "pm" "set_platform_profile($1).not_available"
+    fi
 
     return 0
 }

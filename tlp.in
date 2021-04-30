@@ -30,6 +30,7 @@ apply_common_settings () { # apply settings common to all modes
     set_sched_powersave $1
     set_nmi_watchdog
     set_phc_controls $1
+    set_platform_profile $1
     set_ahci_port_runtime_pm $1
     set_runtime_pm $1
     set_ahci_disk_runtime_pm $1

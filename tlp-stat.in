@@ -505,6 +505,15 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
             echo
         fi
     done
+
+    # --- show platform profile
+    if [ -f $FWACPID/platform_profile ]; then
+        printf "+++ Platform Profile\n"
+        printparm "%-54s = ##%d##" $FWACPID/platform_profile
+        printparm "%-54s = ##%d##" $FWACPID/platform_profile_choices
+        printf "\n"
+    fi
+
 fi # show_proc
 
 if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
