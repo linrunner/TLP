@@ -616,7 +616,7 @@ get_sys_power_supply () {
     #       stop looking
     #   *s) stop looking (for other power sources)
 
-    local bs psrc psrc_name
+    local bs ps_ignore psrc psrc_name
     local ac0seen=
     _psdev=""
 
@@ -627,6 +627,7 @@ get_sys_power_supply () {
         return $_syspwr
     fi
 
+    ps_ignore=$(toupper "$TLP_PS_IGNORE")
     for psrc in /sys/class/power_supply/*; do
         # -f $psrc/type not necessary - read_sysf() handles this
         psrc_name="${psrc##*/}"
@@ -635,11 +636,11 @@ get_sys_power_supply () {
         printf '%s\n' "$psrc_name" | grep -E -q "$RE_PS_IGNORE" && continue
 
         case "$(read_sysf $psrc/type)" in
-            Mains|USB)
+            Mains)
                 # AC detected
-                _psdev="${psdev:-$psrc}"
+                _psdev="${_psdev:-$psrc}"
                 # skip device to ignore incorrect AC status
-                if [ "$TLP_PS_IGNORE" = "AC" ]; then
+                if wordinlist "AC" "$ps_ignore"; then
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_ignored: syspwr=$_syspwr"
                     continue
                 fi
@@ -652,17 +653,40 @@ get_sys_power_supply () {
                     break
                 else
                     # AC offline could mean battery, but quirky hardware exists
-                    # --> remember and continue looking (for batteries)
+                    # --> remember and continue looking
                     ac0seen=1
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_offline_remembered"
                 fi
                 ;;
 
+            USB)
+                # USB PS detected
+                _psdev="${_psdev:-$psrc}"
+                # skip device to ignore incorrect AC status
+                if wordinlist "USB" "$ps_ignore"; then
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_ignored: syspwr=$_syspwr"
+                    continue
+                fi
+
+                # check USB PS status
+                if [ "$(read_sysf $psrc/online)" = "1" ]; then
+                    # USB online --> end iteration
+                    _syspwr=0
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_online: syspwr=$_syspwr"
+                    break
+                else
+                    # USB PS offline could mean battery, but multiple connectors may exist
+                    # --> remember and continue looking
+                    ac0seen=1
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_offline_remembered"
+                fi
+                ;;
+
             Battery)
                 # battery detected
-                _psdev="${psdev:-$psrc}"
+                _psdev="${_psdev:-$psrc}"
                 # skip device to ignore incorrect battery status
-                if [ "$TLP_PS_IGNORE" = "BAT" ]; then
+                if wordinlist "BAT" "$ps_ignore"; then
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_ignored: syspwr=$_syspwr"
                     continue
                 fi
@@ -727,9 +751,9 @@ get_persist_mode () { # get persistent operation mode
 
     if [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then
         # persistent mode = configured default mode
-        case "$TLP_DEFAULT_MODE" in
-            ac|AC)   _persist_mode=0; rc=0 ;;
-            bat|BAT) _persist_mode=1; rc=0 ;;
+        case $(toupper "$TLP_DEFAULT_MODE") in
+            AC)  _persist_mode=0; rc=0 ;;
+            BAT) _persist_mode=1; rc=0 ;;
         esac
     fi
 
@@ -754,10 +778,10 @@ get_power_mode () {
         # non-persistent mode, use current power source
         if [ $rc -eq 2 ]; then
             # unknown power supply, use configured default mode
-            case "$TLP_DEFAULT_MODE" in
-                ac|AC)   rc=0 ;;
-                bat|BAT) rc=1 ;;
-                *)       rc=0 ;; # use AC if none or invalid mode
+            case $(toupper "$TLP_DEFAULT_MODE") in
+                AC)  rc=0 ;;
+                BAT) rc=1 ;;
+                *)   rc=0 ;; # use AC if none or invalid mode
             esac
         fi
     fi
