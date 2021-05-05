@@ -618,6 +618,7 @@ get_sys_power_supply () {
 
     local bs ps_ignore psrc psrc_name
     local ac0seen=
+    local wait=
     _psdev=""
 
     _syspwr="$X_SIMULATE_PS"
@@ -695,21 +696,27 @@ get_sys_power_supply () {
                 bs="$(read_sysf $psrc/status)"
                 if [ "$bs" != "Discharging" ] && [ "$1" = "auto" ]; then
                     # when command is 'tlp auto', not "Discharging" might be caused by lagging battery status updates
-                    # --> recheck after a short wait
-                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging_wait: bs=$bs; syspwr=$_syspwr"
-                    sleep ${X_PS_WAIT:-0.8} 2> /dev/null
-                    bs="$(read_sysf $psrc/status)"
+                    # --> recheck every 0.1 secs for 0.8 secs (or user value in tenths of a second) max
+                    wait="$X_PS_WAIT_TS"
+                    is_uint "$wait" 2 || wait=8
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging_recheck: bs=$bs; syspwr=$_syspwr; wait=$wait"
+                    while [ $wait -gt 0 ]; do
+                        sleep 0.1
+                        wait=$((wait - 1))
+                        bs="$(read_sysf $psrc/status)"
+                        [ "$bs" = "Discharging" ] && break
+                    done
                 fi
                 case "$bs" in
                     Discharging)
                         if ! lockpeek_tlp tlp_discharge; then
                             # battery status "Discharging" means battery mode ...
                             _syspwr=1
-                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_discharging: syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_discharging: syspwr=$_syspwr; wait=$wait"
                         else
                             # ... unless forced discharge is in progress, which means AC
                             _syspwr=0
-                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).forced_discharge: syspwr=$_syspwr"
+                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).forced_discharge: syspwr=$_syspwr; wait=$wait"
                         fi
                         break # --> end iteration
                         ;;
@@ -717,7 +724,7 @@ get_sys_power_supply () {
                     *) # assume AC mode for everything else, e.g. "Charging", "Full", "Not charging", "Unknown"
                        # --> continue looking
                         _syspwr=0
-                        echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging: bs=$bs; syspwr=$_syspwr"
+                        echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging: bs=$bs; syspwr=$_syspwr; wait=$wait"
                         ;;
                 esac
                 ;;
