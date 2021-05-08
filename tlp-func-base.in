@@ -61,7 +61,7 @@ _nodebug=0
 
 do_exit () { # cleanup and exit  -- $1: rc
     # remove temporary runconf
-    [ -f "$_conf_tmp" ] && rm -rf "$_conf_tmp"
+    [ -z "$_conf_tmp" ] || rm -f -- "$_conf_tmp"
 
     exit $1
 }
