@@ -157,6 +157,14 @@ glob_files () {
     #
     # Nested loop that applies a glob expression to several directories
     # (or path prefixes) and prints matching file paths to stdout.
+    #
+    # NOTE: for x in $(glob_files 'a*' dirpath ); do ...; done
+    # globs twice:
+    #   (a) once in the "for file_iter" loop in glob_files()
+    #   (b) another time when x gets word expanded in the "for x" loop
+    # crafted filenames (e.g. a file named '*') will break this function,
+    # as such it should be only be used with 'sort-of trustworthy' directories
+    # (sysfs, proc).
 
     [ -n "${1-}" ] || return 64
     local glob_pattern file_iter
@@ -175,6 +183,8 @@ glob_dirs () {
     #
     # Nested loop that applies a glob expression to several directories
     # (or path prefixes) and prints matching directory paths to stdout.
+    #
+    # NOTE: globs twice, see glob_files().
 
     [ -n "${1-}" ] || return 64
     local glob_pattern dir_iter
