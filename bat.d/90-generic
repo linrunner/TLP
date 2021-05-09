@@ -78,7 +78,7 @@ batdrv_chargeonce () {
     # function not implemented for generic hardware
     echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce.not_implemented"
     return 255
-    }
+}
 
 batdrv_apply_configured_thresholds () {
     # function not implemented for generic hardware

@@ -781,6 +781,3 @@ check_udev_rule_usb () {
         fi
     fi
 }
-
-
-
