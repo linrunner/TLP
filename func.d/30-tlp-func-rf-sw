@@ -36,8 +36,6 @@ get_devc () { # get control device for radio type
 
     local i
 
-    check_sysfs "get_devc" "/sys/class/rfkill"
-
     # preset retvals
     _devc=""
     _devs=254

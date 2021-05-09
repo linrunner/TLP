@@ -168,8 +168,6 @@ set_sound_power_mode () { # set sound chip power modes
 
     cpwr="$SOUND_POWER_SAVE_CONTROLLER"
 
-    check_sysfs "set_sound_power_mode" "/sys/module"
-
     if [ -d /sys/module/snd_hda_intel ]; then
         write_sysf "$pwr" /sys/module/snd_hda_intel/parameters/power_save
         echo_debug "pm" "set_sound_power_mode($1).hda: $pwr; rc=$?"

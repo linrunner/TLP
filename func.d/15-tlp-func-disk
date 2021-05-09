@@ -560,8 +560,9 @@ set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
 
 # --- Filesystem Parameters
 
-set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
-    check_sysfs "set_laptopmode" "/proc/sys/vm/laptop_mode"
+set_laptopmode () {
+    # set kernel laptop mode
+    # $1: 0=ac mode, 1=battery mode
 
     local isec
 
@@ -585,13 +586,11 @@ set_laptopmode () { # set kernel laptop mode -- $1: 0=ac mode, 1=battery mode
     return 0
 }
 
-set_dirty_parms () { # set filesystem buffer params
+set_dirty_parms () {
+    # set filesystem buffer params
     # $1: 0=ac mode, 1=battery mode
-    # concept from laptop-mode-tools
 
     local age cage df ec
-
-    check_sysfs "set_dirty_parms" "/proc/sys/vm"
 
     if [ "$1" = "1" ]; then
         age=${MAX_LOST_WORK_SECS_ON_BAT:-0}

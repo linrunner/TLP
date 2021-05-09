@@ -122,15 +122,6 @@ wordinlist () { # test if word in list
 }
 
 # --- Sysfiles
-
-check_sysfs () { # debug: check if sysfile exists -- $1: routine; $2: sysfs path
-    if wordinlist "sysfs" "$TLP_DEBUG"; then
-        if [ ! -e $2 ]; then
-            $LOGGER -p debug -t "tlp" --id=$$ -- "$1: $2 nonexistent" > /dev/null 2>&1
-        fi
-    fi
-}
-
 read_sysf () { # read and echo contents of sysfile
     # return 1 and echo default if read fails
     # $1: sysfile, $2: default; rc: 0=ok/1=error

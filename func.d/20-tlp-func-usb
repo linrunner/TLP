@@ -21,9 +21,12 @@ readonly USB_DONE=usb_done
 
 # --- USB Autosuspend
 
-usb_suspend_device () { # enable/disable usb autosuspend for a single device
+usb_suspend_device () {
+    # enable/disable usb autosuspend for a single device
     # except input, scanners and denylisted
-    # $1: device syspath, $2: batch/udev, $3: auto=enable/on=disable
+    # $1: device syspath
+    # $2: batch/udev
+    # $3: auto=enable/on=disable
     local usbdev=$1
 
     if [ -f $usbdev/power/autosuspend_delay_ms ]; then
@@ -240,12 +243,12 @@ usb_suspend_device () { # enable/disable usb autosuspend for a single device
     return 0
 }
 
-set_usb_suspend () { # enable/disable usb autosuspend for all devices
-    # $1: 0=silent/1=report result; $2: auto=enable/on=disable
+set_usb_suspend () {
+    # enable/disable usb autosuspend for all devices
+    # $1: 0=silent/1=report result
+    # $2: auto=enable/on=disable
 
     local usbdev
-
-    check_sysfs "set_usb_suspend" "$USBD"
 
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
         # autosuspend is configured --> iterate devices
