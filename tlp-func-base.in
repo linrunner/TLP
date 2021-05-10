@@ -156,7 +156,8 @@ glob_files () {
     # @stdout glob_files ( glob_pattern, dir[, dir...] )
     #
     # Nested loop that applies a glob expression to several directories
-    # (or path prefixes) and prints matching file paths to stdout.
+    # (or path prefixes) and prints matching file paths (including symlinks)
+    # to stdout.
     #
     # NOTE: for x in $(glob_files 'a*' dirpath ); do ...; done
     # globs twice:
@@ -168,14 +169,20 @@ glob_files () {
 
     [ -n "${1-}" ] || return 64
     local glob_pattern file_iter
+    local rc=1
 
     glob_pattern="${1}"
 
     while shift && [ $# -gt 0 ]; do
         for file_iter in ${1}${glob_pattern}; do
-            [ ! -f "${file_iter}" ] || printf '%s\n' "${file_iter}"
+            if [ -f "${file_iter}" ] || [ -L "${file_iter}" ]; then
+                printf '%s\n' "${file_iter}"
+                rc=0
+            fi
         done
     done
+
+    return $rc
 }
 
 glob_dirs () {
@@ -188,6 +195,7 @@ glob_dirs () {
 
     [ -n "${1-}" ] || return 64
     local glob_pattern dir_iter
+    local rc=1
 
     glob_pattern="${1}"
 
@@ -195,9 +203,12 @@ glob_dirs () {
         for dir_iter in ${1}${glob_pattern}; do
             if [ -d "${dir_iter}" ]; then
                 printf '%s\n' "${dir_iter}"
+                rc=0
             fi
         done
     done
+
+    return $rc
 }
 
 # --- Tests
