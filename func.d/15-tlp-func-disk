@@ -31,7 +31,7 @@ get_disk_dev () { # translate disk id to device (sdX)
     #         $_disk_mq:        scheduler: 0=single queue/1=multi queue;
     #         $_disk_runpm:     runtime pm: 0=allowed/1=denied by kernel/2=denied by tlp/3=incapable
 
-    local bus dev dpath dpath2 id idpath path
+    local dev id idpath
 
     if [ -h /dev/disk/by-id/$1 ]; then
         # $1 is disk id
@@ -76,10 +76,23 @@ get_disk_dev () { # translate disk id to device (sdX)
     fi
 
     if [ -b /dev/$_disk_dev ]; then
+        # retrieve device attributes
+        local bus dpath path udevadm_data
+        local DEVPATH=
+        local ID_PATH=
+        local ID_BUS=
+        local ID_ATA_FEATURE_SET_PM_ENABLED=
+
+        if udevadm_data="$(
+            $UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | \
+                grep -E '^(DEVPATH|ID_BUS|ID_PATH|ID_ATA_FEATURE_SET_PM_ENABLED)='
+            )"; then
+            eval "${udevadm_data}"
+        fi
+
         # determine device type (bus)
-        path="$($UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | sed -n 's/^ID_PATH=//p')"
-        bus="$($UDEVADM  info -q property /dev/$_disk_dev 2>/dev/null | sed -n 's/^ID_BUS=//p')"
-        dpath=
+        path="$ID_PATH"
+        bus="$ID_BUS"
         case "$path" in
             pci-*-nvme-*)     _disk_type="nvme" ;;
             pci-*-ata-*)      _disk_type="ata"  ;;
@@ -92,9 +105,8 @@ get_disk_dev () { # translate disk id to device (sdX)
                 ieee1394)  _disk_type="ieee1394" ;;
 
                 *)
-                    dpath="$($UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | sed -n 's/^DEVPATH=//p')"
-                    dpath=${dpath##*/}
-                    case "$dpath" in
+                    dpath="${DEVPATH##*/}"
+                    case $dpath in
                         nvme*) _disk_type="nvme" ;;
                         *)     _disk_type="unknown" ;;
                     esac
@@ -104,15 +116,14 @@ get_disk_dev () { # translate disk id to device (sdX)
 
         # distinguish sata from ata(ide) disks
         if [ "$_disk_type" = "ata" ]; then
-            dpath2="$($UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | sed -n 's/^DEVPATH=/\/sys/; s/\/target.*//p')"
-            if ls ${dpath2}/scsi_host/host*/link_power_management_policy > /dev/null 2>&1; then
+            if glob_files "/link_power_management_policy" "/sys${DEVPATH%/target*}/scsi_host/host*" > /dev/null 2>&1; then
                 _disk_type=sata
             fi
         fi
 
         # determine APM capability
         _disk_apm=0
-        if $UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | grep -q 'ID_ATA_FEATURE_SET_PM_ENABLED=1'; then
+        if [ "$ID_ATA_FEATURE_SET_PM_ENABLED" = "1" ]; then
             _disk_apm=1
         fi
 
