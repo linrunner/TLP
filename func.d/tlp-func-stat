@@ -132,7 +132,7 @@ printparm_ml () {
         printf "%s:\n" $sysf
         # read and output sysfile line by line
         # shellcheck disable=SC2162
-        while read sline; do
+        while read -r sline; do
             printf "%s%s\n" "$ind" "$sline"
         done < $sysf
         printf "\n"
@@ -611,12 +611,12 @@ show_gpu_data () {
                 printf "%-44s = %s\n\n" "$gpu/device/driver" "$driver"
 
                 printparm_i915 $gpu/power/rc6_enable $_intel_gpu_parm/enable_rc6 $_intel_gpu_parm/i915_enable_rc6
-                if sysout=$(read_sysf $_intel_gpu_dbg/i915_fbc_status | grep '^FBC '); then
+                if sysout=$(grep '^FBC ' $_intel_gpu_dbg/i915_fbc_status 2> /dev/null); then
                     printf "%-44s = %s\n" "$_intel_gpu_dbg/i915_fbc_status" "$sysout"
                 else
                     printparm_i915 $_intel_gpu_parm/enable_fbc $_intel_gpu_parm/i915_enable_fbc
                 fi
-                if sysout=$(read_sysf $_intel_gpu_dbg/i915_edp_psr_status | grep '^PSR mode:'); then
+                if sysout=$(grep '^PSR mode:' $_intel_gpu_dbg/i915_edp_psr_status 2> /dev/null); then
                     printf "%-44s = %s\n" "$_intel_gpu_dbg/i915_edp_psr_status" "$sysout"
                 else
                     printparm_i915 $_intel_gpu_parm/enable_psr

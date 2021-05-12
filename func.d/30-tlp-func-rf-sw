@@ -358,7 +358,7 @@ restore_device_states () { # restore radio type states
     if [ -f $RFSTATEFILE ]; then
         # read state file
         # shellcheck disable=SC2162
-        while read sline; do
+        while read -r sline; do
             set -- $sline # read dev, state into $1, $2
             device_switch $1 $2
         done < $RFSTATEFILE
