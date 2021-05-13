@@ -14,7 +14,7 @@ endif
 	dh $@
 
 override_dh_installsystemd:
-	dh_installsystemd --package=tlp tlp.service --no-start --no-restart-on-upgrade
+	dh_installsystemd --package=tlp --no-start --no-restart-on-upgrade tlp.service
 
 override_dh_installinit:
 	dh_installinit --package=tlp --no-start --only-scripts -- defaults 98 01
