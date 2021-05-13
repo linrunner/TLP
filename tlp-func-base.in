@@ -677,10 +677,19 @@ get_sys_power_supply () {
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_online: syspwr=$_syspwr"
                     break
                 else
-                    # AC offline could mean battery, but quirky hardware exists
-                    # --> remember and continue looking
-                    ac0seen=1
-                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_offline_remembered"
+                    case "$psrc_name" in
+                        ADP1)
+                            # Quirk: MBP 5.3 reports AC offline when started with charger connected
+                            # --> remember and continue looking
+                            ac0seen=1
+                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).remember_ac_offline_"
+                            ;;
+                        *)
+                            # AC offine --> end iteration
+                            _syspwr=1
+                            echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_offline: syspwr=$_syspwr"
+                            break
+                    esac
                 fi
                 ;;
 
@@ -703,7 +712,7 @@ get_sys_power_supply () {
                     # USB PS offline could mean battery, but multiple connectors may exist
                     # --> remember and continue looking
                     ac0seen=1
-                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_offline_remembered"
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).remember_usb_offline"
                 fi
                 ;;
 
@@ -720,8 +729,8 @@ get_sys_power_supply () {
                 bs="$(read_sysf $psrc/status)"
                 if [ "$bs" != "Discharging" ] && [ "$1" = "auto" ]; then
                     # when command is 'tlp auto', not "Discharging" might be caused by lagging battery status updates
-                    # --> recheck every 0.1 secs for 0.8 secs (or user value in tenths of a second) max
-                    wait="$X_PS_WAIT_TS"
+                    # --> recheck every 0.1 secs for 0.8 secs (or user value in deciseconds) max
+                    wait="$X_PS_WAIT_DS"
                     is_uint "$wait" 2 || wait=8
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging_recheck: bs=$bs; syspwr=$_syspwr; wait=$wait"
                     while [ $wait -gt 0 ]; do
@@ -763,7 +772,7 @@ get_sys_power_supply () {
         if [ "$ac0seen" = "1" ]; then
             # AC offline remembered --> battery mode
             _syspwr=1
-            echo_debug "ps" "get_sys_power_supply(${ac0seen##/*/}).ac_offline: syspwr=$_syspwr"
+            echo_debug "ps" "get_sys_power_supply(${ac0seen##/*/}).ac_offline_remembered: syspwr=$_syspwr"
         else
             # we have seen neither a AC nor a battery power source --> unknown mode
             _syspwr=2
