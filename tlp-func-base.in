@@ -124,15 +124,12 @@ wordinlist () { # test if word in list
 # --- Sysfiles
 
 read_sysf () {
-    # read and print first line of a sysfile,
-    # return 1 and output default if read fails or content has zero length
+    # read and print contents of a sysfile
+    # return 1 and print default if read fails
     # $1: sysfile
     # $2: default
     # rc: 0=ok/1=error
-    local sysin
-
-    if { read -r sysin < "$1"; } > /dev/null 2>&1; then
-        printf "%s" "$sysin"
+    if cat "$1" 2> /dev/null; then
         return 0
     else
         printf "%s" "$2"
@@ -141,23 +138,23 @@ read_sysf () {
 }
 
 readable_sysf () {
-    # check if sysfile is actually readable and content has non-zero length
+    # check if sysfile is actually readable
     # $1: file
     # rc: 0=readable/1=read error
-    local sysin
-
-    { read -r sysin < "$1"; } > /dev/null 2>&1
+    cat "$1" > /dev/null 2>&1
 }
 
-read_sysval () { # read and print first line of a sysfile
-    # print '0' if file is non-existent, read fails, content has zero length
-    # or is non-numeric
-    # $1: sysfile; rc: 0=ok/1=error
+read_sysval () {
+    # read and print contents of a sysfile
+    # print '0' if file is non-existent, read fails or content is non-numeric
+    # $1: sysfile
+    # rc: 0=ok/1=error
     printf "%d" "$(read_sysf $1)" 2> /dev/null
 }
 
 write_sysf () { # write string to a sysfile
-    # $1: string, $2: sysfile
+    # $1: string
+    # $2: sysfile
     # rc: 0=ok/1=error
     { printf '%s\n' "$1" > "$2"; } 2> /dev/null
 }
