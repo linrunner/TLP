@@ -481,7 +481,7 @@ batdrv_show_battery_data () {
     printf "+++ Battery Wear Control\n"
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
-    if [ "$_bm_thresh" != "none" ]; then
+    if [ "$_bm_thresh" = "natacpi" ]; then
         printf "Supported features: charge thresholds\n"
     else
         printf "Supported features: none\n"
@@ -497,7 +497,7 @@ batdrv_show_battery_data () {
         *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
-    if [ "$_bm_thresh" != "none" ]; then
+    if [ "$_bm_thresh" = "natacpi" ]; then
         printf "Parameter value ranges:\n"
         printf "* START_CHARGE_THRESH_BAT0/1:  0(off)..95(default)..100\n"
         printf "* STOP_CHARGE_THRESH_BAT0/1:   0(off)..100(default)\n"
