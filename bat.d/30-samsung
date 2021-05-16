@@ -348,7 +348,7 @@ batdrv_show_battery_data () {
     printf "+++ Battery Wear Control\n"
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
-    if [ "$_bm_thresh" != "none" ]; then
+    if [ "$_bm_thresh" = "natacpi" ]; then
         printf "Supported features: charge threshold\n"
     else
         printf "Supported features: none\n"
@@ -364,22 +364,22 @@ batdrv_show_battery_data () {
         *)   printf "* vendor (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
-    if [ "$_bm_thresh" != "none" ]; then
-        printf "Parameter value range:\n"
-        printf "* STOP_CHARGE_THRESH_BAT0: 0(off)..1(on) -- battery life extender\n"
-    fi
-    printf "\n"
-
-    local th lf=0
     if [ "$_bm_thresh" = "natacpi" ]; then
+        local th sfx=
+        printf "Parameter value range:\n"
+        printf "* STOP_CHARGE_THRESH_BAT0: 0(off)..1(on) -- -- battery life extender\n\n"
         if th=$(batdrv_read_threshold stop "$_bf_stop" ""); then
-            printf "%-59s = %d\n" "$_bf_stop" "$th"
+            case $th in
+                0) sfx=" (100%)" ;;
+                1) sfx=" (80%)" ;;
+                *) sfx="" ;;
+            esac
+            printf "%-59s = %d%s\n" "$_bf_stop" "$th" "$sfx"
         else
             printf "%-59s = %s\n" "$_bf_stop" "(not available)"
         fi
-        lf=1
     fi
-    [ $lf -gt 0 ] && printf "\n"
+    printf "\n"
 
     # -- show battery data
     local bat
