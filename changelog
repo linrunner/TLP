@@ -10,6 +10,7 @@
         - ASUS laptops: stop threshold
         - Huawei MateBooks: start and stop threshold (also reinstated after
           resume from S3/S4)
+        - LG laptops: stop threshold aka "battery care limit"
         - Lenovo laptops: stop threshold aka "battery conservation mode"
         - Samsung laptops: stop threshold aka "battery life extender"
       - ThinkPads
