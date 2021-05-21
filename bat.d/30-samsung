@@ -10,17 +10,17 @@
 
 # --- Hardware Detection
 
-readonly SAMSUNGDIR=/sys/devices/platform/samsung
+readonly BATDRV_SAMSUNG_MD=/sys/devices/platform/samsung
 
-is_samsung () {
+batdrv_is_samsung () {
     # check if kernel module loaded
     # rc: 0=Samsung, 1=other hardware
-    [ -d $SAMSUNGDIR ]
+    [ -d $BATDRV_SAMSUNG_MD ]
 }
 
 # --- Plugin API functions
 
-readonly SAMSUNGBLE="${SAMSUNGDIR}/battery_life_extender"
+readonly BATDRV_SAMSUNG_BLE="${BATDRV_SAMSUNG_MD}/battery_life_extender"
 
 batdrv_init () {
     # detect hardware and initialize driver
@@ -63,7 +63,7 @@ batdrv_init () {
         return 1
     else
         # check if hardware matches
-        if ! is_ideapad; then
+        if ! batdrv_is_samsung; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match"
             return 1
         fi
@@ -98,16 +98,16 @@ batdrv_init () {
     if [ "$NATACPI_ENABLE" = "0" ]; then
         # natacpi disabled in configuration --> skip actual detection
         _natacpi=32
-    elif [ -f "$SAMSUNGBLE" ] && readable_sysf "$SAMSUNGBLE"; then
+    elif [ -f "$BATDRV_SAMSUNG_BLE" ] && readable_sysf "$BATDRV_SAMSUNG_BLE"; then
         # sysfile for exists and is actually readable
         _natacpi=0
         _bm_thresh="natacpi"
-        _bf_stop="$SAMSUNGBLE"
+        _bf_stop="$BATDRV_SAMSUNG_BLE"
     elif [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
         # simulate api
         _natacpi=0
         _bm_thresh="natacpi"
-        _bf_stop="$SAMSUNGBLE"
+        _bf_stop="$BATDRV_SAMSUNG_BLE"
     else
         # nothing detected
         _natacpi=254
@@ -372,7 +372,7 @@ batdrv_show_battery_data () {
             case $th in
                 0) sfx=" (100%)" ;;
                 1) sfx=" (80%)" ;;
-                *) sfx="" ;;
+                *) sfx=" (invalid)";;
             esac
             printf "%-59s = %d%s\n" "$_bf_stop" "$th" "$sfx"
         else
