@@ -30,7 +30,7 @@ batdrv_init () {
     #       0=thresholds/
     #       32=disabled/
     #       128=no kernel support/
-    #       254=ASUS laptop not supported
+    #       254=laptop not supported
     #
     # 2. determine method for
     #    reading battery data                   --> retval $_bm_read,

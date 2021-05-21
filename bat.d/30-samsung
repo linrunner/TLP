@@ -32,7 +32,7 @@ batdrv_init () {
     #       0=thresholds/
     #       32=disabled/
     #       128=no kernel support/
-    #       254=Ideapad not supported
+    #       254=laptop not supported
     #
     # 2. determine method for
     #    reading battery data                   --> retval $_bm_read,
@@ -160,7 +160,7 @@ batdrv_read_threshold () {
     # read and print charge threshold (stop only)
     # $1: error string
     # global param: $_bf_stop
-    # out: threshold 0..100/"$1" on error
+    # out: threshold 0/1/"$1" on error
     # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
@@ -195,7 +195,7 @@ batdrv_write_thresholds () {
     # write charge thresholds for a battery
     # use pre-determined method and sysfiles from global parms
     # $1: new start threshold -- unused dummy for plugin api compatibility
-    # $2: new stop threshold 1..100/DEF(default)
+    # $2: new stop threshold 0/1/DEF(default)
     # $3: 0=quiet/1=output parameter errors/2=output progress and errors
     # $4: battery - non-empty string indicates thresholds stem from configuration
     # global param: $_bat_str, $_bf_stop
@@ -367,7 +367,7 @@ batdrv_show_battery_data () {
     if [ "$_bm_thresh" = "natacpi" ]; then
         local th sfx=
         printf "Parameter value range:\n"
-        printf "* STOP_CHARGE_THRESH_BAT0: 0(off)..1(on) -- -- battery life extender\n\n"
+        printf "* STOP_CHARGE_THRESH_BAT0: 0(off), 1(on) -- -- battery life extender\n\n"
         if th=$(batdrv_read_threshold stop "$_bf_stop" ""); then
             case $th in
                 0) sfx=" (100%)" ;;
