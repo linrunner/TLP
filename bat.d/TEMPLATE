@@ -15,12 +15,12 @@
 
 # --- Hardware Detection
 
-readonly TEMPLATE_DIR=/sys/module/TEMPLATE_MOD
+readonly BATDRV_TEMPLATE_MD=/sys/module/TEMPLATE_MODULE_DIR
 
-is_TEMPLATE () {
+batdrv_is_TEMPLATE () {
     # check if vendor specific kernel module is loaded
     # rc: 0=ok, 1=other hardware
-    [ -d $TEMPLATE_DIR ]
+    [ -d $BATDRV_TEMPLATE_MD ]
 }
 
 # --- Plugin API functions
@@ -70,7 +70,7 @@ batdrv_init () {
         return 1
     else
         # check if hardware matches
-        if ! is_TEMPLATE; then
+        if ! batdrv_is_TEMPLATE; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match"
             return 1
         fi

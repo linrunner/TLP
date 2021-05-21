@@ -10,12 +10,12 @@
 
 # --- Hardware Detection
 
-readonly ASUSWMIDIR=/sys/module/asus_wmi
+readonly BATDRV_ASUS_MD=/sys/module/asus_wmi
 
-is_asus () {
+batdrv_is_asus () {
     # check if kernel module loaded
     # rc: 0=ASUS, 1=other hardware
-    [ -d $ASUSWMIDIR ]
+    [ -d $BATDRV_ASUS_MD ]
 }
 
 # --- Plugin API functions
@@ -63,7 +63,7 @@ batdrv_init () {
         return 1
     else
         # check if hardware matches
-        if ! is_asus; then
+        if ! batdrv_is_asus; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match"
             return 1
         fi
@@ -390,7 +390,7 @@ batdrv_show_battery_data () {
         0)   printf "* natacpi (%s) = active (charge threshold)\n" "$_batdrv_kmod" ;;
         32)  printf "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
         128) printf "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
-        254) printf "* natacpi (%s) = inactive (ASUS laptop not supported)\n" "$_batdrv_kmod" ;;
+        254) printf "* natacpi (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
         *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 

@@ -10,17 +10,17 @@
 
 # --- Hardware Detection
 
-readonly IDEAPADDIR=/sys/bus/platform/drivers/ideapad_acpi
+readonly BATDRV_LENOVO_MD=/sys/bus/platform/drivers/ideapad_acpi
 
-is_ideapad () {
+batdrv_is_ideapad () {
     # check if kernel module loaded
     # rc: 0=Ideapad, 1=other hardware
-    [ -d $IDEAPADDIR ]
+    [ -d $BATDRV_LENOVO_MD ]
 }
 
 # --- Plugin API functions
 
-readonly IDEAPADCMODE="${IDEAPADDIR}/VPC2004:00/conservation_mode"
+readonly BATDRV_LENOVO_CMODE="${BATDRV_LENOVO_MD}/VPC2004:00/conservation_mode"
 
 batdrv_init () {
     # detect hardware and initialize driver
@@ -63,7 +63,7 @@ batdrv_init () {
         return 1
     else
         # check if hardware matches
-        if ! is_ideapad; then
+        if ! batdrv_is_ideapad; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match"
             return 1
         fi
@@ -98,16 +98,16 @@ batdrv_init () {
     if [ "$NATACPI_ENABLE" = "0" ]; then
         # natacpi disabled in configuration --> skip actual detection
         _natacpi=32
-    elif [ -f "$IDEAPADCMODE" ] && readable_sysf "$IDEAPADCMODE"; then
+    elif [ -f "$BATDRV_LENOVO_CMODE" ] && readable_sysf "$BATDRV_LENOVO_CMODE"; then
         # sysfile for exists and is actually readable
         _natacpi=0
         _bm_thresh="natacpi"
-        _bf_stop="$IDEAPADCMODE"
+        _bf_stop="$BATDRV_LENOVO_CMODE"
     elif [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
         # simulate api
         _natacpi=0
         _bm_thresh="natacpi"
-        _bf_stop="$IDEAPADCMODE"
+        _bf_stop="$BATDRV_LENOVO_CMODE"
     else
         # nothing detected
         _natacpi=254
@@ -372,7 +372,7 @@ batdrv_show_battery_data () {
             case $th in
                 0) sfx=" (100%)" ;;
                 1) sfx=" (60%)" ;;
-                *) sfx="" ;;
+                *) sfx=" (invalid)" ;;
             esac
             printf "%-59s = %d%s\n" "$_bf_stop" "$th" "$sfx"
         else
