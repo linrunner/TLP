@@ -43,9 +43,9 @@ batdrv_init () {
     # 3. determine present batteries
     #    list of batteries (space separated)    --> retval $_batteries;
     #
-    # 4. define charge threshold sysfile and defaults
-    #    conservation mode                      --> retval $_bf_stop,
-    #    stop threshold                         --> retval $_bt_def_stop;
+    # 4. define battery care limit sysfile and default
+    #    sysfile                                --> retval $_bf_stop,
+    #    default                                --> retval $_bt_def_stop;
 
     _batdrv_plugin="lg"
     _batdrv_kmod="lg_laptop" # kernel module for natacpi
