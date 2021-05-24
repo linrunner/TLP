@@ -4,9 +4,20 @@
 # Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
+# Cmdline options
+#   --verbose: show Runtime PM device status
+
 package tlp_pcilist;
 use strict;
 use warnings;
+
+# --- Modules
+use Getopt::Long;
+
+# --- Global vars
+my $verbose = 0;
+
+# --- Subroutines
 
 # Read content from a sysfile
 # $_[0]: input file
@@ -41,7 +52,11 @@ sub getdriver {
     return $driver
 }
 
-# Output device list with Runtime PM mode and device class
+# --- MAIN
+# parse arguments
+GetOptions ('verbose' => \$verbose);
+
+# Output device list with Runtime PM mode, status and device class
 foreach (`lspci -m`) {
     # parse lspci output: get short PCI(e) id and long description of device
     my ($dev, $classdesc) = /(\S+) \"(.+?)\"/;
@@ -49,20 +64,25 @@ foreach (`lspci -m`) {
     my $devp = "/sys/bus/pci/devices/0000:$dev";
     # control file for Runtime PM
     my $devc = "$devp/power/control";
-    # runtime_status file for Runtime PM
+    # status file for Runtime PM
     my $devs = "$devp/power/runtime_status";
-    # get device runtime_status
-    my $runtime_status = catsysf ("$devs");
     # get device class
     my $class = catsysf ("$devp/class");
     # get device driver
     my $driver = getdriver ("$devp") || "no driver";
 
     if (-f $devc) { # control file exists
-        # get Runtime PM mode
+        # get device mode
         my $pmode = catsysf ("$devc");
-        # output pm mode and device data
-        printf "%s/power/control = %-4s, runtime_status = %-9s (%s, %s, %s)\n", $devp, $pmode, $runtime_status, $class, $classdesc, $driver;
+        if ( $verbose ) {
+            # get device status
+            my $pstatus = catsysf ("$devs");
+            # output device mode, status and data
+            printf "%s/power/control = %-4s, runtime_status = %-9s (%s, %s, %s)\n", $devp, $pmode, $pstatus, $class, $classdesc, $driver;
+        } else {
+            # output device mode and data
+            printf "%s/power/control = %-4s (%s, %s, %s)\n", $devp, $pmode, $class, $classdesc, $driver;
+        }
     } else { # control file missing --> output device data only
         printf "%s/power/control = (not available) (%s, %s, %s)\n", $devp, $class, $classdesc, $driver;
     }

@@ -778,7 +778,11 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
     echo
 
     if cmd_exists $TLPPCI; then
-        $TLPPCI
+        if [ $show_verbose -eq 1 ]; then
+            $TLPPCI --verbose
+        else
+            $TLPPCI
+        fi
         [ $? -eq 4 ] && no_runtimepm=1
     else
         echo "Error: missing subcommand $TLPPCI." 1>&2
