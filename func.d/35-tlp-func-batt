@@ -102,9 +102,9 @@ setcharge_battery () {
         # get configured values if requested
         if [ $use_cfg -eq 1 ]; then
             # shellcheck disable=SC2154
-            eval start_thresh="\$START_CHARGE_THRESH_${_bat_str}"
+            eval start_thresh="\$START_CHARGE_THRESH_${_bt_cfg_bat:-$_bat_str}"
             # shellcheck disable=SC2154
-            eval stop_thresh="\$STOP_CHARGE_THRESH_${_bat_str}"
+            eval stop_thresh="\$STOP_CHARGE_THRESH_${_bt_cfg_bat:-$_bat_str}"
         fi
     else
         # battery not present

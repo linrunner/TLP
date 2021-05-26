@@ -43,7 +43,8 @@ batdrv_init () {
     # 3. determine present batteries
     #    list of batteries (space separated)    --> retval $_batteries;
     #
-    # 4. define battery life extender sysfile and default
+    # 4. define battery life extender config, sysfile and default
+    #    START/STOP_CHARGE_THRESH_ suffix       --> retval $_bt_cfg_bat,
     #    sysfile                                --> retval $_bf_stop,
     #    default                                --> retval $_bt_def_stop;
 
@@ -77,6 +78,8 @@ batdrv_init () {
     # shellcheck disable=SC2034
     _bm_dischg="none"
     _batteries=""
+    # shellcheck disable=SC2034
+    _bt_cfg_bat="BAT0"
     _bf_stop=""
     _bt_def_stop=0
 
