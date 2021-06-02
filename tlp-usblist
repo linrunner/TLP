@@ -11,10 +11,14 @@ use warnings;
 # --- Constants
 use constant USBD => "/sys/bus/usb/devices";
 
+# --- Modules
+use Getopt::Long;
+
 # --- Global vars
 my %usbdevices;
 
 my $no_runtimepm = 0;
+my $verbose = 0;
 
 # --- Subroutines
 
@@ -74,6 +78,8 @@ sub usbdriverlist {
 }
 
 # --- MAIN
+# parse arguments
+GetOptions ('verbose' => \$verbose);
 
 # Check if Runtime PM is enabled
 $no_runtimepm = 1 if ( ! glob USBD . "/*/power/autosuspend*");
@@ -85,13 +91,21 @@ foreach my $udev (grep { ! /:/ } glob USBD . "/*") {
     # get device id
     my $usbk = sprintf ("%03d_%03d", catsysf ("$udev/busnum"), catsysf ("$udev/devnum") );
 
-    # get attributes
-    if ( length (my $asv = catsysf ("$udev/power/autosuspend_delay_ms"))
-        && length (my $cnv = catsysf ("$udev/power/control")) ) {
-        $usbv = sprintf ("control = %-5s autosuspend_delay_ms = %4d", $cnv . ",", $asv);
+    # get device mode and timeout
+    if ( length (my $ptimeout = catsysf ("$udev/power/autosuspend_delay_ms"))
+        && length (my $pmode = catsysf ("$udev/power/control")) ) {
+        if ( $verbose ) {
+            # get device status
+            my $pstatus = catsysf ("$udev/power/runtime_status");
+            # format: device mode, timeout, status
+            $usbv = sprintf ("control = %-5s autosuspend_delay_ms = %4d, runtime_status = %-9s", $pmode . ",", $ptimeout, $pstatus);
+        } else {
+            # format: device mode, timeout
+            $usbv = sprintf ("control = %-5s autosuspend_delay_ms = %4d", $pmode . ",", $ptimeout);
+        }
     }
 
-    # save formatted result in hash
+    # store formatted result in hash
     @{$usbdevices{$usbk}} = ($udev, $usbv);
 }
 

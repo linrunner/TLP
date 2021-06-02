@@ -828,7 +828,11 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
     echo
 
     if cmd_exists $TLPUSB; then
-        $TLPUSB
+        if [ $show_verbose -eq 1 ]; then
+            $TLPUSB --verbose
+        else
+            $TLPUSB
+        fi
         [ $? -eq 4 ] && no_runtimepm=1
     else
         echo "Error: missing subcommand $TLPUSB." 1>&2

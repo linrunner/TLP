@@ -106,6 +106,7 @@
         - Sort more than 10 CPU cores in proper numerical order
     USB:
       - USB_EXCLUDE_AUDIO: exclude audio devices from autosuspend (Issue #556)
+      - tlp-stat -u -v: show device runtime_status
 
   * Bugfixes
     Battery Features:
