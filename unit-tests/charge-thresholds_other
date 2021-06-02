@@ -88,10 +88,10 @@ $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="100" 
 Warning: writing charge start threshold for BAT0 failed.
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
-Warning: writing charge stop threshold for BAT0 failed.
+Error in configuration at START_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (1..100). Battery skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
-Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (0..100). Battery skipped.
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="1" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (1..100). Battery skipped.
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="99" STOP_CHARGE_THRESH_BAT0="98" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Error in configuration: START_CHARGE_THRESH_BAT0 > STOP_CHARGE_THRESH_BAT0. Battery skipped.
@@ -110,13 +110,11 @@ Setting temporary charge thresholds for BAT0:
   start = 100 (Error: write failed)
   stop  = 100 (no change)
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0"
-Setting temporary charge thresholds for BAT0:
-  start =   0
-  stop  =   0 (Error: write failed)
+Error in configuration at START_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="102" STOP_CHARGE_THRESH_BAT0="101"
-Error in configuration at START_CHARGE_THRESH_BAT0="102": not specified, invalid or out of range (0..100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101"
-Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (0..100). Aborted.
+Error in configuration at START_CHARGE_THRESH_BAT0="102": not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="1" STOP_CHARGE_THRESH_BAT0="101"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="99" STOP_CHARGE_THRESH_BAT0="98"
 Error in configuration: START_CHARGE_THRESH_BAT0 > STOP_CHARGE_THRESH_BAT0. Aborted.
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="95"
@@ -141,17 +139,15 @@ Setting temporary charge thresholds for BAT0:
   start = 100 (Error: write failed)
   stop  = 100 (no change)
 $ sudo tlp setcharge 0 0 -- X_BAT_PLUGIN_SIMULATE=huawei
-Setting temporary charge thresholds for BAT0:
-  start =   0
-  stop  =   0 (Error: write failed)
+Error: charge start threshold (0) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge 102 101 -- X_BAT_PLUGIN_SIMULATE=huawei
-Error: charge start threshold (102) for BAT0 is not specified, invalid or out of range (0..100). Aborted.
-$ sudo tlp setcharge 0 101 -- X_BAT_PLUGIN_SIMULATE=huawei
-Error: charge stop threshold (101) for BAT0 is not specified, invalid or out of range (0..100). Aborted.
+Error: charge start threshold (102) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge 1 101 -- X_BAT_PLUGIN_SIMULATE=huawei
+Error: charge stop threshold (101) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge XYZZY 0 -- X_BAT_PLUGIN_SIMULATE=huawei
-Error: charge start threshold (XYZZY) for BAT0 is not specified, invalid or out of range (0..100). Aborted.
-$ sudo tlp setcharge 0 XYZZY -- X_BAT_PLUGIN_SIMULATE=huawei
-Error: charge stop threshold (XYZZY) for BAT0 is not specified, invalid or out of range (0..100). Aborted.
+Error: charge start threshold (XYZZY) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge 1 XYZZY -- X_BAT_PLUGIN_SIMULATE=huawei
+Error: charge stop threshold (XYZZY) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge 99 98 -- X_BAT_PLUGIN_SIMULATE=huawei
 Error: start threshold > stop threshold for BAT0. Aborted.
 $ sudo tlp setcharge 95 95 -- X_BAT_PLUGIN_SIMULATE=huawei
