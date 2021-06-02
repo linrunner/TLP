@@ -85,7 +85,7 @@ batdrv_init () {
     _bt_def_stop=100
 
     # iterate batteries and check for native kernel ACPI
-    local bd bs
+    local bd bs st sp
     local done=0
     for bd in "$ACPIBATDIR"/BAT[01]; do
         # note: it is not known to the author whether BAT1 really exists on
@@ -120,11 +120,21 @@ batdrv_init () {
                 continue
             fi
 
-            if readable_sysf $bd/$_bn_start \
-                && readable_sysf $bd/$_bn_stop; then
+            if st=$(read_sysf $bd/$_bn_start) \
+                && sp=$(read_sysf $bd/$_bn_stop); then
                 # threshold sysfiles are actually readable
-                _natacpi=0
-                _bm_thresh="natacpi"
+
+                # provide threshold simulation
+                [ -n "$X_THRESH_SIMULATE_START" ] && st="$X_THRESH_SIMULATE_START"
+                [ -n "$X_THRESH_SIMULATE_STOP"  ] && sp="$X_THRESH_SIMULATE_STOP"
+
+                # check threshold values:
+                # zero means laptop not available via the kernel driver
+                if [ "$st" != "0" ] && [ "$sp" != "0" ]; then
+                    # both thresholds are non-zero
+                    _natacpi=0
+                    _bm_thresh="natacpi"
+                fi
             fi
         fi
     done
@@ -484,7 +494,7 @@ batdrv_show_battery_data () {
     if [ "$_bm_thresh" = "natacpi" ]; then
         printf "Supported features: charge thresholds\n"
     else
-        printf "Supported features: none\n"
+        printf "Supported features: none available\n"
     fi
 
     printf "Driver usage:\n"
@@ -567,21 +577,20 @@ batdrv_show_battery_data () {
         fi
 
         # --- show battery features: thresholds
-        local th lf=0
+        local st sp
         if [ "$_bm_thresh" = "natacpi" ]; then
-            if th=$(batdrv_read_threshold start "$_bf_start" ""); then
-                printf "%-59s = %6d [%%]\n" "$_bf_start"  "$th"
+            if st=$(batdrv_read_threshold start "$_bf_start" ""); then
+                printf "%-59s = %6d [%%]\n" "$_bf_start" "$st"
             else
-                printf "%-59s = %s [%%]\n"  "$_bf_start"  "(not available)"
+                printf "%-59s = %s [%%]\n"  "$_bf_start" "(not available)"
             fi
-            if th=$(batdrv_read_threshold stop "$_bf_stop" ""); then
-                printf "%-59s = %6d [%%]\n" "$_bf_stop"  "$th"
+            if sp=$(batdrv_read_threshold stop  "$_bf_stop" ""); then
+                printf "%-59s = %6d [%%]\n" "$_bf_stop"  "$sp"
             else
                 printf "%-59s = %s [%%]\n"  "$_bf_stop"  "(not available)"
             fi
-            lf=1
+            printf "\n"
         fi
-        [ $lf -gt 0 ] && printf "\n"
 
         # --- show charge level (SOC) and capacity
         lf=0
