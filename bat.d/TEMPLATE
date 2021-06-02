@@ -568,21 +568,20 @@ batdrv_show_battery_data () {
         fi
 
         # --- show battery features: thresholds
-        local th lf=0
+        local st sp
         if [ "$_bm_thresh" = "natacpi" ]; then
-            if th=$(batdrv_read_threshold start "$_bf_start" ""); then
-                printf "%-59s = %6d [%%]\n" "$_bf_start"  "$th"
+            if st=$(batdrv_read_threshold start "$_bf_start" ""); then
+                printf "%-59s = %6d [%%]\n" "$_bf_start" "$st"
             else
-                printf "%-59s = %s [%%]\n"  "$_bf_start"  "(not available)"
+                printf "%-59s = %s [%%]\n"  "$_bf_start" "(not available)"
             fi
-            if th=$(batdrv_read_threshold stop "$_bf_stop" ""); then
-                printf "%-59s = %6d [%%]\n" "$_bf_stop"  "$th"
+            if sp=$(batdrv_read_threshold stop  "$_bf_stop" ""); then
+                printf "%-59s = %6d [%%]\n" "$_bf_stop"  "$sp"
             else
                 printf "%-59s = %s [%%]\n"  "$_bf_stop"  "(not available)"
             fi
-            lf=1
+            printf "\n"
         fi
-        [ $lf -gt 0 ] && printf "\n"
 
         # --- show charge level (SOC) and capacity
         lf=0

@@ -131,7 +131,7 @@ batdrv_show_battery_data () { # output battery data
 
     printf "+++ Battery Wear Control\n"
     printf "Plugin: %s\n" "$_batdrv_plugin"
-    printf "Supported features: none\n\n"
+    printf "Supported features: none available\n\n"
 
     local bat cc lf
     local bcnt=0
