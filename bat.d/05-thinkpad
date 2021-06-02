@@ -1054,7 +1054,7 @@ batdrv_show_battery_data () {
         [ -n "$fs" ] && fs="${fs}, "
         fs="${fs}recalibration"
     fi
-    [ -n "$fs" ] || fs="none"
+    [ -n "$fs" ] || fs="none available"
     printf "Supported features: %s\n" "$fs"
 
     printf "Driver usage:\n"

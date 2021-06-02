@@ -381,7 +381,7 @@ batdrv_show_battery_data () {
     if [ "$_bm_thresh" = "natacpi" ]; then
         printf "Supported features: charge threshold\n"
     else
-        printf "Supported features: none\n"
+        printf "Supported features: none available\n"
     fi
 
     printf "Driver usage:\n"
