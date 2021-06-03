@@ -15,6 +15,7 @@ use warnings;
 use Getopt::Long;
 
 # --- Global vars
+my $no_runtimepm = 0;
 my $verbose = 0;
 
 # --- Subroutines
@@ -85,7 +86,10 @@ foreach (`lspci -m`) {
         }
     } else { # control file missing --> output device data only
         printf "%s/power/control = (not available) (%s, %s, %s)\n", $devp, $class, $classdesc, $driver;
+        $no_runtimepm = 1;
     }
 }
+
+exit 4 if ( $no_runtimepm == 1 );
 
 exit 0;
