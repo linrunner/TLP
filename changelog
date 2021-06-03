@@ -6,10 +6,10 @@
     Audio:
       - SOUND_POWER_SAVE_ON_AC: change default to enabled (Issue #495)
     Battery:
-      - Introduce plugins to support wear control on non-ThinkPads:
+      - "Battery Features" renamed to "Battery Care"
+      - Introduce plugins to support Battery Care for non-ThinkPads:
         - ASUS laptops: stop threshold
-        - Huawei MateBooks: start and stop threshold (also reinstated after
-          resume from S3/S4)
+        - Huawei MateBooks: start and stop threshold
         - LG Gram laptops: stop threshold aka "battery care limit"
         - Lenovo laptops: stop threshold aka "battery conservation mode"
         - Samsung laptops: stop threshold aka "battery life extender"
@@ -21,8 +21,7 @@
         - Flag ThinkPad L512 as "unsupported"
       - Validate charge threshold configuration, don't fail silently
       - tlp-stat -b
-        - "Battery Features" renamed to "Battery Wear Control"
-        - Wear Control: show plugin, supported features, driver usage and
+        - Battery Care: show plugin, supported features, driver usage and
           related kernel module
         - Map battery state "Unknown" to "Idle" for clarity
     Configuration:

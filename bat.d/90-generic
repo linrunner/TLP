@@ -1,6 +1,6 @@
 #!/bin/sh
 # 90-generic - Battery plugin catchall for laptops that either not provide
-# a kernel interface for battery wear control or TLP doesn't support it yet.
+# a kernel interface for battery care or TLP doesn't support it yet.
 #
 # Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
@@ -17,7 +17,7 @@ batdrv_init () {
     # 1. determine present batteries
     #    list of batteries (space separated)    --> retval $_batteries;
     #
-    # 2. designate wear control as unsupported
+    # 2. designate battery care as unsupported
     #    reading battery data                   --> retval $_bm_read = "none",
     #    reading/writing charging thresholds    --> retval $_bm_thresh = "none",
     #    reading/writing force discharge        --> retval $_bm_dischg = "none":
@@ -129,7 +129,7 @@ batdrv_show_battery_data () { # output battery data
     # rc: 0=ok/1=no batteries specified
     local verbose=${1:-0}
 
-    printf "+++ Battery Wear Control\n"
+    printf "+++ Battery Care\n"
     printf "Plugin: %s\n" "$_batdrv_plugin"
     printf "Supported features: none available\n\n"
 

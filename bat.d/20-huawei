@@ -488,7 +488,7 @@ batdrv_show_battery_data () {
     # prerequisite: batdrv_init()
     local verbose=${1:-0}
 
-    printf "+++ Battery Wear Control\n"
+    printf "+++ Battery Care\n"
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     if [ "$_bm_thresh" = "natacpi" ]; then
