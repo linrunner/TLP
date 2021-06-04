@@ -10,19 +10,19 @@
       - Introduce plugins to support Battery Care for non-ThinkPads:
         - ASUS laptops: stop threshold
         - Huawei MateBooks: start and stop threshold
-        - LG Gram laptops: stop threshold aka "battery care limit"
-        - Lenovo laptops: stop threshold aka "battery conservation mode"
-        - Samsung laptops: stop threshold aka "battery life extender"
+        - LG Gram laptops: stop threshold at 80% aka "battery care limit"
+        - Lenovo laptops: stop threshold at 60% aka "battery conservation mode"
+        - Samsung laptops: stop threshold at 80% aka "battery life extender"
       - ThinkPads
         - Allow deactivation of the start threshold (START_CHARGE_THRESH_BATx=0)
-        - Discharge malfunction: hint to check battery, charger
+        - Discharge malfunction: hint to check battery and charger
         - Use standard sysfs attributes for charge thresholds
           (Issue #513)
         - Flag ThinkPad L512 as "unsupported"
       - Validate charge threshold configuration, don't fail silently
       - tlp-stat -b
         - Battery Care: show plugin, supported features, driver usage and
-          related kernel module
+          related kernel module(s)
         - Map battery state "Unknown" to "Idle" for clarity
     Configuration:
       - TLP_WARN_LEVEL: warn about invalid settings, configurable for background
@@ -63,11 +63,10 @@
         - Show a disk's host (for SATA_LINKPWR_DENYLIST)
         - Explain why runtime pm is locked for a disk
         - Show ALPM state in the sysfs directory of the AHCI host
-        - Remove "No AHCI-enabled host controller detected." message
     General:
       - tlp-stat -s: determine OS release without the lsb_release utility
     Graphics:
-      - Add support for amdgpu (#498)
+      - Add support for amdgpu (Issue #498)
       - Improve powerdown of unused GPUs with drivers amdgpu, nouveau,
         nvidia and without driver (Issues #488, #495, #498)
       - tlp-stat -g:
@@ -108,7 +107,7 @@
       - tlp-stat -u -v: show device runtime_status
 
   * Bugfixes
-    Battery Features:
+    Battery Care:
       - tlp discharge/recalibrate:
         - Terminate properly when AC/charger is removed
         - Check support on ThinkPads because of Coreboot (Issue #547)
