@@ -79,7 +79,7 @@ echo_debug () { # write debug msg if tag matches -- $1: tag; $2: msg;
 echo_message () {
     # output message according to TLP_MSG_LEVEL
     # $1: message
-    # $2: loglevel for syslog
+    # $2: loglevel for syslog (default: warning)
 
     # shellcheck disable=SC2154
     if [ "$_bgtask" = "1" ]; then

@@ -37,15 +37,26 @@ check_intel_pstate () {
 
 set_cpu_scaling_governor () {
     # set CPU scaling governor -- $1: 0=ac mode, 1=battery mode
-    local gov cpu ec
+    local avalable_govs cfg cpu ec gov
 
     if [ "$1" = "1" ]; then
         gov=${CPU_SCALING_GOVERNOR_ON_BAT:-}
+        cfg="CPU_SCALING_GOVERNOR_ON_BAT"
     else
         gov=${CPU_SCALING_GOVERNOR_ON_AC:-}
+        cfg="CPU_SCALING_GOVERNOR_ON_AC"
     fi
 
     if [ -n "$gov" ]; then
+        # check if configured governor is available
+        available_govs="$(read_sysf "${CPUD}"/cpu0/cpufreq/scaling_available_governors)"
+        if [ -n "$available_govs" ] && ! wordinlist "$gov" "$available_govs"; then
+            echo_debug "pm" "set_cpu_scaling_governor($1).not_available: $gov; available=$available_govs"
+            echo_message "Error in configuration at ${cfg}=\"${gov}\": governor not available. Skipped."
+            return 1
+        fi
+
+        # apply governor
         ec=0
         for cpu in "${CPUD}"/cpu*/cpufreq/scaling_governor; do
             if [ -f "$cpu" ] && ! write_sysf "$gov" $cpu; then
