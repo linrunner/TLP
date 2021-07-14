@@ -263,6 +263,25 @@ batdrv_write_thresholds () {
         return 2
     fi
 
+    # give hint if threshold is not 40, 60, 80 or 100(off)
+    if ! wordinlist "$new_stop" "40 60 80 100"; then
+        case $verb in
+            1)
+                if [ -n "$cfg_bat" ]; then
+                    echo_message "Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if STOP_CHARGE_THRESH_${cfg_bat}=\"${new_stop}\" works as expected."
+                fi
+                ;;
+
+            2)
+                if [ -n "$cfg_bat" ]; then
+                    echo_message "Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if STOP_CHARGE_THRESH_${cfg_bat}=\"${new_stop}\" works as expected."
+                else
+                    printf "Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if %s works as expected.\n" "$new_stop"
+                fi
+                ;;
+        esac
+    fi
+
     # read active stop threshold value
     if ! old_stop=$(batdrv_read_threshold); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).read_error: bat=$_bat_str"

@@ -4,6 +4,9 @@
 # * Hardware: non-legacy ThinkPad
 #
 $ # +++ ASUS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ # --- initialize
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0="35" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
 $ # --- tlp start
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
@@ -15,7 +18,8 @@ TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (1..100). Battery skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="99" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="86" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if STOP_CHARGE_THRESH_BAT0="86" works as expected.
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
@@ -30,12 +34,16 @@ Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid 
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="97" STOP_CHARGE_THRESH_BAT0="100"
 Setting temporary charge threshold for BAT0:
   stop = 100 (no change)
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="99"
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="86"
+Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if STOP_CHARGE_THRESH_BAT0="86" works as expected.
 Setting temporary charge threshold for BAT0:
-  stop =  99
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="99"
+  stop =  86
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="80"
 Setting temporary charge threshold for BAT0:
-  stop =  99 (no change)
+  stop =  80
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="80"
+Setting temporary charge threshold for BAT0:
+  stop =  80 (no change)
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Setting temporary charge threshold for BAT0:
   stop = 100
@@ -54,17 +62,21 @@ Error: charge stop threshold (XYZZY) for BAT0 is not specified, invalid or out o
 $ sudo tlp setcharge 97 100 -- X_BAT_PLUGIN_SIMULATE=asus
 Setting temporary charge threshold for BAT0:
   stop = 100 (no change)
-$ sudo tlp setcharge 95 99 -- X_BAT_PLUGIN_SIMULATE=asus
+$ sudo tlp setcharge 95 66 -- X_BAT_PLUGIN_SIMULATE=asus
+Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if 66 works as expected.
 Setting temporary charge threshold for BAT0:
-  stop =  99
-$ sudo tlp setcharge 95 99 -- X_BAT_PLUGIN_SIMULATE=asus X_THRESH_SIMULATE_READERR="1"
+  stop =  66
+$ sudo tlp setcharge 95 60 -- X_BAT_PLUGIN_SIMULATE=asus
+Setting temporary charge threshold for BAT0:
+  stop =  60
+$ sudo tlp setcharge 95 60 -- X_BAT_PLUGIN_SIMULATE=asus X_THRESH_SIMULATE_READERR="1"
 Error: could not read current charge stop threshold for BAT0. Aborted.
-$ sudo tlp setcharge 95 99 -- X_BAT_PLUGIN_SIMULATE=asus X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge 95 60 -- X_BAT_PLUGIN_SIMULATE=asus X_THRESH_SIMULATE_START="35" X_THRESH_SIMULATE_STOP="100"
 Setting temporary charge threshold for BAT0:
-  stop =  99
-$ sudo tlp setcharge 95 99 -- X_BAT_PLUGIN_SIMULATE=asus
+  stop =  60
+$ sudo tlp setcharge 95 60 -- X_BAT_PLUGIN_SIMULATE=asus
 Setting temporary charge threshold for BAT0:
-  stop =  99 (no change)
+  stop =  60 (no change)
 $ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=asus
 Setting temporary charge threshold for BAT0:
   stop = 100
@@ -75,10 +87,11 @@ Error: battery BAT1 not present.
 $ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=asus
 Error: battery BAT1 not present.
 $ # --- Reset
-$ sudo tlp setcharge  -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
-Setting temporary charge threshold for BAT0:
-  stop = 100 (no change)
-$ # +++ Huawei +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ sudo tlp setcharge  -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
+Setting temporary charge thresholds for BAT0:
+  start =  60
+  stop  = 100 (no change)
+$ # +++ Huawei ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ # --- tlp start
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
