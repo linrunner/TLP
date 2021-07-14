@@ -37,7 +37,7 @@ check_intel_pstate () {
 
 set_cpu_scaling_governor () {
     # set CPU scaling governor -- $1: 0=ac mode, 1=battery mode
-    local avalable_govs cfg cpu ec gov
+    local available_govs cfg cpu ec gov
 
     if [ "$1" = "1" ]; then
         gov=${CPU_SCALING_GOVERNOR_ON_BAT:-}
