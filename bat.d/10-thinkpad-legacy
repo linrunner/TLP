@@ -592,6 +592,12 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
     # check if force_discharge is on
     [ "$(batdrv_read_force_discharge "")" = "1" ] && rc=0
 
+    if [ $rc -eq 0 ] && ! get_sys_power_supply; then
+        # AC unplugged --> cancel discharge
+        batdrv_write_force_discharge 0
+        rc=1
+    fi
+
     echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active($_bat_str): bm_read=$_bm_read; rc=$rc"
     return $rc
 }

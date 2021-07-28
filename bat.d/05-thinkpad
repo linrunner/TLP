@@ -883,7 +883,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
     # rc: 0=discharging/1=not discharging/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    local bsys rc=255
+    local bsys rc=0
 
     if [ "$(batdrv_read_force_discharge "")" = "0" ]; then
         # force_discharge is off --> quit
@@ -891,29 +891,34 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
         return 1
     fi
 
-    # force_discharge is still on, but quirky firmware (e.g. ThinkPad E-series)
-    # may keep force_discharge on --> check battery status sysfile too
-    case $_bm_read in
-        natacpi)
-            bsys=$_bd_read/status # use ACPI sysfile
-            ;;
+    if ! get_sys_power_supply; then
+        # AC unplugged --> cancel discharge
+        rc=1
+    else
+        # force_discharge is still on, but quirky firmware (e.g. ThinkPad E-series)
+        # may keep force_discharge on --> check battery status sysfile too
+        case $_bm_read in
+            natacpi)
+                bsys=$_bd_read/status # use ACPI sysfile
+                ;;
 
-        tpsmapi)
-            bsys=$_bd_read/state # use tpsmapi sysfile
-            ;;
+            tpsmapi)
+                bsys=$_bd_read/state # use tpsmapi sysfile
+                ;;
 
-        *) # no read api
-            bsys=""
-            rc=255
-            ;;
-    esac
-
-    # read battery state
-    if [ -f "$bsys" ]; then
-        case "$(read_sysf $bsys)" in
-            [Dd]ischarging) rc=0 ;;
-            *) rc=1 ;;
+            *) # no read api
+                bsys=""
+                rc=255
+                ;;
         esac
+
+        # read battery state
+        if [ -f "$bsys" ]; then
+            case "$(read_sysf $bsys)" in
+                [Dd]ischarging) rc=0 ;;
+                *) rc=1 ;;
+            esac
+        fi
     fi
 
     echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active($_bat_str): bm_read=$_bm_read; bf=$bsys rc=$rc"
