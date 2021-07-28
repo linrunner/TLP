@@ -27,6 +27,7 @@ readonly LOGGER=logger
 readonly MKTEMP=mktemp
 readonly MODPRO=modprobe
 readonly READCONFS=@TLP_TLIB@/tlp-readconfs
+readonly SYSTEMCTL=systemctl
 readonly TPACPIBAT=@TPACPIBAT@
 readonly UDEVADM=udevadm
 
@@ -48,6 +49,10 @@ readonly RE_PARAM='^[A-Z_]+[0-9]*=[0-9a-zA-Z _\-\:\.]*$'
 readonly RE_PS_IGNORE='sbs-charger|hidpp_battery|hid-'
 
 readonly DEBUG_TAGS_ALL="arg bat cfg disk lock nm path pm ps rf run sysfs udev usb"
+
+readonly TLP_SERVICES="tlp.service"
+readonly CONFLICTING_SERVICES="power-profiles-daemon.service"
+readonly RFKILL_SERVICES="systemd-rfkill.service systemd-rfkill.socket"
 
 # ----------------------------------------------------------------------------
 # Control
@@ -220,24 +225,28 @@ glob_dirs () {
     return $rc
 }
 
-# --- Tests
+# --- Checks
 
-cmd_exists () { # test if command exists -- $1: command
+cmd_exists () {
+    # test if command exists -- $1: command
     command -v $1 > /dev/null 2>&1
 }
 
-test_root () { # test root privilege -- rc: 0=root, 1=not root
+test_root () {
+    # test root privilege -- rc: 0=root, 1=not root
     [ "$(id -u)" = "0" ]
 }
 
-check_root () { # show error message and quit when root privilege missing
+check_root () {
+    # show error message and quit when root privilege missing
     if ! test_root; then
         echo "Error: missing root privilege." 1>&2
         do_exit 1
     fi
 }
 
-check_tlp_enabled () { # check if TLP is enabled in config file
+check_tlp_enabled () {
+    # check if TLP is enabled in config file
     # $1: 1=verbose (default: 0)
     # rc: 0=disabled/1=enabled
 
@@ -247,6 +256,48 @@ check_tlp_enabled () { # check if TLP is enabled in config file
         [ "${1:-0}" = "1" ] && echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in ${CONF_USR}." 1>&2
         return 1
     fi
+}
+
+check_systemd () {
+    # check if systemd is the active init system (PID 1) and systemctl is installed
+    # rc: 0=yes, 1=no
+    [ -d /run/systemd/system ] && cmd_exists $SYSTEMCTL
+}
+
+check_services_activation_status () {
+    # issue messages for
+    # - TLP service(s) not enabled
+    # - conflicting services enabled
+    # rc: 0=no messages/messages issued
+
+    local rc=0
+
+    if check_systemd; then
+        cnt=0
+        for su in $TLP_SERVICES; do
+            if ! $SYSTEMCTL is-enabled $su > /dev/null 2>&1 ; then
+                echo_message "Error: $su is not enabled, power saving will not apply on boot." "err"
+                echo_message ">>> Invoke 'systemctl enable $su' to correct this!" "err"
+                rc=1
+            fi
+        done
+        for su in $CONFLICTING_SERVICES; do
+            if $SYSTEMCTL is-enabled $su > /dev/null 2>&1 ; then
+                echo_message "Error: conflicting $su is enabled, power saving will not apply on boot." "err"
+                echo_message ">>> Invoke 'systemctl mask $su' to correct this!" "err"
+                rc=1
+            fi
+        done
+        for su in $RFKILL_SERVICES; do
+            if $SYSTEMCTL is-enabled $su 2> /dev/null | grep -q -v 'masked'; then
+                echo_message "Warning: $su is not masked, radio device switching may not work as configured."
+                echo_message ">>> Invoke 'systemctl mask $su' to correct this."
+                rc=1
+            fi
+        done
+    fi
+
+    return $rc
 }
 
 # --- Type and value checking

@@ -65,6 +65,7 @@
         - Show ALPM state in the sysfs directory of the AHCI host
     General:
       - tlp-stat -s: determine OS release without the lsb_release utility
+      - power-profiles-daemon: issue error messages about conflicting service
     Graphics:
       - Add support for amdgpu (Issue #498)
       - Improve powerdown of unused GPUs with drivers amdgpu, nouveau,

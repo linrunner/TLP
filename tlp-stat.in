@@ -39,9 +39,6 @@ readonly IBMTHERMAL=/proc/acpi/ibm/thermal
 
 readonly DEBUGLOG=/var/log/debug
 
-readonly SYSTEMD_SERVICES="tlp.service"
-readonly RFKILL_SERVICES="systemd-rfkill.service systemd-rfkill.socket"
-
 # --- Variables
 
 needs_root_priv=
@@ -310,23 +307,8 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     fi
     echo
 
-    # -- check systemd service units status
-    if check_systemd; then
-        cnt=0
-        for su in $SYSTEMD_SERVICES; do
-            if ! $SYSTEMCTL is-enabled $su > /dev/null 2>&1 ; then
-                echo "Warning: $su is not enabled -- invoke \"systemctl enable $su\" to correct this!"
-                cnt=$((cnt+1))
-            fi
-        done
-        for su in $RFKILL_SERVICES; do
-            if $SYSTEMCTL is-enabled $su 2> /dev/null | grep -q -v 'masked'; then
-                echo "Warning: $su is not masked -- invoke \"systemctl mask $su\" to correct this!"
-                cnt=$((cnt+1))
-            fi
-        done
-        [ $cnt -gt 0 ] && echo
-    fi
+    # -- check systemd services
+    check_services_activation_status
 
     # -- show warning if l-m-t detected
     check_laptop_mode_tools

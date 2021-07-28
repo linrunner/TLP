@@ -14,7 +14,6 @@
 readonly INITCTL=initctl
 readonly SESTATUS=sestatus
 readonly SMARTCTL=smartctl
-readonly SYSTEMCTL=systemctl
 
 readonly RE_AC_QUIRK='^UNDEFINED$'
 readonly RE_ATA_ERROR='ata[0-9]+: SError: {.*CommWake }'
@@ -23,12 +22,6 @@ readonly RE_ATA_ERROR='ata[0-9]+: SError: {.*CommWake }'
 # Functions
 
 # --- Checks
-
-check_systemd () {
-    # check if systemd is the active init system (PID 1) and systemctl is installed
-    # rc: 0=yes, 1=no
-    [ -d /run/systemd/system ] && cmd_exists $SYSTEMCTL
-}
 
 check_upstart () {
     # check if upstart is active init system (PID 1)

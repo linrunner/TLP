@@ -335,10 +335,11 @@ case "$_cmd" in
           # -- but only if not previously run for the same power state
           # rationale: filter out duplicate power_supply udev events
         check_root
+        # shellcheck disable=SC2034
+        _bgtask=1
+        check_services_activation_status
         if lock_tlp_nb; then
             if compare_and_save_power_state $pwrmode; then
-                # shellcheck disable=SC2034
-                _bgtask=1
                 apply_common_settings $pwrmode
                 poweroff_drivebay $pwrmode 0
                 set_radio_device_states $pwrmode
@@ -353,6 +354,7 @@ case "$_cmd" in
         ;;
 
     start) # set mode depending on state (interactive mode)
+        check_services_activation_status
         check_root
         if lock_tlp; then
             compare_and_save_power_state $pwrmode
@@ -371,6 +373,7 @@ case "$_cmd" in
         ;;
 
     true|bat) # set battery power mode
+        check_services_activation_status
         check_root
         if lock_tlp; then
             compare_and_save_power_state 1
@@ -388,6 +391,7 @@ case "$_cmd" in
         ;;
 
     false|ac) # set ac power mode
+        check_services_activation_status
         check_root
         if lock_tlp; then
             compare_and_save_power_state 0
