@@ -25,10 +25,10 @@
           related kernel module(s)
         - Map battery state "Unknown" to "Idle" for clarity
     Configuration:
-      - TLP_WARN_LEVEL: warn about invalid settings, configurable for background
-        tasks and command line
       - PARAMETER+="add values": append values to a parameter already defined
         as intrinsic default or in a *previously* read file (Issue #457)
+      - TLP_WARN_LEVEL: warn about invalid settings, configurable for background
+        tasks and command line
       - Rename parameters (backwards compatible to legacy config files):
           SATA_LINKPWR_BLACKLIST      -> SATA_LINKPWR_DENYLIST
           RUNTIME_PM_BLACKLIST        -> RUNTIME_PM_DENYLIST
@@ -41,38 +41,38 @@
           USB_WHITELIST               -> USB_ALLOWLIST
       - tlp-stat --cdiff: show configuration differing from defaults
     Disks:
+      - AHCI_RUNTIME_PM_ON_AC/BAT:
+        - Works only on disks defined in DISK_DEVICES
+        - Works on NVMe (new), SATA/ATA and plugged in USB (new) disks
+        - Works on SATA ports
+        - No longer experimental i.e. now enabled by default; the previously
+          existing risk of system freezes with the multiqueue scheduler is now
+          effectively prevented:
+          - Kernel >= 4.19 itself locks unsafe disk runtime pm
+          - TLP generally locks it for kernel < 4.19
       - DISK_APM_CLASS_DENYLIST: exclude disk classes from APM, i.e. you may
         now activate it for USB and IEEE1394 drives (Issue #523)
       - DISK_APM_LEVEL_ON_AC/BAT, DISK_SPINDOWN_TIMEOUT_ON_AC, DISK_IOSCHED:
         now also work when plugging in USB disks; provided disk is contained in
         DISK_DEVICES and 'usb' is removed from DISK_APM_CLASS_DENYLIST
-      - AHCI_RUNTIME_PM_ON_AC/BAT:
-        - Works only on disks defined in DISK_DEVICES
-        - Works on NVMe (new), SATA/ATA and plugged in USB (new) disks
-        - Works on SATA ports
-        - No longer experimental, now enabled by default; the previously
-          existing risk of system freezes with the multiqueue scheduler is now
-          effectively prevented:
-          - Kernel >= 4.19 itself locks unsafe disk runtime pm
-          - TLP generally locks it for kernel < 4.19
       - tlp-stat -d
-        - Show NVMe disk temperature
-        - Show IDs for all disks configured in DISK_DEVICES
-        - Distinguish SATA from ATA(IDE) disks
+        - Explain why AHCI_RUNTIME_PM is locked for a disk
         - Show disks attached to SATA links/ports
         - Show a disk's host (for SATA_LINKPWR_DENYLIST)
-        - Explain why runtime pm is locked for a disk
         - Show ALPM state in the sysfs directory of the AHCI host
+        - Show IDs for all disks configured in DISK_DEVICES
+        - Distinguish SATA from ATA(IDE) disks
+        - Show NVMe disk temperature
     General:
-      - tlp-stat -s: determine OS release without the lsb_release utility
       - power-profiles-daemon: issue error messages about conflicting service
+      - tlp-stat -s: determine OS release without the lsb_release utility
     Graphics:
       - Add support for amdgpu (Issue #498)
       - Improve powerdown of unused GPUs with drivers amdgpu, nouveau,
         nvidia and without driver (Issues #488, #495, #498)
       - tlp-stat -g:
-        - Show hybrid graphics switch state (switcheroo)
         - List all GPUs with at least the driver info
+        - Show hybrid graphics switch state (switcheroo)
         - Intel GPU:
           - Show hardware min/max frequency instead of
             list of available frequencies (kernel change)
@@ -100,9 +100,9 @@
         value 'power' in legacy configurations
       - PHC_CONTROLS removed (obsolete)
       - tlp-stat -p:
-        - Show intel_pstate operation mode ("status")
         - cpu1..cpuN omitted for clarity, use -v to show all
         - Sort more than 10 CPU cores in proper numerical order
+        - Show intel_pstate operation mode ("status")
     USB:
       - USB_EXCLUDE_AUDIO: exclude audio devices from autosuspend (Issue #556)
       - tlp-stat -u -v: show device runtime_status
