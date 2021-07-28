@@ -1,4 +1,4 @@
-tlp (1.4.0~alpha.2-1) unstable; urgency=medium
+tlp (1.4.0~alpha.3-1) unstable; urgency=medium
 
   * Upstream development version (1.4 cycle)
 
@@ -14,9 +14,11 @@ tlp (1.4.0~alpha.2-1) unstable; urgency=medium
     * debian/tlp.install: add
       - /usr/share/tlp/bat.d/*
       - /usr/share/tlp/rename.conf
+    * debian/tlp.postinst: mask power-profiles-daemon.service
+    * debian/tlp.postrm: unmask power-profiles-daemon.service
     * Merge changes from Debian packaging
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 12 Apr 2021 18:21:21 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 28 Jul 2021 20:42:00 +0200
 
 tlp (1.3.1-2) unstable; urgency=medium
 

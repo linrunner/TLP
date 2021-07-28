@@ -6,7 +6,7 @@ set -e
 SYD="/lib/systemd/system"
 ESY="/etc/systemd/system"
 NUL="/dev/null"
-SRV="systemd-rfkill"
+SRV="(power-profiles-daemon|systemd-rfkill)"
 
 case "$1" in
     configure)
