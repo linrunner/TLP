@@ -1001,6 +1001,24 @@ batdrv_discharge () {
         done
         unlock_tlp tlp_discharge
 
+        # read charge level one last time
+        case $_bm_read in
+            natacpi|tpacpi) # use ACPI sysfiles
+                en=$(read_sysval $_bd_read/energy_now)
+                ef=$(read_sysval $_bd_read/energy_full)
+                if [ "$ef" != "0" ]; then
+                    rp=$(perl -e 'printf ("%d", 100.0 * '$en' / '$ef' );')
+                else
+                    rp=0
+                fi
+                ;; # natacpi, tpsmapi
+
+            tpsmapi) # use tp-smapi sysfiles
+                rp=$(read_sysf $_bd_read/remaining_percent)
+                ;;
+
+        esac
+
         if [ $rp -gt 0 ]; then
             # battery not emptied --> determine cause
             get_sys_power_supply
@@ -1013,7 +1031,7 @@ batdrv_discharge () {
             else
                 # discharging terminated by unknown reason
                 echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_emptied($_bat_str)"
-                echo "Error: battery $_bat_str was not discharged completely -- check your hardware (battery, charger)." 1>&2
+                echo "Error: battery $_bat_str was not discharged completely i.e. terminated by the firmware -- check your hardware (battery, charger)." 1>&2
                 rc=2
             fi
         fi
