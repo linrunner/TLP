@@ -1,6 +1,6 @@
-+++ 1.4.0-alpha.3 --- <unreleased> +++
++++ 1.4.0-beta.1 --- 29.07.2021 +++
 
-  *** Development version ***
+  * Beta release
 
   * Features
     Audio:
@@ -25,6 +25,7 @@
           related kernel module(s)
         - Map battery state "Unknown" to "Idle" for clarity
     Configuration:
+      - tlp-stat --cdiff: show configuration differing from defaults
       - PARAMETER+="add values": append values to a parameter already defined
         as intrinsic default or in a *previously* read file (Issue #457)
       - TLP_WARN_LEVEL: warn about invalid settings, configurable for background
@@ -39,7 +40,6 @@
           USB_BLACKLIST_PRINTER       -> USB_EXCLUDE_PRINTER
           USB_BLACKLIST_WWAN          -> USB_EXCLUDE_WWAN
           USB_WHITELIST               -> USB_ALLOWLIST
-      - tlp-stat --cdiff: show configuration differing from defaults
     Disks:
       - AHCI_RUNTIME_PM_ON_AC/BAT:
         - Works only on disks defined in DISK_DEVICES
