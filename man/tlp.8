@@ -1,4 +1,4 @@
-.TH tlp 8 2021-04-05 "TLP 1.4.0" "Power Management"
+.TH tlp 8 2021-07-29 "TLP 1.4.0" "Power Management"
 .
 .SH NAME
 tlp \- apply laptop power saving settings
@@ -42,13 +42,17 @@ Turn off optical drive in UltraBay/MediaBay.
 The drive may be re\-enabled by pulling the eject lever or pushing the media
 eject button on newer models.
 .
+.PP
+Note: charge threshold and recalibration commands below work for
+specific laptop vendors and models only. Check the actual support status and
+the value ranges with \fBtlp-stat -b\fR. For details on charge thresholds
+also refer to the link at the bottom.
 .TP
 .B setcharge [START_CHARGE STOP_CHARGE] [BAT0|BAT1|BATx]
-Changes the charge thresholds for the battery temporarily. Possible thresholds
-values depend on the laptop vendor and model. Configured charge thresholds will
-be restored at the next boot or by using \fBtlp setcharge\fR again but without
-the threshold arguments.
-For details on charge thresholds refer to the link below.
+Changes the charge thresholds for the battery temporarily.
+If your hardware supports only a stop threshold, set the start value to 0.
+Configured charge thresholds will be restored at the next boot or by using
+\fBtlp setcharge\fR again but without the threshold arguments.
 .
 .TP
 .B fullcharge [BAT0|BAT1|BATx]
@@ -85,11 +89,11 @@ Add parameters to temporarily overwrite the system configuration
 (for this program invocation only).
 .
 .SH NOTES
-For ThinkPads with more than one battery the selection works as follows:
+For laptops with more than one battery the selection works as follows:
 .IP
 BAT0 \- Main or internal battery
 .IP
-BAT1 \- Ultrabay, Slice or replaceable battery
+BAT1 \- Secondary or replaceable battery
 .
 .SH EXAMPLES
 Change thresholds of the main battery to 70 / 90% temporarily:
