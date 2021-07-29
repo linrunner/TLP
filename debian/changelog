@@ -1,6 +1,6 @@
-tlp (1.4.0~alpha.3-1) unstable; urgency=medium
+tlp (1.4.0~beta.1-1) unstable; urgency=medium
 
-  * Upstream development version (1.4 cycle)
+  * Beta version
 
   [Thomas Koch]
     * debian/control:
