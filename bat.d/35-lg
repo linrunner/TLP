@@ -124,9 +124,9 @@ batdrv_init () {
 
 batdrv_select_battery () {
     # determine battery acpidir
-    # $1: BAT0/BAT1/DEF
+    # $1: BAT0/BAT1/CMB0/CMB1/DEF
     # # rc: 0=bat exists/1=bat non-existent
-    # retval: $_bat_str:   BAT0/BAT1;
+    # retval: $_bat_str:   BAT0/BAT1/CMB0/CMB1;
     #         $_bd_read:   directory with battery data sysfiles;
     # prerequisite: batdrv_init()
 
