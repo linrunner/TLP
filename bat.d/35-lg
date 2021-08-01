@@ -85,7 +85,7 @@ batdrv_init () {
 
     # iterate batteries
     local bd bs
-    for bd in "$ACPIBATDIR"/BAT[01]; do
+    for bd in "$ACPIBATDIR"/CMB[01] "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf $bd/present)" = "1" ]; then
             # record detected batteries and directories
             bs=${bd##/*/}
@@ -96,6 +96,12 @@ batdrv_init () {
             fi
         fi
     done
+
+    # quit if no battery detected, there is no point in activating the plugin
+    if [ -z "$_batteries" ]; then
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
+        return 2
+    fi
 
     # check for vendor specific kernel api
     if [ "$NATACPI_ENABLE" = "0" ]; then
@@ -206,7 +212,8 @@ batdrv_write_thresholds () {
     #     1=not configured/
     #     2=threshold out of range or non-numeric/
     #     4=threshold read error/
-    #     5=threshold write error
+    #     5=threshold write error/
+    #     6=threshold write discarded by kernel or firmware
     # prerequisite: batdrv_init(), batdrv_select_battery()
     local new_stop=${2:-}
     local verb=${3:-0}
@@ -266,7 +273,15 @@ batdrv_write_thresholds () {
     local rc=0
     if [ "$old_stop" != "$new_stop" ]; then
         # new threshold differs from effective one --> write it
-        write_sysf "$new_stop" $_bf_stop || rc=5
+        if write_sysf "$new_stop" $_bf_stop; then
+            if [ "$(read_sysf $_bf_stop)" != "$new_stop" ]; then
+                #  write discarded by kernel or firmware
+                rc=6
+            fi
+        else
+            # write error
+            rc=5
+        fi
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).write: old=$old_stop; new=$new_stop; rc=$rc"
         case $verb in
             2)
