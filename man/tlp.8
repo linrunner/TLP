@@ -7,18 +7,20 @@ tlp \- apply laptop power saving settings
 .B tlp \fIcommand\fR \fR[\fIparameters\fR] [-- <config> "..."]
 .
 .SH DESCRIPTION
-Apply power saving settings manually and control ThinkPad battery features.
+Apply power saving settings manually and control battery care features.
 .
 .SH COMMANDS
 .
 .TP
 .B start
 Initialize \fBtlp\fR and apply power saving settings according to the actual
-power source. Also use to apply a changed configuration.
+power source. Also use to apply a changed configuration or to leave manual mode.
 .
 .TP
 .B bat
-Apply power saving settings for battery power source.
+Apply the battery settings profile and enter manual mode. Manual mode means
+that changes to the power source will be ignored until the next reboot or
+\fBtlp start\fR is issued to resume automatic mode.
 .
 .TP
 .B true
@@ -26,7 +28,9 @@ Same as \fBbat\fR.
 .
 .TP
 .B ac
-Apply power saving settings for AC power source.
+Apply the AC settings profile and enter manual mode. Manual mode means
+that changes to the power source will be ignored until the next reboot or
+\fBtlp start\fR is issued to resume automatic mode.
 .
 .TP
 .B false
