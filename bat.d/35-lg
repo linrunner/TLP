@@ -97,12 +97,6 @@ batdrv_init () {
         fi
     done
 
-    # quit if no battery detected, there is no point in activating the plugin
-    if [ -z "$_batteries" ]; then
-        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
-        return 2
-    fi
-
     # check for vendor specific kernel api
     if [ "$NATACPI_ENABLE" = "0" ]; then
         # natacpi disabled in configuration --> skip actual detection
