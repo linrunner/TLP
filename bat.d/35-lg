@@ -101,11 +101,18 @@ batdrv_init () {
     if [ "$NATACPI_ENABLE" = "0" ]; then
         # natacpi disabled in configuration --> skip actual detection
         _natacpi=32
-    elif [ -f "$BATDRV_LG_BCL" ] && readable_sysf "$BATDRV_LG_BCL"; then
-        # sysfile for exists and is actually readable
-        _natacpi=0
-        _bm_thresh="natacpi"
-        _bf_stop="$BATDRV_LG_BCL"
+    elif sp="${X_THRESH_SIMULATE_STOP:-$(read_sysf $BATDRV_LG_BCL)}"; then
+        # sysfile exists and is actually readable --> check threshold value
+        if [ "$sp" != "0" ]; then
+            # threshold is non-zero
+            _natacpi=0
+            _bm_thresh="natacpi"
+            _bf_stop="$BATDRV_LG_BCL"
+        else
+            # zero means laptop not supported via the kernel driver
+            _natacpi=254
+        fi
+
     elif [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
         # simulate api
         _natacpi=0

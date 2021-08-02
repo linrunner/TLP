@@ -129,7 +129,7 @@ batdrv_init () {
                 [ -n "$X_THRESH_SIMULATE_STOP"  ] && sp="$X_THRESH_SIMULATE_STOP"
 
                 # check threshold values:
-                # zero means laptop not available via the kernel driver
+                # zero means laptop not supported via the kernel driver
                 if [ "$st" != "0" ] && [ "$sp" != "0" ]; then
                     # both thresholds are non-zero
                     _natacpi=0

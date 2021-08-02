@@ -102,7 +102,7 @@ batdrv_init () {
         # natacpi disabled in configuration --> skip actual detection
         _natacpi=32
     elif [ -f "$BATDRV_SAMSUNG_BLE" ] && readable_sysf "$BATDRV_SAMSUNG_BLE"; then
-        # sysfile for exists and is actually readable
+        # sysfile exists and is actually readable
         _natacpi=0
         _bm_thresh="natacpi"
         _bf_stop="$BATDRV_SAMSUNG_BLE"
