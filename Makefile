@@ -100,7 +100,7 @@ SHFILES = \
 	tlp.in \
 	tlp-func-base.in \
 	func.d/* \
-	bat.d/* \
+	bat.d/*[a-z] \
 	tlp-rdw.in \
 	tlp-rdw-nm.in \
 	tlp-rdw-udev.in \
@@ -116,14 +116,17 @@ PLFILES = \
 	tlp-readconfs.in \
 	tlp-usblist
 
+BATDRVFILES = $(foreach drv,$(wildcard bat.d/[0-9][0-9]-*[a-z]),$(drv)~)
+
 # Make targets
 all: $(INFILES)
 
 $(INFILES): %: %.in
 	$(SED) $< > $@
 
-clean:
+clean: checkbatdrv-clean
 	rm -f $(INFILES)
+	rm -f bat.d/*~
 
 install-tlp: all
 	# Package tlp
@@ -244,24 +247,35 @@ uninstall: uninstall-tlp uninstall-rdw
 
 uninstall-man: uninstall-man-tlp uninstall-man-rdw
 
-checkall: checkbashisms shellcheck perlcritic checkdupconst checkwip
+checkall: checkbashisms shellcheck perlcritic checkdupconst checkbatdrv checkwip
 
 checkbashisms:
-	@echo "+++ checkbashisms +++"
+	@echo "*** checkbashisms ***************************************************************************"
 	@checkbashisms $(SHFILES) || true
 
 shellcheck:
-	@echo "+++ shellcheck +++"
+	@echo "*** shellcheck ******************************************************************************"
 	@shellcheck -s dash $(SHFILES) || true
 
 perlcritic:
-	@echo "+++ perlcritic +++"
+	@echo "*** perlcritic ******************************************************************************"
 	@perlcritic --severity 4 --verbose "%F: [%p] %m at line %l, column %c.  (Severity: %s)\n" $(PLFILES) || true
 
 checkdupconst:
-	@echo "+++ checkdupconst +++"
+	@echo "*** checkdupconst ***************************************************************************"
 	@{ sed -n -r -e 's,^.*readonly\s+([A-Za-z_][A-Za-z_0-9]*)=.*$$,\1,p' $(SHFILES) | sort | uniq -d; } || true
 
 checkwip:
-	@echo "+++ checkwip +++"
+	@echo "*** checkwip ********************************************************************************"
 	@grep -E -n "### (DEBUG|DEVEL|TODO|WIP)" $(SHFILES) $(PLFILES) || true
+
+bat.d/TEMPLATE~: bat.d/TEMPLATE
+	@awk '/^batdrv_[a-z_]+ ()/ { print $$1; }' $< | grep -v 'batdrv_is' | sort > $@
+
+bat.d/%~: bat.d/%
+	@printf "*** checkbatdrv %-25s ***********************************************\n" "$<"
+	@awk '/^batdrv_[a-z_]+ ()/ { print $$1; }' $< | grep -v 'batdrv_is' | sort > $@
+	@diff -U 1 -s bat.d/TEMPLATE~  $@ || true
+
+checkbatdrv: bat.d/TEMPLATE~ $(BATDRVFILES)
+	rm -f bat.d/*~
