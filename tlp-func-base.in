@@ -43,7 +43,7 @@ readonly MOD_TEMP="coretemp"
 readonly DMID=/sys/class/dmi/id/
 readonly NETD=/sys/class/net
 
-readonly RE_PARAM='^[A-Z_]+[0-9]*=[0-9a-zA-Z _\-\:\.]*$'
+readonly RE_PARAM='^[A-Z_]+[0-9]*=[0-9a-zA-Z \.:_-]*$'
 
 # power supplies: ignore MacBook Pro 2017 sbs-charger and hid devices
 readonly RE_PS_IGNORE='sbs-charger|hidpp_battery|hid-'
@@ -579,9 +579,8 @@ read_config () { # read all config files and write temporary runconf file
 parse_args4config () { # parse command-line arguments: everything after the
                        # delimiter '--' is interpreted as a config parameter
     # retval: config parameters
-    local dflag=0 param value
+    local argd="" cfgd="" dflag=0 param value
 
-    echo_debug "arg" "parse_args4config: ${0##/*/} $*"
     # iterate arguments
     while [ $# -gt 0 ]; do
         if [ $dflag -eq 1 ]; then
@@ -595,16 +594,19 @@ parse_args4config () { # parse command-line arguments: everything after the
                 param="${1%%=*}"
                 value="${1#*=}"
                 if [ -n "$param" ]; then
-                    echo_debug "cfg" "parse_args4config.param: $param=$value"
                     eval "$param='$value'" 2> /dev/null
+                    cfgd="$cfgd $param=""$value"""
                 fi
             fi
         elif [ "$1" = "--" ]; then
             # delimiter reached --> begin interpretation
             dflag=1
+        else
+            argd="$argd $1"
         fi
         shift # next argument
     done # while arguments
+    echo_debug "arg" "parse_args4config: ${0##/*/}$argd --$cfgd"
 
     return 0
 }
