@@ -124,7 +124,7 @@ all: $(INFILES)
 $(INFILES): %: %.in
 	$(SED) $< > $@
 
-clean: checkbatdrv-clean
+clean:
 	rm -f $(INFILES)
 	rm -f bat.d/*~
 
