@@ -43,7 +43,7 @@ readonly MOD_TEMP="coretemp"
 readonly DMID=/sys/class/dmi/id/
 readonly NETD=/sys/class/net
 
-readonly RE_PARAM='^[A-Z_]+[0-9]*=[0-9a-zA-Z \.:_-]*$'
+readonly RE_PARAM='^[A-Z_]+[0-9]*=[-0-9a-zA-Z _.:]*$'
 
 # power supplies: ignore MacBook Pro 2017 sbs-charger and hid devices
 readonly RE_PS_IGNORE='sbs-charger|hidpp_battery|hid-'
@@ -588,7 +588,7 @@ parse_args4config () { # parse command-line arguments: everything after the
             #   quotes stripped by the shell calling tlp
             #   format is PARAMETER=value
             #   PARAMETER allows 'A'..'Z' and '_' only, may end in a number (_BAT0)
-            #   value allows  'A'..'Z', 'a'..'z', '0'..'9', ' ', '_', '-', ':'
+            #   value allows  'A'..'Z', 'a'..'z', '0'..'9', ' ', '-', '_', '.', ':'
             #   value may be an empty string
             if printf "%s" "$1" | grep -E -q "$RE_PARAM"; then
                 param="${1%%=*}"
