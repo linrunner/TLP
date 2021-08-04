@@ -1,3 +1,11 @@
++++ <unreleased> --- 04.08.2021 +++
+
+  * Bugfixes
+    Battery:
+      - LG: fix battery and battery_care_limit detection (Issue #568)
+    Processor:
+      - tlp-stat -p: omit "EPB: unsupported" for AMD or non-intel_pstate CPUs
+
 +++ 1.4.0-beta.1 --- 29.07.2021 +++
 
   * Beta release
