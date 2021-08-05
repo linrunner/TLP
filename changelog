@@ -4,6 +4,7 @@
     Battery:
       - LG: fix battery and battery_care_limit detection (Issue #568)
     Processor:
+      - Issue #570: no_turbo=1 decreases scaling_max_freq on ThinkPad X1 Gen9
       - tlp-stat -p: omit "EPB: unsupported" for AMD or non-intel_pstate CPUs
 
 +++ 1.4.0-beta.1 --- 29.07.2021 +++
