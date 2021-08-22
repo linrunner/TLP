@@ -122,6 +122,8 @@ batdrv_init () {
     #       64=acpi_call module not loaded/
     #       127=tpacpi-bat not installed/
     #       128=acpi_call module not installed/
+    #       137=kernel error (oops)/
+    #       253=tpacpi-bat error/
     #       254=ThinkPad not supported/
     #       255=superseded by natacpi/
     #       256=superseded and kernel module not loaded
@@ -275,6 +277,21 @@ batdrv_init () {
                     # force_discharge capable
                     _tpacpi=0
                 fi
+            else
+                # tpacpi-bat failed
+                case $? in
+                    255) # acpi call non-existent (AE_NOT_FOUND)
+                        _tpacpi=254
+                        ;;
+
+                    137) # kernel error (oops)
+                        _tpacpi=137
+                        ;;
+
+                    * ) # tpacpi-bat error
+                        _tpacpi=253
+                        ;;
+                esac
             fi
 
             if [ $_tpacpi -le 1 ]; then
@@ -1098,6 +1115,8 @@ batdrv_show_battery_data () {
         64)  printf "* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' load error)\n" ;;
         127) printf "* tpacpi-bat (acpi_call)  = inactive (program 'tpacpi-bat' not installed)\n" ;;
         128) printf "* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' not installed)\n" ;;
+        137) printf "* tpacpi-bat (acpi_call)  = inactive (kernel error)\n" ;;
+        253) printf "* tpacpi-bat (acpi_call)  = inactive (tpacpi-bat error)\n" ;;
         254) printf "* tpacpi-bat (acpi_call)  = inactive (ThinkPad not supported)\n" ;;
         255) printf "* tpacpi-bat (acpi_call)  = inactive (superseded by natacpi)\n" ;;
         256) ;; # superseded and kernel module not loaded--> be quiet
