@@ -680,17 +680,17 @@ get_sys_power_supply () {
     #                         | found | online  | offline |
     #           +------------ +-------+---------+---------+
     # battery   | none found  | 2     | 0 *s    | *o      |
-    # status    | Charging    | *r    | 0 *s    | *r      |
+    # status    | Charging    | 0     | 0 *s    | *r      |
     #           | Discharging | *d    | 0 *s    | *d      |
-    #           | Full        | *r    | 0 *s    | *r      |
-    #           | Unknown     | *r    | 0 *s    | *r      |
+    #           | Full        | 0     | 0 *s    | *r      |
+    #           | Unknown     | 0     | 0 *s    | *r      |
     #
     # special cases:
     #   *o) if battery status "Unknown" was seen previously then _syspwr=1;
     #       else remember AC offline state
-    #   *r) recheck battery status after a short wait: if battery status
-    #       "Discharging" (not forced) then _syspwr=1 and stop looking;
-    #       else _syspwr=0
+    #   *r) ADP1 AC offline only: recheck battery status after a short wait;
+    #       if battery status "Discharging" (not forced) then _syspwr=1 and
+    #       stop looking; else _syspwr=0
     #   *d) if forced discharge in progress then _syspwr=0; else _syspwr=1;
     #       stop looking
     #   *s) stop looking (for other power sources)
