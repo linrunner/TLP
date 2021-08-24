@@ -1,9 +1,11 @@
-+++ <unreleased> --- 22.08.2021 +++
++++ <unreleased> --- 24.08.2021 +++
 
   * Bugfixes
     Battery:
       - LG: fix battery and battery_care_limit detection (Issue #568)
       - ThinkPad: fix enforcement via NATACPI_ENABLE, TPAPCI_ENABLE
+    Operation Mode AC/BAT:
+      - Issue #573: power mode not updating when switching from AC to battery
     Processor:
       - Issue #570: no_turbo=1 decreases scaling_max_freq on ThinkPad X1 Gen9
       - tlp-stat -p: omit "EPB: unsupported" for AMD or non-intel_pstate CPUs
