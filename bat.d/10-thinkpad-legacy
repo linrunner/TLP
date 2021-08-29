@@ -136,7 +136,7 @@ batdrv_init () {
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; tpsmapi=$_tpsmapi"
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: read=$_bm_read; thresh=$_bm_thresh; start=$_bn_start; stop=$_bn_stop; dischg=$_bm_dischg; force=$_bn_dischg"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: read=$_bm_read; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop; dischg=$_bm_dischg; bn_dischg=$_bn_dischg"
     return 0
 }
 
@@ -357,7 +357,7 @@ batdrv_write_thresholds () {
        ! old_stop=$(batdrv_read_threshold stop); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str"
         case $verb in
-            1) echo_message "Warning: could not read current charge threshold(s) for $_bat_str. Battery skipped." ;;
+            1) echo_message "Error: could not read current charge threshold(s) for $_bat_str. Battery skipped." ;;
             2) printf "Error: could not read current charge threshold(s) for %s. Aborted.\n" $_bat_str 1>&2 ;;
         esac
         return 4
@@ -422,7 +422,7 @@ batdrv_write_thresholds () {
                     ;;
                 1)
                     if [ $steprc -gt 0 ]; then
-                        echo_message "Warning: writing charge $step threshold for $_bat_str failed."
+                        echo_message "Error: writing charge $step threshold for $_bat_str failed."
                     fi
                     ;;
             esac
@@ -837,8 +837,8 @@ batdrv_show_battery_data () {
         # --- show battery features: thresholds, force_discharge
         local lf=0
         if [ "$_bm_thresh" = "tpsmapi" ]; then
-            printf "%-59s = %6d [%%]\n" "$_bf_start" "$(batdrv_read_threshold start \"$_bf_start\" \"\(not available\)\")"
-            printf "%-59s = %6d [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop  \"$_bf_stop\"  \"\(not available\)\")"
+            printf "%-59s = %6d [%%]\n" "$_bf_start" "$(batdrv_read_threshold start \"\(not available\)\")"
+            printf "%-59s = %6d [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop  \"\(not available\)\")"
             lf=1
         fi
         if [ "$_bm_dischg" = "tpsmapi" ]; then

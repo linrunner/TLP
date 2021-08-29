@@ -142,7 +142,7 @@ batdrv_init () {
 
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; start=$_bn_start; stop=$_bn_stop;"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop;"
     return 0
 }
 
@@ -208,7 +208,7 @@ batdrv_read_threshold () {
     esac
     if [ -n "$out" ]; then
         printf "%s" "$out"
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1, $2).simulate: bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1).simulate: bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
         return 0
     fi
 
@@ -228,7 +228,7 @@ batdrv_read_threshold () {
         rc=4
     fi
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1, $2): bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1): bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
     return $rc
 }
 
@@ -341,7 +341,7 @@ batdrv_write_thresholds () {
        ! old_stop=$(batdrv_read_threshold stop); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str"
         case $verb in
-            1) echo_message "Warning: could not read current charge threshold(s) for $_bat_str. Battery skipped." ;;
+            1) echo_message "Error: could not read current charge threshold(s) for $_bat_str. Battery skipped." ;;
             2) printf "Error: could not read current charge threshold(s) for %s. Aborted.\n" $_bat_str 1>&2 ;;
         esac
         return 4
@@ -407,7 +407,7 @@ batdrv_write_thresholds () {
                     ;;
                 1)
                     if [ $steprc -gt 0 ]; then
-                        echo_message "Warning: writing charge $step threshold for $_bat_str failed."
+                        echo_message "Error: writing charge $step threshold for $_bat_str failed."
                     fi
                     ;;
             esac
@@ -570,12 +570,12 @@ batdrv_show_battery_data () {
         # --- show battery features: thresholds
         local st sp
         if [ "$_bm_thresh" = "natacpi" ]; then
-            if st=$(batdrv_read_threshold start "$_bf_start" ""); then
+            if st=$(batdrv_read_threshold start); then
                 printf "%-59s = %6d [%%]\n" "$_bf_start" "$st"
             else
                 printf "%-59s = %s [%%]\n"  "$_bf_start" "(not available)"
             fi
-            if sp=$(batdrv_read_threshold stop  "$_bf_stop" ""); then
+            if sp=$(batdrv_read_threshold stop); then
                 printf "%-59s = %6d [%%]\n" "$_bf_stop"  "$sp"
             else
                 printf "%-59s = %s [%%]\n"  "$_bf_stop"  "(not available)"

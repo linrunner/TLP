@@ -344,7 +344,7 @@ batdrv_init () {
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; tpacpi=$_tpacpi; tpsmapi=$_tpsmapi"
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: read=$_bm_read; thresh=$_bm_thresh; start=$_bn_start; stop=$_bn_stop; dischg=$_bm_dischg; force=$_bn_dischg"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: read=$_bm_read; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop; dischg=$_bm_dischg; bn_dischg=$_bn_dischg"
     return 0
 }
 
@@ -708,7 +708,7 @@ batdrv_write_thresholds () {
                     ;;
                 1)
                     if [ $steprc -gt 0 ]; then
-                        echo_message "Warning: writing charge $step threshold for $_bat_str failed."
+                        echo_message "Error: writing charge $step threshold for $_bat_str failed."
                     fi
                     ;;
             esac
@@ -1238,12 +1238,12 @@ batdrv_show_battery_data () {
         local dc th lf=0
         case $_bm_thresh in
             natacpi)
-                if th=$(batdrv_read_threshold start "$_bf_start" ""); then
+                if th=$(batdrv_read_threshold start); then
                     printf "%-59s = %6d [%%]\n" "$_bf_start" "$th"
                 else
                     printf "%-59s = %s [%%]\n"  "$_bf_start" "(not available)"
                 fi
-                if th=$(batdrv_read_threshold stop "$_bf_stop" ""); then
+                if th=$(batdrv_read_threshold stop); then
                     printf "%-59s = %6d [%%]\n" "$_bf_stop"  "$th"
                 else
                     printf "%-59s = %s [%%]\n"  "$_bf_stop"  "(not available)"
@@ -1252,12 +1252,12 @@ batdrv_show_battery_data () {
                 ;;
 
             tpacpi)
-                if th=$(batdrv_read_threshold start "$_bf_start" ""); then
+                if th=$(batdrv_read_threshold start); then
                     printf "%-59s = %6d [%%]\n" "tpacpi-bat.${_bat_str}.startThreshold" "$th"
                 else
                     printf "%-59s = %s [%%]\n"  "tpacpi-bat.${_bat_str}.startThreshold" "(not available)"
                 fi
-                if th=$(batdrv_read_threshold stop "$_bf_stop"  ""); then
+                if th=$(batdrv_read_threshold stop); then
                     printf "%-59s = %6d [%%]\n" "tpacpi-bat.${_bat_str}.stopThreshold" "$th"
                 else
                     printf "%-59s = %s [%%]\n"  "tpacpi-bat.${_bat_str}.stopThreshold" "(not available)"

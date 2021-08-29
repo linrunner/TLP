@@ -161,9 +161,8 @@ batdrv_select_battery () {
 
 batdrv_read_threshold () {
     # read and print charge threshold (stop only)
-    # $1: error string
     # global param: $_bf_stop
-    # out: threshold 0/1/"$1" on error
+    # out: threshold 0/1/"" on error
     # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
@@ -172,12 +171,12 @@ batdrv_read_threshold () {
     out="$X_THRESH_SIMULATE_STOP"
     if [ -n "$out" ]; then
         printf "%s" "$out"
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1).simulate: bf_stop=$_bf_stop; out=$out; rc=$rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold.simulate: bf_stop=$_bf_stop; out=$out; rc=$rc"
         return 0
     fi
 
     if [ "$_bm_thresh" = "natacpi" ]; then
-        out=$(read_sysf $_bf_stop "$1") || rc=4
+        out=$(read_sysf $_bf_stop) || rc=4
     else
         # no threshold api
         rc=255
@@ -190,7 +189,7 @@ batdrv_read_threshold () {
         rc=4
     fi
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold(stop): bf_stop=$_bf_stop; out=$out; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold: bf_stop=$_bf_stop; out=$out; rc=$rc"
     return $rc
 }
 
@@ -252,7 +251,7 @@ batdrv_write_thresholds () {
     if ! old_stop=$(batdrv_read_threshold); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).read_error"
         case $verb in
-            1) echo_message "Warning: could not read current life extender. Skipped." ;;
+            1) echo_message "Error: could not read current life extender. Skipped." ;;
             2) printf "Error: could not read current life extender. Aborted.\n" 1>&2 ;;
         esac
         return 4
@@ -278,7 +277,7 @@ batdrv_write_thresholds () {
                 ;;
             1)
                 if [ $rc -gt 0 ]; then
-                    echo_message "Warning: writing life extender failed."
+                    echo_message "Error: writing life extender failed."
                 fi
                 ;;
         esac
@@ -371,7 +370,7 @@ batdrv_show_battery_data () {
         local th sfx=
         printf "Parameter value range:\n"
         printf "* STOP_CHARGE_THRESH_BAT0: 0(off), 1(on) -- -- battery life extender\n\n"
-        if th=$(batdrv_read_threshold stop "$_bf_stop" ""); then
+        if th=$(batdrv_read_threshold); then
             case $th in
                 0) sfx=" (100%)" ;;
                 1) sfx=" (80%)" ;;
