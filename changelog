@@ -1,7 +1,8 @@
-+++ <unreleased> --- 24.08.2021 +++
++++ <unreleased> --- 29.08.2021 +++
 
   * Bugfixes
     Battery:
+      - Huawei: use legacy interface 'charge_control_thresholds' for reliability
       - LG: fix battery and battery_care_limit detection (Issue #568)
       - ThinkPad: fix enforcement via NATACPI_ENABLE, TPAPCI_ENABLE
     Operation Mode AC/BAT:
