@@ -1,4 +1,4 @@
-+++ <unreleased> --- 29.08.2021 +++
++++ <unreleased> --- 31.08.2021 +++
 
   * Bugfixes
     Battery:
@@ -7,6 +7,8 @@
       - ThinkPad: fix enforcement via NATACPI_ENABLE, TPAPCI_ENABLE
     Operation Mode AC/BAT:
       - Issue #573: power mode not updating when switching from AC to battery
+    Platform:
+      - tlp-stat -p: show state of ThinkPad lapmode
     Processor:
       - Issue #570: no_turbo=1 decreases scaling_max_freq on ThinkPad X1 Gen9
       - tlp-stat -p: omit "EPB: unsupported" for AMD or non-intel_pstate CPUs

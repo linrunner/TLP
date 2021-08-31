@@ -477,12 +477,11 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     echo
 
     # --- show platform profile
-    if [ -f $FWACPID/platform_profile ]; then
-        printf "+++ Platform Profile\n"
-        printparm "%-54s = ##%s##" $FWACPID/platform_profile
-        printparm "%-54s = ##%s##" $FWACPID/platform_profile_choices
-        printf "\n"
-    fi
+    printf "+++ Platform Profile\n"
+    printparm "%-54s = ##%s##" $FWACPID/platform_profile
+    printparm "%-54s = ##%s##" $FWACPID/platform_profile_choices
+    [ -d $TPACPID ] && printparm "%-54s = ##%s##" $TPACPID/dytc_lapmode
+    printf "\n"
 
 fi # show_proc
 

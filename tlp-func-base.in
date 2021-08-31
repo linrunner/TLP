@@ -42,6 +42,8 @@ readonly MOD_TEMP="coretemp"
 
 readonly DMID=/sys/class/dmi/id/
 readonly NETD=/sys/class/net
+# shellcheck disable=SC2034
+readonly TPACPID=/sys/devices/platform/thinkpad_acpi
 
 readonly RE_PARAM='^[A-Z_]+[0-9]*=[-0-9a-zA-Z _.:]*$'
 

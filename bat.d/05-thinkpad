@@ -10,8 +10,6 @@
 # shellcheck disable=SC2086
 
 # --- Hardware Detection
-
-readonly TPACPIDIR=/sys/devices/platform/thinkpad_acpi
 readonly SMAPIBATDIR=/sys/devices/platform/smapi
 
 readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T23|T[346][0123][p]?|T[45][01]0[s]?|W[57]0[01]|X[346][012][s]?( Tablet)?|X1[02]0e|X[23]0[01][s]?( Tablet)?|Z6[01][mpt])$'
@@ -57,7 +55,7 @@ check_thinkpad () {
 
     _tpmodel=""
 
-    if [ -d $TPACPIDIR ]; then
+    if [ -d $TPACPID ]; then
         # kernel module thinkpad_acpi is loaded
 
         if [ -z "$X_SIMULATE_MODEL" ]; then
