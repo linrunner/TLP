@@ -1,4 +1,4 @@
-+++ <unreleased> --- 31.08.2021 +++
++++ <unreleased> --- 03.09.2021 +++
 
   * Bugfixes
     Battery:
@@ -61,8 +61,8 @@
         - Works on NVMe (new), SATA/ATA and plugged in USB (new) disks
         - Works on SATA ports
         - No longer experimental i.e. now enabled by default; the previously
-          existing risk of system freezes with the multiqueue scheduler is now
-          effectively prevented:
+          existing risk of system freezes (and data loss) with the multiqueue
+          scheduler is now eliminated:
           - Kernel >= 4.19 itself locks unsafe disk runtime pm
           - TLP generally locks it for kernel < 4.19
       - DISK_APM_CLASS_DENYLIST: exclude disk classes from APM, i.e. you may
