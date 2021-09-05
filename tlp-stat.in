@@ -565,8 +565,8 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
         for i in ${ALPMD} ; do
             printparm_ahci $i/link_power_management_policy
         done
+        echo
     fi
-    echo
 
     # --- show ahci runtime pm
     if stat -t ${AHCID}/power > /dev/null 2>&1; then
