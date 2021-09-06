@@ -1,5 +1,5 @@
 #!/bin/sh
-# 20-asus - Battery Plugin for Huawei MateBooks w/ huawei_wmi driver
+# 20-huawei - Battery Plugin for Huawei MateBooks w/ huawei_wmi driver
 #
 # Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
@@ -10,7 +10,7 @@
 
 # --- Hardware Detection
 
-readonly BATDRV_HUAWEI_MD=/sys/class/platform/huawei_wmi
+readonly BATDRV_HUAWEI_MD=/sys/devices/platform/huawei-wmi
 
 batdrv_is_huawei () {
     # check if kernel module loaded
@@ -101,7 +101,7 @@ batdrv_init () {
     if [ "$NATACPI_ENABLE" = "0" ]; then
         # natacpi disabled in configuration --> skip actual detection
         _natacpi=32
-    elif [ -f "$BATDRV_HUAWEI_MD" ] && readable_sysf "$BATDRV_HUAWEI_THRESH"; then
+    elif [ -f "$BATDRV_HUAWEI_THRESH" ] && readable_sysf "$BATDRV_HUAWEI_THRESH"; then
         # sysfile exists and is actually readable
         _natacpi=0
         _bm_thresh="natacpi"
