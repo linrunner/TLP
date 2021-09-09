@@ -224,23 +224,23 @@ batdrv_write_thresholds () {
         return 1
     fi
 
-    # start: check for 3 digits max, ensure min 0 / max 100
+    # start: check for 3 digits max, ensure min 0 / max 99
     if ! is_uint "$new_start" 3 || \
-       ! is_within_bounds $new_start 0 100; then
+       ! is_within_bounds $new_start 0 99; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start"
         case $verb in
             1)
                 if [ -n "$cfg_bat" ]; then
-                    echo_message "Error in configuration at START_CHARGE_THRESH_${cfg_bat}=\"${new_start}\": not specified, invalid or out of range (0..100). Skipped."
+                    echo_message "Error in configuration at START_CHARGE_THRESH_${cfg_bat}=\"${new_start}\": not specified, invalid or out of range (0..99). Skipped."
                 fi
                 ;;
 
             2)
                 if [ -n "$cfg_bat" ]; then
-                    printf "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..100). Aborted.\n" "$cfg_bat" "$new_start" 1>&2
+                    printf "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..99). Aborted.\n" "$cfg_bat" "$new_start" 1>&2
                 else
-                    printf "Error: charge start threshold (%s) is not specified, invalid or out of range (0..100). Aborted.\n" "$new_start" 1>&2
+                    printf "Error: charge start threshold (%s) is not specified, invalid or out of range (0..99). Aborted.\n" "$new_start" 1>&2
                 fi
                 ;;
         esac
@@ -249,21 +249,21 @@ batdrv_write_thresholds () {
 
     # stop: check for 3 digits max, ensure min 1 / max 100
     if ! is_uint "$new_stop" 3 || \
-       ! is_within_bounds $new_stop 0 100; then
+       ! is_within_bounds $new_stop 1 100; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop"
         case $verb in
             1)
                 if [ -n "$cfg_bat" ]; then
-                    echo_message "Error in configuration at STOP_CHARGE_THRESH_${cfg_bat}=\"${new_stop}\": not specified, invalid or out of range (0..100). Skipped."
+                    echo_message "Error in configuration at STOP_CHARGE_THRESH_${cfg_bat}=\"${new_stop}\": not specified, invalid or out of range (1..100). Skipped."
                 fi
                 ;;
 
             2)
                 if [ -n "$cfg_bat" ]; then
-                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..100). Aborted.\n" "$cfg_bat" "$new_stop" 1>&2
+                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (1..100). Aborted.\n" "$cfg_bat" "$new_stop" 1>&2
                 else
-                    printf "Error: charge stop threshold (%s) is not specified, invalid or out of range (0..100). Aborted.\n" "$new_stop" 1>&2
+                    printf "Error: charge stop threshold (%s) is not specified, invalid or out of range (1..100). Aborted.\n" "$new_stop" 1>&2
                 fi
                 ;;
         esac
@@ -402,10 +402,17 @@ batdrv_show_battery_data () {
 
     if [ "$_bm_thresh" = "natacpi" ]; then
         printf "Parameter value ranges:\n"
-        printf "* START_CHARGE_THRESH_BAT0:  0(default)..100\n"
-        printf "* STOP_CHARGE_THRESH_BAT0:   0..100(default)\n\n"
+        printf "* START_CHARGE_THRESH_BAT0:  0(default)..99\n"
+        printf "* STOP_CHARGE_THRESH_BAT0:   1..100(default)\n\n"
         if threshs=$(batdrv_read_threshold); then
-            printf "%-59s = %s [%%]\n" "$_bf_start_stop" "$threshs"
+            case "$threshs" in
+                "0 0"|"0 100")
+                    printf "%-59s = %s [%%] (disabled)\n" "$_bf_start_stop" "$threshs"
+                    ;;
+
+                *)  printf "%-59s = %s [%%]\n"       "$_bf_start_stop" "$threshs"
+                    ;;
+            esac
         else
             printf "%-59s = %s\n" "$_bf_start_stop" "(not available)"
         fi
