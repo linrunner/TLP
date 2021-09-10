@@ -1,64 +1,68 @@
-.TH tlp\-stat 8 2021-09-07 "TLP 1.4.0" "Power Management"
+.TH tlp\-stat 8 2021-09-10 "TLP 1.4.0" "Power Management"
 .
 .SH NAME
-tlp\-stat \- show power saving settings
+tlp\-stat \- view power saving status
 .
 .SH SYNOPSIS
 .B tlp\-stat \fI[options]\fR [-- <config> "..."]
 .
 .SH DESCRIPTION
-Show configuration, system information, active power saving settings and battery
-data.
+View configuration, system information, kernel power saving settings and battery
+data. Invocation without options shows all information categories. 
 .
 .SH OPTIONS
 .
 .TP
 .B \-b, \-\-battery
-Show battery data.
+View battery data. Add \fB-v\fR to see battery voltages (if available).
 .
 .TP
 .B \-c, \-\-config
-Show configuration.
+View active configuration.
 .
 .TP
 .B \-\-cdiff
-Show the difference between default and user configuration.
+View the difference between default and user configuration.
 .
 .TP
 .B \-d, \-\-disk
-Show disk data.
+View disk device information.
 .
 .TP
 .B \-e, \-\-pcie
-Show PCI(e) device data.
+View PCIe device information. Add \fB-v\fR to see device runtime status.
 .
 .TP
 .B \-g, \-\-graphics
-Show graphics card data.
+View graphics card information.
 .
 .TP
 .B \-p, \-\-processor
-Show processor data.
+View processor information. For clarity the standard output shows only cpu0.
+Add \fB-v\fR to see all.
 .
 .TP
 .B \-r, \-\-rfkill
-Show radio device data.
+View radio device states.
 .
 .TP
 .B \-s, \-\-system
-Show system information.
+View system information.
 .
 .TP
 .B \-t, \-\-temp
-Show temperatures and fan speed.
+View temperatures and fan speed.
 .
 .TP
 .B \-u, \-\-usb
-Show USB device data.
+View USB device information. Add \fB-v\fR to see device runtime status.
 .
 .TP
-.B \-w, \-\-warn
-Show warnings.
+.B \-v, \-\-verbose
+Show more information in battery, PCIe, processor and USB categories.
+.
+.PP
+Diagnostics and debugging:
 .
 .TP
 .B \-P, \-\-pev
@@ -66,11 +70,11 @@ Monitor power supply udev events.
 .
 .TP
 .B \-\-psup
-Show power supply diagnostic (view kernel data).
+View power supply diagnostics.
 .
 .TP
 .B \-T, \-\-trace
-Show trace output.
+View trace output.
 .
 .TP
 .B \-\-udev
@@ -78,8 +82,8 @@ Check if udev rules for power source changes and connecting USB devices
 are active.
 .
 .TP
-.B \-v, \-\-verbose
-Show more data.
+.B \-w, \-\-warn
+View warnings about SATA disks.
 .
 .TP
 .B \-- PARAM=value "..."
@@ -113,7 +117,7 @@ it is for reference only and regenerated on every invocation of TLP.
 .I /etc/default/tlp
 .RS
 Obsolete system-wide configuration file. DO NOT USE this file, it is
-evaluated only when /etc/tlp.conf is non-existent.
+evaluated as fallback only when /etc/tlp.conf is non-existent.
 .
 .SH SEE ALSO
 .BR tlp (8).
