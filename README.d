@@ -1,5 +1,5 @@
 This directory is intended to contain drop-in customizations for TLP.
-See full explanation: https://linrunner.de/settings
+See full explanation: https://linrunner.de/tlp/settings
 
 The naming scheme is 00-name.conf, the files are read in lexical (aphabetical)
 order.
