@@ -20,14 +20,27 @@ readonly ACPIBATDIR=/sys/class/power_supply
 set_charge_thresholds () {
     # apply configured thresholds from configuration to all batteries
     # optional depending on active plugin when specified in $1
+    # - called from bg tasks tlp init [re]start/auto and tlp start
     # $1: plugin list (space separated)
     # rc: 0=ok/
-    #     1=error
+    #     1=battery not present/
+    #     2=threshold(s) out of range or non-numeric/
+    #     3=minimum start stop diff violated/
+    #     4=read error/
+    #     5=write error/
+    #     6=threshold write discarded by kernel or firmware/
+    #     255=no thresh api
 
     local rc
 
     # select battery feature driver
     select_batdrv
+    # shellcheck disable=SC2154
+    if [ "$_bm_thresh" = "none" ]; then
+        # thresholds not available --> quit
+        echo_debug "bat" "set_charge_thresholds.no_method"
+        return 255
+    fi
 
     # apply thresholds
     # shellcheck disable=SC2154
@@ -41,7 +54,8 @@ set_charge_thresholds () {
 }
 
 setcharge_battery () {
-    # write charge thresholds (called from cmd line)
+    # write charge thresholds
+    # - called from tlp setcharge/fullcharge/recalibrate
     # $1: start charge threshold,
     # $2: stop charge threshold
     # $3: battery
@@ -52,6 +66,7 @@ setcharge_battery () {
     #     3=minimum start stop diff violated/
     #     4=read error/
     #     5=write error/
+    #     6=threshold write discarded by kernel or firmware/
     #     255=no thresh api
 
     local bat rc start_thresh stop_thresh
