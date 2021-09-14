@@ -23,6 +23,8 @@ Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+TLP started in AC mode (auto).
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
 Setting temporary charge threshold for BAT0:
@@ -47,6 +49,8 @@ Setting temporary charge threshold for BAT0:
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Setting temporary charge threshold for BAT0:
   stop = 100
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: battery charge thresholds not available.
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100 -- X_BAT_PLUGIN_SIMULATE=asus
 Setting temporary charge threshold for BAT0:
@@ -122,6 +126,8 @@ TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_START="0" X_THRESH_SIMULATE_STOP="100"
 Error: writing charge thresholds failed.
 TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+TLP started in AC mode (auto).
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
 Setting temporary charge thresholds:
@@ -146,6 +152,8 @@ Setting temporary charge thresholds:
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_START="0" X_THRESH_SIMULATE_STOP="100"
 Setting temporary charge thresholds:
   start = 0, stop = 100 (Error: write failed)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: battery charge thresholds not available.
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100 -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
 Setting temporary charge thresholds:
@@ -197,11 +205,17 @@ Error: writing conservation mode failed.
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+TLP started in AC mode (auto).
+$ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": conservation mode not specified or invalid (must be 0 or 1). Aborted.
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_THRESH_SIMULATE_STOP="0"
 Setting temporary charge threshold for all batteries:
   conservation mode = 1 (Error: write failed)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lenovo NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: battery charge thresholds not available.
+$ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=lenovo
 Error: conservation mode (24) not specified or invalid (must be 0 or 1). Aborted.
 $ sudo tlp setcharge 42 1 -- X_BAT_PLUGIN_SIMULATE=lenovo  X_THRESH_SIMULATE_STOP="0"
@@ -228,10 +242,14 @@ Error: writing care limit failed.
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_STOP="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+TLP started in AC mode (auto).
+$ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": care limit not specified or invalid (must be 80 or 100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" X_THRESH_SIMULATE_STOP="0"
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF
 Error: battery charge thresholds not available.
+$ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=lg
 Error: care limit (24) not specified or invalid (must be 80 or 100). Aborted.
 $ sudo tlp setcharge 42 100 -- X_BAT_PLUGIN_SIMULATE=lg  X_THRESH_SIMULATE_STOP="80"
@@ -258,11 +276,17 @@ Error: writing life extender failed.
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+TLP started in AC mode (auto).
+$ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": life extender not specified or invalid (must be 0 or 1). Aborted.
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_THRESH_SIMULATE_STOP="0"
 Setting temporary charge threshold for all batteries:
   life extender = 1 (Error: write failed)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=samsung NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: battery charge thresholds not available.
+$ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=samsung
 Error: life extender (24) not specified or invalid (must be 0 or 1). Aborted.
 $ sudo tlp setcharge 42 1 -- X_BAT_PLUGIN_SIMULATE=samsung  X_THRESH_SIMULATE_STOP="0"

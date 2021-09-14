@@ -50,6 +50,8 @@ $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="
 Setting temporary charge thresholds for BAT0:
   start =  96
   stop  = 100
+$ sudo tlp setcharge -- TPSMAPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: battery charge thresholds not available.
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100
 Setting temporary charge thresholds for BAT0:
