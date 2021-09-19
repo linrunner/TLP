@@ -3,6 +3,8 @@
   * Bugfixes
     Battery:
       - tlp start: catch missing threshold method
+    Disks:
+      - Confine plugin event handling to USB
 
 +++ 1.4.0-beta.2 --- 09.09.2021 +++
 
