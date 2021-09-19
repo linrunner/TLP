@@ -24,6 +24,9 @@ readonly DISK_NOP_WORDS="_ keep"
 get_disk_dev () { # translate disk id to device (sdX)
     # and determine disk type and capabilities
     # $1: id or device basename
+    # $2: target disk device (optional)
+    # rc: 0=disk exists (optional: amd matches target)
+    #     1=disk non-existent (optional: or does not match target)
     # retval: $_disk_dev:       device basename - below /dev or /sys/block;
     #         $_disk_id:        id basename - below /dev/disk/by-id;
     #         $_disk_type:      nvme/ata/sata/usb/ieee1394;
@@ -32,6 +35,8 @@ get_disk_dev () { # translate disk id to device (sdX)
     #         $_disk_runpm:     runtime pm: 0=allowed/1=denied by kernel/2=denied by tlp/3=incapable
 
     local dev id idpath
+    local target="$2"
+    _disk_dev=""
 
     if [ -h /dev/disk/by-id/$1 ]; then
         # $1 is disk id
@@ -179,8 +184,19 @@ get_disk_dev () { # translate disk id to device (sdX)
             _disk_runpm="3"
         fi
 
-        echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; id=$_disk_id; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath; apm=$_disk_apm; mq=$_disk_mq; runpm=$_disk_runpm"
-        return 0
+        if [ -n "$target" ]; then
+            # in target mode trace output only in case of match
+            if [ "$target" = "$_disk_dev" ]; then
+                echo_debug "disk" "get_disk_dev($1).target: dev=$_disk_dev; id=$_disk_id; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath; apm=$_disk_apm; mq=$_disk_mq; runpm=$_disk_runpm"
+                return 0
+            else
+                # no match
+                return 1
+            fi
+        else
+            echo_debug "disk" "get_disk_dev($1): dev=$_disk_dev; id=$_disk_id; type=$_disk_type; path=$path; bus=$bus; dpath=$dpath; apm=$_disk_apm; mq=$_disk_mq; runpm=$_disk_runpm"
+            return 0
+        fi
     else
         _disk_type="none"
         echo_debug "disk" "get_disk_dev($1).missing"
@@ -246,24 +262,23 @@ set_disk_apm_level () { # set disk apm level
     for dev in $DISK_DEVICES; do
         : ${1:?BUG: broken DISK_APM_LEVEL list handling}
 
-        if get_disk_dev $dev; then
-            if [ -z "$target" ] || [ "$target" = "$_disk_dev" ]; then
-                log_message="set_disk_apm_level($pwrmode): $_disk_dev [$_disk_id] $1"
+        if get_disk_dev $dev $target; then
+            log_message="set_disk_apm_level($pwrmode): $_disk_dev [$_disk_id] $1"
 
-                if wordinlist "$_disk_type" "$DISK_APM_CLASS_DENYLIST"; then
-                    echo_debug "disk" "${log_message}; class denylist"
-                elif [ "$_disk_apm" = "0" ]; then
-                    echo_debug "disk" "${log_message}; not supported"
-                elif wordinlist "$1" "$DISK_NOP_WORDS"; then
-                    echo_debug "disk" "${log_message}; keep as is"
-                else
-                    $HDPARM -B $1 /dev/$_disk_dev > /dev/null 2>&1
-                    echo_debug "disk" "${log_message}; rc=$?"
-                fi
-                # quit the loop after reaching the target
-                [ "$target" = "$_disk_dev" ] && break
+            if wordinlist "$_disk_type" "$DISK_APM_CLASS_DENYLIST"; then
+                echo_debug "disk" "${log_message}; class denylist"
+            elif [ "$_disk_apm" = "0" ]; then
+                echo_debug "disk" "${log_message}; not supported"
+            elif wordinlist "$1" "$DISK_NOP_WORDS"; then
+                echo_debug "disk" "${log_message}; keep as is"
+            else
+                $HDPARM -B $1 /dev/$_disk_dev > /dev/null 2>&1
+                echo_debug "disk" "${log_message}; rc=$?"
             fi
         fi
+        # quit the loop after reaching the target
+        [ -n "$target" ] && [ "$target" = "$_disk_dev" ] && break
+
         # last entry in apmlist applies to all remaining disks
         [ $# -lt 2 ] || shift
     done
@@ -313,20 +328,19 @@ set_disk_spindown_timeout () { # set disk spindown timeout
     for dev in $DISK_DEVICES; do
         : ${1:?BUG: broken DISK_SPINDOWN_TIMEOUT list handling}
 
-        if get_disk_dev $dev; then
-            if [ -z "$target" ] || [ "$target" = "$_disk_dev" ]; then
-                log_message="set_disk_spindown_timeout($pwrmode): $_disk_dev [$_disk_id] $1"
+        if get_disk_dev $dev $target; then
+            log_message="set_disk_spindown_timeout($pwrmode): $_disk_dev [$_disk_id] $1"
 
-                if wordinlist "$1" "$DISK_NOP_WORDS"; then
-                    echo_debug "disk" "${log_message}; keep as is"
-                else
-                    $HDPARM -S $1 /dev/$_disk_dev > /dev/null 2>&1
-                    echo_debug "disk" "${log_message}; rc=$?"
-                fi
-                # quit the loop after reaching the target
-                [ "$target" = "$_disk_dev" ] && break
+            if wordinlist "$1" "$DISK_NOP_WORDS"; then
+                echo_debug "disk" "${log_message}; keep as is"
+            else
+                $HDPARM -S $1 /dev/$_disk_dev > /dev/null 2>&1
+                echo_debug "disk" "${log_message}; rc=$?"
             fi
         fi
+        # quit the loop after reaching the target
+        [ -n "$target" ] && [ "$target" = "$_disk_dev" ] && break
+
         # last entry in timeoutlist applies to all remaining disks
         [ $# -lt 2 ] || shift
     done
@@ -376,25 +390,24 @@ set_disk_iosched () { # set disk io scheduler
 
     for dev in $DISK_DEVICES; do
         local sched schedctrl
-        if get_disk_dev $dev; then
-            if [ -z "$target" ] || [ "$target" = "$_disk_dev" ]; then
-                # get sched from argv, use "keep" when list is too short
-                sched=${1:-keep}
-                schedctrl="/sys/block/$_disk_dev/queue/scheduler"
-                log_message="set_disk_iosched: $_disk_dev [$_disk_id] $sched"
+        if get_disk_dev $dev $target; then
+            # get sched from argv, use "keep" when list is too short
+            sched=${1:-keep}
+            schedctrl="/sys/block/$_disk_dev/queue/scheduler"
+            log_message="set_disk_iosched: $_disk_dev [$_disk_id] $sched"
 
-                if [ ! -f $schedctrl ]; then
-                    echo_debug "disk" "${log_message}; not supported"
-                elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
-                    echo_debug "disk" "${log_message}; keep as is"
-                else
-                    write_sysf "$sched" $schedctrl
-                    echo_debug "disk" "${log_message}; rc=$?"
-                fi
-                # quit the loop after reaching the target
-                [ "$target" = "$_disk_dev" ] && break
+            if [ ! -f $schedctrl ]; then
+                echo_debug "disk" "${log_message}; not supported"
+            elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
+                echo_debug "disk" "${log_message}; keep as is"
+            else
+                write_sysf "$sched" $schedctrl
+                echo_debug "disk" "${log_message}; rc=$?"
             fi
         fi
+        # quit the loop after reaching the target
+        [ -n "$target" ] && [ "$target" = "$_disk_dev" ] && break
+
         # using "keep" when argv is empty
         [ $# -eq 0 ] || shift
     done
@@ -504,37 +517,35 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
 
     # iterate DISK_DEVICES
     for dev in $DISK_DEVICES; do
-        if get_disk_dev $dev; then
-            if [ -z "$target" ] || [ "$target" = "$_disk_dev" ]; then
-                case "$_disk_runpm" in
-                    0) # runtime pm allowed for disk
-                        rc=0
-                        # write timeout first to prevent lockups
-                        if ! write_sysf "$timeout" /sys/block/$_disk_dev/device/power/autosuspend_delay_ms; then
-                            # writing timeout failed
-                            rc=1
-                        fi
-                        # proceed with activation
-                        if ! write_sysf "$control" /sys/block/$_disk_dev/device/power/control; then
-                            # activation failed
-                            rc=2
-                        fi
-                        echo_debug "pm" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc"
-                        ;;
+        if get_disk_dev $dev $target; then
+            case "$_disk_runpm" in
+                0) # runtime pm allowed for disk
+                    rc=0
+                    # write timeout first to prevent lockups
+                    if ! write_sysf "$timeout" /sys/block/$_disk_dev/device/power/autosuspend_delay_ms; then
+                        # writing timeout failed
+                        rc=1
+                    fi
+                    # proceed with activation
+                    if ! write_sysf "$control" /sys/block/$_disk_dev/device/power/control; then
+                        # activation failed
+                        rc=2
+                    fi
+                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc"
+                    ;;
 
-                    1|2) # runtime pm denied for disk
-                        echo_debug "pm" "set_ahci_disk_runtime_pm($1).denied: disk=$_disk_dev; runpm=$_disk_runpm"
-                        ;;
+                1|2) # runtime pm denied for disk
+                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).denied: disk=$_disk_dev; runpm=$_disk_runpm"
+                    ;;
 
-                    3) # disk not runtime pm capable
-                        echo_debug "pm" "set_ahci_disk_runtime_pm($1).incapable: disk=$_disk_dev; runpm=$_disk_runpm"
-                        ;;
+                3) # disk not runtime pm capable
+                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).incapable: disk=$_disk_dev; runpm=$_disk_runpm"
+                    ;;
 
-                esac
-                # quit the loop after reaching the target
-                [ "$target" = "$_disk_dev" ] && break
-            fi
+            esac
         fi
+        # quit the loop after reaching the target
+        [ -n "$target" ] && [ "$target" = "$_disk_dev" ] && break
     done
 
     return 0
