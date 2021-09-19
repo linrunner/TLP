@@ -590,6 +590,8 @@ show_gpu_data () {
     local hdr=
 
     for gpu in "${BASE_DRMD}"/card?; do
+        [ -d "$gpu" ] || continue
+
         driver=$(readlink ${gpu}/device/driver)
         driver=${driver##*/}
         case "$driver" in
