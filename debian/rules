@@ -14,10 +14,10 @@ endif
 	dh $@
 
 override_dh_installsystemd:
-	dh_installsystemd --package=tlp --no-start --no-restart-on-upgrade tlp.service
+	dh_installsystemd --package=tlp --no-start --no-restart-after-upgrade tlp.service
 
 override_dh_installinit:
-	dh_installinit --package=tlp --no-start --only-scripts -- defaults 98 01
+	dh_installinit --package=tlp --no-start --no-restart-after-upgrade --only-scripts -- defaults 98 01
 
 override_dh_gencontrol:
 	dh_gencontrol --package=tlp -- $(SUBSTVARS)
