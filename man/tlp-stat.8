@@ -1,14 +1,14 @@
-.TH tlp\-stat 8 2021-09-10 "TLP 1.4.0" "Power Management"
+.TH tlp\-stat 8 2021-09-21 "TLP 1.4.0" "Power Management"
 .
 .SH NAME
 tlp\-stat \- view power saving status
 .
 .SH SYNOPSIS
-.B tlp\-stat \fI[options]\fR [-- <config> "..."]
+.B tlp\-stat \fB[\fIoptions\fR] [\fB--\fR \fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."]
 .
 .SH DESCRIPTION
 View configuration, system information, kernel power saving settings and battery
-data. Invocation without options shows all information categories. 
+data. Invocation without options shows all information categories.
 .
 .SH OPTIONS
 .
@@ -86,8 +86,8 @@ are active.
 View warnings about SATA disks.
 .
 .TP
-.B \-- PARAM=value "..."
-Add parameters to temporarily overwrite the system configuration
+.B \-- \fR\fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
+Add configuration parameters to temporarily overwrite the system configuration
 (for this program invocation only).
 .
 .SH FILES
