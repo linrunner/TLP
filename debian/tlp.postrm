@@ -9,7 +9,7 @@ NUL="/dev/null"
 SRV="(power-profiles-daemon|systemd-rfkill)"
 
 case "$1" in
-    remove)
+    remove|purge)
         # Unmask conflicting systemd services
         for i in $(ls ${SYD} 2> ${NUL} | egrep "${SRV}"); do
             deb-systemd-helper unmask $i 2> ${NUL} || true
