@@ -112,7 +112,6 @@ batdrv_init () {
             # zero means laptop not supported via the kernel driver
             _natacpi=254
         fi
-
     elif [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
         # simulate api
         _natacpi=0
