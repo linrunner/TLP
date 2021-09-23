@@ -119,7 +119,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
             sleep 5
 
             # Unregister scsi device
-            if syspath="$($UDEVADM info --query=path --name=$optdrv)"; then
+            if syspath="$($UDEVADM info --query=path --name=$optdrv 2> /dev/null)"; then
                 syspath="/sys${syspath%/block/*}"
 
                 if [ "$syspath" != "/sys" ]; then
