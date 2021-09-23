@@ -34,7 +34,7 @@ use constant EXIT_TLPCONF => 5;
 use constant EXIT_DEFCONF => 6;
 
 # --- Global vars
-my @config_val = ();  # 2-dim array: parameter name, value, source
+my @config_val = ();  # 2-dim array: parameter name, value, source, default-value
 my %config_idx = ();  # hash: parameter name => index into the name-value array
 
 my %rename = ();      # hash: OLD_PARAMETER => NEW_PARAMETER
@@ -87,17 +87,20 @@ sub store_name_value_source {
             $config_val[$config_idx{$name}][2] .= " & $source";
         } else {
             # replace value, source
-            # --cdiff: only when differing from default
-            if ( ! $cdiff || ! $is_def && $value ne $config_val[$config_idx{$name}][1] ) {
-                $config_val[$config_idx{$name}][1] = $value;
-                $config_val[$config_idx{$name}][2] = $source;
-            }
+            $config_val[$config_idx{$name}][1] = $value;
+            $config_val[$config_idx{$name}][2] = $source;
         }
 
         printf_debug ("tlp-readconfs.replace [%s]: %s=\"%s\" %s\n", $config_idx{$name}, $name, $value, $source);
     } else {
         # new name --> store name, value, source and hash name
-        push(@config_val, [$name, $value, $source]);
+        if ( $is_def ) {
+            #save value as default
+            push(@config_val, [$name, $value, $source, $value]);
+        } else {
+            # save value as user config
+            push(@config_val, [$name, $value, $source, ""]);
+        }
         $config_idx{$name} = $#config_val;
 
         printf_debug ("tlp-readconfs.insert  [%s]: %s=\"%s\" %s\n", $#config_val, $name, $value, $source);
@@ -161,10 +164,10 @@ sub write_runconf {
     }
 
     foreach ( @config_val ) {
-        my ($name, $value, $source) = @$_;
+        my ($name, $value, $source, $default) = @$_;
         if ( $runconf eq *STDOUT ) {
-            # --cdiff: output only when source != "defaults.conf ..."
-            if ( ! $cdiff || $source !~ /^($defsrc)/ ) {
+            # --cdiff: do not show user config lines matching the default
+            if ( ! $cdiff || $value ne $default ) {
                 printf {$runconf} "%s: %s=\"%s\"\n", $source, $name, $value;
             }
         } else  {
