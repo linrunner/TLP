@@ -91,6 +91,7 @@
       - PLATFORM_PROFILE_ON_AC/BAT: select platform profile to control system
         operating characteristics around power/performance levels, thermal
         and fan speed
+      - tlp-stat -p: show state of ThinkPad lapmode
     Processor:
       - CPU_HWP_DYN_BOOST_ON_AC/BAT: Intel CPU HWP dynamic boost (Issue #468)
       - Remove backwards compatibility of CPU_ENERGY_PERF_POLICY_ON_AC/BAT with
@@ -101,6 +102,7 @@
         - cpu1..cpuN omitted for clarity, use -v to show all
         - Sort more than 10 CPU cores in proper numerical order
         - Show intel_pstate operation mode ("status")
+        - Omit "EPB: unsupported" for AMD or non-intel_pstate CPUs
     USB:
       - USB_EXCLUDE_AUDIO: exclude audio devices from autosuspend (Issue #556)
       - tlp-stat -u -v: show device runtime_status
@@ -118,8 +120,12 @@
       - Issue #488: Idle temperature 20 °C higher on battery (Nvidia GPU)
       - Issue #495: SOUND_POWER_SAVE_ON_AC=0 prevents powerdown of Nvidia GPU
       - Issue #522: Intel GPU settings fail -> validate configuration
+    Operation Mode AC/BAT:
+      - Issue #573: power mode not updating when switching from AC to battery
+    Processor:
+      - Issue #570: no_turbo=1 decreases scaling_max_freq on ThinkPad X1 Gen9
 
-  * Bugfixes since 1.4.0-beta.2
+  * 1.4.0 Bugfixes since beta.2
     Battery:
       - tlp start: catch missing threshold method
     Configuration:
