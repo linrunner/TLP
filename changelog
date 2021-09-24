@@ -1,8 +1,130 @@
-+++ <unreleased> --- 14.09.2021 +++
++++ 1.4.0 --- 24.09.2021 +++
+
+  * Features
+    Audio:
+      - SOUND_POWER_SAVE_ON_AC: change default to enabled (Issue #495)
+    Battery:
+      - "Battery Features" renamed to "Battery Care"
+      - Introduce plugins to support Battery Care for non-ThinkPads:
+        - ASUS laptops: stop threshold
+        - Huawei MateBooks: start and stop threshold
+        - LG Gram laptops: stop threshold at 80% aka "battery care limit"
+        - Lenovo laptops: stop threshold at 60% aka "battery conservation mode"
+        - Samsung laptops: stop threshold at 80% aka "battery life extender"
+      - ThinkPads
+        - Allow deactivation of the start threshold (START_CHARGE_THRESH_BATx=0)
+        - Discharge malfunction: hint to check battery and charger
+        - Use standard sysfs attributes for charge thresholds
+          (Issue #513)
+        - Flag ThinkPad L512 as "unsupported"
+      - Validate charge threshold configuration, don't fail silently
+      - tlp-stat -b
+        - Battery Care: show plugin, supported features, driver usage and
+          related kernel module(s)
+        - Map battery state "Unknown" to "Idle" for clarity
+    Configuration:
+      - tlp-stat --cdiff: show configuration differing from defaults
+      - PARAMETER+="add values": append values to a parameter already defined
+        as intrinsic default or in a *previously* read file (Issue #457)
+      - TLP_WARN_LEVEL: warn about invalid settings, configurable for background
+        tasks and command line
+      - Rename parameters (backwards compatible to legacy config files):
+          SATA_LINKPWR_BLACKLIST      -> SATA_LINKPWR_DENYLIST
+          RUNTIME_PM_BLACKLIST        -> RUNTIME_PM_DENYLIST
+          RUNTIME_PM_DRIVER_BLACKLIST -> RUNTIME_PM_DRIVER_DENYLIST
+          USB_BLACKLIST               -> USB_DENYLIST
+          USB_BLACKLIST_BTUSB         -> USB_EXCLUDE_BTUSB
+          USB_BLACKLIST_PHONE         -> USB_EXCLUDE_PHONE
+          USB_BLACKLIST_PRINTER       -> USB_EXCLUDE_PRINTER
+          USB_BLACKLIST_WWAN          -> USB_EXCLUDE_WWAN
+          USB_WHITELIST               -> USB_ALLOWLIST
+    Disks:
+      - AHCI_RUNTIME_PM_ON_AC/BAT:
+        - Works only on disks defined in DISK_DEVICES
+        - Works on NVMe (new), SATA/ATA and plugged in USB (new) disks
+        - Works on SATA ports
+        - No longer experimental i.e. now enabled by default; the previously
+          existing risk of system freezes (and data loss) with the multiqueue
+          scheduler is now eliminated:
+          - Kernel >= 4.19 itself locks unsafe disk runtime pm
+          - TLP generally locks it for kernel < 4.19
+      - DISK_APM_CLASS_DENYLIST: exclude disk classes from APM, i.e. you may
+        now activate it for USB and IEEE1394 drives (Issue #523)
+      - DISK_APM_LEVEL_ON_AC/BAT, DISK_SPINDOWN_TIMEOUT_ON_AC, DISK_IOSCHED:
+        now also work when plugging in USB disks; provided disk is contained in
+        DISK_DEVICES and 'usb' is removed from DISK_APM_CLASS_DENYLIST
+      - tlp-stat -d
+        - Explain why AHCI_RUNTIME_PM is locked for a disk
+        - Show disks attached to SATA links/ports
+        - Show a disk's host (for SATA_LINKPWR_DENYLIST)
+        - Show ALPM state in the sysfs directory of the AHCI host
+        - Show IDs for all disks configured in DISK_DEVICES
+        - Distinguish SATA from ATA(IDE) disks
+        - Show NVMe disk temperature
+    General:
+      - power-profiles-daemon: issue error messages about conflicting service
+      - tlp-stat -s: determine OS release without the lsb_release utility
+    Graphics:
+      - Add support for amdgpu (Issue #498)
+      - Improve powerdown of unused GPUs with drivers amdgpu, nouveau,
+        nvidia and without driver (Issues #488, #495, #498)
+      - tlp-stat -g:
+        - List all GPUs with at least the driver info
+        - Show hybrid graphics switch state (switcheroo)
+        - Intel GPU:
+          - Show hardware min/max frequency instead of
+            list of available frequencies (kernel change)
+          - Show more informative RC6, FBC and PSR status where available
+            (Issue #203)
+    Operation Mode AC/BAT:
+      - Speed up system shutdown/suspend by not applying AC settings anymore
+      - TLP_PS_IGNORE: add USB; allow to ignore multiple power supply classes
+      - tlp-stat -s: speed up power source detection
+      - tlp-stat --psup/udev: check if udev rules for power source changes and
+        connecting USB devices are active
+    PCI(e) devices:
+      - RUNTIME_PM_ENABLE/DISABLE: permanently enable/disable runtime PM for
+        PCI(e) devices based on address (independent of the power source)
+      - RUNTIME_PM_DENYLIST: remove amdgpu, nvidia, pcieport from defaults
+      - tlp-stat -e -v: show device runtime_status
+    Platform:
+      - PLATFORM_PROFILE_ON_AC/BAT: select platform profile to control system
+        operating characteristics around power/performance levels, thermal
+        and fan speed
+    Processor:
+      - CPU_HWP_DYN_BOOST_ON_AC/BAT: Intel CPU HWP dynamic boost (Issue #468)
+      - Remove backwards compatibility of CPU_ENERGY_PERF_POLICY_ON_AC/BAT with
+        ENERGY_PERF_POLICY_ON_AC/BAT to prevent performance issues caused by the
+        value 'power' in legacy configurations
+      - PHC_CONTROLS removed (obsolete)
+      - tlp-stat -p:
+        - cpu1..cpuN omitted for clarity, use -v to show all
+        - Sort more than 10 CPU cores in proper numerical order
+        - Show intel_pstate operation mode ("status")
+    USB:
+      - USB_EXCLUDE_AUDIO: exclude audio devices from autosuspend (Issue #556)
+      - tlp-stat -u -v: show device runtime_status
 
   * Bugfixes
+    Battery Care:
+      - tlp discharge/recalibrate:
+        - Terminate properly when AC/charger is removed
+        - Check support on ThinkPads because of Coreboot (Issue #547)
+      - [Try to] mitigate false threshold readouts caused by a firmware issue
+        on ThinkPad A/E/L/S/X series (Issue #369)
+    Disks:
+      - Issue #474: confine AHCI_RUNTIME_PM_ON_AC/BAT to SATA disks
+    Graphics:
+      - Issue #488: Idle temperature 20 °C higher on battery (Nvidia GPU)
+      - Issue #495: SOUND_POWER_SAVE_ON_AC=0 prevents powerdown of Nvidia GPU
+      - Issue #522: Intel GPU settings fail -> validate configuration
+
+  * Bugfixes since 1.4.0-beta.2
     Battery:
       - tlp start: catch missing threshold method
+    Configuration:
+      - Ignore trailing blanks on non-quoted parameter values
+      - tlp-stat --cdiff: do not show user config lines matching the default
     Disks:
       - Confine plugin event handling to USB
 
