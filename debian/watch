@@ -1,3 +1,10 @@
-version=3
-opts=filenamemangle=s/.+\/v?(\d\S*)\.tar\.gz/TLP-$1\.tar\.gz/ \
-  https://github.com/linrunner/TLP/releases .*/v?(\d\S*)\.tar\.gz
+# Watch file
+# See uscan(1) for format
+
+# Compulsory line, this is a version 4 file
+version=4
+
+# GitHub hosted projects
+opts="filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%TLP-$1.tar.gz%" \
+   https://github.com/linrunner/TLP/tags \
+   (?:.*?/)?v?(\d[\d.]*)\.tar\.gz debian uupdate
