@@ -11,7 +11,6 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly IWC=iwconfig
 readonly IW=iw
 
 readonly BLUETOOTHD=/sys/class/bluetooth
@@ -74,8 +73,6 @@ any_wifi_in_use () { # check if any wifi device is in use
 
 set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery mode
     local pwr iface
-    local rc=0
-    local cmdx=0
 
     if [ "$1" = "1" ]; then
         pwr=${WIFI_PWR_ON_BAT:-}
@@ -105,25 +102,13 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
 
     for iface in $_wifaces; do
         if [ -n "$iface" ]; then
-            if  [ "$X_DONT_USE_IW" != "1" ] && cmd_exists $IW; then
-                # try with iw first
+            if  cmd_exists $IW; then
                 $IW dev $iface set power_save $pwr > /dev/null 2>&1
-                rc=$?
-                echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr; rc=$rc"
-                cmdx=1 # set flag: iw found and called
-            fi
-            if cmd_exists $IWC; then
-                if [ $rc -ne 0 ] || [ $cmdx -eq 0 ]; then
-                    # iw did not succeed or iw not installed -> try with iwconfig
-                    $IWC $iface power $pwr > /dev/null 2>&1
-                    rc=$?
-                    echo_debug "pm" "set_wifi_power_mode($1, $iface).iwconfig: $pwr; rc=$rc"
-                    cmdx=1 # set flag: iwconfig found and called
-                fi
-            fi
-            if [ $cmdx -eq 0 ]; then
-                # flag not set: neither iw nor iwconfig installed --> no way
-                echo_debug "pm" "set_wifi_power_mode($1, $iface).no_tool"
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr; rc=$?"
+            else
+                # iw not iwconfig installed
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).no_iw"
+                return 1
             fi
         fi
     done

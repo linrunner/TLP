@@ -668,20 +668,12 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
             ifshown=1
 
             # get wifi power mgmt state
-            wifipm=""
-            if [ "$X_DONT_USE_IW" != "1" ] && cmd_exists $IW; then
-                # try with iw first
+            if cmd_exists $IW; then
                 wifipm=$($IW dev $iface get power_save 2> /dev/null | \
                     grep 'Power save' | \
                     sed -r 's/.*Power save: (on|off).*/\1/')
-            fi
-            if cmd_exists $IWC; then
-                if [ -z "$wifipm" ]; then
-                    # iw did not succeed or iw not installed -> try with iwconfig
-                    wifipm=$($IWC $iface 2> /dev/null | \
-                        grep 'Power Management' | \
-                        sed -r 's/.*Power Management:(on|off).*/\1/')
-                fi
+            else
+                wifipm=""
             fi
 
             # get wifi driver
