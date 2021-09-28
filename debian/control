@@ -10,7 +10,7 @@ Homepage: https://linrunner.de/tlp
 
 Package: tlp
 Architecture: all
-Depends: hdparm, iw | wireless-tools, pciutils, rfkill, usbutils, ${misc:Depends}
+Depends: hdparm, iw, pciutils, rfkill, usbutils, ${misc:Depends}
 Recommends: tlp-rdw, ethtool
 Suggests: tp-smapi-dkms, acpi-call-dkms, smartmontools, ${dist:Suggests}
 Conflicts: laptop-mode-tools

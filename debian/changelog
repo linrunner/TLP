@@ -1,3 +1,9 @@
+tlp (1.4.0-2) unstable; urgency=medium
+
+  * Remove dependency on wireless-tools
+
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 28 Sep 2021 07:21:21 +0200
+
 tlp (1.4.0-1) unstable; urgency=medium
 
   * [f3a319c] New upstream version 1.4.0 (LP: #1923737)
