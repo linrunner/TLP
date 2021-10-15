@@ -1,5 +1,5 @@
 #!/bin/sh
-# tlp - switch bluetooth/wifi/wwan on/off
+# tlp - switch bluetooth/nfc/wifi/wwan on/off
 #
 # Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
@@ -24,7 +24,7 @@ add_sbin2path
 self=${0##*/}
 
 case $self in
-    bluetooth|wifi|wwan)
+    bluetooth|nfc|wifi|wwan)
         case $carg1 in
             on)
                 device_switch $self on

@@ -635,7 +635,7 @@ fi # show_graf
 if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Wireless"
     # --- show rfkill state
-    for i in bluetooth wifi wwan; do
+    for i in bluetooth nfc wifi wwan; do
         get_devc $i
         get_devs $i
         echo_device_state $i $_devs
