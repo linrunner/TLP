@@ -7,6 +7,7 @@ lib/systemd/system-sleep/tlp
 lib/udev/rules.d/85-tlp.rules
 lib/udev/tlp-usb-udev
 usr/bin/bluetooth
+usr/bin/nfc
 usr/bin/run-on-ac
 usr/bin/run-on-bat
 usr/bin/tlp-stat
