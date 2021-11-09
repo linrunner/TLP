@@ -1,7 +1,8 @@
-+++ <unreleased> --- 28.09.2021 +++
++++ <unreleased> --- 09.11.2021 +++
 
   * Features
     Radio Devices:
+    - Add support for switching NFC devices
     - Remove support for wireless-tools (iwconfig)
 
   * Bugfixes
