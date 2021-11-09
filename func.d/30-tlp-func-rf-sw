@@ -15,7 +15,7 @@ readonly NMCLI=nmcli
 readonly RFKILL="rfkill"
 readonly RFKD="/dev/rfkill"
 
-readonly ALLDEV="bluetooth wifi wwan"
+readonly ALLDEV="bluetooth nfc wifi wwan"
 
 readonly RDW_NM_LOCK="rdw_nm"
 readonly RDW_DOCK_LOCK="rdw_dock"
@@ -28,7 +28,7 @@ readonly RFSTATEFILE=$VARDIR/rfkill_saved
 # Functions
 
 get_devc () { # get control device for radio type
-              # $1: rftype bluetooth/wifi/wwan
+              # $1: rftype bluetooth/nfc/wifi/wwan
               # retval $_devc: sysdev, $_devs: device state
               #     $_rfkdev: 1/0=is/is not an rfkill device,
               #     $_devon, $_devoff: value to write directly to the sysdev
@@ -44,7 +44,7 @@ get_devc () { # get control device for radio type
     _devoff="0"
 
     case $1 in
-        wwan|bluetooth)
+        wwan|bluetooth|nfc)
             for i in /sys/class/rfkill/rfkill* ; do
                 if [ "$(read_sysf $i/type)" = "$1" ]; then
                     _devc="$i/state"
@@ -290,6 +290,10 @@ echo_device_state () { # print radio type state -- $1: rftype, $2: state
             devstr="bluetooth"
             ;;
 
+        nfc)
+            devstr="nfc      "
+            ;;
+
         wifi)
             devstr="wifi     "
             ;;
@@ -475,7 +479,7 @@ set_radio_device_states () { # set/initialize all radio states
         if [ -n "$devs2enable" ]; then
             if [ "$1" = "radiosw" ]; then
                 # radiosw mode: disable radios not listed
-                for dev in bluetooth wifi wwan; do
+                for dev in bluetooth nfc wifi wwan; do
                     if ! wordinlist "$dev" "$devs2enable"; then
                         device_switch $dev off
                     fi

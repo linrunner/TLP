@@ -62,6 +62,7 @@ _tlp_rf() {
     fi
 } &&
 complete -F _tlp_rf bluetooth
+complete -F _tlp_rf nfc
 complete -F _tlp_rf wwan
 complete -F _tlp_rf wifi
 

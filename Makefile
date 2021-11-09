@@ -83,6 +83,7 @@ INFILES = \
 
 MANFILES1 = \
 	bluetooth.1 \
+	nfc.1 \
 	run-on-ac.1 \
 	run-on-bat.1 \
 	wifi.1 \
@@ -132,6 +133,7 @@ install-tlp: all
 	# Package tlp
 	install -D -m 755 tlp $(_SBIN)/tlp
 	install -D -m 755 tlp-rf $(_BIN)/bluetooth
+	ln -sf bluetooth $(_BIN)/nfc
 	ln -sf bluetooth $(_BIN)/wifi
 	ln -sf bluetooth $(_BIN)/wwan
 	install -m 755 tlp-run-on $(_BIN)/run-on-ac
@@ -168,6 +170,7 @@ ifneq ($(TLP_NO_BASHCOMP),1)
 	install -D -m 644 tlp.bash_completion $(_SHCPL)/tlp
 	ln -sf tlp $(_SHCPL)/tlp-stat
 	ln -sf tlp $(_SHCPL)/bluetooth
+	ln -sf tlp $(_SHCPL)/nfc
 	ln -sf tlp $(_SHCPL)/wifi
 	ln -sf tlp $(_SHCPL)/wwan
 endif
@@ -204,6 +207,7 @@ uninstall-tlp:
 	# Package tlp
 	rm $(_SBIN)/tlp
 	rm $(_BIN)/bluetooth
+	rm $(_BIN)/nfc
 	rm $(_BIN)/wifi
 	rm $(_BIN)/wwan
 	rm $(_BIN)/run-on-ac
@@ -220,6 +224,7 @@ uninstall-tlp:
 	rm -f $(_ELOD)/49-tlp-sleep
 	rm -f $(_SHCPL)/tlp-stat
 	rm -f $(_SHCPL)/bluetooth
+	rm -f $(_SHCPL)/nfc
 	rm -f $(_SHCPL)/wifi
 	rm -f $(_SHCPL)/wwan
 	rm -f $(_SHCPL)/tlp
