@@ -221,14 +221,11 @@ batdrv_write_thresholds () {
     local new_stop=${2:-}
     local verb=${3:-0}
     local cfg_bat="$4"
-    local old_stop
 
     # insert defaults
     [ "$new_stop" = "DEF" ] && new_stop=$_bt_def_stop
 
     # --- validate thresholds
-    local rc
-
     if [ -n "$cfg_bat" ] && [ -z "$new_stop" ]; then
         # do nothing if unconfigured
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).not_configured: bat=$_bat_str"
@@ -277,46 +274,27 @@ batdrv_write_thresholds () {
         esac
     fi
 
-    # read active stop threshold value
-    if ! old_stop=$(batdrv_read_threshold); then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).read_error: bat=$_bat_str"
-        case $verb in
-            1) echo_message "Error: could not read current charge stop threshold for $_bat_str. Battery skipped." ;;
-            2) printf "Error: could not read current charge stop threshold for %s. Aborted.\n" $_bat_str 1>&2 ;;
-        esac
-        return 4
-    fi
-
     # write new threshold
+    local rc=0
     if [ "$verb" = "2" ]; then
         printf "Setting temporary charge threshold for %s:\n" "$_bat_str"
     fi
-
-    local rc=0
-    if [ "$old_stop" != "$new_stop" ]; then
-        # new threshold differs from effective one --> write it
-        write_sysf "$new_stop" $_bf_stop || rc=5
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).write: bat=$_bat_str; old=$old_stop; new=$new_stop; rc=$rc"
-        case $verb in
-            2)
-                if [ $rc -eq 0 ]; then
-                    printf "  stop = %3d\n" $new_stop
-                else
-                    printf "  stop = %3d (Error: write failed)\n" $new_stop 1>&2
-                fi
-                ;;
-            1)
-                if [ $rc -gt 0 ]; then
-                    echo_message "Error: writing charge stop threshold for $_bat_str failed."
-                fi
-                ;;
-        esac
-    else
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).no_change: bat=$_bat_str; old=$old_stop; new=$new_stop"
-        if [ "$verb" = "2" ]; then
-                printf "  stop = %3d (no change)\n" $new_stop
-        fi
-    fi
+    write_sysf "$new_stop" $_bf_stop || rc=5
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).write: bat=$_bat_str; new=$new_stop; rc=$rc"
+    case $verb in
+        2)
+            if [ $rc -eq 0 ]; then
+                printf "  stop = %3d\n" $new_stop
+            else
+                printf "  stop = %3d (Error: write failed)\n" $new_stop 1>&2
+            fi
+            ;;
+        1)
+            if [ $rc -gt 0 ]; then
+                echo_message "Error: writing charge stop threshold for $_bat_str failed."
+            fi
+            ;;
+    esac
 
     return $rc
 }
