@@ -1,6 +1,8 @@
-+++ <unreleased> --- 09.11.2021 +++
++++ <unreleased> --- 15.11.2021 +++
 
   * Features
+    Battery Care:
+    - Sony laptops: stop threshold 50/80/100% aka "battery care limiter"
     Radio Devices:
     - Add support for switching NFC devices
     - Remove support for wireless-tools (iwconfig)
