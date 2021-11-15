@@ -15,6 +15,7 @@ usr/bin/wifi
 usr/bin/wwan
 usr/sbin/tlp
 usr/share/bash-completion/completions/bluetooth
+usr/share/bash-completion/completions/nfc
 usr/share/bash-completion/completions/tlp
 usr/share/bash-completion/completions/tlp-stat
 usr/share/bash-completion/completions/wifi
