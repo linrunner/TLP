@@ -237,11 +237,11 @@ batdrv_init () {
                 _natacpi=1
                 _bm_thresh="natacpi"
 
-                if readable_sysf $bd/force_discharge; then
-                    # forced discharge exists and is actually readable
+                if readable_sysf $bd/charge_behaviour; then
+                    # sysfile for force-discharge exists and is actually readable
                     _natacpi=0
                     _bm_dischg="natacpi"
-                    _bn_dischg="force_discharge"
+                    _bn_dischg="charge_behaviour"
                 fi
             fi
         fi
@@ -815,19 +815,30 @@ batdrv_apply_configured_thresholds () {
 }
 
 batdrv_read_force_discharge () {
-    # read and print force discharge state
+    # read and print force-discharge state
     # $1: error string
     # global param: $_bm_dischg, $_bf_dischg, $_bat_idx
     # out: 0=off/1=on/"$1" on error
     # rc: 0=ok/4=read error/255=no api
+    # retval: $_bt_charge_behaviour
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
     local rc=0 out
 
     case $_bm_dischg in
         natacpi)
-            # read force discharge from sysfile, "$1" if not readable/non-existent
-            out=$(read_sysf $_bf_dischg "$1");
+            # read state from sysfile
+            if _bt_charge_behaviour=$(read_sysf $_bf_dischg); then
+                if echo "$_bt_charge_behaviour" | grep -q "\[force-discharge\]"; then
+                    out=1
+                else
+                    out=0
+                fi
+            else
+                # not readable/non-existent
+                out="$1"
+                rc=4
+            fi
             ;;
 
         tpacpi) # read via tpacpi-bat
@@ -848,7 +859,7 @@ batdrv_read_force_discharge () {
     esac
     printf "%s" "$out"
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; bat_idx=$_bat_idx; out=$out; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; bat_idx=$_bat_idx; out=$out; cb=$_bt_charge_behaviour; rc=$rc"
     return $rc
 }
 
@@ -864,7 +875,10 @@ batdrv_write_force_discharge () {
     case $_bm_dischg in
         natacpi)
             # write force_discharge
-            write_sysf "$1" $_bf_dischg || rc=5
+            case "$1" in
+                0) write_sysf "auto" $_bf_dischg || rc=5 ;;
+                1) write_sysf "force-discharge" $_bf_dischg || rc=5 ;;
+            esac
             ;; # natacpi
 
         tpacpi) # use tpacpi-bat
@@ -1014,7 +1028,7 @@ batdrv_discharge () {
                     ;; # tpsmapi
 
             esac
-            printf "force discharge    = %s\n"  "$(batdrv_read_force_discharge \"\")"
+            printf "force-discharge    = %s\n"  "$(batdrv_read_force_discharge \"\")"
 
             echo "Press Ctrl+C to cancel."
             sleep 5
@@ -1265,13 +1279,21 @@ batdrv_show_battery_data () {
         esac
         if [ "$_bm_dischg" != "none" ]; then
             if dc=$(batdrv_read_force_discharge ""); then
-                # valid force_discharge read
+                # valid force-discharge read
                 case $_bm_dischg in
-                    natacpi) printf "%-59s = %6d\n" "$_bf_dischg" "$dc" ;;
-                    tpacpi)  printf "%-59s = %6d\n" "tpacpi-bat.${_bat_str}.forceDischarge" "$dc" ;;
+                    natacpi)
+                        # call batdrv_read_force_discharge again without subshell
+                        # to obtain the retval $_bt_charge_behaviour
+                        batdrv_read_force_discharge "" > /dev/null
+                        printf "%-59s = %s\n" "$_bf_dischg" "$_bt_charge_behaviour"
+                        ;;
+
+                    tpacpi)
+                        printf "%-59s = %6d\n" "tpacpi-bat.${_bat_str}.forceDischarge" "$dc"
+                        ;;
                 esac
             else
-                # force_discharge read failed
+                # force-discharge read failed
                 case $_bm_dischg in
                     natacpi) printf "%-59s = (not available)\n" "$_bf_dischg" ;;
                     tpacpi)  printf "%-59s = %6d\n" "tpacpi-bat.${_bat_str}.forceDischarge" "(not available)" ;;
