@@ -245,8 +245,8 @@ TLP started in AC mode (auto).
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": care limit not specified or invalid (must be 80 or 100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF
-Error: battery charge thresholds not available.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: could not read current care limit. Aborted.
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=lg
 Error: care limit (24) not specified or invalid (must be 80 or 100). Aborted.
@@ -306,7 +306,7 @@ TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": care limiter not specified or invalid (must be 50, 80 or 100). Skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="50" X_THRESH_SIMULATE_STOP="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="50" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Error: writing care limiter failed.
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" X_THRESH_SIMULATE_STOP="50" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
@@ -323,7 +323,7 @@ TLP started in AC mode (auto).
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": care limiter not specified or invalid (must be 50, 80 or 100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="50" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="50" X_THRESH_SIMULATE_STOP="0"
 Setting temporary charge threshold for all batteries:
   care limiter = 50 (Error: write failed)
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" X_THRESH_SIMULATE_STOP="50"
@@ -337,23 +337,22 @@ Error: battery charge thresholds not available.
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=sony
 Error: care limiter (24) not specified or invalid (must be 50, 80 or 100). Aborted.
-$ sudo tlp setcharge 42 50 -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge 42 50 -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="0"
 Setting temporary charge threshold for all batteries:
   care limiter = 50 (Error: write failed)
 $ sudo tlp setcharge 42 80 -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="50"
 Setting temporary charge threshold for all batteries:
-  care limiter = 50 (Error: write failed)
+  care limiter = 80 (Error: write failed)
 $ sudo tlp setcharge 42 100 -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="80"
 Setting temporary charge threshold for all batteries:
-  care limiter = 50 (Error: write failed)
+  care limiter = 100 (Error: write failed)
 $ sudo tlp setcharge 42 80 -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="80"
 Setting temporary charge threshold for all batteries:
   care limiter = 80 (no change)
-$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="0"
 Setting temporary charge threshold for all batteries:
   care limiter = 100 (no change)
 $ sudo tlp setcharge 42 24 BAT1 -- X_BAT_PLUGIN_SIMULATE=sony
 Error: battery BAT1 not present.
 $ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=sony
 Error: battery 2 not present.
-

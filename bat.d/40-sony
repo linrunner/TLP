@@ -211,6 +211,7 @@ batdrv_write_thresholds () {
     local verb=${3:-0}
     local cfg_bat="$4"
     local old_stop
+    local sony_stop
 
     # insert defaults
     [ "$new_stop" = "DEF" ] && new_stop=$_bt_def_stop
@@ -246,6 +247,12 @@ batdrv_write_thresholds () {
         esac
         return 2
     fi
+    #  convention to disable the stop threshold is 100 --> translate to 0 for Sony
+    if [ "$new_stop" = "100" ]; then
+        sony_stop="0"
+    else
+        sony_stop="$new_stop"
+    fi
 
     # read active stop threshold value
     if ! old_stop=$(batdrv_read_threshold); then
@@ -263,13 +270,10 @@ batdrv_write_thresholds () {
     fi
 
     local rc=0
-    if [ "$old_stop" != "$new_stop" ]; then
+    if [ "$old_stop" != "$sony_stop" ]; then
         # new threshold differs from effective one --> write it
-        case "$new_stop" in
-            50|80) write_sysf "$new_stop" $_bf_stop || rc=5 ;;
-            100)   write_sysf "0" $_bf_stop || rc=5 ;;
-        esac
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).write: old=$old_stop; new=$new_stop; rc=$rc"
+        write_sysf "$sony_stop" $_bf_stop || rc=5
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).write: old=$old_stop; new=$sony_stop; rc=$rc"
         case $verb in
             2)
                 if [ $rc -eq 0 ]; then
@@ -285,7 +289,7 @@ batdrv_write_thresholds () {
                 ;;
         esac
     else
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).no_change: old=$old_stop; new=$new_stop"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).no_change: old=$old_stop; new=$sony_stop"
         if [ "$verb" = "2" ]; then
                 printf "  care limiter = %d (no change)\n" $new_stop
         fi
@@ -374,7 +378,11 @@ batdrv_show_battery_data () {
         printf "Parameter value range:\n"
         printf "* STOP_CHARGE_THRESH_BAT0: 50, 80, 100(off) -- battery care limiter\n\n"
         if sp=$(batdrv_read_threshold); then
-            printf "%-59s = %6d [%%]\n" "$_bf_stop" "$sp"
+            if [ "$sp" = "0" ]; then
+                printf "%-59s = %6d (100) [%%]\n" "$_bf_stop" "$sp"
+            else
+                printf "%-59s = %6d [%%]\n" "$_bf_stop" "$sp"
+            fi
         else
             printf "%-59s = %s [%%]\n"  "$_bf_stop" "(not available)"
         fi
