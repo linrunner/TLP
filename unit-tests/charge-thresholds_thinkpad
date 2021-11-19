@@ -102,3 +102,12 @@ $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="1
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)
+$ # --- tlp-stat
+$ sudo tlp-stat -b | grep -E 'charge_(control|behaviour)'
+/sys/class/power_supply/BAT0/charge_control_start_threshold =     60 [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
+/sys/class/power_supply/BAT0/charge_behaviour               = [auto] inhibit-charge force-discharge
+$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|behaviour)'
+/sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
+/sys/class/power_supply/BAT0/charge_behaviour               = [auto] inhibit-charge force-discharge
