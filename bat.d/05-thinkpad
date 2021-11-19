@@ -816,11 +816,12 @@ batdrv_apply_configured_thresholds () {
 
 batdrv_read_force_discharge () {
     # read and print force-discharge state
-    # $1: error string
+    # $1: 0=binary output/1=tlp-stat output
     # global param: $_bm_dischg, $_bf_dischg, $_bat_idx
-    # out: 0=off/1=on/"$1" on error
+    # out:
+    # - binary: 0=off/1=on/"" on error
+    # - tlp-stat: status text/"(not available)" on error
     # rc: 0=ok/4=read error/255=no api
-    # retval: $_bt_charge_behaviour
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
     local rc=0 out
@@ -828,15 +829,21 @@ batdrv_read_force_discharge () {
     case $_bm_dischg in
         natacpi)
             # read state from sysfile
-            if _bt_charge_behaviour=$(read_sysf $_bf_dischg); then
-                if echo "$_bt_charge_behaviour" | grep -q "\[force-discharge\]"; then
-                    out=1
-                else
-                    out=0
+            if out=$(read_sysf $_bf_dischg); then
+                if [ "$1" != "1" ]; then
+                    if echo "$out" | grep -q "\[force-discharge\]"; then
+                        out=1
+                    else
+                        out=0
+                    fi
                 fi
             else
                 # not readable/non-existent
-                out="$1"
+                if [ "$1" != "1" ]; then
+                    out=""
+                else
+                    out="(not available)"
+                fi
                 rc=4
             fi
             ;;
@@ -846,20 +853,28 @@ batdrv_read_force_discharge () {
                 yes) out=1 ;;
                 no)  out=0 ;;
                 *)
-                    out="$1"
+                    if [ "$1" != "1" ]; then
+                        out=""
+                    else
+                        out="(not available)"
+                    fi
                     rc=4
                     ;;
             esac
             ;;
 
         *) # no discharge api
-            out="$1"
+            if [ "$1" != "1" ]; then
+                out=""
+            else
+                out="(not available)"
+            fi
             rc=255
             ;;
     esac
     printf "%s" "$out"
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; bat_idx=$_bat_idx; out=$out; cb=$_bt_charge_behaviour; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; bat_idx=$_bat_idx; out=$out; rc=$rc"
     return $rc
 }
 
@@ -914,7 +929,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
 
     local bsys rc=0
 
-    if [ "$(batdrv_read_force_discharge "")" = "0" ]; then
+    if [ "$(batdrv_read_force_discharge 0)" = "0" ]; then
         # force_discharge is off --> quit
         echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active($_bat_str): rc=1"
         return 1
@@ -1028,7 +1043,7 @@ batdrv_discharge () {
                     ;; # tpsmapi
 
             esac
-            printf "force-discharge    = %s\n"  "$(batdrv_read_force_discharge \"\")"
+            printf "force-discharge    = %s\n"  "$(batdrv_read_force_discharge 0)"
 
             echo "Press Ctrl+C to cancel."
             sleep 5
@@ -1080,7 +1095,7 @@ batdrv_discharge () {
     trap - INT # remove ^C hook
 
     # ThinkPad E-series firmware may keep force_discharge active --> cancel it
-    [ "$(batdrv_read_force_discharge "")" = "1" ] && batdrv_write_force_discharge 0
+    [ "$(batdrv_read_force_discharge 0)" = "1" ] && batdrv_write_force_discharge 0
 
     if [ $rc -eq 0 ]; then
         echo
@@ -1247,7 +1262,7 @@ batdrv_show_battery_data () {
         esac # $_bm_read
 
         # --- show battery features: thresholds, force_discharge
-        local dc th lf=0
+        local th lf=0
         case $_bm_thresh in
             natacpi)
                 if th=$(batdrv_read_threshold start); then
@@ -1277,30 +1292,17 @@ batdrv_show_battery_data () {
                 lf=1
                 ;;
         esac
-        if [ "$_bm_dischg" != "none" ]; then
-            if dc=$(batdrv_read_force_discharge ""); then
-                # valid force-discharge read
-                case $_bm_dischg in
-                    natacpi)
-                        # call batdrv_read_force_discharge again without subshell
-                        # to obtain the retval $_bt_charge_behaviour
-                        batdrv_read_force_discharge "" > /dev/null
-                        printf "%-59s = %s\n" "$_bf_dischg" "$_bt_charge_behaviour"
-                        ;;
+        case $_bm_dischg in
+            natacpi)
+                printf "%-59s = %6s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
+                lf=1
+                ;;
 
-                    tpacpi)
-                        printf "%-59s = %6d\n" "tpacpi-bat.${_bat_str}.forceDischarge" "$dc"
-                        ;;
-                esac
-            else
-                # force-discharge read failed
-                case $_bm_dischg in
-                    natacpi) printf "%-59s = (not available)\n" "$_bf_dischg" ;;
-                    tpacpi)  printf "%-59s = %6d\n" "tpacpi-bat.${_bat_str}.forceDischarge" "(not available)" ;;
-                esac
-            fi
-            lf=1
-        fi
+            tpacpi)
+                printf "%-59s = %6s\n" "tpacpi-bat.${_bat_str}.forceDischarge" "$(batdrv_read_force_discharge 1)"
+                lf=1
+                ;;
+        esac
         [ $lf -gt 0 ] && printf "\n"
 
         # --- show charge level (SOC) and capacity

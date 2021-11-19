@@ -520,22 +520,32 @@ batdrv_apply_configured_thresholds () {
 
 batdrv_read_force_discharge () {
     # read and print force discharge state
-    # $1: error string
+    # $1: 0=binary output/1=tlp-stat output
     # global param: $_bm_dischg, $_bf_dischg
-    # out: 0=off/1=on/"$1" on error
+    # - binary: 0=off/1=on/"" on error
+    # - tlp-stat: 0=off/1=on/"(not available)" on error
     # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    local rc=0 out="$1"
+    local rc=0 out=""
 
     case $_bm_dischg in
         tpsmapi)
-            # read force discharge from sysfile, "$1" if not readable/non-existent
-            out=$(read_sysf $_bf_dischg "$1");
+            # read force discharge from sysfile
+            out=$(read_sysf $_bf_dischg);
+            if ! out=$(read_sysf $_bf_dischg); then
+                # not readable/non-existent
+                if [ "$1" = "1" ]; then
+                    out="(not available)"
+                fi
+                rc=4
+            fi
             ;;
 
         *) # no discharge api
-            out="$1"
+            if [ "$1" = "1" ]; then
+                out="(not available)"
+            fi
             rc=255
             ;;
     esac
@@ -590,7 +600,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
     local rc=1
 
     # check if force_discharge is on
-    [ "$(batdrv_read_force_discharge "")" = "1" ] && rc=0
+    [ "$(batdrv_read_force_discharge 0)" = "1" ] && rc=0
 
     if [ $rc -eq 0 ] && ! get_sys_power_supply; then
         # AC unplugged --> cancel discharge
@@ -651,7 +661,7 @@ batdrv_discharge () {
                     ;; # tpsmapi
 
             esac
-            printf "force discharge    = %s\n"  "$(batdrv_read_force_discharge \"\")"
+            printf "force discharge    = %s\n"  "$(batdrv_read_force_discharge 0)"
 
             printf "Press Ctrl+C to cancel.\n"
             sleep 5
@@ -842,7 +852,7 @@ batdrv_show_battery_data () {
             lf=1
         fi
         if [ "$_bm_dischg" = "tpsmapi" ]; then
-            printf "%-59s = %6d\n" "$_bf_dischg" "$(batdrv_read_force_discharge  \"\(not available\)\")"
+            printf "%-59s = %6s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
             lf=1
         fi
         [ $lf -gt 0 ] && printf "\n"
