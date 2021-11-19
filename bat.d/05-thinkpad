@@ -431,9 +431,11 @@ batdrv_select_battery () {
 batdrv_read_threshold () {
     # read and print charge threshold
     # $1: start/stop
-    # $2: error string
+    # $2: 0=api/1=tlp-stat output
     # global param: $_bm_thresh, $_bf_start, $_bf_stop, $_bat_idx
-    # out: threshold 0..100/"$2" on error
+    # out:
+    # - api: 0..100/"" on error
+    # - tlp-stat: 0..100/"(not available)" on error
     # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
@@ -451,16 +453,32 @@ batdrv_read_threshold () {
 
     case $_bm_thresh in
         natacpi)
-            # read threshold from sysfile, "$2" if not readable/non-existent
+            # read threshold from sysfile
             case $1 in
                 start) bf=$_bf_start ;;
                 stop)  bf=$_bf_stop  ;;
             esac
-            out=$(read_sysf $bf "$2") || rc=4
+            if ! out=$(read_sysf $bf); then
+                # not readable/non-existent
+                if [ "$2" != "1" ]; then
+                    out=""
+                else
+                    out="(not available)"
+                fi
+                rc=4
+            fi
             # workaround: read threshold sysfile a second time to mitigate
             # the annoying firmware issue on ThinkPad A/E/L/S/X series
             # (refer to issue #369 and FAQ)
-            out=$(read_sysf $bf "$2") || rc=4
+            if ! out=$(read_sysf $bf); then
+                # not readable/non-existent
+                if [ "$2" != "1" ]; then
+                    out=""
+                else
+                    out="(not available)"
+                fi
+                rc=4
+            fi
             ;;
 
         tpacpi)
@@ -488,7 +506,11 @@ batdrv_read_threshold () {
                     out=100
                 fi
             else
-                out="$2"
+                if [ "$2" != "1" ]; then
+                    out=""
+                else
+                    out="(not available)"
+                fi
                 rc=4
             fi
             ;;
@@ -502,6 +524,9 @@ batdrv_read_threshold () {
     if [ "$X_THRESH_SIMULATE_READERR" != "1" ]; then
         printf "%s" "$out"
     else
+        if [ "$2" = "1" ]; then
+            printf "(not available)\n"
+        fi
         rc=4
     fi
 
@@ -611,8 +636,8 @@ batdrv_write_thresholds () {
     fi
 
     # read active threshold values
-    if ! old_start=$(batdrv_read_threshold start) || \
-       ! old_stop=$(batdrv_read_threshold stop); then
+    if ! old_start=$(batdrv_read_threshold start 0) || \
+       ! old_stop=$(batdrv_read_threshold stop 0); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str"
         case $verb in
             1) echo_message "Warning: could not read current charge threshold(s) for $_bat_str. Battery skipped." ;;
@@ -737,7 +762,7 @@ batdrv_chargeonce () {
     local ccharge cur_stop efull enow temp_start
     local rc=0
 
-    if ! cur_stop=$(batdrv_read_threshold stop); then
+    if ! cur_stop=$(batdrv_read_threshold stop 0); then
         printf "Error: reading charge stop threshold for %s failed. Aborted.\n" $_bat_str 1>&2
         echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).thresh_unknown: stop=$cur_stop; rc=4"
         return 4
@@ -816,15 +841,15 @@ batdrv_apply_configured_thresholds () {
 
 batdrv_read_force_discharge () {
     # read and print force-discharge state
-    # $1: 0=binary output/1=tlp-stat output
+    # $1: 0=api/1=tlp-stat output
     # global param: $_bm_dischg, $_bf_dischg, $_bat_idx
     # out:
-    # - binary: 0=off/1=on/"" on error
+    # - api: 0=off/1=on/"" on error
     # - tlp-stat: status text/"(not available)" on error
     # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    local rc=0 out
+    local rc=0 out=""
 
     case $_bm_dischg in
         natacpi)
@@ -864,9 +889,7 @@ batdrv_read_force_discharge () {
             ;;
 
         *) # no discharge api
-            if [ "$1" != "1" ]; then
-                out=""
-            else
+            if [ "$1" = "1" ]; then
                 out="(not available)"
             fi
             rc=255
@@ -1262,33 +1285,17 @@ batdrv_show_battery_data () {
         esac # $_bm_read
 
         # --- show battery features: thresholds, force_discharge
-        local th lf=0
+        local lf=0
         case $_bm_thresh in
             natacpi)
-                if th=$(batdrv_read_threshold start); then
-                    printf "%-59s = %6d [%%]\n" "$_bf_start" "$th"
-                else
-                    printf "%-59s = %s [%%]\n"  "$_bf_start" "(not available)"
-                fi
-                if th=$(batdrv_read_threshold stop); then
-                    printf "%-59s = %6d [%%]\n" "$_bf_stop"  "$th"
-                else
-                    printf "%-59s = %s [%%]\n"  "$_bf_stop"  "(not available)"
-                fi
+                printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
+                printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
                 lf=1
                 ;;
 
             tpacpi)
-                if th=$(batdrv_read_threshold start); then
-                    printf "%-59s = %6d [%%]\n" "tpacpi-bat.${_bat_str}.startThreshold" "$th"
-                else
-                    printf "%-59s = %s [%%]\n"  "tpacpi-bat.${_bat_str}.startThreshold" "(not available)"
-                fi
-                if th=$(batdrv_read_threshold stop); then
-                    printf "%-59s = %6d [%%]\n" "tpacpi-bat.${_bat_str}.stopThreshold" "$th"
-                else
-                    printf "%-59s = %s [%%]\n"  "tpacpi-bat.${_bat_str}.stopThreshold" "(not available)"
-                fi
+                printf "%-59s = %6s [%%]\n" "tpacpi-bat.${_bat_str}.startThreshold" "$(batdrv_read_threshold start 1)"
+                printf "%-59s = %6s [%%]\n" "tpacpi-bat.${_bat_str}.stopThreshold"  "$(batdrv_read_threshold stop 1)"
                 lf=1
                 ;;
         esac

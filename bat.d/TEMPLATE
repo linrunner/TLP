@@ -194,9 +194,11 @@ batdrv_select_battery () {
 batdrv_read_threshold () {
     # read and print charge threshold
     # $1: start/stop
-    # $2: error string
+    # $2: 0=api/1=tlp-stat output
     # global param: $_bm_thresh, $_bf_start, $_bf_stop
-    # out: threshold 0..100/"$2" on error
+    # out:
+    # - api: 0..100/"" on error
+    # - tlp-stat: 0..100/"(not available)" on error
     # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
@@ -213,11 +215,25 @@ batdrv_read_threshold () {
     fi
 
     if [ "$_bm_thresh" = "natacpi" ]; then
+        # read threshold from sysfile
         case $1 in
-            start) out=$(read_sysf $_bf_start "$2") || rc=4 ;;
-            stop)  out=$(read_sysf $_bf_stop  "$2") || rc=4 ;;
+            start) bf=$_bf_start ;;
+            stop)  bf=$_bf_stop  ;;
         esac
+        if ! out=$(read_sysf $bf); then
+            # not readable/non-existent
+            if [ "$2" != "1" ]; then
+                out=""
+            else
+                out="(not available)"
+            fi
+            rc=4
+        fi
     else
+        # no threshold api
+        if [ "$2" = "1" ]; then
+            out="(not available)"
+        fi
         rc=255
     fi
 
@@ -225,6 +241,9 @@ batdrv_read_threshold () {
     if [ "$X_THRESH_SIMULATE_READERR" != "1" ]; then
         printf "%s" "$out"
     else
+        if [ "$2" = "1" ]; then
+            printf "(not available)\n"
+        fi
         rc=4
     fi
 
@@ -337,8 +356,8 @@ batdrv_write_thresholds () {
     fi
 
     # read active threshold values
-    if ! old_start=$(batdrv_read_threshold start) || \
-       ! old_stop=$(batdrv_read_threshold stop); then
+    if ! old_start=$(batdrv_read_threshold start 0) || \
+       ! old_stop=$(batdrv_read_threshold stop 0); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str"
         case $verb in
             1) echo_message "Error: could not read current charge threshold(s) for $_bat_str. Battery skipped." ;;
@@ -568,18 +587,9 @@ batdrv_show_battery_data () {
         fi
 
         # --- show battery features: thresholds
-        local st sp
         if [ "$_bm_thresh" = "natacpi" ]; then
-            if st=$(batdrv_read_threshold start); then
-                printf "%-59s = %6d [%%]\n" "$_bf_start" "$st"
-            else
-                printf "%-59s = %s [%%]\n"  "$_bf_start" "(not available)"
-            fi
-            if sp=$(batdrv_read_threshold stop); then
-                printf "%-59s = %6d [%%]\n" "$_bf_stop"  "$sp"
-            else
-                printf "%-59s = %s [%%]\n"  "$_bf_stop"  "(not available)"
-            fi
+            printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start)"
+            printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop)"
             printf "\n"
         fi
 

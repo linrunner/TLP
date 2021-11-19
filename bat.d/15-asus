@@ -131,7 +131,7 @@ batdrv_init () {
 batdrv_select_battery () {
     # determine battery acpidir and sysfile
     # $1: BAT0/BATC/BATT/BAT1/DEF
-    # # rc: 0=bat exists/1=bat non-existent
+    # rc: 0=bat exists/1=bat non-existent
     # retval: $_bat_str:   BAT0/BAT1/BATT;
     #         $_bd_read:   directory with battery data sysfiles;
     #         $_bf_stop:   sysfile for stop threshold;
@@ -172,8 +172,11 @@ batdrv_select_battery () {
 
 batdrv_read_threshold () {
     # read and print charge threshold (stop only)
+    # $1: 0=api/1=tlp-stat output
     # global param: $_bf_stop
-    # out: threshold 0..100/"" on error
+    # out:
+    # - api: 0..100/"" on error
+    # - tlp-stat: 0..100/"(not available)" on error
     # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
@@ -187,9 +190,20 @@ batdrv_read_threshold () {
     fi
 
     if [ "$_bm_thresh" = "natacpi" ]; then
-        out=$(read_sysf $_bf_stop) || rc=4
+        if ! out=$(read_sysf $_bf_stop); then
+            # not readable/non-existent
+            if [ "$1" != "1" ]; then
+                out=""
+            else
+                out="(not available)"
+            fi
+            rc=4
+        fi
     else
         # no threshold api
+        if [ "$1" = "1" ]; then
+            out="(not available)"
+        fi
         rc=255
     fi
 
@@ -197,6 +211,9 @@ batdrv_read_threshold () {
     if [ "$X_THRESH_SIMULATE_READERR" != "1" ]; then
         printf "%s" "$out"
     else
+        if [ "$1" = "1" ]; then
+            printf "(not available)\n"
+        fi
         rc=4
     fi
 
@@ -455,13 +472,8 @@ batdrv_show_battery_data () {
         fi
 
         # --- show battery features: thresholds
-        local sp
         if [ "$_bm_thresh" = "natacpi" ]; then
-            if sp=$(batdrv_read_threshold); then
-                printf "%-59s = %6d [%%]\n" "$_bf_stop" "$sp"
-            else
-                printf "%-59s = %s [%%]\n"  "$_bf_stop" "(not available)"
-            fi
+            printf "%-59s = %6s [%%]\n" "$_bf_stop" "$(batdrv_read_threshold 1)"
             printf "\n"
         fi
 
