@@ -38,17 +38,8 @@ supports_no_tp_bat_funcs () {
     printf '%s' "$_tpmodel" | grep -E -q "${RE_TP_NONE}"
 }
 
-supports_tpacpi () {
-    # rc: 0=ThinkPad does support tpacpi-bat, natacpi/1=false
-    # prerequisite: check_thinkpad()
-    # assumption: all newer models support tpapaci-bat/natacapi except
-    # explicitly unsupported or older tpsmapi only models
-    ! supports_no_tp_bat_funcs && ! supports_tpsmapi_only
-}
-
 check_thinkpad () {
-    # check for ThinkPad hardware and save model string,
-    # load ThinkPad specific kernel modules
+    # check for ThinkPad hardware and save model string
     # rc: 0=ThinkPad, 1=other hardware
     # retval: $_tpmodel
     local pv
@@ -77,23 +68,14 @@ check_thinkpad () {
     fi
 
     if [ -n "$_tpmodel" ]; then
-        # load tp-smapi for supported models only; prevents kernel messages
-        if supports_tpsmapi_only || supports_tpsmapi_and_tpacpi; then
-            load_modules $MOD_TPSMAPI
-        fi
-
-        # load acpi-call for supported models only; prevents kernel messages
-        if supports_tpacpi; then
-            load_modules $MOD_TPACPI
-        fi
-
+        # ThinkPad
         echo_debug "bat" "check_thinkpad: tpmodel=$_tpmodel"
         return 0
+    else
+        # not a ThinkPad
+        echo_debug "bat" "check_thinkpad.not_a_thinkpad: model=$pv"
+        return 1
     fi
-
-    # not a ThinkPad
-    echo_debug "bat" "check_thinkpad.not_a_thinkpad: model=$pv"
-    return 1
 }
 
 # --- Plugin API functions
@@ -165,11 +147,11 @@ batdrv_init () {
         echo_debug "bat" "batdrv_init.${_batdrv_plugin}.denylist"
         return 1
     else
-        # check if hardware matches and load necessary kernel modules
+        # check if ThinkPad
         if ! check_thinkpad; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.not_a_thinkpad"
             return 1
-        elif ! supports_tpacpi; then
+        elif supports_no_tp_bat_funcs; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.unsupported_model"
             return 1
         fi
@@ -253,9 +235,9 @@ batdrv_init () {
         return 2
     fi
 
-    # --- 2. check for acpi-call external kernel module and test with integrated tpacpi-bat
+    # --- 2. probe acpi_call external kernel module and test with integrated tpacpi-bat
     if [ $_natacpi -gt 0 ]; then
-        # less than full natacpi --> tpacpi required
+        load_modules $MOD_TPACPI
 
         if [ ! -e /proc/acpi/call ]; then
         # call API not present
@@ -317,14 +299,22 @@ batdrv_init () {
         _tpacpi=256
     fi
 
-    # --- 3. check for tp-smapi external kernel module (relevant models only)
+    if [ $_natacpi -gt 1 ] && [ $_tpacpi -gt 1 ]; then
+        # ACPI calls do not work via natacpi nor via tpacpi
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.unsupported_model: batteries=$_batteries; natacpi=$_natacpi; tpacpi=$_tpacpi; tpsmapi=$_tpsmapi"
+        return 1
+    fi
+
+    # --- 3. probe tp-smapi external kernel module (relevant models only)
     if supports_tpsmapi_and_tpacpi; then
+        load_modules $MOD_TPSMAPI
+
         if [ -d $SMAPIBATDIR ]; then
             # module loaded --> tp-smapi available
             if [ "$TPSMAPI_ENABLE" = "0" ]; then
                 # tpsmapi disabled by configuration
                 _tpsmapi=32
-            elif supports_tpsmapi_and_tpacpi; then
+            else
                 # reading battery data via tpsmapi is preferred over natacpi
                 # because it provides cycle count and more
                 _tpsmapi=1

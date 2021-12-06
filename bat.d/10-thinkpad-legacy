@@ -58,7 +58,7 @@ batdrv_init () {
         echo_debug "bat" "batdrv_init.${_batdrv_plugin}.denylist"
         return 1
     else
-        # check if hardware matches and load necessary kernel modules
+        # check if hardware matches
         if ! check_thinkpad; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.not_a_thinkpad"
             return 1
@@ -103,7 +103,9 @@ batdrv_init () {
         return 2
     fi
 
-    # --- check for tp-smapi external kernel module (relevant models only)
+    # --- probe tp-smapi external kernel module
+    load_modules $MOD_TPSMAPI
+
     if [ -d $SMAPIBATDIR ]; then
         # module loaded --> tp-smapi available
         if [ "$TPSMAPI_ENABLE" = "0" ]; then
