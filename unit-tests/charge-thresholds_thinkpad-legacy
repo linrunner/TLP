@@ -107,4 +107,3 @@ $ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_thresh|disch
 /sys/devices/platform/smapi/BAT0/start_charge_thresh        = (not available) [%]
 /sys/devices/platform/smapi/BAT0/stop_charge_thresh         = (not available) [%]
 /sys/devices/platform/smapi/BAT0/force_discharge            =      0
-
