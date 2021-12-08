@@ -26,7 +26,7 @@ Steps to reproduce the unexpected behavior:
 2. Actions to reproduce the behaviour
 3. Shell commands entered and their output
 4. **Full output of `tlp-stat` via https://gist.github.com/ for *all*
-   matching cases of 1.**
+   matching cases of 1** (not as file attachment, no screenshots)
 
 **Additional context**
 
