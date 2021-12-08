@@ -1,4 +1,4 @@
-.TH tlp 8 2021-09-24 "TLP 1.4.0" "Power Management"
+.TH tlp 8 2021-12-08 "TLP 1.4.0" "Power Management"
 .
 .SH NAME
 tlp \- apply laptop power saving settings
@@ -91,8 +91,8 @@ Show disk ids for configuration.
 .
 .TP
 .B \-- \fR\fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
-Add configuration parameters to temporarily overwrite the system configuration
-(for this program invocation only).
+Add configuration parameters to override the system configuration for this
+single program invocation only. They are not kept afterwards.
 .
 .SH NOTES
 For laptops with more than one battery the selection works as follows:
