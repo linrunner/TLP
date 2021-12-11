@@ -854,7 +854,7 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
 
     if [ "$show_all" = "1" ]; then
         # add other recommendations
-        cmd_exists ethtool  || reout="${reout}Install ethtool to disable Wake On LAN (WOL)\n"
+        cmd_exists ethtool  || reout="${reout}Install ethtool to disable Wake-on-LAN\n"
         cmd_exists smartctl || reout="${reout}Install smartmontools for disk drive health info\n"
     fi
 
