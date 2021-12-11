@@ -747,6 +747,19 @@ print_batstate () {
     return 0
 }
 
+print_battery_cycle_count () {
+    # print battery cycle count, explain special case of 0
+    # $1: sysfile
+    # $2: cycle count
+    case "$2" in
+        0) printf "%-59s = %6d (or not supported)\n" "$1" "$2" ;;
+        "")  printf "%-59s = (not supported)\n" "$1" ;;
+        *)   printf "%-59s = %6d\n" "$1" "$2" ;;
+    esac
+
+    return 0
+}
+
 # -- udev diagnostic
 
 check_udev_rule_ps () {

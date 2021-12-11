@@ -1,4 +1,4 @@
-+++ <unreleased> --- 06.12.2021 +++
++++ <unreleased> --- 11.12.2021 +++
 
   * Features
     Battery:
@@ -6,6 +6,7 @@
     - ThinkPads:
       - Use new sysfs attribute 'charge_behaviour' for recalibration
       - Support T400 running coreboot via natacpi/tpacpi-bat (Issue #601)
+    - tlp-stat -b: display "cycle_count = 0"  with the note "or not supported"
     Radio Devices:
     - Add support for switching NFC devices
     - Remove support for wireless-tools (iwconfig)

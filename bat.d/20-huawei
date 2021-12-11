@@ -434,11 +434,7 @@ batdrv_show_battery_data () {
         printparm "%-59s = ##%s##" $_bd_read/manufacturer
         printparm "%-59s = ##%s##" $_bd_read/model_name
 
-        if cc=$(read_sysval $_bd_read/cycle_count) && [ $cc -gt 0 ]; then
-            printf "%-59s = %6d\n" "$_bd_read/cycle_count" "$cc"
-        else
-            printf "%-59s = (not supported)\n" "$_bd_read/cycle_count"
-        fi
+        print_battery_cycle_count "$_bd_read/cycle_count" "$(read_sysf $_bd_read/cycle_count)"
 
         if [ -f $_bd_read/energy_full ]; then
             printparm "%-59s = ##%6d## [mWh]" $_bd_read/energy_full_design "" 000
