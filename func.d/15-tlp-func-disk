@@ -433,7 +433,7 @@ set_sata_link_power () { # set ahci link power management
 
     if [ -z "$pwrlist" ]; then
         # do nothing if unconfigured
-        echo_debug "pm" "set_sata_link_power($pm).not_configured"
+        echo_debug "disk" "set_sata_link_power($pm).not_configured"
         return 0
     fi
 
@@ -449,13 +449,13 @@ set_sata_link_power () { # set ahci link power management
             hostid=${host##*/}
             if wordinlist "$hostid" "$host_bl"; then
                 # host denylisted --> skip
-                echo_debug "pm" "set_sata_link_power($pm).deny: $host"
+                echo_debug "disk" "set_sata_link_power($pm).deny: $host"
                 ctrl_avail="1"
             else
                 # host not denylisted --> iterate all configured values
                 for pwr in "$@"; do
                     write_sysf "$pwr" $linkpol; rc=$?
-                    echo_debug "pm" "set_sata_link_power($pm).$pwr: $host; rc=$rc"
+                    echo_debug "disk" "set_sata_link_power($pm).$pwr: $host; rc=$rc"
                     if [ $rc -eq 0 ]; then
                         # write successful --> goto next host
                         ctrl_avail="1"
@@ -470,7 +470,7 @@ set_sata_link_power () { # set ahci link power management
         fi
     done
 
-    [ "$ctrl_avail" = "0" ] && echo_debug "pm" "set_sata_link_power($pm).not_available"
+    [ "$ctrl_avail" = "0" ] && echo_debug "disk" "set_sata_link_power($pm).not_available"
     return 0
 }
 
@@ -499,13 +499,13 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
 
     if [ -z "$control" ]; then
         # do nothing if unconfigured
-        echo_debug "pm" "set_ahci_disk_runtime_pm($1).not_configured"
+        echo_debug "disk" "set_ahci_disk_runtime_pm($1).not_configured"
         return 0
     fi
 
     # when timeout is unconfigured we're done here
     if [ -z "$timeout" ]; then
-        echo_debug "pm" "set_ahci_disk_runtime_pm($1).timeout_not_configured"
+        echo_debug "disk" "set_ahci_disk_runtime_pm($1).timeout_not_configured"
         return 0
     fi
 
@@ -531,15 +531,15 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
                         # activation failed
                         rc=2
                     fi
-                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc"
+                    echo_debug "disk" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc"
                     ;;
 
                 1|2) # runtime pm denied for disk
-                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).denied: disk=$_disk_dev; runpm=$_disk_runpm"
+                    echo_debug "disk" "set_ahci_disk_runtime_pm($1).denied: disk=$_disk_dev; runpm=$_disk_runpm"
                     ;;
 
                 3) # disk not runtime pm capable
-                    echo_debug "pm" "set_ahci_disk_runtime_pm($1).incapable: disk=$_disk_dev; runpm=$_disk_runpm"
+                    echo_debug "disk" "set_ahci_disk_runtime_pm($1).incapable: disk=$_disk_dev; runpm=$_disk_runpm"
                     ;;
 
             esac
@@ -564,16 +564,16 @@ set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
 
     if [ -z "$control" ]; then
         # do nothing if unconfigured
-        echo_debug "pm" "set_ahci_port_runtime_pm($1).not_configured"
+        echo_debug "disk" "set_ahci_port_runtime_pm($1).not_configured"
         return 0
     fi
 
     # iterate ahci ports
     for device in $AHCID; do
         if write_sysf "$control" ${device}/power/control; then
-            echo_debug "pm" "set_ahci_port_runtime_pm($1).$control: port=$device; rc=0"
+            echo_debug "disk" "set_ahci_port_runtime_pm($1).$control: port=$device; rc=0"
         else
-            echo_debug "pm" "set_ahci_port_runtime_pm($1).no-port"
+            echo_debug "disk" "set_ahci_port_runtime_pm($1).no-port"
         fi
     done
 
@@ -598,12 +598,12 @@ set_laptopmode () {
 
     if [ -z "$isec" ]; then
         # do nothing if unconfigured or non numeric value
-        echo_debug "pm" "set_laptopmode($1).not_configured"
+        echo_debug "disk" "set_laptopmode($1).not_configured"
         return 0
     fi
 
     write_sysf "$isec" /proc/sys/vm/laptop_mode
-    echo_debug "pm" "set_laptopmode($1): $isec; rc=$?"
+    echo_debug "disk" "set_laptopmode($1): $isec; rc=$?"
 
     return 0
 }
@@ -625,7 +625,7 @@ set_dirty_parms () {
 
     if [ "$cage" = "0" ]; then
         # do nothing if unconfigured or invalid age
-        echo_debug "pm" "set_dirty_parms($1).not_configured"
+        echo_debug "disk" "set_dirty_parms($1).not_configured"
         return 0
     fi
 
@@ -635,18 +635,18 @@ set_dirty_parms () {
              /proc/sys/fs/xfs/age_buffer_centisecs \
              /proc/sys/fs/xfs/xfssyncd_centisecs; do
         if [ -f "$df" ] && ! write_sysf "$cage" $df; then
-            echo_debug "pm" "set_dirty_parms($1).write_error: $df $cage; rc=$?"
+            echo_debug "disk" "set_dirty_parms($1).write_error: $df $cage; rc=$?"
             ec=$((ec+1))
         fi
     done
     # shellcheck disable=SC2043
     for df in /proc/sys/fs/xfs/xfsbufd_centisecs; do
         if [ -f "$df" ] && ! write_sysf "3000" $df; then
-            echo_debug "pm" "set_dirty_parms($1).write_error: $df 3000; rc=$?"
+            echo_debug "disk" "set_dirty_parms($1).write_error: $df 3000; rc=$?"
             ec=$((ec+1))
         fi
     done
-    echo_debug "pm" "set_dirty_parms($1): $cage; ec=$ec"
+    echo_debug "disk" "set_dirty_parms($1): $cage; ec=$ec"
 
     return 0
 }
