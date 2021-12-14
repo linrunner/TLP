@@ -1,4 +1,4 @@
-+++ <unreleased> --- 11.12.2021 +++
++++ <unreleased> --- 14.12.2021 +++
 
   * Features
     Battery:
@@ -15,6 +15,9 @@
     Battery Care:
     - ASUS laptops: apply stop threshold reliably on boot and after hibernate
       (Issue #589)
+    Disks:
+    - tlp-stat -d: display correct sysfs path for disk runtime pm:
+      /sys/block/<DISK>/device/power/control (Issue #606)
 
 +++ 1.4.0 --- 24.09.2021 +++
 

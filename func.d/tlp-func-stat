@@ -443,7 +443,7 @@ show_disk_data () {
             1) printf "  Runtime PM: locked by kernel\n";;
             2) printf "  Runtime PM: locked by TLP\n" ;;
         esac
-        print_sysf "    /sys/block/$_disk_dev/power/control = %s, " /sys/block/$_disk_dev/device/power/control
+        print_sysf "    /sys/block/$_disk_dev/device/power/control = %s, " /sys/block/$_disk_dev/device/power/control
         print_sysf "autosuspend_delay_ms = %s\n" /sys/block/$_disk_dev/device/power/autosuspend_delay_ms
     fi
 
