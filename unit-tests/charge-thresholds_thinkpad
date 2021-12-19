@@ -111,3 +111,34 @@ $ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|beh
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
 /sys/class/power_supply/BAT0/charge_behaviour               = [auto] inhibit-charge force-discharge
+$ # --- Feature Detection Edge Cases
+$ sudo ./kmod-helper acpi_call restore
+$ sudo ./kmod-helper acpi_call enable
+$ sudo tlp-stat -b -- NATACPI_ENABLE=0 | head -8 | tail -5
+Plugin: thinkpad
+Supported features: charge thresholds, recalibration
+Driver usage:
+* natacpi (thinkpad_acpi) = inactive (disabled by configuration)
+* tpacpi-bat (acpi_call)  = active (charge thresholds, recalibration)
+$ sudo ./kmod-helper acpi_call disable
+$ sudo tlp-stat -b -- NATACPI_ENABLE=0 | head -8 | tail -5
+Plugin: thinkpad
+Supported features: none available
+Driver usage:
+* natacpi (thinkpad_acpi) = inactive (disabled by configuration)
+* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' load error)
+$ sudo ./kmod-helper acpi_call enable
+$ sudo ./kmod-helper acpi_call remove
+$ sudo tlp-stat -b -- NATACPI_ENABLE=0 | head -8 | tail -5
+Plugin: thinkpad
+Supported features: none available
+Driver usage:
+* natacpi (thinkpad_acpi) = inactive (disabled by configuration)
+* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' not installed)
+$ sudo ./kmod-helper acpi_call restore
+$ sudo tlp-stat -b -- NATACPI_ENABLE=0 TPACPI_ENABLE=0 | head -8 | tail -5
+Plugin: thinkpad
+Supported features: none available
+Driver usage:
+* natacpi (thinkpad_acpi) = inactive (disabled by configuration)
+* tpacpi-bat (acpi_call)  = inactive (disabled by configuration)

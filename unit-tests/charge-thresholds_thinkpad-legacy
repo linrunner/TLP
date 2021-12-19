@@ -107,3 +107,35 @@ $ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_thresh|disch
 /sys/devices/platform/smapi/BAT0/start_charge_thresh        = (not available) [%]
 /sys/devices/platform/smapi/BAT0/stop_charge_thresh         = (not available) [%]
 /sys/devices/platform/smapi/BAT0/force_discharge            =      0
+$ # --- Feature Detection Edge Cases
+$ sudo ./kmod-helper tp_smapi restore
+$ sudo ./kmod-helper tp_smapi enable
+$ sudo tlp-stat -b | head -7 | tail -4
+Plugin: thinkpad-legacy
+Supported features: charge thresholds, recalibration
+Driver usage:
+* tp-smapi (tp_smapi) = active (status, charge thresholds, recalibration)
+$ sudo tlp-stat -b -- NATACPI_ENABLE=0 | head -7 | tail -4
+Plugin: thinkpad-legacy
+Supported features: charge thresholds, recalibration
+Driver usage:
+* tp-smapi (tp_smapi) = active (status, charge thresholds, recalibration)
+$ sudo tlp-stat -b -- NATACPI_ENABLE=0 TPACPI_ENABLE=0 | head -7 | tail -4
+Plugin: thinkpad-legacy
+Supported features: charge thresholds, recalibration
+Driver usage:
+* tp-smapi (tp_smapi) = active (status, charge thresholds, recalibration)
+$ sudo ./kmod-helper tp_smapi disable
+$ sudo tlp-stat -b | head -7 | tail -4
+Plugin: thinkpad-legacy
+Supported features: none available
+Driver usage:
+* tp-smapi (tp_smapi) = inactive (kernel module 'tp_smapi' load error)
+$ sudo ./kmod-helper tp_smapi enable
+$ sudo ./kmod-helper tp_smapi remove
+$ sudo tlp-stat -b | head -7 | tail -4
+Plugin: thinkpad-legacy
+Supported features: none available
+Driver usage:
+* tp-smapi (tp_smapi) = inactive (kernel module 'tp_smapi' not installed)
+$ sudo ./kmod-helper tp_smapi restore

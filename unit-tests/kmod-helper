@@ -1,0 +1,59 @@
+#!/bin/sh
+# Kernel module helper for battery care testing: disable/remove DKMS modules
+# $1: module name
+# $2: disable/enable/remove/restore
+
+# Constants
+KILLFILE=/etc/modprobe.d/kmod-helper.conf
+
+# Functions
+unload_kmod () { # $1: module name
+    modprobe -r "$1"
+}
+
+# MAIN
+
+if [ "$1" != "acpi_call" ] &&  [ "$1" != "tp_smapi" ]; then
+    echo "Error: unknown kernel module \"$1\"." 1>&2
+    exit 1
+fi
+
+kernel=$(uname -r)
+module=$1
+modfile="/lib/modules/${kernel}/updates/dkms/${module}.ko"
+modsave="${modfile}-save"
+
+case "$2" in
+    disable)
+        unload_kmod "$module"
+        echo "install ${module} killmod" > $KILLFILE
+        ;;
+
+    enable)
+        rm -f "$KILLFILE"
+        ;;
+
+    remove)
+        unload_kmod "$module"
+        if [ -f "$modfile" ]; then
+            mv "$modfile" "$modsave"
+        else
+            exit 2
+        fi
+        ;;
+
+    restore)
+        if [ -f "$modsave" ]; then
+            mv "$modsave" "$modfile"
+        else
+            exit 2
+        fi
+        ;;
+
+    *)
+        echo "Error: unknown action \"$2\"." 1>&2
+        exit 1
+        ;;
+esac
+
+exit 0
