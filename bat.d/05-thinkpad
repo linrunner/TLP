@@ -209,7 +209,7 @@ batdrv_init () {
                 _natacpi=254
             else
                 # nothing detected
-                _natacpi=254
+                _natacpi=128
                 continue
             fi
 
@@ -233,6 +233,13 @@ batdrv_init () {
     if [ -z "$_batteries" ]; then
         echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
         return 2
+    fi
+
+    # Consider legacy ThinkPads with Coreboot/natacpi
+    if supports_tpsmapi_only && [ $_natacpi -ge 32 ]; then
+        # no natacpi --> do not probe acpi_call/tpacpi-bat but quit
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_natacpi: batteries=$_batteries; natacpi=$_natacpi; tpacpi=$_tpacpi; tpsmapi=$_tpsmapi"
+        return 1
     fi
 
     # --- 2. probe acpi_call external kernel module and test with integrated tpacpi-bat
@@ -297,12 +304,6 @@ batdrv_init () {
     elif [ ! -e /proc/acpi/call ]; then
          # superseded and kernel module not loaded
         _tpacpi=256
-    fi
-
-    if [ $_natacpi -gt 1 ] && [ $_tpacpi -gt 1 ]; then
-        # ACPI calls do not work via natacpi nor via tpacpi
-        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.unsupported_model: batteries=$_batteries; natacpi=$_natacpi; tpacpi=$_tpacpi; tpsmapi=$_tpsmapi"
-        return 1
     fi
 
     # --- 3. probe tp-smapi external kernel module (relevant models only)
