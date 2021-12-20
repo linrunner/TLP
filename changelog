@@ -1,18 +1,20 @@
-+++ <unreleased> --- 14.12.2021 +++
++++ 1.5.0-beta.1 --- 20.12.2021 +++
+
+  * Beta release
 
   * Features
     Battery:
     - Sony laptops: stop threshold 50/80/100% aka "battery care limiter"
     - ThinkPads:
       - Use new sysfs attribute 'charge_behaviour' for recalibration
-      - Support T400 running coreboot via natacpi/tpacpi-bat (Issue #601)
+      - Support T400 running coreboot via natacpi (Issue #601)
     - tlp-stat -b: display "cycle_count = 0"  with the note "or not supported"
     Radio Devices:
     - Add support for switching NFC devices
     - Remove support for wireless-tools (iwconfig)
 
   * Bugfixes
-    Battery Care:
+    Battery:
     - ASUS laptops: apply stop threshold reliably on boot and after hibernate
       (Issue #589)
     Disks:
