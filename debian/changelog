@@ -1,4 +1,4 @@
-tlp (1.5.0~beta.1-1) unstable; urgency=medium
+tlp (1.5.0~beta.1-2) unstable; urgency=medium
 
   * New upstream version 1.5.0-beta.1
 
@@ -6,8 +6,10 @@ tlp (1.5.0~beta.1-1) unstable; urgency=medium
   * Add Conflicts: power-profiles-daemon
   * Revert: Mask/unmask power-profiles-daemon.service
   * debian/tlp.install: add nfc command
+  * Bump debhelper compatibility level to 13
+  * UsrMerge: install systemd/udev files below /usr/lib/
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 18 Dec 2021 15:52:10 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sat, 01 Jan 2022 18:34:25 +0100
 
 tlp (1.4.0-2) unstable; urgency=medium
 
