@@ -1,6 +1,6 @@
 # tlp - udev rules
 #
-# Copyright (c) 2021 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
 # handle change of power source ac/bat, ignore input device batteries
