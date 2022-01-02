@@ -5,11 +5,7 @@ set -e
 
 SLEEP="/lib/systemd/system-sleep/tlp"
 SLEEPUSR="/usr${SLEEP}"
-
-SYD="/lib/systemd/system"
-ESY="/etc/systemd/system"
-NUL="/dev/null"
-SRV="systemd-rfkill"
+SERVICES2MASK="systemd-rfkill.service systemd-rfkill.socket"
 
 case "$1" in
     remove|purge)
@@ -17,9 +13,8 @@ case "$1" in
         rm -f $SLEEP
 
         # Unmask conflicting systemd services
-        for i in $(ls ${SYD} 2> ${NUL} | egrep "${SRV}"); do
-            deb-systemd-helper unmask $i 2> ${NUL} || true
+        for svc in $SERVICES2MASK; do
+            deb-systemd-helper unmask $svc 2> /dev/null || true
         done
         ;;
-
 esac

@@ -5,12 +5,13 @@ tlp (1.5.0~beta.1-2) unstable; urgency=medium
   [ Thomas Koch ]
   * Add Conflicts: power-profiles-daemon
   * Revert: Mask/unmask power-profiles-daemon.service
-  * debian/tlp.install: add nfc command
+  * tlp.install: add nfc command
   * UsrMerge:
     - Bump debhelper compatibility level to 13
     - Install systemd/udev files below /usr/lib/
     - Provide systemd resume hook in /lib/systemd/system-sleep/
       for backwards compatibility
+  * tlp.postinst/rm: refactor mask/unmask of conflicting services
 
  -- Thomas Koch <linrunner@gmx.net>  Sun, 02 Jan 2022 14:50:42 +0100
 
