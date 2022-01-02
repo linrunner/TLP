@@ -3,6 +3,9 @@ set -e
 
 #DEBHELPER#
 
+SLEEP="/lib/systemd/system-sleep/tlp"
+SLEEPUSR="/usr${SLEEP}"
+
 SYD="/lib/systemd/system"
 ESY="/etc/systemd/system"
 NUL="/dev/null"
@@ -10,6 +13,9 @@ SRV="systemd-rfkill"
 
 case "$1" in
     configure)
+        # UsrMerge: backwards compatibility for systemd resume hook
+        [ -f $SLEEP ] || ln -s $SLEEPUSR $SLEEP
+
         # Mask conflicting systemd services
         for i in $(ls ${SYD} 2> ${NUL} | egrep "${SRV}"); do
             deb-systemd-helper mask $i 2> ${NUL} || true
