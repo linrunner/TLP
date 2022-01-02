@@ -24,7 +24,7 @@ Description: Optimize laptop battery life
  .
  Settings are organized into two profiles, allowing to adjust between
  savings and performance independently for battery (BAT) and AC operation.
- In addition TLP can enable or disable Bluetooth, Wi-Fi and WWAN radio
+ In addition TLP can enable or disable Bluetooth, NFC, Wi-Fi and WWAN radio
  devices on boot.
  .
  For ThinkPads and selected other laptops it provides a unified way
@@ -35,6 +35,6 @@ Architecture: all
 Depends: network-manager, tlp, ${misc:Depends}
 Description: Radio device wizard
  Radio device wizard is an add-on to TLP. It provides event based
- switching of bluetooth, Wi-Fi and WWAN radio devices on:
+ switching of bluetooth, NFC, Wi-Fi and WWAN radio devices on:
   - network connect/disconnect
   - dock/undock

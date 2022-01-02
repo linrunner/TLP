@@ -14,6 +14,7 @@ tlp (1.5.0~beta.1-2) unstable; urgency=medium
       for backwards compatibility
   * tlp.postinst/rm: refactor mask/unmask of conflicting services
   * Remove Pre-Depends: dpkg (>= 1.17.14)
+  * control: update Description:
 
  -- Thomas Koch <linrunner@gmx.net>  Sun, 02 Jan 2022 14:50:42 +0100
 
