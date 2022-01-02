@@ -32,7 +32,6 @@ Description: Optimize laptop battery life
 
 Package: tlp-rdw
 Architecture: all
-Pre-Depends: dpkg (>= 1.17.14)
 Depends: network-manager, tlp, ${misc:Depends}
 Description: Radio device wizard
  Radio device wizard is an add-on to TLP. It provides event based
