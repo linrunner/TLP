@@ -10,7 +10,7 @@ SERVICES2MASK="systemd-rfkill.service systemd-rfkill.socket"
 case "$1" in
     configure)
         # UsrMerge: backwards compatibility for systemd resume hook
-        [ -f $SLEEP ] || ln -s $SLEEPUSR $SLEEP
+        [ -e $SLEEP ] || ln -s $SLEEPUSR $SLEEP
 
         # Mask conflicting systemd services
         for svc in $SERVICES2MASK; do
