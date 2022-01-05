@@ -4,9 +4,11 @@
 # * Hardware: non-legacy ThinkPad
 #
 $ # +++ ASUS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
 $ # --- initialize
 $ sudo tlp start -- START_CHARGE_THRESH_BAT0="35" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
+$ #
 $ # --- tlp start
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
@@ -25,6 +27,7 @@ $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="DEF" ST
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
+$ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
 Setting temporary charge threshold for BAT0:
@@ -51,6 +54,7 @@ Setting temporary charge threshold for BAT0:
   stop = 100
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: battery charge thresholds not available.
+$ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100 -- X_BAT_PLUGIN_SIMULATE=asus
 Setting temporary charge threshold for BAT0:
@@ -88,16 +92,21 @@ $ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=asus
 Error: battery BAT1 not present.
 $ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=asus
 Error: battery BAT1 not present.
+$ #
 $ # --- Reset
 $ sudo tlp setcharge  -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)
+$ #
+$ # --- tlp-stat
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=asus | grep "charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=asus X_THRESH_SIMULATE_READERR=1 | grep "charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
+$ #
 $ # +++ Huawei ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
 $ # --- tlp start
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
 TLP started in AC mode (auto).
@@ -130,6 +139,7 @@ Error: writing charge thresholds failed.
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
+$ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
 Setting temporary charge thresholds:
@@ -156,6 +166,7 @@ Setting temporary charge thresholds:
   start = 0, stop = 100 (Error: write failed)
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: battery charge thresholds not available.
+$ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100 -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
 Setting temporary charge thresholds:
@@ -190,6 +201,8 @@ $ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=huawei
 Error: battery BAT1 not present.
 $ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=huawei
 Error: battery BAT1 not present.
+$ #
+$ # --- tlp-stat
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="0" X_THRESH_SIMULATE_STOP="0" | grep "charge_control_thresholds"
 /sys/devices/platform/huawei-wmi/charge_control_thresholds  = 0 0 [%] (disabled)
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="0" X_THRESH_SIMULATE_STOP="100" | grep "charge_control_thresholds"
@@ -198,7 +211,10 @@ $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="75" 
 /sys/devices/platform/huawei-wmi/charge_control_thresholds  = 75 80 [%]
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=huawei | grep "charge_control_thresholds"
 /sys/devices/platform/huawei-wmi/charge_control_thresholds  = (not available)
+$ #
 $ # +++ Lenovo ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
@@ -211,6 +227,7 @@ $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0="DEF" 
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
+$ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lenovo START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": conservation mode not specified or invalid (must be 0 or 1). Aborted.
@@ -219,6 +236,7 @@ Setting temporary charge threshold for all batteries:
   conservation mode = 1 (Error: write failed)
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lenovo NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: battery charge thresholds not available.
+$ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=lenovo
 Error: conservation mode (24) not specified or invalid (must be 0 or 1). Aborted.
@@ -235,9 +253,14 @@ $ sudo tlp setcharge 42 24 BAT1 -- X_BAT_PLUGIN_SIMULATE=lenovo
 Error: battery BAT1 not present.
 $ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=lenovo
 Error: battery 2 not present.
+$ #
+$ # --- tlp-stat
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lenovo | grep "conservation_mode"
 /sys/bus/platform/drivers/ideapad_acpi/VPC2004:00/conservation_mode = (not available)
+$ #
 $ # +++ LG ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
@@ -250,11 +273,13 @@ $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="DEF" STOP
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
+$ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": care limit not specified or invalid (must be 80 or 100). Aborted.
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: could not read current care limit. Aborted.
+$ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=lg
 Error: care limit (24) not specified or invalid (must be 80 or 100). Aborted.
@@ -271,9 +296,14 @@ $ sudo tlp setcharge 42 80 BAT1 -- X_BAT_PLUGIN_SIMULATE=lg
 Error: battery BAT1 not present.
 $ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=lg
 Error: battery 2 not present.
+$ #
+$ # --- tlp-stat
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lg | grep "battery_care_limit"
 /sys/devices/platform/lg-laptop/battery_care_limit          = (not available)
+$ #
 $ # +++ Samsung ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
@@ -286,6 +316,7 @@ $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
+$ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": life extender not specified or invalid (must be 0 or 1). Aborted.
@@ -294,6 +325,7 @@ Setting temporary charge threshold for all batteries:
   life extender = 1 (Error: write failed)
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=samsung NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: battery charge thresholds not available.
+$ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=samsung
 Error: life extender (24) not specified or invalid (must be 0 or 1). Aborted.
@@ -310,9 +342,14 @@ $ sudo tlp setcharge 42 24 BAT1 -- X_BAT_PLUGIN_SIMULATE=samsung
 Error: battery BAT1 not present.
 $ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=samsung
 Error: battery 2 not present.
+$ #
+$ # --- tlp-stat
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=samsung | grep "battery_life_extender"
 /sys/devices/platform/samsung/battery_life_extender         = (not available)
+$ #
 $ # +++ Sony ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
@@ -332,6 +369,7 @@ Error: writing care limiter failed.
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
+$ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": care limiter not specified or invalid (must be 50, 80 or 100). Aborted.
@@ -346,6 +384,7 @@ Setting temporary charge threshold for all batteries:
   care limiter = 100 (Error: write failed)
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: battery charge thresholds not available.
+$ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=sony
 Error: care limiter (24) not specified or invalid (must be 50, 80 or 100). Aborted.
@@ -368,5 +407,7 @@ $ sudo tlp setcharge 42 24 BAT1 -- X_BAT_PLUGIN_SIMULATE=sony
 Error: battery BAT1 not present.
 $ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=sony
 Error: battery 2 not present.
+$ #
+$ # --- tlp-stat
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=sony | grep "battery_care_limiter"
 /sys/devices/platform/sony-laptop/battery_care_limiter      = (not available) [%]
