@@ -4,6 +4,7 @@
 # * Hardware: Legacy ThinkPad (<= X201/T410)
 #
 $ # +++ Legacy ThinkPad +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
 $ # --- tlp start
 $ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
@@ -25,6 +26,7 @@ $ sudo tlp start -- START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="99" S
 TLP started in AC mode (auto).
 $ sudo tlp start -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
+$ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
 Setting temporary charge thresholds for BAT0:
@@ -52,6 +54,7 @@ Setting temporary charge thresholds for BAT0:
   stop  = 100
 $ sudo tlp setcharge -- TPSMAPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: battery charge thresholds not available.
+$ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100
 Setting temporary charge thresholds for BAT0:
@@ -93,11 +96,13 @@ $ sudo tlp setcharge 0 3 BAT1
 Error: battery BAT1 not present.
 $ sudo tlp setcharge XYZZY ABCDE BAT1
 Error: battery BAT1 not present.
+$ #
 $ # --- Reset
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)
+$ #
 $ # --- tlp-stat
 $ sudo tlp-stat -b | grep -E 'charge_thresh|discharge'
 /sys/devices/platform/smapi/BAT0/start_charge_thresh        =     60 [%]
@@ -107,7 +112,8 @@ $ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_thresh|disch
 /sys/devices/platform/smapi/BAT0/start_charge_thresh        = (not available) [%]
 /sys/devices/platform/smapi/BAT0/stop_charge_thresh         = (not available) [%]
 /sys/devices/platform/smapi/BAT0/force_discharge            =      0
-$ # --- Feature Detection Edge Cases
+$ #
+$ # --- Feature Detection Edge Cases and Kernel Module Recommendations
 $ sudo ./kmod-helper tp_smapi restore
 $ sudo ./kmod-helper tp_smapi enable
 $ sudo tlp-stat -b | head -7 | tail -4
@@ -138,4 +144,7 @@ Plugin: thinkpad-legacy
 Supported features: none available
 Driver usage:
 * tp-smapi (tp_smapi) = inactive (kernel module 'tp_smapi' not installed)
+$ sudo tlp-stat -b | grep -A2 '+++ Recommendations'
++++ Recommendations
+* Install tp-smapi kernel modules for ThinkPad battery thresholds and recalibration
 $ sudo ./kmod-helper tp_smapi restore
