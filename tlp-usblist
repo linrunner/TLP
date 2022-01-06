@@ -17,7 +17,6 @@ use Getopt::Long;
 # --- Global vars
 my %usbdevices;
 
-my $no_runtimepm = 0;
 my $verbose = 0;
 
 # --- Subroutines
@@ -81,9 +80,6 @@ sub usbdriverlist {
 # parse arguments
 GetOptions ('verbose' => \$verbose);
 
-# Check if Runtime PM is enabled
-$no_runtimepm = 1 if ( ! glob USBD . "/*/power/autosuspend*");
-
 # Read USB device tree attributes as arrays into %usbdevices hash, indexed by Bus_Device
 foreach my $udev (grep { ! /:/ } glob USBD . "/*") {
     my $usbv = "(autosuspend not available)";
@@ -118,7 +114,5 @@ foreach (`lsusb 2> /dev/null`) {
     print "Bus $bus Device $dev ID $usbid $usbdevices{$usbk}[1] -- $desc ("
         . usbdriverlist ($usbdevices{$usbk}[0]) . ")\n";
 }
-
-exit 4 if ( $no_runtimepm == 1 );
 
 exit 0;

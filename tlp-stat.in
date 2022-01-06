@@ -60,8 +60,6 @@ show_usb=0
 show_verbose=0
 show_warn=0
 
-no_runtimepm=0
-
 # --- Functions
 
 parse_args () { # parse command-line -- $@: arguments to parse
@@ -758,7 +756,6 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
         else
             $TLPPCI
         fi
-        [ $? -eq 4 ] && no_runtimepm=1
     else
         echo "Error: missing subcommand $TLPPCI." 1>&2
     fi
@@ -808,7 +805,6 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
         else
             $TLPUSB
         fi
-        [ $? -eq 4 ] && no_runtimepm=1
     else
         echo "Error: missing subcommand $TLPUSB." 1>&2
     fi
@@ -843,14 +839,9 @@ fi # show_warn
 
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show recommendations
-    reout=""
-
-    if [ "$show_all" = "1" ] && [ "$no_runtimepm" = "1" ]; then
-        reout="${reout}Reconfigure your Linux kernel with PM_RUNTIME=y to reduce your laptop's power consumption.\n"
-    fi
 
     # battery plugin specific recommendations
-    reout="${reout}$(batdrv_recommendations)"
+    reout="$(batdrv_recommendations)"
 
     if [ "$show_all" = "1" ]; then
         # add other recommendations
