@@ -1,8 +1,9 @@
-tlp (1.5.0~beta.1-2) unstable; urgency=medium
+tlp (1.5.0-1) unstable; urgency=medium
 
-  * New upstream version 1.5.0-beta.1
+  * New upstream version 1.5.0
 
   [ Thomas Koch ]
+  * Remove Depends: wireless-tools
   * Add Conflicts: power-profiles-daemon
   * Revert: Mask/unmask power-profiles-daemon.service
   * tlp.install: add nfc command
@@ -16,13 +17,7 @@ tlp (1.5.0~beta.1-2) unstable; urgency=medium
   * Remove Pre-Depends: dpkg (>= 1.17.14)
   * control: update Description:
 
- -- Thomas Koch <linrunner@gmx.net>  Sun, 02 Jan 2022 14:50:42 +0100
-
-tlp (1.4.0-2) unstable; urgency=medium
-
-  * Remove dependency on wireless-tools
-
- -- Thomas Koch <linrunner@gmx.net>  Tue, 28 Sep 2021 07:21:21 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 07 Jan 2022 07:42:16 +0100
 
 tlp (1.4.0-1) unstable; urgency=medium
 
