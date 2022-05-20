@@ -19,6 +19,7 @@ TLP_SDSL    ?= /lib/systemd/system-sleep
 TLP_SYSV    ?= /etc/init.d
 TLP_ELOD    ?= /lib/elogind/system-sleep
 TLP_SHCPL   ?= /usr/share/bash-completion/completions
+TLP_ZSHCPL  ?= /usr/share/zsh/site-functions
 TLP_MAN     ?= /usr/share/man
 TLP_META    ?= /usr/share/metainfo
 TLP_RUN     ?= /run/tlp
@@ -43,6 +44,7 @@ _SDSL    = $(DESTDIR)$(TLP_SDSL)
 _SYSV    = $(DESTDIR)$(TLP_SYSV)
 _ELOD    = $(DESTDIR)$(TLP_ELOD)
 _SHCPL   = $(DESTDIR)$(TLP_SHCPL)
+_ZSHCPL  = $(DESTDIR)$(TLP_ZSHCPL)
 _MAN     = $(DESTDIR)$(TLP_MAN)
 _META    = $(DESTDIR)$(TLP_META)
 _RUN     = $(DESTDIR)$(TLP_RUN)
@@ -174,6 +176,12 @@ ifneq ($(TLP_NO_BASHCOMP),1)
 	ln -sf tlp $(_SHCPL)/wifi
 	ln -sf tlp $(_SHCPL)/wwan
 endif
+ifneq ($(TLP_NO_ZSHCOMP),1)
+	install -D -m 644 completion/zsh/_tlp $(_ZSHCPL)/_tlp
+	install -D -m 644 completion/zsh/_tlp-radio-device $(_ZSHCPL)/_tlp-radio-device
+	install -D -m 644 completion/zsh/_tlp-run-on $(_ZSHCPL)/_tlp-run-on
+	install -D -m 644 completion/zsh/_tlp-stat $(_ZSHCPL)/_tlp-stat
+endif
 	install -D -m 644 de.linrunner.tlp.metainfo.xml $(_META)/de.linrunner.tlp.metainfo.xml
 	install -d -m 755 $(_VAR)
 
@@ -185,6 +193,9 @@ install-rdw: all
 	install -D -m 755 tlp-rdw-nm $(_NMDSP)/99tlp-rdw-nm
 ifneq ($(TLP_NO_BASHCOMP),1)
 	install -D -m 644 tlp-rdw.bash_completion $(_SHCPL)/tlp-rdw
+endif
+ifneq ($(TLP_NO_ZSHCOMP),1)
+	install -D -m 644 completion/zsh/_tlp-rdw $(_ZSHCPL)/_tlp-rdw
 endif
 
 install-man-tlp:
@@ -228,6 +239,10 @@ uninstall-tlp:
 	rm -f $(_SHCPL)/wifi
 	rm -f $(_SHCPL)/wwan
 	rm -f $(_SHCPL)/tlp
+	rm -f $(_ZSHCPL)/_tlp
+	rm -f $(_ZSHCPL)/_tlp-radio-device
+	rm -f $(_ZSHCPL)/_tlp-run-on
+	rm -f $(_ZSHCPL)/_tlp-stat
 	rm -f $(_META)/de.linrunner.tlp.metainfo.xml
 	rm -r $(_VAR)
 
@@ -238,6 +253,7 @@ uninstall-rdw:
 	rm $(_ULIB)/tlp-rdw-udev
 	rm $(_NMDSP)/99tlp-rdw-nm
 	rm -f $(_SHCPL)/tlp-rdw
+	rm -f $(_ZSHCPL)/_tlp-rdw
 
 uninstall-man-tlp:
 	# manpages

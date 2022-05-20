@@ -1,0 +1,24 @@
+#compdef tlp-stat
+
+local -a args
+args=(
+    '(-b --battery)'{--battery,-b}'[view battery data]'
+    '(-c --config)'{--config,-c}'[view active configuration]'
+    '--cdiff[view difference between defaults and user configuration]'
+    '(-d --disk)'{--disk,-d}'[view disk device information]'
+    '(-e --pcie)'{--pcie,-e}'[view pcie device information]'
+    '(-g --graphics)'{--graphics,-g}'[view graphics card information]'
+    '(-p --processor)'{--processor,-p}'[view processor information]'
+    '(-r --rfkill)'{--rfkill,-r}'[view radio device state]'
+    '(-s --system)'{--system,-s}'[view system information]'
+    '(-t --temp)'{--temp,-t}'[view temperatures and fan speed]'
+    '(-u --usb)'{--usb,-u}'[view USB device information]'
+    '(-v --verbose)'{--verbose,-v}'[show more information (for battery, pcie, processor and USB)]'
+    '(-P --pev)'{--pev,-P}'[monitor power supply udev events]'
+    '--psup[view power supply diagnostics]'
+    '(-T --trace)'{--trace,-T}'[view trace output]'
+    '--udev[check if udev rules for power source changes and connecting USB devices are active]'
+    '(-w --warn)'{--warn,-w}'[view warnings about SATA disks]'
+)
+
+_arguments $args

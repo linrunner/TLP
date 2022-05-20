@@ -1,0 +1,6 @@
+#compdef bluetooth nfc wifi wwan
+
+_values 'command' \
+    'on[switch device on]' \
+    'off[switch device off]' \
+    'toggle[toggle device state]'

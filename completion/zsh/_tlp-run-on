@@ -1,0 +1,4 @@
+#compdef run-on-ac run-on-bat
+
+# Command line is an arbitrary command, so just forward completion to _normal
+_normal

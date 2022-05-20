@@ -1,0 +1,5 @@
+#compdef tlp-rdw
+
+_values 'command' \
+    'disable[disable RDW actions]' \
+    'enable[enable RDW actions]'

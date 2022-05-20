@@ -1,0 +1,50 @@
+#compdef tlp
+
+# Helper to find installed batteries. Avoid a generic name since this is
+# going into the global scope.
+_tlp_batteries() {
+    local -a bats
+    for b in /sys/class/power_supply/*; do
+        if [[ ! $b =~ hid \
+                && -f $b/present && "$(< $b/present)" == "1" \
+                && "$(< $b/type)" = "Battery" ]]; then
+            bats+=("${b##/*/}[Battery ${b##/*/}]")
+        fi
+    done
+    if [[ -n "$bats" ]]; then
+        _values "battery" $bats
+    else
+        _message "battery (none found)"
+    fi
+}
+
+# Extra helper hoop required when using _regex_words below
+local -a subcmd_batteries
+subcmd_batteries=(/$'[^\0]##\0'/ ':battery:battery:_tlp_batteries')
+
+local -a reply
+
+local -a args
+args=(
+    # Command word.  Don't care what that is.
+    /$'[^\0]#\0'/
+)
+
+_regex_words commands 'tlp command' \
+    'start:start tlp and apply settings' \
+    'true:alias for bat' \
+    'false:alias for ac' \
+    'bat:apply battery profile and enter manual mode' \
+    'ac:apply AC profile and enter manual mode' \
+    'usb:enable autosuspend for all USB devices except those excluded in the config' \
+    'bayoff:turn off optical bay in UltraBay/MediaBay' \
+    'chargeonce:charge the battery to the stop charge threshold once (ThinkPads only):$subcmd_batteries' \
+    'discharge:force complete discharge of battery (ThinkPads only):$subcmd_batteries' \
+    'setcharge:change charge thresholds temporarily:' \
+    'fullcharge:charge battery to full capacity:$subcmd_batteries' \
+    'recalibrate:perform battery recalibration (ThinkPads only):$subcmd_batteries' \
+    'diskid:show disk ids for configuration'
+args+=("$reply[@]")
+
+_regex_arguments _tlp "$args[@]"
+_tlp "$@"
