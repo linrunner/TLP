@@ -30,6 +30,7 @@ readonly READCONFS=@TLP_TLIB@/tlp-readconfs
 readonly SYSTEMCTL=systemctl
 readonly TPACPIBAT=@TPACPIBAT@
 readonly UDEVADM=udevadm
+readonly TLPRDW=tlp-rdw
 
 readonly LOCKFILE=$RUNDIR/lock
 readonly LOCKTIMEOUT=2
@@ -294,14 +295,16 @@ check_services_activation_status () {
                 rc=1
             fi
         done
-        for su in $RFKILL_SERVICES; do
-            if $SYSTEMCTL is-enabled $su 2> /dev/null | grep -q -v 'masked'; then
-                echo_message "Warning: $su is not masked, radio device switching may not work as configured."
-                echo_message ">>> Invoke 'systemctl mask $su' to correct this."
-                echo_message ""
-                rc=1
-            fi
-        done
+        if cmd_exists $TLPRDW; then
+            for su in $RFKILL_SERVICES; do
+                if $SYSTEMCTL is-enabled $su 2> /dev/null | grep -q -v 'masked'; then
+                    echo_message "Warning: $su is not masked, radio device switching may not work as configured."
+                    echo_message ">>> Invoke 'systemctl mask $su' to correct this."
+                    echo_message ""
+                    rc=1
+                fi
+            done
+        fi
     fi
 
     return $rc
