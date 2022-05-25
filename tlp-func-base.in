@@ -56,6 +56,29 @@ readonly TLP_SERVICES="tlp.service"
 readonly CONFLICTING_SERVICES="power-profiles-daemon.service"
 readonly RFKILL_SERVICES="systemd-rfkill.service systemd-rfkill.socket"
 
+# If all these config settings are set as listed, systemd-rfkill doesn't conflict with us.
+readonly -A TLP_RFKILL_SERVICES_SAFE=(
+    # Main TLP
+    [RESTORE_DEVICE_STATE_ON_STARTUP]=0
+    [DEVICES_TO_DISABLE_ON_STARTUP]=""
+    [DEVICES_TO_ENABLE_ON_STARTUP]=""
+    [DEVICES_TO_ENABLE_ON_SHUTDOWN]=""
+    [DEVICES_TO_ENABLE_ON_AC]=""
+    [DEVICES_TO_DISABLE_ON_BAT]=""
+    [DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE]=""
+    # TLP-RDW
+    [DEVICES_TO_DISABLE_ON_LAN_CONNECT]=""
+    [DEVICES_TO_DISABLE_ON_WIFI_CONNECT]=""
+    [DEVICES_TO_DISABLE_ON_WWAN_CONNECT]=""
+    [DEVICES_TO_ENABLE_ON_LAN_DISCONNECT]=""
+    [DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT]=""
+    [DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT]=""
+    [DEVICES_TO_ENABLE_ON_DOCK]=""
+    [DEVICES_TO_DISABLE_ON_DOCK]=""
+    [DEVICES_TO_ENABLE_ON_UNDOCK]=""
+    [DEVICES_TO_DISABLE_ON_UNDOCK]=""
+)
+
 # ----------------------------------------------------------------------------
 # Control
 
@@ -274,6 +297,7 @@ check_services_activation_status () {
     # - conflicting services enabled
     # rc: 0=no messages/messages issued
 
+    local su
     local rc=0
 
     if check_systemd; then
@@ -294,14 +318,26 @@ check_services_activation_status () {
                 rc=1
             fi
         done
-        for su in $RFKILL_SERVICES; do
-            if $SYSTEMCTL is-enabled $su 2> /dev/null | grep -q -v 'masked'; then
-                echo_message "Warning: $su is not masked, radio device switching may not work as configured."
-                echo_message ">>> Invoke 'systemctl mask $su' to correct this."
-                echo_message ""
-                rc=1
+        local cfg_key
+        local rfkill_conflicts=0
+        local -a conflict_set=()
+        for cfg_key in "${!TLP_RFKILL_SERVICES_SAFE[@]}"; do
+            if [[ "${!cfg_key}" != "${TLP_RFKILL_SERVICES_SAFE[$cfg_key]}" ]]; then
+                rfkill_conflicts=1
+                conflict_set+=("$cfg_key=\"${!cfg_key}\"")
             fi
         done
+        if [[ $rfkill_conflicts -ne 0 ]]; then
+            for su in $RFKILL_SERVICES; do
+                if $SYSTEMCTL is-enabled $su 2> /dev/null | grep -q -v 'masked'; then
+                    echo_message "Warning: $su is not masked, radio device switching may not work as configured."
+                    echo_message ">>> Invoke 'systemctl mask $su' to correct this."
+                    echo_message ">>> Conflicting variables: ${conflict_set[*]}"
+                    echo_message ""
+                    rc=1
+                fi
+            done
+        fi
     fi
 
     return $rc
@@ -987,4 +1023,3 @@ check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=
         return 0
     fi
 }
-
