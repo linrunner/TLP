@@ -1,0 +1,15 @@
+#compdef tlp-rdw
+
+local -a args reply
+args=(
+    # Command word.  Don't care what that is.
+    /$'[^\0]#\0'/
+)
+
+_regex_words commands 'tlp-rdw command' \
+    'disable:disable RDW actions' \
+    'enable:enable RDW actions'
+args+=("$reply[@]")
+
+_regex_arguments _tlp-rdw "$args[@]"
+_tlp-rdw "$@"
