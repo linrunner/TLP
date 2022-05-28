@@ -3,6 +3,8 @@
   * Development release
 
   * Features
+    General:
+    - Add ZSH command completion
 
   * Bugfixes
 
