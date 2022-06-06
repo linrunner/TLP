@@ -7,9 +7,9 @@ args=(
 )
 
 _regex_words commands "$service command" \
-    'on:switch device on' \
-    'off:switch device off' \
-    'toggle:toggle device state'
+    'on:Switch device on' \
+    'off:Switch device off' \
+    'toggle:Toggle device state'
 args+=("$reply[@]")
 
 _regex_arguments _tlp-radio-device "$args[@]"

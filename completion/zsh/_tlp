@@ -38,19 +38,17 @@ args=(
 )
 
 _regex_words commands 'tlp command' \
-    'start:start tlp and apply settings' \
-    'true:alias for bat' \
-    'false:alias for ac' \
-    'bat:apply battery profile and enter manual mode' \
-    'ac:apply AC profile and enter manual mode' \
-    'usb:enable autosuspend for all USB devices except those excluded in the config' \
-    'bayoff:turn off optical bay in UltraBay/MediaBay' \
-    'chargeonce:charge the battery to the stop charge threshold once (ThinkPads only):$subcmd_batteries' \
-    'discharge:force complete discharge of battery (ThinkPads only):$subcmd_batteries' \
-    'setcharge:change charge thresholds temporarily:$subcmd_setcharge' \
-    'fullcharge:charge battery to full capacity:$subcmd_batteries' \
-    'recalibrate:perform battery recalibration (ThinkPads only):$subcmd_batteries' \
-    'diskid:show disk ids for configuration'
+    'start:Start TLP and apply power saving profile for the actual power source' \
+    'bat:Apply battery profile and enter manual mode' \
+    'ac:Apply AC profile and enter manual mode' \
+    'usb:Enable autosuspend for all USB devices except excluded' \
+    'bayoff:Turn off optical drive in UltraBay/MediaBay' \
+    'chargeonce:Charge battery to the stop charge threshold once (ThinkPads only):$subcmd_batteries' \
+    'discharge:Force a complete discharge of the battery (ThinkPads only):$subcmd_batteries' \
+    'setcharge:Change charge thresholds temporarily:$subcmd_setcharge' \
+    'fullcharge:Charge battery to full capacity:$subcmd_batteries' \
+    'recalibrate:Perform a battery recalibration (ThinkPads only):$subcmd_batteries' \
+    'diskid:Show disk ids for configured drives'
 args+=("$reply[@]")
 
 _regex_arguments _tlp "$args[@]"

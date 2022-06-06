@@ -1,4 +1,4 @@
-.TH tlp 8 2021-12-18 "TLP 1.5.0" "Power Management"
+.TH tlp 8 2022-06-05 "TLP 1.5.0" "Power Management"
 .
 .SH NAME
 tlp \- apply laptop power saving settings
@@ -14,33 +14,33 @@ features.
 .
 .TP
 .B start
-Initialize \fBtlp\fR and apply power saving settings according to the actual
-power source. Also use to apply a changed configuration or to leave manual mode.
+Start \fBtlp\fR and apply power saving profile for the actual power source.
+Also use to apply a changed configuration or to leave manual mode.
 .
 .TP
 .B bat
-Apply the battery settings profile and enter manual mode. Manual mode means
-that changes to the power source will be ignored until the next reboot or
-\fBtlp start\fR is issued to resume automatic mode.
+Apply battery profile and enter manual mode.
+Manual mode means that changes to the power source will be ignored until the
+next reboot or \fBtlp start\fR is issued to resume automatic mode.
 .
 .TP
 .B true
-Same as \fBbat\fR.
+Alias for \fBbat\fR.
 .
 .TP
 .B ac
-Apply the AC settings profile and enter manual mode. Manual mode means
-that changes to the power source will be ignored until the next reboot or
-\fBtlp start\fR is issued to resume automatic mode.
+Apply AC profile and enter manual mode.
+Manual mode means that changes to the power source will be ignored until the
+next reboot or \fBtlp start\fR is issued to resume automatic mode.
 .
 .TP
 .B false
-Same as \fBac\fR.
+Alias for \fBac\fR.
 .
 .TP
 .B usb
 Enable autosuspend for all USB devices except those excluded by default or
-in the configuration.
+via configuration.
 .
 .TP
 .B bayoff
@@ -55,39 +55,39 @@ the value ranges with \fBtlp-stat -b\fR. For details on charge thresholds
 also refer to the link at the bottom.
 .TP
 .B setcharge \fR[\fISTART_CHARGE_THRESH STOP_CHARGE_THRESH\fR] [\fBBAT0\fR|\fBBAT1\fR|\fBBAT\fR\fIx\fR|\fBCMB0\fR]
-Changes the charge thresholds for the battery temporarily.
+Change battery charge thresholds temporarily.
 If your hardware supports only a stop threshold, set the start value to 0.
 Configured charge thresholds will be restored at the next boot or by using
 \fBtlp setcharge\fR again but without the threshold arguments.
 .
 .TP
 .B fullcharge \fR[\fBBAT0\fR|\fBBAT1\fR|\fBBAT\fR\fIx\fR|\fBCMB0\fR]
-Charge the battery to full capacity.
+Charge battery to full capacity.
 This is done by applying vendor presets to the charge thresholds temporarily.
 Configured charge thresholds will be restored at the next boot or by using
 \fBtlp setcharge\fR without the threshold arguments.
 .
 .TP
 .B chargeonce \fR[\fBBAT0\fR|\fBBAT1\fR] \fR(ThinkPads only)
-Charge the battery to the stop charge threshold once.
+Charge battery to the stop charge threshold once.
 This is done by temporarily lifting the start charge threshold.
 The configured start charge threshold will be restored at the next boot or by
 using \fBtlp setcharge\fR without the threshold arguments.
 .
 .TP
 .B discharge \fR[\fBBAT0\fR|\fBBAT1\fR] \fR(ThinkPads only)
-Force complete discharge of the battery.
+Force a complete discharge of the battery while on AC power.
 .
 .TP
 .B recalibrate \fR[\fBBAT0\fR|\fBBAT1\fR] \fR(ThinkPads only)
-Battery recalibration: completely discharge the battery and recharge to 100%.
-The latter is done by temporarily applying vendor presets to the thresholds.
-Configured thresholds will be restored at the next boot or by using
-\fBtlp setcharge\fR.
+Perform a battery recalibration while on AC power: completely discharge the
+battery and recharge to 100%. The latter is done by temporarily applying vendor
+presets to the thresholds. Configured thresholds will be restored at the next
+boot or by using \fBtlp setcharge\fR.
 .
 .TP
 .B diskid
-Show disk ids for configuration.
+Show disk ids for configured drives.
 .
 .TP
 .B \-- \fR\fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
