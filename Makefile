@@ -169,7 +169,7 @@ ifneq ($(TLP_WITH_ELOGIND),0)
 	install -D -m 755 tlp-sleep.elogind $(_ELOD)/49-tlp-sleep
 endif
 ifneq ($(TLP_NO_BASHCOMP),1)
-	install -D -m 644 tlp.bash_completion $(_SHCPL)/tlp
+	install -D -m 644 completion/bash/tlp.bash_completion $(_SHCPL)/tlp
 	ln -sf tlp $(_SHCPL)/tlp-stat
 	ln -sf tlp $(_SHCPL)/bluetooth
 	ln -sf tlp $(_SHCPL)/nfc
@@ -192,7 +192,7 @@ install-rdw: all
 	install -D -m 755 tlp-rdw-udev $(_ULIB)/tlp-rdw-udev
 	install -D -m 755 tlp-rdw-nm $(_NMDSP)/99tlp-rdw-nm
 ifneq ($(TLP_NO_BASHCOMP),1)
-	install -D -m 644 tlp-rdw.bash_completion $(_SHCPL)/tlp-rdw
+	install -D -m 644 completion/bash/tlp-rdw.bash_completion $(_SHCPL)/tlp-rdw
 endif
 ifneq ($(TLP_NO_ZSHCOMP),1)
 	install -D -m 644 completion/zsh/_tlp-rdw $(_ZSHCPL)/_tlp-rdw
