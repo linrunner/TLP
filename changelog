@@ -3,6 +3,8 @@
   * Development release
 
   * Features
+    Configuration:
+    - Allow comments (#) after parameters (Issue #598)
     General:
     - Add ZSH command completion
 

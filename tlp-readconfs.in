@@ -131,8 +131,10 @@ sub parse_configfile {
     my $ln = 0;
     while ( my $line = <$cf> ) {
         chomp $line;
-        $line =~ s/\s+$//;
         $ln += 1;
+        # strip comments: everything after '#' but not when '#' is quoted, i.e. followed by a closing quote ('"')
+        # note: opening quote is handled by the regex below
+        $line =~ s/#(?=[^"]*$).*$//;
         # select lines with format 'PARAMETER=value' or 'PARAMETER="value"'
         if ( $line =~ /^(?<name>[A-Z_]+[0-9]*)(?<op>(=|\+=))(?:(?<val_bare>[-0-9a-zA-Z _.:]*)|"(?<val_dquoted>[-0-9a-zA-Z _.:]*)")\s*$/ ) {
             my $name = $+{name};
