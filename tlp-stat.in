@@ -23,6 +23,7 @@ readonly JOURNALCTL=journalctl
 
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
 readonly EFID=/sys/firmware/efi
+readonly SLEEPMODE=/sys/power/mem_sleep
 readonly NMIWD=/proc/sys/kernel/nmi_watchdog
 readonly OSRELEASE=/etc/os-release
 readonly SWITCHEROO=/sys/kernel/debug/vgaswitcheroo/switch
@@ -262,6 +263,9 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         echo "Boot mode      = UEFI"
     else
         echo "Boot mode      = BIOS (CSM, Legacy)"
+    fi
+    if [ -f "$SLEEPMODE" ]; then
+        printf   "Sleep mode     = %s\n" "$(cat $SLEEPMODE 2> /dev/null | sed -r 's/\[(.*)\]/\1/')"
     fi
     print_selinux
     echo

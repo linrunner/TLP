@@ -7,6 +7,7 @@
     - Allow comments (#) after parameters (Issue #598)
     General:
     - Add ZSH command completion
+    - tlp-stat -s: show system sleep mode
 
   * Bugfixes
 
