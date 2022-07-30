@@ -1,1 +1,5 @@
 *.geany
+*.log
+pkg
+src
+*.zst
