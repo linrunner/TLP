@@ -1,5 +1,7 @@
 *.geany
 *.log
+PKGBUILD
 pkg
 src
+tlp.install
 *.zst
