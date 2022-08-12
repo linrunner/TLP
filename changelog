@@ -8,6 +8,9 @@
     General:
     - Add ZSH command completion
     - tlp-stat -s: show system sleep mode
+    Processor:
+      - tlp-stat -p:
+        - Show amd_pstate performance and frequency attributes
 
   * Bugfixes
 

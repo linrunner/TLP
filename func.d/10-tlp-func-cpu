@@ -14,6 +14,7 @@
 readonly CPUD=/sys/devices/system/cpu
 readonly CPU_BOOST_ALL_CTRL=${CPUD}/cpufreq/boost
 readonly INTEL_PSTATED=${CPUD}/intel_pstate
+readonly AMD_PSTATED=/sys/module/amd_pstate
 readonly CPU_MIN_PERF_PCT=$INTEL_PSTATED/min_perf_pct
 readonly CPU_MAX_PERF_PCT=$INTEL_PSTATED/max_perf_pct
 readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
@@ -33,6 +34,12 @@ check_intel_pstate () {
     # detect intel_pstate driver -- rc: 0=present/1=absent
     # note: intel_pstate requires Linux 3.9 or higher
     [ -d $INTEL_PSTATED ]
+}
+
+check_amd_pstate () {
+    # detect amd_pstate driver -- rc: 0=present/1=absent
+    # note: intel_pstate requires Linux 5.17 or higher
+    [ -d $AMD_PSTATED ]
 }
 
 set_cpu_scaling_governor () {

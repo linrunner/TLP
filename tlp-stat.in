@@ -392,6 +392,21 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         printparm "%-54s = ##%3d## [%%]" $INTEL_PSTATED/turbo_pct
         printparm "%-54s = ##%3d##"      $INTEL_PSTATED/num_pstates
 
+    elif check_amd_pstate; then
+        # show AMD P-state info
+        printparm "%-54s = ##%d##" $CPU_BOOST_ALL_CTRL "not available"
+
+        cpup="$CPUD/cpufreq/policy0"
+        if [ -f $cpup/amd_pstate_highest_perf ]; then
+            printf "%-72s = %8d [%%]\n" "$cpup/amd_pstate_highest_perf" "$(read_sysf $cpup/amd_pstate_highest_perf)"
+        fi
+        if [ -f $cpup/amd_pstate_max_freq ]; then
+            printf "%-72s = %8d [kHz]\n" "$cpup/amd_pstate_max_freq" "$(read_sysf $cpup/amd_pstate_max_freq)"
+        fi
+        if [ -f $cpup/amd_pstate_lowest_nonlinear_freq ]; then
+            printf "%-72s = %8d [kHz]\n" "$cpup/amd_pstate_lowest_nonlinear_freq" "$(read_sysf $cpup/amd_pstate_lowest_nonlinear_freq)"
+        fi
+
     elif [ -f $CPU_BOOST_ALL_CTRL ]; then
         # show turbo boost info
         boost=$(read_sysval $CPU_BOOST_ALL_CTRL)
@@ -402,6 +417,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         else
             printparm "%-54s = ##%d## (CPU not supported)" $CPU_BOOST_ALL_CTRL
         fi
+
     else
          printparm "%-54s = (not available)" $CPU_BOOST_ALL_CTRL
     fi
