@@ -35,7 +35,7 @@ get_intel_gpu_sysdirs () {
     #         $_intel_gpu_dbg:  debug sysdir
 
     _intel_gpu_parm=${BASE_MODD}/$2/parameters
-    _intel_gpu_dbg=${BASE_DEBUGD}/${1##${BASE_DRMD}/card}
+    _intel_gpu_dbg=${BASE_DEBUGD}/${1##"${BASE_DRMD}/card"}
     echo_debug "pm" "get_intel_gpu_sysdirs: gpu=$1 driver=$2; parm=$_intel_gpu_parm; dbg=$_intel_gpu_dbg"
 
     return 0

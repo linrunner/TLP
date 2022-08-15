@@ -54,7 +54,7 @@ printparm () {
     if val=$(read_sysf $sysf); then
         # sysfile read successful
         if [ -n "$cutoff" ]; then
-            val=${val%$cutoff}
+            val=${val%"$cutoff"}
         fi
     fi
 
