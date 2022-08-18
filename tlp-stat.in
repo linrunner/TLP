@@ -240,6 +240,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     echo "+++ System Info"
     echo "System         = $(read_dmi sys_vendor) $model $(read_dmi product_name)"
     echo "BIOS           = $(read_dmi bios_version)"
+    ecfw="$(read_dmi ec_firmware_release)" && printf "EC Firmware    = %s\n" "$ecfw"
 
     # --- show release & kernel info
     printf "OS Release     = "
