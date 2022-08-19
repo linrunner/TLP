@@ -266,7 +266,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         echo "Boot mode      = BIOS (CSM, Legacy)"
     fi
     if [ -f "$SLEEPMODE" ]; then
-        printf   "Sleep mode     = %s\n" "$(cat $SLEEPMODE 2> /dev/null | sed -r 's/\[(.*)\]/\1/')"
+        printf   "Sleep mode     = %s\n" "$(cat $SLEEPMODE 2> /dev/null | sed -r 's/.*\[(.*)\].*/\1/')"
     fi
     print_selinux
     echo
