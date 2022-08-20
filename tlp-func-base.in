@@ -4,7 +4,7 @@
 # Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC2034,SC2086
+# shellcheck disable=SC2034
 
 # ----------------------------------------------------------------------------
 # Constants
@@ -70,7 +70,7 @@ do_exit () { # cleanup and exit  -- $1: rc
     # remove temporary runconf
     [ -z "$_conf_tmp" ] || rm -f -- "$_conf_tmp"
 
-    exit $1
+    exit "$1"
 }
 
 # --- Messages
@@ -158,7 +158,7 @@ read_sysval () {
     # print '0' if file is non-existent, read fails or content is non-numeric
     # $1: sysfile
     # rc: 0=ok/1=error
-    printf "%d" "$(read_sysf $1)" 2> /dev/null
+    printf "%d" "$(read_sysf "$1")" 2> /dev/null
 }
 
 write_sysf () { # write string to a sysfile
@@ -233,7 +233,7 @@ glob_dirs () {
 
 cmd_exists () {
     # test if command exists -- $1: command
-    command -v $1 > /dev/null 2>&1
+    command -v "$1" > /dev/null 2>&1
 }
 
 test_root () {
@@ -279,7 +279,7 @@ check_services_activation_status () {
     if check_systemd; then
         cnt=0
         for su in $TLP_SERVICES; do
-            if ! $SYSTEMCTL is-enabled $su > /dev/null 2>&1 ; then
+            if ! $SYSTEMCTL is-enabled "$su" > /dev/null 2>&1 ; then
                 echo_message "Error: $su is not enabled, power saving will not apply on boot." "err"
                 echo_message ">>> Invoke 'systemctl enable $su' to correct this!" "err"
                 echo_message ""
@@ -287,7 +287,7 @@ check_services_activation_status () {
             fi
         done
         for su in $CONFLICTING_SERVICES; do
-            if $SYSTEMCTL is-enabled $su > /dev/null 2>&1 ; then
+            if $SYSTEMCTL is-enabled "$su" > /dev/null 2>&1 ; then
                 echo_message "Error: conflicting $su is enabled, power saving will not apply on boot." "err"
                 echo_message ">>> Invoke 'systemctl mask $su' to correct this!" "err"
                 echo_message ""
@@ -295,7 +295,7 @@ check_services_activation_status () {
             fi
         done
         for su in $RFKILL_SERVICES; do
-            if $SYSTEMCTL is-enabled $su 2> /dev/null | grep -q -v 'masked'; then
+            if $SYSTEMCTL is-enabled "$su" 2> /dev/null | grep -q -v 'masked'; then
                 echo_message "Warning: $su is not masked, radio device switching may not work as configured."
                 echo_message ">>> Invoke 'systemctl mask $su' to correct this."
                 echo_message ""
@@ -320,12 +320,12 @@ is_within_bounds () { # check condition min <= value <= max
     # value, min or max undefined/non-numeric means that this branch of the
     # condition is fulfilled
 
-    is_uint $1 || return 255
-    if is_uint $2; then
-        [ $1 -ge $2 ] || return 1
+    is_uint "$1" || return 255
+    if is_uint "$2"; then
+        [ "$1" -ge "$2" ] || return 1
     fi
-    if is_uint $3; then
-        [ $1 -le $3 ] || return 2
+    if is_uint "$3"; then
+        [ "$1" -le "$3" ] || return 2
     fi
 
     return  0
@@ -338,14 +338,14 @@ set_run_flag () { # set flag -- $1: flag name
     local rc
 
     create_rundir
-    touch $RUNDIR/$1; rc=$?
+    touch "$RUNDIR/$1"; rc=$?
     echo_debug "lock" "set_run_flag.touch: $1; rc=$rc"
 
     return $rc
 }
 
 reset_run_flag () { # reset flag -- $1: flag name
-    if rm $RUNDIR/$1 2> /dev/null 1>&2 ; then
+    if rm "$RUNDIR/$1" 2> /dev/null 1>&2 ; then
         echo_debug "lock" "reset_run_flag($1).remove"
     else
         echo_debug "lock" "reset_run_flag($1).not_found"
@@ -358,7 +358,7 @@ check_run_flag () { # check flag -- $1: flag name
                     # rc: 0=flag set/1=flag not set
     local rc
 
-    [ -f $RUNDIR/$1 ]; rc=$?
+    [ -f "$RUNDIR/$1" ]; rc=$?
     echo_debug "lock" "check_run_flag($1): rc=$rc"
 
     return $rc
@@ -372,7 +372,7 @@ lock_tlp () { # get exclusive lock: blocking with timeout
     # open file for writing and attach fd 9
     # when successful lock fd 9 exclusive and blocking
     # wait $LOCKTIMEOUT secs to obtain the lock
-    if { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null && $FLOCK -x -w $LOCKTIMEOUT 9 ; then
+    if { exec 9> "${LOCKFILE}_${1:-tlp}" ; } 2> /dev/null && $FLOCK -x -w $LOCKTIMEOUT 9 ; then
         echo_debug "lock" "lock_tlp($1).success"
         return 0
     else
@@ -388,7 +388,7 @@ lock_tlp_nb () { # get exclusive lock: non-blocking
     create_rundir
     # open file for writing and attach fd 9
     # when successful lock fd 9 exclusive and non-blocking
-    if { exec 9> ${LOCKFILE}_${1:-tlp} ; } 2> /dev/null && $FLOCK -x -n 9 ; then
+    if { exec 9> "${LOCKFILE}_${1:-tlp}" ; } 2> /dev/null && $FLOCK -x -n 9 ; then
         echo_debug "lock" "lock_tlp_nb($1).success"
         return 0
     else
@@ -401,11 +401,11 @@ unlock_tlp () { # free exclusive lock
                 # $1: lock id (default: tlp)
 
     # defer unlock for $X_DEFER_UNLOCK seconds -- debugging only
-    [ -n "$X_DEFER_UNLOCK" ] && sleep $X_DEFER_UNLOCK
+    [ -n "$X_DEFER_UNLOCK" ] && sleep "$X_DEFER_UNLOCK"
 
     # free fd 9 and scrap lockfile
     { exec 9>&- ; } 2> /dev/null
-    rm -f ${LOCKFILE}_${1:-tlp}
+    rm -f "${LOCKFILE}_${1:-tlp}"
     echo_debug "lock" "unlock_tlp($1)"
 
     return 0
@@ -413,7 +413,7 @@ unlock_tlp () { # free exclusive lock
 
 lockpeek_tlp () { # check for pending lock (by looking for the lockfile)
                   # $1: lock id (default: tlp)
-    if [ -f ${LOCKFILE}_${1:-tlp} ]; then
+    if [ -f "${LOCKFILE}_${1:-tlp}" ]; then
         echo_debug "lock" "lockpeek_tlp($1).locked"
         return 0
     else
@@ -431,17 +431,17 @@ set_timed_lock () { # create timestamp n seconds in the future
     # $1: lock id, $2: lock duration [s]
     local lock rc time
 
-    lock=${1}_timed_lock_$(date +%s -d "+${2} seconds")
-    set_run_flag $lock; rc=$?
+    lock="${1}_timed_lock_$(date +%s -d "+${2} seconds")"
+    set_run_flag "$lock"; rc=$?
     echo_debug "lock" "set_timed_lock($1, $2): $lock; rc=$rc"
 
     # cleanup obsolete locks
     time=$(date +%s)
     for lockfile in "$RUNDIR/${1}_timed_lock_"*; do
         if [ -f "$lockfile" ]; then
-            locktime=${lockfile#"${RUNDIR}/${1}_timed_lock_"}
-            if [ $time -ge $locktime ]; then
-                rm -f $lockfile
+            locktime="${lockfile#"${RUNDIR}/${1}_timed_lock_"}"
+            if [ "$time" -ge "$locktime" ]; then
+                rm -f "$lockfile"
                 echo_debug "lock" "set_timed_lock($1, $2).remove_obsolete: ${lockfile#"${RUNDIR}/"}"
             fi
         fi
@@ -458,18 +458,18 @@ check_timed_lock () { # check if active timestamp exists
     for lockfile in "$RUNDIR/${1}_timed_lock_"*; do
         if [ -f "$lockfile" ]; then
             locktime=${lockfile#"${RUNDIR}/${1}_timed_lock_"}
-            if [ $time -lt $(( locktime - 120 )) ]; then
+            if [ "$time" -lt $(( locktime - 120 )) ]; then
                 # timestamp is more than 120 secs in the future,
                 # something weird has happened -> remove it
-                rm -f $lockfile
+                rm -f "$lockfile"
                 echo_debug "lock" "check_timed_lock($1).remove_invalid: ${lockfile#"${RUNDIR}/"}"
-            elif [ $time -lt $locktime ]; then
+            elif [ "$time" -lt "$locktime" ]; then
                 # timestamp in the future -> we're locked
                 echo_debug "lock" "check_timed_lock($1).locked: $time, $locktime"
                 return 0
             else
                 # obsolete timestamp -> remove it
-                rm -f $lockfile
+                rm -f "$lockfile"
                 echo_debug "lock" "check_timed_lock($1).remove_obsolete: ${lockfile#"${RUNDIR}/"}"
             fi
         fi
@@ -525,7 +525,7 @@ select_batdrv () { # source battery feature drivers and
     # iterate until a matching driver is found
     for batdrv in @TLP_BATD@/[0-9][0-9]*[a-z]; do
         # shellcheck disable=SC1090
-        . $batdrv || exit 70
+        . "$batdrv" || exit 70
 
         # end iteration when a matching driver is found
         batdrv_init && break
@@ -640,7 +640,7 @@ load_modules () { # load kernel module(s) -- $*: modules
     # load modules, ignore any errors
     # shellcheck disable=SC2048
     for mod in $*; do
-        $MODPRO $mod > /dev/null 2>&1
+        $MODPRO "$mod" > /dev/null 2>&1
     done
 
     return 0
@@ -654,7 +654,7 @@ read_dmi () { # read DMI data -- $*: keywords; stdout: dmi strings
     outr=""
     # shellcheck disable=SC2048
     for key in $*; do
-        ds="$(read_sysf ${DMID}/$key | \
+        ds="$(read_sysf "${DMID}/$key" | \
                 grep -E -v -i 'not available|to be filled|DMI table is broken')"
         if [ -n "$outr" ]; then
             [ -n "$ds" ] && outr="$outr $ds"
@@ -696,7 +696,7 @@ get_sys_power_supply () {
     if [ -n "$_syspwr" ]; then
         # simulate power supply
         echo_debug "ps" "get_sys_power_supply.simulate: syspwr=$_syspwr"
-        return $_syspwr
+        return "$_syspwr"
     fi
 
     ps_ignore=$(toupper "$TLP_PS_IGNORE")
@@ -707,7 +707,7 @@ get_sys_power_supply () {
         # ignore atypical power supplies and batteries
         printf '%s\n' "$psrc_name" | grep -E -q "$RE_PS_IGNORE" && continue
 
-        case "$(read_sysf $psrc/type)" in
+        case "$(read_sysf "$psrc/type")" in
             Mains)
                 # AC detected
                 _psdev="${_psdev:-$psrc}"
@@ -718,7 +718,7 @@ get_sys_power_supply () {
                 fi
 
                 # check AC status
-                if [ "$(read_sysf $psrc/online)" = "1" ]; then
+                if [ "$(read_sysf "$psrc/online")" = "1" ]; then
                     # AC online --> end iteration
                     _syspwr=0
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_online: syspwr=$_syspwr"
@@ -741,7 +741,7 @@ get_sys_power_supply () {
                 fi
 
                 # check USB PS status
-                if [ "$(read_sysf $psrc/online)" = "1" ]; then
+                if [ "$(read_sysf "$psrc/online")" = "1" ]; then
                     # USB online --> end iteration
                     _syspwr=0
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_online: syspwr=$_syspwr"
@@ -764,7 +764,7 @@ get_sys_power_supply () {
                 fi
 
                 # check battery status
-                bs="$(read_sysf $psrc/status)"
+                bs="$(read_sysf "$psrc/status")"
                 if [ "$bs" != "Discharging" ] && [ "$1" = "auto" ] && [ -z "$wait" ]; then
                     # when command is 'tlp auto', not "Discharging" might be caused by lagging battery status updates
                     # --> recheck every 0.1 secs for 1.5 secs (or user value in deciseconds) max
@@ -775,7 +775,7 @@ get_sys_power_supply () {
                     while [ $wait -gt 0 ]; do
                         sleep 0.1
                         wait=$((wait - 1))
-                        bs="$(read_sysf $psrc/status)"
+                        bs="$(read_sysf "$psrc/status")"
                         [ "$bs" = "Discharging" ] && break
                     done
                 fi
@@ -847,7 +847,7 @@ get_power_mode () {
     # but maps unknown power source to TLP_DEFAULT_MODE or returns
     # persistent mode when enabled
 
-    get_sys_power_supply $1
+    get_sys_power_supply "$1"
     local rc=$?
 
     if get_persist_mode; then
