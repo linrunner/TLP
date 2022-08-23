@@ -447,14 +447,18 @@ case "$_cmd" in
 
     setcharge) # set charge thresholds (temporarily)
         check_root
-        setcharge_battery "$_carg1" "$_carg2" "$_carg3"
+        # quoting args will break $# in setcharge_battery()
+        # shellcheck disable=SC2086
+        setcharge_battery $_carg1 $_carg2 $_carg3
         exitcode=$?
         ;;
 
     fullcharge) # charge battery to 100% (temporarily)
         if check_ac_power fullcharge; then
             check_root
-            setcharge_battery DEF DEF "$_carg1"
+            # quoting args will break $# in setcharge_battery()
+            # shellcheck disable=SC2086
+            setcharge_battery DEF DEF $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
                 echo "Charging starts now, keep AC connected."
@@ -467,7 +471,9 @@ case "$_cmd" in
     chargeonce) # charge battery to stop threshold once
         if check_ac_power chargeonce; then
             check_root
-            chargeonce_battery "$_carg1"
+            # quoting args will break $# in chargeonce_battery()
+            # shellcheck disable=SC2086
+            chargeonce_battery $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
                 echo "Charging starts now, keep AC connected."
@@ -481,7 +487,9 @@ case "$_cmd" in
         if check_ac_power discharge; then
             check_root
             if lock_tlp_nb tlp_discharge; then
-                discharge_battery "$_carg1"
+                # quoting args will break $# in discharge_battery()
+                # shellcheck disable=SC2086
+                discharge_battery $_carg1
                 exitcode=$?
             else
                 echo_discharge_locked
@@ -497,7 +505,9 @@ case "$_cmd" in
             if lock_tlp_nb tlp_discharge; then
                 if setcharge_battery DEF DEF "$_carg1" "/discharge/recalibrate"; then
                     sleep 1
-                    discharge_battery "$_carg1"
+                    # quoting args will break $# in discharge_battery()
+                    # shellcheck disable=SC2086
+                    discharge_battery $_carg1
                     exitcode=$?
                     if [ $exitcode -eq 0 ]; then
                         echo "Charging starts now, for a complete recalibration"
