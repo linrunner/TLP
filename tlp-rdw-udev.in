@@ -4,13 +4,11 @@
 # Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC2086
-
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/25-tlp-func-rf @TLP_FLIB@/30-tlp-func-rf-sw; do
         # shellcheck disable=SC1090
-    . $lib || exit 70
+    . "$lib" || exit 70
 done
 
 # --- MAIN
@@ -19,7 +17,7 @@ done
 read_config 1 0
 
 check_tlp_enabled || do_exit 0
-check_run_flag $RDW_KILL && do_exit 0
+check_run_flag "$RDW_KILL" && do_exit 0
 add_sbin2path
 
 # get power source
@@ -32,10 +30,10 @@ devtype=$2
 case $devtype in
     dock)
         # check if type is "dock_station", quit if not
-        type=$(read_sysf $ddev/type)
+        type=$(read_sysf "$ddev/type")
         [ "$type" = "dock_station" ] || do_exit 0
 
-        docked=$(read_sysf $ddev/docked)
+        docked=$(read_sysf "$ddev/docked")
         action=$EVENT
 
         # shellcheck disable=SC2154
@@ -56,7 +54,7 @@ case $devtype in
 esac
 
 # quit if timed lock in progress
-if check_timed_lock $RDW_DOCK_LOCK ; then
+if check_timed_lock "$RDW_DOCK_LOCK" ; then
     echo_debug "udev" "rdw_udev.locked"
     do_exit 0
 fi
@@ -65,36 +63,36 @@ case $action in
     dock) # laptop was docked
 
         # lock for 2 seconds in case dock has multiple devices
-        set_timed_lock $RDW_DOCK_LOCK $RDW_LOCKTIME
+        set_timed_lock "$RDW_DOCK_LOCK" "$RDW_LOCKTIME"
 
         # enable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_ENABLE_ON_DOCK; do
             [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
-                && device_switch $dev on "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
+                && device_switch "$dev" on "${RDW_NM_LOCK}_${dev}" "$RDW_LOCKTIME"
         done
 
         # disable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_DISABLE_ON_DOCK; do
             [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
-                && device_switch $dev off "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
+                && device_switch "$dev" off "${RDW_NM_LOCK}_${dev}" "$RDW_LOCKTIME"
         done
         ;;
 
     undock) # laptop was undocked
 
         # lock for 2 seconds in case dock has multiple devices
-        set_timed_lock $RDW_DOCK_LOCK $RDW_LOCKTIME
+        set_timed_lock "$RDW_DOCK_LOCK" "$RDW_LOCKTIME"
 
         # enable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_ENABLE_ON_UNDOCK; do
             [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
-                && device_switch $dev on "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
+                && device_switch "$dev" on "${RDW_NM_LOCK}_${dev}" "$RDW_LOCKTIME"
         done
 
         # disable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_DISABLE_ON_UNDOCK; do
             [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
-                && device_switch $dev off "${RDW_NM_LOCK}_${dev}" $RDW_LOCKTIME
+                && device_switch "$dev" off "${RDW_NM_LOCK}_${dev}" "$RDW_LOCKTIME"
         done
         ;;
 

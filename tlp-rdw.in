@@ -4,13 +4,11 @@
 # Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC2086
-
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/25-tlp-func-rf @TLP_FLIB@/30-tlp-func-rf-sw; do
     # shellcheck disable=SC1090
-    . $lib || exit 70
+    . "$lib" || exit 70
 done
 
 # --- MAIN
@@ -27,18 +25,18 @@ parse_args4config "$@"
 case $carg1 in
     enable)
         check_root
-        reset_run_flag $RDW_KILL
+        reset_run_flag "$RDW_KILL"
         echo "tlp-rdw: enabled."
         ;;
 
     disable)
         check_root
-        set_run_flag $RDW_KILL
+        set_run_flag "$RDW_KILL"
         echo "tlp-rdw: disabled."
         ;;
 
     *)
-        if check_run_flag $RDW_KILL; then
+        if check_run_flag "$RDW_KILL"; then
             echo "tlp-rdw: disabled."
         else
             echo "tlp-rdw: enabled."
