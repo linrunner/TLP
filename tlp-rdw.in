@@ -21,8 +21,15 @@ read_config 1 0
 carg1=$1
 parse_args4config "$@"
 
-
 case $carg1 in
+    "")
+        if check_run_flag "$RDW_KILL"; then
+            echo "tlp-rdw: disabled."
+        else
+            echo "tlp-rdw: enabled."
+        fi
+        ;;
+
     enable)
         check_root
         reset_run_flag "$RDW_KILL"
@@ -36,12 +43,9 @@ case $carg1 in
         ;;
 
     *)
-        if check_run_flag "$RDW_KILL"; then
-            echo "tlp-rdw: disabled."
-        else
-            echo "tlp-rdw: enabled."
-        fi
-        ;;
+        echo "Usage: tlp-rdw [ enable | disable ]"
+        do_exit 3
+
 esac
 
 do_exit 0
