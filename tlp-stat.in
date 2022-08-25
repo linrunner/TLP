@@ -4,13 +4,11 @@
 # Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC2086,SC2154
-
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/[0-9][0-9]* @TLP_FLIB@/tlp-func-stat; do
     # shellcheck disable=SC1090
-    . $lib || exit 70
+    . "$lib" || exit 70
 done
 
 # --- Constants
@@ -209,6 +207,7 @@ add_sbin2path
 # check prerequisites
 if [ "$needs_root_priv" = "1" ]; then
     check_root
+    # shellcheck disable=SC2086
     load_modules $MOD_MSR $MOD_TEMP
 fi
 get_sys_power_supply
@@ -280,10 +279,10 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     fi
 
     # --- show RDW status
-    if cmd_exists $TLPRDW; then
+    if cmd_exists "$TLPRDW"; then
         if ! check_tlp_enabled; then
             printf "RDW state      = disabled (TLP disabled)\n"
-        elif check_run_flag $RDW_KILL; then
+        elif check_run_flag "$RDW_KILL"; then
             printf "RDW state      = disabled\n"
         else
             printf "RDW state      = enabled\n"
@@ -293,7 +292,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     fi
 
     # --- show last invocation time
-    printf "Last run       = %s\n" "$(print_file_modtime_and_age $PWRRUNFILE)"
+    printf "Last run       = %s\n" "$(print_file_modtime_and_age "$PWRRUNFILE")"
 
     # --- show actual power mode
     printf "Mode           = %s\n" "$(print_saved_powerstate)"
@@ -329,40 +328,40 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     epp=0
     cpu2nd=""
     cpulast=""
-    for cn in $(glob_dirs '/cpu[0-9]*' $CPUD | sed 's/.*\/cpu//' | sort -n); do
+    for cn in $(glob_dirs '/cpu[0-9]*' "$CPUD" | sed 's/.*\/cpu//' | sort -n); do
 
         cpuf="${CPUD}/cpu${cn}/cpufreq"
-        if [ -f $cpuf/scaling_driver ]; then
+        if [ -f "$cpuf/scaling_driver" ]; then
             cpu="cpu${cn}"
 
             # show only cpu0, unless verbose mode is enabled
             if [ $cnt -eq 0 ] || [ "$show_verbose" = "1" ] ; then
-                printparm "%-54s = ##%s##" $cpuf/scaling_driver
-                printparm "%-54s = ##%s##" $cpuf/scaling_governor
-                printparm "%s = ##%s##" $cpuf/scaling_available_governors _
+                printparm "%-54s = ##%s##" "$cpuf/scaling_driver"
+                printparm "%-54s = ##%s##" "$cpuf/scaling_governor"
+                printparm "%s = ##%s##" "$cpuf/scaling_available_governors" _
 
-                if [ -f $cpuf/scaling_min_freq ]; then
-                    printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(read_sysf $cpuf/scaling_min_freq)"
+                if [ -f "$cpuf/scaling_min_freq" ]; then
+                    printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(read_sysf "$cpuf/scaling_min_freq")"
                 fi
 
-                if [ -f $cpuf/scaling_max_freq ]; then
-                    printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(read_sysf $cpuf/scaling_max_freq)"
+                if [ -f "$cpuf/scaling_max_freq" ]; then
+                    printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(read_sysf "$cpuf/scaling_max_freq")"
                 fi
 
-                if [ -f $cpuf/scaling_available_frequencies ]; then
+                if [ -f "$cpuf/scaling_available_frequencies" ]; then
                     printf "%s = " "$cpuf/scaling_available_frequencies"
-                    for freq in $(read_sysf $cpuf/scaling_available_frequencies); do
+                    for freq in $(read_sysf "$cpuf/scaling_available_frequencies"); do
                         printf "%s " "$freq"
                     done
                     printf "[kHz]\n"
                 fi
 
-                if [ -f $cpuf/energy_performance_preference ]; then
-                    printparm "%s = ##%s## [HWP.EPP]" $cpuf/energy_performance_preference
+                if [ -f "$cpuf/energy_performance_preference" ]; then
+                    printparm "%s = ##%s## [HWP.EPP]" "$cpuf/energy_performance_preference"
                     epp=1
                 fi
-                if [ -f $cpuf/energy_performance_available_preferences ]; then
-                    printparm "%s = ##%s##" $cpuf/energy_performance_available_preferences
+                if [ -f "$cpuf/energy_performance_available_preferences" ]; then
+                    printparm "%s = ##%s##" "$cpuf/energy_performance_available_preferences"
                 fi
 
                 printf "\n"
@@ -380,53 +379,53 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     done
 
     if [ "$show_verbose" = "0" ] && [ $cnt -gt 1 ]; then
-        printf "%s/%s..%s: omitted for clarity, use -v to show all\n\n" $CPUD $cpu2nd $cpulast
+        printf "%s/%s..%s: omitted for clarity, use -v to show all\n\n" "$CPUD" "$cpu2nd" "$cpulast"
     fi
 
     if check_intel_pstate; then
         # show Intel P-state info
-        printparm "%-54s = ##%s##"       $INTEL_PSTATED/status
-        printparm "%-54s = ##%3d## [%%]" $CPU_MIN_PERF_PCT
-        printparm "%-54s = ##%3d## [%%]" $CPU_MAX_PERF_PCT
-        printparm "%-54s = ##%3d##"      $CPU_TURBO_PSTATE
-        printparm "%-54s = ##%3d##"      $CPU_HWP_DYN_BOOST
-        printparm "%-54s = ##%3d## [%%]" $INTEL_PSTATED/turbo_pct
-        printparm "%-54s = ##%3d##"      $INTEL_PSTATED/num_pstates
+        printparm "%-54s = ##%s##"       "$INTEL_PSTATED/status"
+        printparm "%-54s = ##%3d## [%%]" "$CPU_MIN_PERF_PCT"
+        printparm "%-54s = ##%3d## [%%]" "$CPU_MAX_PERF_PCT"
+        printparm "%-54s = ##%3d##"      "$CPU_TURBO_PSTATE"
+        printparm "%-54s = ##%3d##"      "$CPU_HWP_DYN_BOOST"
+        printparm "%-54s = ##%3d## [%%]" "$INTEL_PSTATED/turbo_pct"
+        printparm "%-54s = ##%3d##"      "$INTEL_PSTATED/num_pstates"
 
     elif check_amd_pstate; then
         # show AMD P-state info
-        printparm "%-54s = ##%d##" $CPU_BOOST_ALL_CTRL "not available"
+        printparm "%-54s = ##%d##" "$CPU_BOOST_ALL_CTRL" "not available"
 
         cpup="$CPUD/cpufreq/policy0"
-        if [ -f $cpup/amd_pstate_highest_perf ]; then
-            printf "%-72s = %8d [%%]\n" "$cpup/amd_pstate_highest_perf" "$(read_sysf $cpup/amd_pstate_highest_perf)"
+        if [ -f "$cpup/amd_pstate_highest_perf" ]; then
+            printf "%-72s = %8d [%%]\n" "$cpup/amd_pstate_highest_perf" "$(read_sysf "$cpup/amd_pstate_highest_perf")"
         fi
-        if [ -f $cpup/amd_pstate_max_freq ]; then
-            printf "%-72s = %8d [kHz]\n" "$cpup/amd_pstate_max_freq" "$(read_sysf $cpup/amd_pstate_max_freq)"
+        if [ -f "$cpup/amd_pstate_max_freq" ]; then
+            printf "%-72s = %8d [kHz]\n" "$cpup/amd_pstate_max_freq" "$(read_sysf "$cpup/amd_pstate_max_freq")"
         fi
-        if [ -f $cpup/amd_pstate_lowest_nonlinear_freq ]; then
-            printf "%-72s = %8d [kHz]\n" "$cpup/amd_pstate_lowest_nonlinear_freq" "$(read_sysf $cpup/amd_pstate_lowest_nonlinear_freq)"
+        if [ -f "$cpup/amd_pstate_lowest_nonlinear_freq" ]; then
+            printf "%-72s = %8d [kHz]\n" "$cpup/amd_pstate_lowest_nonlinear_freq" "$(read_sysf "$cpup/amd_pstate_lowest_nonlinear_freq")"
         fi
 
-    elif [ -f $CPU_BOOST_ALL_CTRL ]; then
+    elif [ -f "$CPU_BOOST_ALL_CTRL" ]; then
         # show turbo boost info
-        boost=$(read_sysval $CPU_BOOST_ALL_CTRL)
+        boost=$(read_sysval "$CPU_BOOST_ALL_CTRL")
 
         # simple test for attribute "w" doesn't work, so actually write
-        if write_sysf "$boost" $CPU_BOOST_ALL_CTRL; then
-            printparm "%-54s = ##%d##" $CPU_BOOST_ALL_CTRL
+        if write_sysf "$boost" "$CPU_BOOST_ALL_CTRL"; then
+            printparm "%-54s = ##%d##" "$CPU_BOOST_ALL_CTRL"
         else
-            printparm "%-54s = ##%d## (CPU not supported)" $CPU_BOOST_ALL_CTRL
+            printparm "%-54s = ##%d## (CPU not supported)" "$CPU_BOOST_ALL_CTRL"
         fi
 
     else
-         printparm "%-54s = (not available)" $CPU_BOOST_ALL_CTRL
+         printparm "%-54s = (not available)" "$CPU_BOOST_ALL_CTRL"
     fi
 
     # --- show sched power save info
     for pool in mc smp smt; do
         sdev="${CPUD}/sched_${pool}_power_savings"
-        printparm "%-54s = ##%d##" $sdev _
+        printparm "%-54s = ##%d##" "$sdev" _
     done
     echo
 
@@ -437,12 +436,12 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
             if supports_intel_cpu_epb; then
                 # CPU supports EPB: try native kernel API first (5.2 and later)
                 cnt=0
-                for cn in $(glob_dirs '/cpu[0-9]*' $CPUD | sed 's/.*\/cpu//' | sort -n); do
+                for cn in $(glob_dirs '/cpu[0-9]*' "$CPUD" | sed 's/.*\/cpu//' | sort -n); do
                     cpuf="${CPUD}/cpu${cn}/power/energy_perf_bias"
-                    if [ -f $cpuf ]; then
+                    if [ -f "$cpuf" ]; then
                         # show only cpu0, unless verbose mode is enabled
                         if [ $cnt -eq 0 ] || [ "$show_verbose" = "1" ]; then
-                            printparm_epb $cpuf
+                            printparm_epb "$cpuf"
                         fi
                         cnt=$((cnt + 1))
                     fi
@@ -452,7 +451,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                     printf "\n"
                 else
                     # no native kernel API --> parse x86_energy_perf_policy output
-                    if cmd_exists $ENERGYPERF; then
+                    if cmd_exists "$ENERGYPERF"; then
                         # check CPU support
                         eperf=$($ENERGYPERF -r 2> /dev/null)
                         case $? in
@@ -489,17 +488,17 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     fi
 
     # --- show workqueue power efficient status
-    printparm "%-54s = ##%s##" $WQPE
+    printparm "%-54s = ##%s##" "$WQPE"
 
     # --- show nmi watchdog
-    printparm "%-54s = ##%d##" $NMIWD
+    printparm "%-54s = ##%d##" "$NMIWD"
     echo
 
     # --- show platform profile
     printf "+++ Platform Profile\n"
-    printparm "%-54s = ##%s##" $FWACPID/platform_profile
-    printparm "%-54s = ##%s##" $FWACPID/platform_profile_choices
-    [ -d $TPACPID ] && printparm "%-54s = ##%s##" $TPACPID/dytc_lapmode
+    printparm "%-54s = ##%s##" "$FWACPID/platform_profile"
+    printparm "%-54s = ##%s##" "$FWACPID/platform_profile_choices"
+    [ -d "$TPACPID" ] && printparm "%-54s = ##%s##" "$TPACPID/dytc_lapmode"
     printf "\n"
 
 fi # show_proc
@@ -507,7 +506,7 @@ fi # show_proc
 if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show temperatures
     echo "+++ Temperatures"
-    if [ -f $IBMTHERMAL ] && [ "$X_IGNORE_IBM_TEMPFAN" != "1" ]; then
+    if [ -f "$IBMTHERMAL" ] && [ "$X_IGNORE_IBM_TEMPFAN" != "1" ]; then
         # use ThinkPad-specific sysfile
         echo "$IBMTHERMAL = $(read_sysf $IBMTHERMAL | cut -f2  ) [°C]"
     else
@@ -515,12 +514,12 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         cmax=0
         # find max value of all packages (just in case there are several)
         # temp1_input is "Package"
-        for sens in $(glob_files '/temp1_input' $CORETEMP_DIRS); do
-            ctemp=$(read_sysval $sens)
-            [ $ctemp -gt $cmax ] && cmax=$ctemp
+        for sens in $(glob_files '/temp1_input' "$CORETEMP_DIRS"); do
+            ctemp=$(read_sysval "$sens")
+            [ "$ctemp" -gt "$cmax" ] && cmax=$ctemp
         done
-        if [ $cmax -gt 0 ]; then
-            perl -e 'printf ("CPU temp               = %5d [°C]\n", '$cmax' / 1000.0);'
+        if [ "$cmax" -gt 0 ]; then
+            perl -e 'printf ("CPU temp               = %5d [°C]\n", '"$cmax"' / 1000.0);'
         fi
     fi
 
@@ -531,8 +530,9 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     else
         # use hwmon
         have_any_fan=
+        # shellcheck disable=SC2086
         for fan in $(glob_files '/fan?*_input' $HWMONFAN_DIRS); do
-            if fan_speed=$(read_sysval $fan); then
+            if fan_speed=$(read_sysval "$fan"); then
                 fan_name="${fan##*/}"; fan_name="${fan_name%_input}"
                 have_any_fan=y
 
@@ -573,25 +573,25 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     # iterate over list
     if [ -n "$disklist" ]; then
         for dev in $disklist; do # iterate all devices
-            show_disk_data $dev
+            show_disk_data "$dev"
         done
     fi
     echo
 
     # --- show sata alpm mode
-    if stat -t ${ALPMD}/link_power_management_policy > /dev/null 2>&1; then
+    if stat -t "${ALPMD}/link_power_management_policy" > /dev/null 2>&1; then
         echo "+++ AHCI Link Power Management (ALPM) :: SATA Links"
         for i in ${ALPMD} ; do
-            printparm_ahci $i/link_power_management_policy
+            printparm_ahci "$i/link_power_management_policy"
         done
         echo
     fi
 
     # --- show ahci runtime pm
-    if stat -t ${AHCID}/power > /dev/null 2>&1; then
+    if stat -t "${AHCID}/power" > /dev/null 2>&1; then
         echo "+++ AHCI Port Runtime Power Management :: SATA/ATA Ports"
         for dev in ${AHCID}/power ; do
-            printparm_ahci $dev/control
+            printparm_ahci "$dev/control"
         done
         echo
     fi
@@ -599,14 +599,14 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     # -- show docks
     cnt=0
     for dock in $DOCKGLOB; do
-        [ ! -d $dock ] && break # no dock/bay detected
+        [ ! -d "$dock" ] && break # no dock/bay detected
 
         # dock/bay detected, print header
         [ $cnt -eq 0 ] && echo "+++ Docks and Device Bays"
         cnt=$((cnt+1))
 
         # get dock type
-        { read -r dock_type < $dock/type; } 2>/dev/null
+        { read -r dock_type < "$dock/type"; } 2>/dev/null
 
         # get dock state
         if check_is_docked; then
@@ -657,7 +657,8 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
     for i in bluetooth nfc wifi wwan; do
         get_devc $i
         get_devs $i
-        echo_device_state $i $_devs
+        # shellcheck disable=SC2154
+        echo_device_state "$i" "$_devs"
     done
     echo
 
@@ -665,14 +666,15 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show bluetooth
     get_bluetooth_ifaces
+    # shellcheck disable=SC2154
     for iface in $_bifaces; do
         if [ -n "$iface" ]; then
             ifshown=1
 
             # get bluetooth driver
-            get_bluetooth_driver $iface
+            get_bluetooth_driver "$iface"
             printf "%-30s: bluetooth, " "$iface($_btdrv)"
-            if bluetooth_in_use $iface; then
+            if bluetooth_in_use "$iface"; then
                 echo "connected"
             else
                 echo "not connected"
@@ -682,13 +684,14 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show wifi data
     get_wifi_ifaces
+    # shellcheck disable=SC2154
     for iface in $_wifaces; do
         if [ -n "$iface" ]; then
             ifshown=1
 
             # get wifi power mgmt state
-            if cmd_exists $IW; then
-                wifipm=$($IW dev $iface get power_save 2> /dev/null | \
+            if cmd_exists "$IW"; then
+                wifipm=$($IW dev "$iface" get power_save 2> /dev/null | \
                     grep 'Power save' | \
                     sed -r 's/.*Power save: (on|off).*/\1/')
             else
@@ -696,9 +699,9 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
             fi
 
             # get wifi driver
-            get_wifi_driver $iface
+            get_wifi_driver "$iface"
             printf "%-30s: wifi, " "$iface($_wifidrv)"
-            if wireless_in_use $iface; then
+            if wireless_in_use "$iface"; then
                 printf "connected, "
             else
                 printf "not connected, "
@@ -714,15 +717,16 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- show wwan data
     get_wwan_ifaces
+    # shellcheck disable=SC2154
     for iface in $_wanifaces; do
         if [ -n "$iface" ]; then
             ifshown=1
 
             # get wwan driver
-            get_wwan_driver $iface
+            get_wwan_driver "$iface"
 
             printf "%-30s: wwan, " "$iface($_wwandrv)"
-            if wireless_in_use $iface; then
+            if wireless_in_use "$iface"; then
                 printf "connected"
             else
                 printf "not connected"
@@ -738,11 +742,11 @@ if [ "$show_all" = "1" ]; then
     # --- show sound power mode
     echo "+++ Audio"
     if [ -d /sys/module/snd_hda_intel ]; then
-        printparm "%-58s = ##%s##" /sys/module/snd_hda_intel/parameters/power_save
-        printparm "%-58s = ##%s##" /sys/module/snd_hda_intel/parameters/power_save_controller
+        printparm "%-58s = ##%s##" "/sys/module/snd_hda_intel/parameters/power_save"
+        printparm "%-58s = ##%s##" "/sys/module/snd_hda_intel/parameters/power_save_controller"
     fi
     if [ -d /sys/module/snd_ac97_codec ]; then
-        printparm "%s = ##%s##" /sys/module/snd_ac97_codec/parameters/power_save
+        printparm "%s = ##%s##" "/sys/module/snd_ac97_codec/parameters/power_save"
     fi
     echo
 fi # show_all
@@ -842,9 +846,9 @@ if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; th
     # --- show warnings
     # ata errors (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
     ecnt=$(check_ata_errors)
-    if [ $ecnt -ne 0 ]; then
+    if [ "$ecnt" -ne 0 ]; then
         echo "+++ Warnings"
-        printf "* Kernel log shows ata errors (%d) possibly caused by the configuration\n" $ecnt
+        printf "* Kernel log shows ata errors (%d) possibly caused by the configuration\n" "$ecnt"
         printf "  SATA_LINKPWR_ON_AC/BAT=min_power or medium_power.\n"
         printf "  Consider using medium_power or max_performance instead.\n"
         printf "  See the FAQ: https://linrunner.de/en/tlp/docs/tlp-faq.html#warnings\n"
@@ -884,7 +888,7 @@ if [ "$show_pev" = "1" ]; then
     # --- show udev power_supply events
 
     # check for udevadm
-    if cmd_exists $UDEVADM; then
+    if cmd_exists "$UDEVADM"; then
         echo "+++ Monitor power supply events -- cancel with ^C"
         echo
         $UDEVADM monitor --udev --property --subsystem-match=power_supply
@@ -896,17 +900,17 @@ if [ "$show_psup" = "1" ]; then
     printf "+++ Power supply diagnostic\n"
     for ps in /sys/class/power_supply/*; do
         # shellcheck disable=SC2063
-        printparm "%s: ##%s##" $ps/type
-        printparm "%s: ##%s##" $ps/usb_type
-        printparm "%s: ##%s##" $ps/online
-        printparm "%s: ##%s##" $ps/voltage_max
-        printparm "%s: ##%s##" $ps/voltage_min
-        printparm "%s: ##%s##" $ps/voltage_now
-        printparm "%s: ##%s##" $ps/present
-        printparm "%s: ##%s##" $ps/charge_control_start_threshold
-        printparm "%s: ##%s##" $ps/charge_control_end_threshold
-        printparm "%s: ##%s##" $ps/status
-        printparm "%s: ##%s##" $ps/device/path
+        printparm "%s: ##%s##" "$ps/type"
+        printparm "%s: ##%s##" "$ps/usb_type"
+        printparm "%s: ##%s##" "$ps/online"
+        printparm "%s: ##%s##" "$ps/voltage_max"
+        printparm "%s: ##%s##" "$ps/voltage_min"
+        printparm "%s: ##%s##" "$ps/voltage_now"
+        printparm "%s: ##%s##" "$ps/present"
+        printparm "%s: ##%s##" "$ps/charge_control_start_threshold"
+        printparm "%s: ##%s##" "$ps/charge_control_end_threshold"
+        printparm "%s: ##%s##" "$ps/status"
+        printparm "%s: ##%s##" "$ps/device/path"
     done
     printf "\n+++ udev diagnostic\n"
     check_udev_rule_ps

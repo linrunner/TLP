@@ -6,8 +6,6 @@
 
 # Needs: tlp-func-base, 15-tlp-func-disk, 35-tlp-func-batt
 
-# shellcheck disable=SC1004,SC2086,SC2154
-
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -51,7 +49,7 @@ printparm () {
     local cutoff="$4"
     local val=""
 
-    if val=$(read_sysf $sysf); then
+    if val=$(read_sysf "$sysf"); then
         # sysfile read successful
         if [ -n "$cutoff" ]; then
             val=${val%"$cutoff"}
@@ -63,21 +61,21 @@ printparm () {
         if [ -n "$namsg" ]; then
             if [ "$namsg" != "_" ]; then
                 # use specific n/a text
-                format=$(echo $format | sed -r -e "s/##(.*)##/($namsg)/" -e "s/\[.*\]//")
+                format=$(echo "$format" | sed -r -e "s/##(.*)##/($namsg)/" -e "s/\[.*\]//")
             else
                 # _ = skip
                 sysf=""
             fi
         else
             # empty n/a text, use default text
-            format=$(echo $format | sed -r -e "s/##(.*)##/(not available)/" -e "s/\[.*\]//")
+            format=$(echo "$format" | sed -r -e "s/##(.*)##/(not available)/" -e "s/\[.*\]//")
         fi
         # output n/a text or skip
         # shellcheck disable=SC2059
         [ -n "$sysf" ] && printf "$format\n" "$sysf"
     else
         # non empty value: strip delimiters from format str
-        format=$(echo $format | sed -r "s/##(.*)##/\1/")
+        format=$(echo "$format" | sed -r "s/##(.*)##/\1/")
         # shellcheck disable=SC2059
         printf "$format\n" "$sysf" "$val"
     fi
@@ -90,11 +88,11 @@ printparm_epb () {
     # $1: sysfile
     local val strval
 
-    if val=$(read_sysf $1); then
+    if val=$(read_sysf "$1"); then
         # sysfile exists and is actually readable, output content
         printf "%-54s = %2d " "$1" "$val"
         # Convert distinct values to strings
-        strval=$(echo $val | sed -r 's/^0/performance/;
+        strval=$(echo "$val" | sed -r 's/^0/performance/;
                                      s/^4/balance_performance/;
                                      s/^6/default/;
                                      s/^8/balance_power/;
@@ -121,16 +119,16 @@ printparm_ml () {
     local namsg="$3"
     local sline
 
-    if [ -f $sysf ]; then
-        printf "%s:\n" $sysf
+    if [ -f "$sysf" ]; then
+        printf "%s:\n" "$sysf"
         # read and output sysfile line by line
         # shellcheck disable=SC2162
         while read -r sline; do
             printf "%s%s\n" "$ind" "$sline"
-        done < $sysf
+        done < "$sysf"
         printf "\n"
     elif [ -n "$namsg" ]; then
-        printf "%s (%s)\n\n" $sysf $namsg
+        printf "%s (%s)\n\n" "$sysf" "$namsg"
     fi
 }
 
@@ -139,7 +137,7 @@ print_sysf () {
     # $1: format; $2: sysfile
     local val
 
-    if val=$(read_sysf $2); then
+    if val=$(read_sysf "$2"); then
         # sysfile readable
         # shellcheck disable=SC2059
         printf "$1" "$val"
@@ -157,7 +155,7 @@ print_sysf_trim () {
     # blanks -- $1: format; $2: sysfile
     local val
 
-    if val=$(read_sysf $2); then
+    if val=$(read_sysf "$2"); then
          # sysfile readable
         # shellcheck disable=SC2059
         printf "$1" "$(printf "%s" "$val" | sed -r 's/^[[:blank:]]*//;s/[[:blank:]]*$//')"
@@ -176,8 +174,8 @@ print_file_modtime_and_age () {
     local mtime age
 
     if [ -f "$1" ]; then
-        mtime=$(date +%X -r $1)
-        age=$(( $(date +%s) - $(date +%s -r $1) ))
+        mtime=$(date +%X -r "$1")
+        age=$(( $(date +%s) - $(date +%s -r "$1") ))
         printf '%s, %6d sec(s) ago' "$mtime" "$age"
     else
         printf "unknown"
@@ -188,7 +186,7 @@ print_saved_powerstate () {
     # read and print saved state
     local sps
 
-    sps="$(read_sysf $PWRRUNFILE)"
+    sps="$(read_sysf "$PWRRUNFILE")"
     case "$sps" in
         0) printf "AC" ;;
         1) printf "battery" ;;
@@ -197,10 +195,12 @@ print_saved_powerstate () {
 
     # check for manual mode
     get_manual_mode
+    # shellcheck disable=SC2154
     case "$_manual_mode" in
         0|1) printf " (manual)\n" ;;
 
         *) # check for persistent mode
+            # shellcheck disable=SC2154
             if get_persist_mode && [ "$_persist_mode" = "$sps" ]; then
                 printf " (persistent)\n"
             else
@@ -227,13 +227,13 @@ print_disk_model () {
     # print disk model -- $1: dev
     local model vendor
 
-    model=$($HDPARM -I /dev/$1 2> /dev/null | grep 'Model Number' | \
+    model=$($HDPARM -I "/dev/$1" 2> /dev/null | grep 'Model Number' | \
       cut -f2 -d: | sed -r 's/^ *//' )
 
     if [ -z "$model" ]; then
         # hdparm -I not supported --> try udevadm approach
-        vendor="$($UDEVADM info -q property /dev/$1 2>/dev/null | sed -n 's/^ID_VENDOR=//p')"
-        model="$( $UDEVADM info -q property /dev/$1 2>/dev/null | sed -n 's/^ID_MODEL=//p' )"
+        vendor="$($UDEVADM info -q property "/dev/$1" 2>/dev/null | sed -n 's/^ID_VENDOR=//p')"
+        model="$( $UDEVADM info -q property "/dev/$1" 2>/dev/null | sed -n 's/^ID_MODEL=//p' )"
         model=$(printf "%s %s" "$vendor" "$model" | sed -r 's/_/ /g; s/-//g; s/[[:space:]]+$//')
     fi
 
@@ -246,7 +246,7 @@ print_disk_firmware () {
     # print firmware version --- $1: dev
     local firmware
 
-    firmware=$($HDPARM -I /dev/$1 2> /dev/null | grep 'Firmware Revision' | \
+    firmware=$($HDPARM -I "/dev/$1" 2> /dev/null | grep 'Firmware Revision' | \
       cut -f2 -d: | sed -r 's/^ *//' )
     printf '%s\n' "${firmware:-unknown}"
 
@@ -255,7 +255,7 @@ print_disk_firmware () {
 
 get_disk_state () {
     # get disk power state -- $1: dev; retval: $_disk_state
-    _disk_state=$($HDPARM -C /dev/$1 2> /dev/null | awk -F ':' '/drive state is/ { gsub(/ /,"",$2); print $2; }')
+    _disk_state=$($HDPARM -C "/dev/$1" 2> /dev/null | awk -F ':' '/drive state is/ { gsub(/ /,"",$2); print $2; }')
     [ -z "$_disk_state" ] && _disk_state="(not available)"
 
     return 0
@@ -265,10 +265,10 @@ get_disk_apm_level () {
     # get disk apm level -- $1: dev; rc: apm
     local apm
 
-    apm=$($HDPARM -I /dev/$1 2> /dev/null | grep 'Advanced power management level' | \
+    apm=$($HDPARM -I "/dev/$1" 2> /dev/null | grep 'Advanced power management level' | \
           cut -f2 -d: | grep -E '^ *[0-9]+ *$')
     if [ -n "$apm" ]; then
-        return $apm
+        return "$apm"
     else
         return 0
     fi
@@ -280,8 +280,8 @@ get_disk_trim_capability () {
     # $1: dev; rc: 0=no, 1=yes, 254=no ssd device
     local trim
 
-    if $HDPARM -I /dev/$1 2> /dev/null | grep -q 'Solid State Device'; then
-        if $HDPARM -I /dev/$1 2> /dev/null | grep -q 'TRIM supported'; then
+    if $HDPARM -I "/dev/$1" 2> /dev/null | grep -q 'Solid State Device'; then
+        if $HDPARM -I "/dev/$1" 2> /dev/null | grep -q 'TRIM supported'; then
             trim=1
         else
             trim=0
@@ -298,17 +298,18 @@ check_ata_errors () {
     # (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
     # stdout: error count
 
-    if wordinlist $SATA_LINKPWR_ON_BAT "min_power medium_power" || \
-       wordinlist $SATA_LINKPWR_ON_AC "min_power medium_power"; then
-        # config values != max_performance exist --> check kernel log
+    for lpw in $SATA_LINKPWR_ON_BAT $SATA_LINKPWR_ON_AC; do
+        if wordinlist "$lpw" "min_power med_power_with_dipm medium_power"; then
+            # config values != max_performance exist --> check kernel log
 
-        # count matching error lines
-        dmesg | grep -E -c "${RE_ATA_ERROR}" 2> /dev/null
-    else
-        # no values in question configured
-        echo "0"
-    fi
+            # count matching error lines and quit
+            dmesg | grep -E -c "${RE_ATA_ERROR}" 2> /dev/null
+            return 0
+        fi
+    done
 
+    # no values in question configured
+    echo "0"
     return 0
 }
 
@@ -320,7 +321,7 @@ get_ahci_host () {
     #  /sys/block/$device is a softlink to
     #   ../devices/pci0000:00/0000:00:XY.Z/ataN/.../$device
     # which reveals the associated ahci host: 0000:00:XY.Z/ataN/hostM
-    _ahci_host="$(readlink /sys/block/$1 | sed -r 's/^\.\.\/devices\/pci[0-9:]+\/[0-9a-f:.]+\/ata[0-9]+\/(host[0-9]+).*$/\1/')"
+    _ahci_host="$(readlink "/sys/block/$1" | sed -r 's/^\.\.\/devices\/pci[0-9:]+\/[0-9a-f:.]+\/ata[0-9]+\/(host[0-9]+).*$/\1/')"
 
     if [ -n "$_ahci_host" ]; then
         echo_debug "disk" "get_ahci_host($1): host=$_ahci_host"
@@ -341,9 +342,9 @@ print_nvme_temp () {
     local sens ts
 
     # temp1_input is "Composite"
-    for sens in $(glob_files '/hwmon*/temp1_input' /sys/block/$1/device); do
-        if ts=$(read_sysval $sens); then
-            perl -e 'printf ("  Temp       = %-2.0f °C\n", '$ts' / 1000.0);'
+    for sens in $(glob_files '/hwmon*/temp1_input' "/sys/block/$1/device"); do
+        if ts=$(read_sysval "$sens"); then
+            perl -e 'printf ("  Temp       = %-2.0f °C\n", '"$ts"' / 1000.0);'
             break
         fi
     done
@@ -356,39 +357,41 @@ show_disk_data () {
     # $1: disk device
 
     # translate disk name and check presence
-    if ! get_disk_dev $1; then
+    if ! get_disk_dev "$1"; then
         # no block device for disk name --> we're done
-        printf     "\n%s: not present.\n" /dev/$_disk_dev
+        # shellcheck disable=SC2154
+        printf "\n%s: not present.\n" "/dev/$_disk_dev"
         return 1
     fi
 
     # --- show general data
+    # shellcheck disable=SC2154
     case "$_disk_type" in
         nvme) # NVMe disk
-            printf     "\n%s:\n" /dev/$_disk_dev
+            printf     "\n%s:\n" "/dev/$_disk_dev"
             printf     "  Type       = NVMe\n"
-            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
-            print_sysf "  Model      = %s\n" /sys/block/$_disk_dev/device/model
-            print_sysf "  Firmware   = %s\n" /sys/block/$_disk_dev/device/firmware_rev
-            print_nvme_temp $_disk_dev
+            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" "$_disk_id"
+            print_sysf "  Model      = %s\n" "/sys/block/$_disk_dev/device/model"
+            print_sysf "  Firmware   = %s\n" "/sys/block/$_disk_dev/device/firmware_rev"
+            print_nvme_temp "$_disk_dev"
             ;;
 
         sata|ata|usb|ieee1394)
             # ATA/USB/IEEE1394 disk
-            printf     "\n%s:\n" /dev/$_disk_dev
-            printf     "  Type       = %s\n" "$(toupper $_disk_type)"
-            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" $_disk_id
+            printf     "\n%s:\n" "/dev/$_disk_dev"
+            printf     "  Type       = %s\n" "$(toupper "$_disk_type")"
+            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" "$_disk_id"
 
             # save spindle state
-            get_disk_state $_disk_dev
+            get_disk_state "$_disk_dev"
 
             printf "  Model      = "
-            print_disk_model $_disk_dev
+            print_disk_model "$_disk_dev"
 
             printf "  Firmware   = "
-            print_disk_firmware $_disk_dev
+            print_disk_firmware "$_disk_dev"
 
-            get_disk_apm_level $_disk_dev; local apm=$?
+            get_disk_apm_level "$_disk_dev"; local apm=$?
             printf "  APM Level  = "
             case $apm in
                 0|255)
@@ -405,57 +408,60 @@ show_disk_data () {
                     ;;
             esac
 
-            printf "  Status     = %s\n" $_disk_state
+            printf "  Status     = %s\n" "$_disk_state"
 
-            get_disk_trim_capability $_disk_dev; local trim=$?
+            get_disk_trim_capability "$_disk_dev"; local trim=$?
             case $trim in
                 0) printf "  TRIM       = not supported\n" ;;
                 1) printf "  TRIM       = supported\n" ;;
             esac
 
             if [ "$_disk_type" = "sata" ] || [ "$_disk_type" = "ata" ]; then
-                get_ahci_host $_disk_dev && printf    "  Host       = %s\n" $_ahci_host
+                get_ahci_host "$_disk_dev" && printf    "  Host       = %s\n" "$_ahci_host"
             fi
 
             # restore standby state
-            [ "$_disk_state" = "standby" ] && spindown_disk $_disk_dev
+            [ "$_disk_state" = "standby" ] && spindown_disk "$_disk_dev"
             ;;
 
         *)
-            printf     "\n%s: Device type \"%s\" ignored.\n" /dev/$_disk_dev $_disk_type
+            printf     "\n%s: Device type \"%s\" ignored.\n" "/dev/$_disk_dev" "$_disk_type"
             return 1
             ;;
     esac
 
-    if [ -f /sys/block/$_disk_dev/queue/scheduler ]; then
+    if [ -f "/sys/block/$_disk_dev/queue/scheduler" ]; then
+        # shellcheck disable=SC2154
         if [ "$_disk_mq" = "1" ]; then
-            print_sysf_trim "  Scheduler  = %s (multi queue)\n" /sys/block/$_disk_dev/queue/scheduler
+            print_sysf_trim "  Scheduler  = %s (multi queue)\n" "/sys/block/$_disk_dev/queue/scheduler"
         else
-            print_sysf_trim "  Scheduler  = %s (single queue)\n" /sys/block/$_disk_dev/queue/scheduler
+            print_sysf_trim "  Scheduler  = %s (single queue)\n" "/sys/block/$_disk_dev/queue/scheduler"
         fi
     fi
 
+    # shellcheck disable=SC2154
     if [ "$_disk_runpm" != "3" ]; then
         # disk has runtime pm capability
         echo
+        # shellcheck disable=SC2154
         case "$_disk_runpm" in
             0) printf "  Runtime PM:\n";;
             1) printf "  Runtime PM: locked by kernel\n";;
             2) printf "  Runtime PM: locked by TLP\n" ;;
         esac
-        print_sysf "    /sys/block/$_disk_dev/device/power/control = %s, " /sys/block/$_disk_dev/device/power/control
-        print_sysf "autosuspend_delay_ms = %s\n" /sys/block/$_disk_dev/device/power/autosuspend_delay_ms
+        print_sysf "    /sys/block/$_disk_dev/device/power/control = %s, " "/sys/block/$_disk_dev/device/power/control"
+        print_sysf "autosuspend_delay_ms = %s\n" "/sys/block/$_disk_dev/device/power/autosuspend_delay_ms"
     fi
 
     # --- show SMART data
     # skip if smartctl not installed or disk not SMART capable
-    cmd_exists $SMARTCTL && $SMARTCTL /dev/$_disk_dev > /dev/null 2>&1 || return 0
+    cmd_exists "$SMARTCTL" && $SMARTCTL "/dev/$_disk_dev" > /dev/null 2>&1 || return 0
 
     case "$_disk_type" in
         nvme)
             # NVMe disk
             printf "\n  SMART info:\n"
-            $SMARTCTL -A /dev/$_disk_dev | \
+            $SMARTCTL -A "/dev/$_disk_dev" | \
                 grep -E -e '^(Critical Warning|Temperature:|Available Spare)' \
                         -e '^(Percentage Used:|Data Units Written:|Power|Unsafe)' \
                         -e 'Integrity Errors' | \
@@ -464,7 +470,7 @@ show_disk_data () {
 
         sata|ata|usb)
             printf "\n  SMART info:\n"
-            $SMARTCTL -A /dev/$_disk_dev | grep -v '<==' | \
+            $SMARTCTL -A "/dev/$_disk_dev" | grep -v '<==' | \
                 awk -F ' ' '$2 ~ /Power_Cycle_Count|Start_Stop_Count|Load_Cycle_Count|Reallocated_Sector_Ct/ \
                                 { printf "    %3d %-25s = %8d \n", $1, $2, $10 } ; \
                           $2 ~ /Used_Rsvd_Blk_Cnt_Chip|Used_Rsvd_Blk_Cnt_Tot|Unused_Rsvd_Blk_Cnt_Tot/ \
@@ -501,10 +507,11 @@ get_ahci_disk () {
     local aport
 
     # cut sysfile path down to the ahci port /sys/bus/pci/devices/0000:00:XY.Z/ataN
-    aport="$(echo $1 | sed -r 's/^(\/sys\/bus\/pci\/devices\/[0-9a-f:.]+\/ata[0-9]+).*$/\1/')"
+    aport="$(echo "$1" | sed -r 's/^(\/sys\/bus\/pci\/devices\/[0-9a-f:.]+\/ata[0-9]+).*$/\1/')"
 
     # the directory /sys/bus/pci/devices/0000:00:XY.Z/ataN/host*/target*/*/block
     # lists the actual block device name pointing to /dev/sdX resp. /sys/block/sdX
+    # shellcheck disable=SC2086
     _ahci_disk="$(glob_dirs '/*' ${aport}/host*/target*/*/block 2> /dev/null | head -1)"
     _ahci_disk="${_ahci_disk##/*/}"
 
@@ -523,11 +530,11 @@ printparm_ahci () {
     # $1: sysfile
     local val
 
-    if val=$(read_sysf $1); then
+    if val=$(read_sysf "$1"); then
         # sysfile exists and is actually readable, output content
         printf "%-56s = %s " "$1" "$val"
 
-        get_ahci_disk $1
+        get_ahci_disk "$1"
 
         if [ -n "$_ahci_disk" ]; then
             printf " -- %s\n" "$_ahci_disk"
@@ -547,7 +554,7 @@ printparm_i915 () {
     local sysf val
 
     for sysf in "$@"; do
-        if val=$(read_sysf $sysf); then
+        if val=$(read_sysf "$sysf"); then
             # sysfile exists and is actually readable, output content
             printf "%-44s = %2d " "$sysf" "$val"
             # explain content
@@ -592,7 +599,7 @@ show_gpu_data () {
     for gpu in "${BASE_DRMD}"/card?; do
         [ -d "$gpu" ] || continue
 
-        driver=$(readlink ${gpu}/device/driver)
+        driver=$(readlink "${gpu}/device/driver")
         driver=${driver##*/}
         case "$driver" in
             i915*) # Intel GPU
@@ -605,26 +612,28 @@ show_gpu_data () {
                 fi
                 printf "%-44s = %s\n\n" "$gpu/device/driver" "$driver"
 
-                printparm_i915 $gpu/power/rc6_enable $_intel_gpu_parm/enable_rc6 $_intel_gpu_parm/i915_enable_rc6
-                if sysout=$(grep '^FBC ' $_intel_gpu_dbg/i915_fbc_status 2> /dev/null); then
+                # shellcheck disable=SC2154
+                printparm_i915 "$gpu/power/rc6_enable" "$_intel_gpu_parm/enable_rc6" "$_intel_gpu_parm/i915_enable_rc6"
+                # shellcheck disable=SC2154
+                if sysout=$(grep '^FBC ' "$_intel_gpu_dbg/i915_fbc_status" 2> /dev/null); then
                     printf "%-44s = %s\n" "$_intel_gpu_dbg/i915_fbc_status" "$sysout"
                 else
-                    printparm_i915 $_intel_gpu_parm/enable_fbc $_intel_gpu_parm/i915_enable_fbc
+                    printparm_i915 "$_intel_gpu_parm/enable_fbc" "$_intel_gpu_parm/i915_enable_fbc"
                 fi
-                if sysout=$(grep '^PSR mode:' $_intel_gpu_dbg/i915_edp_psr_status 2> /dev/null); then
+                if sysout=$(grep '^PSR mode:' "$_intel_gpu_dbg/i915_edp_psr_status" 2> /dev/null); then
                     printf "%-44s = %s\n" "$_intel_gpu_dbg/i915_edp_psr_status" "$sysout"
                 else
-                    printparm_i915 $_intel_gpu_parm/enable_psr
+                    printparm_i915 "$_intel_gpu_parm/enable_psr"
                 fi
                 printf "\n"
 
                 # frequency parameters
-                if readable_sysf $gpu/$IGPU_MIN_FREQ; then
-                    printparm "%-44s = ##%5d## [MHz]" $gpu/$IGPU_MIN_FREQ
-                    printparm "%-44s = ##%5d## [MHz]" $gpu/$IGPU_MAX_FREQ
-                    printparm "%-44s = ##%5d## [MHz]" $gpu/$IGPU_BOOST_FREQ
-                    printparm "%-44s = ##%5d## [MHz] (GPU min)" $gpu/$IGPU_RPN_FREQ
-                    printparm "%-44s = ##%5d## [MHz] (GPU max)" $gpu/$IGPU_RP0_FREQ
+                if readable_sysf "$gpu/$IGPU_MIN_FREQ"; then
+                    printparm "%-44s = ##%5d## [MHz]" "$gpu/$IGPU_MIN_FREQ"
+                    printparm "%-44s = ##%5d## [MHz]" "$gpu/$IGPU_MAX_FREQ"
+                    printparm "%-44s = ##%5d## [MHz]" "$gpu/$IGPU_BOOST_FREQ"
+                    printparm "%-44s = ##%5d## [MHz] (GPU min)" "$gpu/$IGPU_RPN_FREQ"
+                    printparm "%-44s = ##%5d## [MHz] (GPU max)" "$gpu/$IGPU_RP0_FREQ"
                     printf "\n"
                 fi
                 ;;
@@ -636,8 +645,8 @@ show_gpu_data () {
                 fi
                 printf "%-65s = %s\n\n" "$gpu/device/driver" "$driver"
 
-                if [ -f $gpu/device/power_dpm_force_performance_level ]; then
-                    printparm "%-65s = ##%s##" $gpu/device/power_dpm_force_performance_level
+                if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
+                    printparm "%-65s = ##%s##" "$gpu/device/power_dpm_force_performance_level"
                     printf "\n"
                 fi
                 ;;
@@ -649,16 +658,16 @@ show_gpu_data () {
                 fi
                 printf "%-65s = %s\n\n" "$gpu/device/driver" "$driver"
 
-                if [ -f $gpu/device/power_dpm_force_performance_level ]; then
+                if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
                     # AMD hardware
-                    printparm "%-65s = ##%s##" $gpu/device/power_dpm_force_performance_level
-                    printparm "%-65s = ##%s##" $gpu/device/power_dpm_state
+                    printparm "%-65s = ##%s##" "$gpu/device/power_dpm_force_performance_level"
+                    printparm "%-65s = ##%s##" "$gpu/device/power_dpm_state"
                     printf "\n"
 
-                elif [ -f $gpu/device/power_method ]; then
+                elif [ -f "$gpu/device/power_method" ]; then
                     # legacy ATI hardware
-                    printparm "%-65s = ##%s##" $gpu/device/power_method
-                    printparm "%-65s = ##%s##" $gpu/device/power_profile
+                    printparm "%-65s = ##%s##" "$gpu/device/power_method"
+                    printparm "%-65s = ##%s##" "$gpu/device/power_profile"
                     printf "\n"
                 fi
                 ;;
@@ -734,7 +743,7 @@ print_batstate () {
         return 0
     fi
 
-    if val=$(read_sysf $sysf); then
+    if val=$(read_sysf "$sysf"); then
         # sysfile was readable, output state
         # map "Unknown" to "Idle" for clarity (and avoid user questions)
         [ "$val" = "Unknown" ] && val="Idle"
@@ -766,8 +775,8 @@ check_udev_rule_ps () {
     # check if udev rule for power source changes draws
 
     if [  -n "$_psdev" ]; then
-        $UDEVADM test -a change $_psdev 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
-        if $UDEVADM test -a change $_psdev 2> /dev/null | grep -E '^run: .*tlp auto'; then
+        $UDEVADM test -a change "$_psdev" 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
+        if $UDEVADM test -a change "$_psdev" 2> /dev/null | grep -E '^run: .*tlp auto'; then
             printf "OK.\n\n"
         else
             printf "Fatal Error: TLP's udev rule for power source changes (85-tlp.rules) is not active -- possible package bug.\n\n"
@@ -781,8 +790,8 @@ check_udev_rule_usb () {
 
     ud="$(glob_dirs '/*' /sys/bus/usb/devices 2> /dev/null | grep -v ':' | head -1)"
     if [ -n "$ud" ]; then
-        $UDEVADM test -a add $ud 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
-        if $UDEVADM test -a add $ud 2> /dev/null | grep -E '^run: .*tlp-usb-udev usb'; then
+        $UDEVADM test -a add "$ud" 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
+        if $UDEVADM test -a add "$ud" 2> /dev/null | grep -E '^run: .*tlp-usb-udev usb'; then
             printf "OK.\n\n"
         else
             printf "Fatal Error: TLP's udev rule for connecting USB devices (85-tlp.rules) is not active -- possible package bug.\n\n"
