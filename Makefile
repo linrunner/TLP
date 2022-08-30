@@ -103,7 +103,7 @@ SHFILES = \
 	tlp.in \
 	tlp-func-base.in \
 	func.d/* \
-	bat.d/*[a-z] \
+	bat.d/* \
 	tlp-rdw.in \
 	tlp-rdw-nm.in \
 	tlp-rdw-udev.in \
