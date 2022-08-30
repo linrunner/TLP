@@ -6,8 +6,6 @@
 
 # Needs: tlp-func-base
 
-# shellcheck disable=SC2086
-
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -57,7 +55,7 @@ set_runtime_pm () { # set runtime power management
 
     # cumulate pci addresses for devices with denylisted drivers
     for driver in $drv_bl; do # iterate list
-        if [ -n "$driver" ] && [ -d $PCIDRV/$driver ]; then
+        if [ -n "$driver" ] && [ -d "$PCIDRV/$driver" ]; then
             # driver is active --> iterate over assigned devices
             for device in "$PCIDRV/$driver/0000:"*; do
                 # get short device address
@@ -74,18 +72,18 @@ set_runtime_pm () { # set runtime power management
     # iterate pci(e) devices
     for type in $PCID; do
         for device in "$type"/*; do
-            if [ -f $device/power/control ]; then
+            if [ -f "$device/power/control" ]; then
                 # get short device address, class
                 address=${device##/*/0000:}
-                class=$(read_sysf $device/class)
+                class=$(read_sysf "$device/class")
 
                 if wordinlist "$address" "$pci_enable_adr"; then
                     # device should be permanently 'auto' (enabled)
-                    write_sysf "auto" $device/power/control
+                    write_sysf "auto" "$device/power/control"
                     echo_debug "pm" "set_runtime_pm($1).perm_auto: $device [$class]; rc=$?"
                 elif wordinlist "$address" "$pci_disable_adr"; then
                     # device should be permanently 'on' (disabled)
-                    write_sysf "on" $device/power/control
+                    write_sysf "on" "$device/power/control"
                     echo_debug "pm" "set_runtime_pm($1).perm_on: $device [$class]; rc=$?"
                 elif wordinlist "$address" "$pci_bl_adr"; then
                     # device is in address denylist
@@ -97,7 +95,7 @@ set_runtime_pm () { # set runtime power management
                     control=$ccontrol
                     case $control in
                         auto|on)
-                            write_sysf $control $device/power/control
+                            write_sysf "$control" "$device/power/control"
                             echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]; rc=$?"
                             ;;
 
@@ -196,7 +194,7 @@ get_ethifaces () { # get all eth devices -- retval: $_ethifaces
     _ethifaces=""
 
     for eic in "$NETD"/*/device/class; do
-        if [ "$(read_sysf $eic)" = "0x020000" ] \
+        if [ "$(read_sysf "$eic")" = "0x020000" ] \
             && [ ! -d "${eic%/class}/ieee80211" ]; then
 
             ei=${eic%/device/class}; ei=${ei##*/}

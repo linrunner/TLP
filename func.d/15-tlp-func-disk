@@ -6,8 +6,6 @@
 
 # Needs: tlp-func-base
 
-# shellcheck disable=SC2086
-
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -38,17 +36,17 @@ get_disk_dev () { # translate disk id to device (sdX)
     local target="$2"
     _disk_dev=""
 
-    if [ -h /dev/disk/by-id/$1 ]; then
+    if [ -h "/dev/disk/by-id/$1" ]; then
         # $1 is disk id
         _disk_id=$1
         _disk_dev=$(printf '%s' "$_disk_id" | sed -r 's/-part[1-9][0-9]*$//')
-        _disk_dev=$(readlink /dev/disk/by-id/$_disk_dev)
+        _disk_dev=$(readlink "/dev/disk/by-id/$_disk_dev")
         _disk_dev=${_disk_dev##*/}
     else
         # $1 is disk dev
         _disk_dev=$1
         _disk_id=""
-        if [ -b /dev/$_disk_dev ]; then
+        if [ -b "/dev/$_disk_dev" ]; then
             # disk exists, lookup id
             for idpath in /dev/disk/by-id/*; do
                 id="${idpath##*/}"
@@ -56,7 +54,7 @@ get_disk_dev () { # translate disk id to device (sdX)
                 [ -n "${id%%*-part[1-9]*}" ] || continue
                 case "$id" in
                     ata-*|usb-*)
-                        dev=$(readlink $idpath)
+                        dev=$(readlink "$idpath")
                         dev=${dev##*/}
                         if [ "$dev" = "$_disk_dev" ]; then
                             _disk_id="$id"
@@ -67,7 +65,7 @@ get_disk_dev () { # translate disk id to device (sdX)
                     nvme-*)
                         # filter 'nvme-eui.*'
                         if [ -n "${id##nvme-eui.*}" ]; then
-                            dev=$(readlink $idpath)
+                            dev=$(readlink "$idpath")
                             dev=${dev##*/}
                             if [ "$dev" = "$_disk_dev" ]; then
                                 _disk_id="$id"
@@ -80,7 +78,7 @@ get_disk_dev () { # translate disk id to device (sdX)
         fi
     fi
 
-    if [ -b /dev/$_disk_dev ]; then
+    if [ -b "/dev/$_disk_dev" ]; then
         # retrieve device attributes
         local bus dpath path udevadm_data
         local DEVPATH=
@@ -89,7 +87,7 @@ get_disk_dev () { # translate disk id to device (sdX)
         local ID_ATA_FEATURE_SET_PM_ENABLED=
 
         if udevadm_data="$(
-            $UDEVADM info -q property /dev/$_disk_dev 2>/dev/null | \
+            $UDEVADM info -q property "/dev/$_disk_dev" 2>/dev/null | \
                 grep -E '^(DEVPATH|ID_BUS|ID_PATH|ID_ATA_FEATURE_SET_PM_ENABLED)='
             )"; then
             eval "${udevadm_data}"
@@ -133,14 +131,14 @@ get_disk_dev () { # translate disk id to device (sdX)
         fi
 
         # determine if single- or multi-queue scheduler
-        if [ -d /sys/block/$_disk_dev/mq ]; then
+        if [ -d "/sys/block/$_disk_dev/mq" ]; then
             _disk_mq="1"
         else
             _disk_mq="0"
         fi
 
         # determine if runtime pm is possible and allowed
-        if [ -f /sys/block/$_disk_dev/device/power/control ]; then
+        if [ -f "/sys/block/$_disk_dev/device/power/control" ]; then
             # disk has a runtime pm control sysfile
             case "$_disk_type" in
                 nvme)
@@ -150,7 +148,7 @@ get_disk_dev () { # translate disk id to device (sdX)
                     ;;
 
                 sata|ata|usb)
-                    if ! readable_sysf /sys/block/$_disk_dev/device/power/autosuspend_delay_ms; then
+                    if ! readable_sysf "/sys/block/$_disk_dev/device/power/autosuspend_delay_ms"; then
                         # autosuspend_delay_ms is missing or not readable
                         # --> kernel itself denies runtime pm for the disk
                         _disk_runpm="1"
@@ -210,7 +208,7 @@ show_disk_ids () { # show disk id's
     { # iterate SATA and NVMe disks
         for dev in $(glob_files '/*' /dev/disk/by-id/ | sed -rn 's/.*\/((ata|ieee1394|nvme|usb))/\1/p' | grep -E -v '(^nvme-eui|\-part[1-9]+)'); do
             if [ -n "$dev" ]; then
-                get_disk_dev $dev && printf '%s: %s\n' "$_disk_dev" "$_disk_id"
+                get_disk_dev "$dev" && printf '%s: %s\n' "$_disk_dev" "$_disk_id"
             fi
         done
     } | sort
@@ -236,8 +234,10 @@ set_disk_apm_level () { # set disk apm level
 
     # set @argv := apmlist (blanks removed - relying on a sane $IFS)
     if [ "$pwrmode" = "1" ]; then
+        # shellcheck disable=SC2086
         set -- $DISK_APM_LEVEL_ON_BAT
     else
+        # shellcheck disable=SC2086
         set -- $DISK_APM_LEVEL_ON_AC
     fi
 
@@ -260,9 +260,9 @@ set_disk_apm_level () { # set disk apm level
     # 2. work on $target only -- when called by udev event
 
     for dev in $DISK_DEVICES; do
-        : ${1:?BUG: broken DISK_APM_LEVEL list handling}
+        : "${1:?BUG: broken DISK_APM_LEVEL list handling}"
 
-        if get_disk_dev $dev $target; then
+        if get_disk_dev "$dev" "$target"; then
             log_message="set_disk_apm_level($pwrmode): $_disk_dev [$_disk_id] $1"
 
             if wordinlist "$_disk_type" "$DISK_APM_CLASS_DENYLIST"; then
@@ -272,7 +272,7 @@ set_disk_apm_level () { # set disk apm level
             elif wordinlist "$1" "$DISK_NOP_WORDS"; then
                 echo_debug "disk" "${log_message}; keep as is"
             else
-                $HDPARM -B $1 /dev/$_disk_dev > /dev/null 2>&1
+                $HDPARM -B "$1" "/dev/$_disk_dev" > /dev/null 2>&1
                 echo_debug "disk" "${log_message}; rc=$?"
             fi
         fi
@@ -302,8 +302,10 @@ set_disk_spindown_timeout () { # set disk spindown timeout
 
     # set @argv := timeoutlist
     if [ "$pwrmode" = "1" ]; then
+        # shellcheck disable=SC2086
         set -- $DISK_SPINDOWN_TIMEOUT_ON_BAT
     else
+        # shellcheck disable=SC2086
         set -- $DISK_SPINDOWN_TIMEOUT_ON_AC
     fi
 
@@ -326,15 +328,15 @@ set_disk_spindown_timeout () { # set disk spindown timeout
     # 2. work on $target only -- when called by udev event
 
     for dev in $DISK_DEVICES; do
-        : ${1:?BUG: broken DISK_SPINDOWN_TIMEOUT list handling}
+        : "${1:?BUG: broken DISK_SPINDOWN_TIMEOUT list handling}"
 
-        if get_disk_dev $dev $target; then
+        if get_disk_dev "$dev" "$target"; then
             log_message="set_disk_spindown_timeout($pwrmode): $_disk_dev [$_disk_id] $1"
 
             if wordinlist "$1" "$DISK_NOP_WORDS"; then
                 echo_debug "disk" "${log_message}; keep as is"
             else
-                $HDPARM -S $1 /dev/$_disk_dev > /dev/null 2>&1
+                $HDPARM -S "$1" "/dev/$_disk_dev" > /dev/null 2>&1
                 echo_debug "disk" "${log_message}; rc=$?"
             fi
         fi
@@ -349,7 +351,7 @@ set_disk_spindown_timeout () { # set disk spindown timeout
 }
 
 spindown_disk () { # stop spindle motor -- $1: dev
-    $HDPARM -y /dev/$1 > /dev/null 2>&1
+    $HDPARM -y "/dev/$1" > /dev/null 2>&1
 
     return 0
 }
@@ -367,6 +369,7 @@ set_disk_iosched () { # set disk io scheduler
     fi
 
     # set @argv := schedlist
+    # shellcheck disable=SC2086
     set -- $DISK_IOSCHED
 
     # quit if empty schedlist
@@ -390,18 +393,18 @@ set_disk_iosched () { # set disk io scheduler
 
     for dev in $DISK_DEVICES; do
         local sched schedctrl
-        if get_disk_dev $dev $target; then
+        if get_disk_dev "$dev" "$target"; then
             # get sched from argv, use "keep" when list is too short
             sched=${1:-keep}
             schedctrl="/sys/block/$_disk_dev/queue/scheduler"
             log_message="set_disk_iosched: $_disk_dev [$_disk_id] $sched"
 
-            if [ ! -f $schedctrl ]; then
+            if [ ! -f "$schedctrl" ]; then
                 echo_debug "disk" "${log_message}; not supported"
             elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
                 echo_debug "disk" "${log_message}; keep as is"
             else
-                write_sysf "$sched" $schedctrl
+                write_sysf "$sched" "$schedctrl"
                 echo_debug "disk" "${log_message}; rc=$?"
             fi
         fi
@@ -441,11 +444,12 @@ set_sata_link_power () { # set ahci link power management
     host_bl=${SATA_LINKPWR_DENYLIST:-}
 
     # copy configured values to args
+    # shellcheck disable=SC2086
     set -- $pwrlist
     # iterate SATA hosts
     for host in $ALPMD ; do
-        linkpol=$host/link_power_management_policy
-        if [ -f $linkpol ]; then
+        linkpol="$host/link_power_management_policy"
+        if [ -f "$linkpol" ]; then
             hostid=${host##*/}
             if wordinlist "$hostid" "$host_bl"; then
                 # host denylisted --> skip
@@ -454,7 +458,7 @@ set_sata_link_power () { # set ahci link power management
             else
                 # host not denylisted --> iterate all configured values
                 for pwr in "$@"; do
-                    write_sysf "$pwr" $linkpol; rc=$?
+                    write_sysf "$pwr" "$linkpol"; rc=$?
                     echo_debug "disk" "set_sata_link_power($pm).$pwr: $host; rc=$rc"
                     if [ $rc -eq 0 ]; then
                         # write successful --> goto next host
@@ -517,17 +521,17 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
 
     # iterate DISK_DEVICES
     for dev in $DISK_DEVICES; do
-        if get_disk_dev $dev $target; then
+        if get_disk_dev "$dev" "$target"; then
             case "$_disk_runpm" in
                 0) # runtime pm allowed for disk
                     rc=0
                     # write timeout first to prevent lockups
-                    if ! write_sysf "$timeout" /sys/block/$_disk_dev/device/power/autosuspend_delay_ms; then
+                    if ! write_sysf "$timeout" "/sys/block/$_disk_dev/device/power/autosuspend_delay_ms"; then
                         # writing timeout failed
                         rc=1
                     fi
                     # proceed with activation
-                    if ! write_sysf "$control" /sys/block/$_disk_dev/device/power/control; then
+                    if ! write_sysf "$control" "/sys/block/$_disk_dev/device/power/control"; then
                         # activation failed
                         rc=2
                     fi
@@ -570,7 +574,7 @@ set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
 
     # iterate ahci ports
     for device in $AHCID; do
-        if write_sysf "$control" ${device}/power/control; then
+        if write_sysf "$control" "${device}/power/control"; then
             echo_debug "disk" "set_ahci_port_runtime_pm($1).$control: port=$device; rc=0"
         else
             echo_debug "disk" "set_ahci_port_runtime_pm($1).no-port"

@@ -6,8 +6,6 @@
 
 # Needs: tlp-func-base
 
-# shellcheck disable=SC2086
-
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -25,7 +23,7 @@ get_wifi_ifaces () { # get all wifi devices -- retval: $_wifaces
     _wifaces=""
 
     for wiu in "$NETD"/*/uevent; do
-        if grep -q -s 'DEVTYPE=wlan' $wiu ; then
+        if grep -q -s 'DEVTYPE=wlan' "$wiu" ; then
             wi=${wiu%/uevent}; wi=${wi##*/}
             _wifaces="$_wifaces $wi"
         fi
@@ -40,8 +38,8 @@ get_wifi_driver () { # get driver associated with interface
     local drvl
 
     _wifidrv=""
-    if [ -d $NETD/$1 ]; then
-        drvl=$(readlink $NETD/$1/device/driver)
+    if [ -d "$NETD/$1" ]; then
+        drvl=$(readlink "$NETD/$1/device/driver")
         # shellcheck disable=SC2034
         [ -n "$drvl" ] && _wifidrv=${drvl##*/}
     fi
@@ -50,8 +48,8 @@ get_wifi_driver () { # get driver associated with interface
 }
 
 wireless_in_use () { # check if wifi or wwan device is in use -- $1: iface
-    if [ -f $NETD/$1/carrier ]; then
-        if [ "$(read_sysf $NETD/$1/carrier)" = "1" ]; then
+    if [ -f "$NETD/$1/carrier" ]; then
+        if [ "$(read_sysf "$NETD/$1/carrier")" = "1" ]; then
             return 0
         fi
     fi
@@ -63,7 +61,7 @@ any_wifi_in_use () { # check if any wifi device is in use
 
     get_wifi_ifaces
     for iface in $_wifaces; do
-        wireless_in_use $iface && return 0
+        wireless_in_use "$iface" && return 0
     done
 
     return 1
@@ -103,7 +101,7 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery 
     for iface in $_wifaces; do
         if [ -n "$iface" ]; then
             if  cmd_exists $IW; then
-                $IW dev $iface set power_save $pwr > /dev/null 2>&1
+                $IW dev "$iface" set power_save "$pwr" > /dev/null 2>&1
                 echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr; rc=$?"
             else
                 # iw not iwconfig installed
@@ -123,7 +121,7 @@ get_wwan_ifaces () { # get all wwan devices -- retval: $_wanifaces
     _wanifaces=""
 
     for wiu in "$NETD"/*/uevent; do
-        if grep -q -s 'DEVTYPE=wwan' $wiu ; then
+        if grep -q -s 'DEVTYPE=wwan' "$wiu" ; then
             wi=${wiu%/uevent}; wi=${wi##*/}
             _wanifaces="$_wanifaces $wi"
         fi
@@ -138,7 +136,7 @@ any_wwan_in_use () { # check if any wwan device is in use
 
     get_wwan_ifaces
     for iface in $_wanifaces; do
-        wireless_in_use $iface && return 0
+        wireless_in_use "$iface" && return 0
     done
 
     return 1
@@ -149,8 +147,8 @@ get_wwan_driver () { # get driver associated with interface
     local drvl
 
     _wwandrv=""
-    if [ -d $NETD/$1 ]; then
-        drvl=$(readlink $NETD/$1/device/driver)
+    if [ -d "$NETD/$1" ]; then
+        drvl=$(readlink "$NETD/$1/device/driver")
         # shellcheck disable=SC2034
         [ -n "$drvl" ] && _wwandrv=${drvl##*/}
     fi
@@ -162,7 +160,7 @@ get_wwan_driver () { # get driver associated with interface
 
 get_bluetooth_ifaces () { # get all bluetooth interfaces -- retval: $_bifaces
     # enumerate symlinks only
-    _bifaces="$(for i in """$BLUETOOTHD"""/*; do [ -h $i ] && echo ${i##/*/}; done | grep -v ':')"
+    _bifaces="$(for i in "$BLUETOOTHD"/*; do [ -h "$i" ] && echo "${i##/*/}"; done | grep -v ':')"
     return 0
 }
 
@@ -171,8 +169,8 @@ get_bluetooth_driver () { # get driver associated with interface -- $1: iface; r
 
     # shellcheck disable=SC2034
     _btdrv=""
-    if [ -d $BLUETOOTHD/$1 ]; then
-        drvl=$(readlink $BLUETOOTHD/$1/device/driver)
+    if [ -d "$BLUETOOTHD/$1" ]; then
+        drvl=$(readlink "$BLUETOOTHD/$1/device/driver")
         # shellcheck disable=SC2034
         [ -n "$drvl" ] && _btdrv=${drvl##*/}
     fi
@@ -187,7 +185,7 @@ bluetooth_in_use () { # check if bluetooth interface is in use -- $1: iface
     # subdevices like <iface>:<number> where the uevent file contains a line
     # "DEVTYPE=link"
     for uev in "$BLUETOOTHD/$1/$1":*/uevent; do
-        grep -q -s 'DEVTYPE=link' $uev && return 0
+        grep -q -s 'DEVTYPE=link' "$uev" && return 0
     done
 
     return 1

@@ -6,8 +6,6 @@
 
 # Needs: tlp-func-base
 
-# shellcheck disable=SC2086,SC2155
-
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -29,12 +27,16 @@ usb_suspend_device () {
     # $3: auto=enable/on=disable
     local usbdev=$1
 
-    if [ -f $usbdev/power/autosuspend_delay_ms ]; then
+    if [ -f "$usbdev/power/autosuspend_delay_ms" ]; then
         # device is autosuspendable
-        local vendor="$(read_sysf $usbdev/idVendor)"
-        local usbid="$vendor:$(read_sysf $usbdev/idProduct)"
-        local busdev="Bus $(read_sysf $usbdev/busnum) Dev $(read_sysf $usbdev/devnum)"
-        local dclass="$(read_sysf $usbdev/bDeviceClass)"
+        # shellcheck disable=SC2155
+        local vendor="$(read_sysf "$usbdev/idVendor")"
+        # shellcheck disable=SC2155
+        local usbid="$vendor:$(read_sysf "$usbdev/idProduct")"
+        # shellcheck disable=SC2155
+        local busdev="Bus $(read_sysf "$usbdev/busnum") Dev $(read_sysf "$usbdev/devnum")"
+        # shellcheck disable=SC2155
+        local dclass="$(read_sysf "$usbdev/bDeviceClass")"
         local control="${3:-auto}"
         local caller="$2"
         local exc=""
@@ -65,7 +67,7 @@ usb_suspend_device () {
 
             # check for hid subdevices
             for subdev in "$usbdev"/*:*; do
-                if [ "$(read_sysf $subdev/bInterfaceClass)" = "03" ]; then
+                if [ "$(read_sysf "$subdev/bInterfaceClass")" = "03" ]; then
                     control="on"
                     exc="_hid_deny"
                     break
@@ -76,8 +78,8 @@ usb_suspend_device () {
                 # check for bluetooth devices
                 if [ "$USB_EXCLUDE_BTUSB" = "1" ] \
                     && [ "$dclass" = "e0" ] \
-                    && [ "$(read_sysf $usbdev/bDeviceSubClass)" = "01" ] \
-                    && [ "$(read_sysf $usbdev/bDeviceProtocol)" = "01" ]; then
+                    && [ "$(read_sysf "$usbdev/bDeviceSubClass")" = "01" ] \
+                    && [ "$(read_sysf "$usbdev/bDeviceProtocol")" = "01" ]; then
                     control="on"
                     exc="_btusb_deny"
                 fi
@@ -87,7 +89,7 @@ usb_suspend_device () {
                 # check for audio devices
                 if [ "$USB_EXCLUDE_AUDIO" = "1" ]; then
                     for subdev in "$usbdev"/*:*; do
-                        if [ "$(read_sysf $subdev/bInterfaceClass)" = "01" ]; then
+                        if [ "$(read_sysf "$subdev/bInterfaceClass")" = "01" ]; then
                             control="on"
                             exc="_audio_deny"
                             break
@@ -101,7 +103,7 @@ usb_suspend_device () {
                 # libsane_matched envvar is set by libsane's udev rules
                 # shellcheck disable=SC2154
                 if [ "$libsane_matched" = "yes" ] || [ "$2" = "batch" ] \
-                    && $UDEVADM info -q property $usbdev 2>/dev/null | grep -q 'libsane_matched=yes'; then
+                    && $UDEVADM info -q property "$usbdev" 2>/dev/null | grep -q 'libsane_matched=yes'; then
                     # do not touch this device
                     control="deny"
                     exc="_libsane"
@@ -119,8 +121,8 @@ usb_suspend_device () {
                             exc="_phone_deny"
                         elif [ "$dclass" = "00" ]; then
                            for subdev in "$usbdev"/*:*; do
-                                if [ -d $subdev ]; then
-                                    if [ "$(read_sysf $subdev/interface)" = "BlackBerry" ]; then
+                                if [ -d "$subdev" ]; then
+                                    if [ "$(read_sysf "$subdev/interface")" = "BlackBerry" ]; then
                                         # Blackberry
                                         control="on"
                                         exc="_phone_deny"
@@ -135,7 +137,7 @@ usb_suspend_device () {
                         control="on"
                         exc="_phone_deny"
 
-                    elif [ "$vendor" = "05ac" ] && [ "$(read_sysf $usbdev/product)" = "iPhone" ]; then
+                    elif [ "$vendor" = "05ac" ] && [ "$(read_sysf "$usbdev/product")" = "iPhone" ]; then
                         # iPhone
                         control="on"
                         exc="_phone_deny"
@@ -143,22 +145,22 @@ usb_suspend_device () {
                     elif [ "$dclass" = "00" ]; then
                         # class defined at interface level, iterate subdevices
                         for subdev in "$usbdev"/*:*; do
-                            if [ -d $subdev ]; then
-                                if [ "$(read_sysf $subdev/interface)" = "MTP" ]; then
+                            if [ -d "$subdev" ]; then
+                                if [ "$(read_sysf "$subdev/interface")" = "MTP" ]; then
                                     # MTP: mostly Android
                                     control="on"
                                     exc="_phone_deny"
                                     break
-                                elif [ "$(read_sysf $subdev/bInterfaceClass)" = "ff" ] \
-                                    && [ "$(read_sysf $subdev/bInterfaceSubClass)" = "42" ] \
-                                    && [ "$(read_sysf $subdev/bInterfaceProtocol)" = "01" ]; then
+                                elif [ "$(read_sysf "$subdev/bInterfaceClass")" = "ff" ] \
+                                    && [ "$(read_sysf "$subdev/bInterfaceSubClass")" = "42" ] \
+                                    && [ "$(read_sysf "$subdev/bInterfaceProtocol")" = "01" ]; then
                                     # ADB: Android
                                     control="on"
                                     exc="_phone_deny"
                                     break
-                                elif [ "$(read_sysf $subdev/bInterfaceClass)" = "06" ] \
-                                    && [ "$(read_sysf $subdev/bInterfaceSubClass)" = "01" ] \
-                                    && [ "$(read_sysf $subdev/bInterfaceProtocol)" = "01" ]; then
+                                elif [ "$(read_sysf "$subdev/bInterfaceClass")" = "06" ] \
+                                    && [ "$(read_sysf "$subdev/bInterfaceSubClass")" = "01" ] \
+                                    && [ "$(read_sysf "$subdev/bInterfaceProtocol")" = "01" ]; then
                                     # PTP: iPhone, Lumia et al.
                                     # caveat: may also be a camera
                                     control="on"
@@ -178,7 +180,7 @@ usb_suspend_device () {
                     if [ "$dclass" = "00" ]; then
                         # check for printer subdevices
                         for subdev in "$usbdev"/*:*; do
-                            if [ "$(read_sysf $subdev/bInterfaceClass)" = "07" ]; then
+                            if [ "$(read_sysf "$subdev/bInterfaceClass")" = "07" ]; then
                                 control="on"
                                 exc="_printer_deny"
                                 break
@@ -194,7 +196,7 @@ usb_suspend_device () {
                     if [ "$dclass" != "00" ]; then
                         # check for cdc subdevices
                         for subdev in "$usbdev"/*:*; do
-                            if [ "$(read_sysf $subdev/bInterfaceClass)" = "0a" ]; then
+                            if [ "$(read_sysf "$subdev/bInterfaceClass")" = "0a" ]; then
                                 control="on"
                                 exc="_wwan_deny"
                                 break
@@ -213,11 +215,11 @@ usb_suspend_device () {
             fi # wwan
         fi # !device denylist
 
-        if [ "$(read_sysf $usbdev/power/control)" != "$control" ]; then
+        if [ "$(read_sysf "$usbdev/power/control")" != "$control" ]; then
             # set control, write actual changes only
             case $control in
                 auto|on)
-                    write_sysf "$control" $usbdev/power/control; rc1=$?
+                    write_sysf "$control" "$usbdev/power/control"; rc1=$?
                     chg=1
                     ;;
 
@@ -228,7 +230,7 @@ usb_suspend_device () {
 
         if [ "$X_TLP_USB_SET_AUTOSUSPEND_DELAY" = "1" ]; then
             # set autosuspend delay
-            write_sysf $USB_TIMEOUT_MS $usbdev/power/autosuspend_delay_ms; rc2=$?
+            write_sysf $USB_TIMEOUT_MS "$usbdev/power/autosuspend_delay_ms"; rc2=$?
             echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid $usbdev [$drvlist]; control: rc=$rc1; delay: rc=$rc2"
         elif [ $chg -eq 1 ]; then
             # default: change control but not autosuspend_delay, i.e. keep kernel default setting
@@ -256,7 +258,7 @@ set_usb_suspend () {
             case "$usbdev" in
                 *:*) ;; # colon in device name --> do nothing
 
-                *) usb_suspend_device "$usbdev" "batch" $2 ;;
+                *) usb_suspend_device "$usbdev" "batch" "$2" ;;
             esac
         done
 

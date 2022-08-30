@@ -6,7 +6,7 @@
 
 # Needs: tlp-func-base, tlp-func-rf
 
-# shellcheck disable=SC2034,SC2086
+# shellcheck disable=SC2034
 
 # ----------------------------------------------------------------------------
 # Constants
@@ -46,7 +46,7 @@ get_devc () { # get control device for radio type
     case $1 in
         wwan|bluetooth|nfc)
             for i in /sys/class/rfkill/rfkill* ; do
-                if [ "$(read_sysf $i/type)" = "$1" ]; then
+                if [ "$(read_sysf "$i/type")" = "$1" ]; then
                     _devc="$i/state"
                     echo_debug "rf" "get_devc($1) = $_devc"
                     return 0
@@ -67,7 +67,7 @@ get_devc () { # get control device for radio type
             done
 
             for i in /sys/class/rfkill/rfkill* ; do
-                if [ "$(read_sysf $i/type)" = "wlan" ]; then
+                if [ "$(read_sysf "$i/type")" = "wlan" ]; then
                     _devc="$i/state"
                     echo_debug "rf" "get_devc($1) = $_devc"
                     return 0
@@ -89,7 +89,7 @@ get_devc () { # get control device for radio type
 
 get_devs () { # get radio device state -- $1: rftype; retval $_devs: 0=off/1=on
     if [ -n "$_devc" ]; then
-        _devs="$(read_sysf $_devc)"
+        _devs="$(read_sysf "$_devc")"
         case "$_devs" in
             0|1) # invert state when not a rfkill device
                 [ "$_rfkdev" = "0" ] && _devs=$((_devs ^ _devoff))
@@ -125,7 +125,7 @@ invoke_nmcli () { # call nmcli with radio option according to the program versio
 
     check_nm || return 0 # return if NetworkManager not running
 
-    $NMCLI radio $1 $2 > /dev/null 2>&1; rc=$?
+    $NMCLI radio "$1" "$2" > /dev/null 2>&1; rc=$?
     echo_debug "rf" "invoke_nmcli($1, $2).radio: rc=$rc"
 
     return $rc
@@ -134,8 +134,8 @@ invoke_nmcli () { # call nmcli with radio option according to the program versio
 device_state () { # get radio type state -- $1: rftype; retval $_devc, $_devs: 0=off/1=on
     echo_debug "rf" "device_state($1)"
 
-    get_devc $1
-    get_devs $1
+    get_devc "$1"
+    get_devs "$1"
 }
 
 device_switch () { # switch radio type state
@@ -149,7 +149,7 @@ device_switch () { # switch radio type state
 
     echo_debug "rf" "device_switch($1, $2, $3, $4)"
 
-    get_devc $1
+    get_devc "$1"
 
     # quit if no device
     if [ -z "$_devc" ]; then
@@ -158,13 +158,13 @@ device_switch () { # switch radio type state
     fi
 
     # quit if invalid operation
-    if ! wordinlist $2 "on 1 off 0 toggle"; then
+    if ! wordinlist "$2" "on 1 off 0 toggle"; then
         echo_debug "rf" "device_switch($1, $2).invalid_op: rc=1"
         return 1
     fi
 
     # get current device state
-    get_devs $1
+    get_devs "$1"
     curst=$_devs
 
     # quit if device state is hard blocked or invalid
@@ -186,11 +186,11 @@ device_switch () { # switch radio type state
     # wifi, wwan: before rfkill (only if X_configured) -- notify NM of desired state
     if [ "$X_USE_NMCLI" = "1" ] && [ "$1" != "bluetooth" ]; then
         case $newst in
-            1) invoke_nmcli $1 on  ;;
-            0) invoke_nmcli $1 off ;;
+            1) invoke_nmcli "$1" on  ;;
+            0) invoke_nmcli "$1" off ;;
         esac
         # record device state after nmcli
-        get_devs $1
+        get_devs "$1"
         # update current state
         curst=$_devs
 
@@ -214,7 +214,7 @@ device_switch () { # switch radio type state
 
         # set timed lock if required
         [ -n "$3" ] && [ -n "$4" ] && [ "$1" != "bluetooth" ] && \
-            set_timed_lock $3 $4
+            set_timed_lock "$3" "$4"
 
         # determine value for direct write
         case $newst in
@@ -230,12 +230,12 @@ device_switch () { # switch radio type state
                     # use rfkill
                     echo_debug "rf" "device_switch($1, $2).rfkill"
                     case $newst in
-                        1) $RFKILL unblock $1 > /dev/null 2>&1 ;;
-                        0) $RFKILL block $1   > /dev/null 2>&1 ;;
+                        1) $RFKILL unblock "$1" > /dev/null 2>&1 ;;
+                        0) $RFKILL block "$1"   > /dev/null 2>&1 ;;
                         *) ;;
                     esac
                     # record device state after rfkill
-                    get_devs $1
+                    get_devs "$1"
                 else
                     # missing permission to rfkill
                     err_no_root_priv "device_switch($1, $2).rfkill"
@@ -243,10 +243,10 @@ device_switch () { # switch radio type state
             else
                 # use direct write
                 if test_root ; then
-                    write_sysf "$devn" $_devc
+                    write_sysf "$devn" "$_devc"
                     echo_debug "rf" "device_switch($1, $2).devc: rc=$?"
                     # record device state after direct write
-                    get_devs $1
+                    get_devs "$1"
                 else
                     err_no_root_priv "device_switch($1, $2).devc"
                 fi
@@ -257,11 +257,11 @@ device_switch () { # switch radio type state
     # wifi, wwan: after rkfill (default) -- notify NM of desired state
     if [ "$X_USE_NMCLI" != "0" ] && [ "$1" != "bluetooth" ]; then
         case $newst in
-            1) invoke_nmcli $1 on  ;;
-            0) invoke_nmcli $1 off ;;
+            1) invoke_nmcli "$1" on  ;;
+            0) invoke_nmcli "$1" off ;;
         esac
         # record final device state
-        get_devs $1
+        get_devs "$1"
     fi
 
     # quit if device state is hard blocked or invalid
@@ -339,11 +339,11 @@ save_device_states () { # save radio states -- $1: list of rftypes
     local rc=0
 
     # create empty state file
-    if { : > $RFSTATEFILE; } 2> /dev/null; then
+    if { : > "$RFSTATEFILE"; } 2> /dev/null; then
         # iterate over all possible devices -> save state in file
         for dev in $devlist; do
-            device_state $dev
-            { printf '%s\n' "$dev $_devs" >> $RFSTATEFILE; } 2> /dev/null || rc=2
+            device_state "$dev"
+            { printf '%s\n' "$dev $_devs" >> "$RFSTATEFILE"; } 2> /dev/null || rc=2
         done
     else
         # create failed
@@ -359,13 +359,14 @@ restore_device_states () { # restore radio type states
     local sline
     local rc=0
 
-    if [ -f $RFSTATEFILE ]; then
+    if [ -f "$RFSTATEFILE" ]; then
         # read state file
         # shellcheck disable=SC2162
         while read -r sline; do
+            # shellcheck disable=SC2086
             set -- $sline # read dev, state into $1, $2
-            device_switch $1 $2
-        done < $RFSTATEFILE
+            device_switch "$1" "$2"
+        done < "$RFSTATEFILE"
     else
         # state file nonexistent
         rc=1
@@ -446,7 +447,7 @@ set_radio_device_states () { # set/initialize all radio states
                         bluetooth) any_bluetooth_in_use ;;
                         wifi) any_wifi_in_use ;;
                         wwan) any_wwan_in_use ;;
-                    esac } || wordinlist $dev "$devs2disable" || devs2disable="$dev $devs2disable"
+                    esac } || wordinlist "$dev" "$devs2disable" || devs2disable="$dev $devs2disable"
                 done
                 devs2disable="${devs2disable# }"
                 ;;
@@ -489,14 +490,14 @@ set_radio_device_states () { # set/initialize all radio states
                 [ "$quiet" = "1" ] || echo -n "Enabling radios:"
                 for dev in $devs2enable; do
                     [ "$quiet" = "1" ] || echo -n " $dev"
-                    device_switch $dev on
+                    device_switch "$dev" on
                 done
                 [ "$quiet" = "1" ] || echo "."
             fi
         fi
 
         # clean up: discard state file
-        rm -f $RFSTATEFILE 2> /dev/null
+        rm -f "$RFSTATEFILE" 2> /dev/null
     fi
 
     return 0
