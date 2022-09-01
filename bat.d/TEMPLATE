@@ -442,7 +442,7 @@ batdrv_write_thresholds () {
 }
 
 batdrv_chargeonce () {
-    # function not implemented for Huawei MateBooks
+    # function not implemented
     echo_debug "bat" "batdrv.${_batdrv_plugin}.charge_once.not_implemented"
     return 255
 }
@@ -613,6 +613,6 @@ batdrv_show_battery_data () {
 }
 
 batdrv_recommendations () {
-     # no recommendations for Huawei MateBooks
+     # no recommendations
     return 0
 }
