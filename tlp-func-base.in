@@ -521,7 +521,7 @@ select_batdrv () { # source battery feature drivers and
     [ -z "$_batdrv_selected" ] || return 0
 
     # iterate until a matching driver is found
-    for batdrv in @TLP_BATD@/[0-9][0-9]*[a-z]; do
+    for batdrv in @TLP_BATD@/[0-9][0-9]-[a-z]*; do
         # shellcheck disable=SC1090
         . "$batdrv" || exit 70
 

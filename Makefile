@@ -119,7 +119,7 @@ PLFILES = \
 	tlp-readconfs.in \
 	tlp-usblist
 
-BATDRVFILES = $(foreach drv,$(wildcard bat.d/[0-9][0-9]-*[a-z]),$(drv)~)
+BATDRVFILES = $(foreach drv,$(wildcard bat.d/[0-9][0-9]-[a-z]*),$(drv)~)
 
 # Make targets
 all: $(INFILES)
