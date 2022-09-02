@@ -223,3 +223,35 @@ disable_wake_on_lan () {  # disable WOL
 
     return 0
 }
+
+# --- Set suspend method
+    
+set_mem_sleep () {
+    # $1: 0=ac mode, 1=battery mode
+        
+    local susp
+        
+    if [ "$1" = "1" ]; then
+        susp=${MEM_SLEEP_ON_BAT:-}
+    else
+        susp=${MEM_SLEEP_ON_AC:-}
+    fi
+
+    if [ -z "$susp" ]; then
+        # do nothing if unconfigured
+        echo_debug "pm" "set_mem_sleep($1).not_configured"
+        return 0
+    fi
+
+    if [ -f /sys/power/mem_sleep ]; then
+        if write_sysf "$susp" /sys/power/mem_sleep; then
+            echo_debug "pm" "set_mem_sleep($1): $susp"
+        else
+            echo_debug "pm" "set_mem_sleep($1).disabled_by_kernel"
+        fi
+    else
+        echo_debug "pm" "set_mem_sleep($1).not_available"
+    fi
+
+    return 0
+}
