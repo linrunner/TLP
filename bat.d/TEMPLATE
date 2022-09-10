@@ -332,21 +332,21 @@ batdrv_write_thresholds () {
     fi
 
     # TEMPLATE: customize assertion to vendor specs
-    # check start <= stop
-    if [ "$new_start" -gt "$new_stop" ]; then
+    # check start < stop
+    if [ "$new_start" -ge "$new_stop" ]; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_diff: bat=$_bat_str"
         case $verb in
             1)
                 if [ -n "$cfg_bat" ]; then
-                    echo_message "Error in configuration: START_CHARGE_THRESH_${cfg_bat} > STOP_CHARGE_THRESH_${cfg_bat}. Battery skipped."
+                    echo_message "Error in configuration: START_CHARGE_THRESH_${cfg_bat} >= STOP_CHARGE_THRESH_${cfg_bat}. Battery skipped."
                 fi
                 ;;
 
             2)
                 if [ -n "$cfg_bat" ]; then
-                    printf "Error in configuration: START_CHARGE_THRESH_%s > STOP_CHARGE_THRESH_%s. Aborted.\n" "$cfg_bat" "$cfg_bat" 1>&2
+                    printf "Error in configuration: START_CHARGE_THRESH_%s >= STOP_CHARGE_THRESH_%s. Aborted.\n" "$cfg_bat" "$cfg_bat" 1>&2
                 else
-                    printf "Error: start threshold > stop threshold for %s. Aborted.\n" "$_bat_str" 1>&2
+                    printf "Error: start threshold >= stop threshold for %s. Aborted.\n" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -365,12 +365,12 @@ batdrv_write_thresholds () {
     fi
 
     # TEMPLATE: customize assertion to vendor specs
-    # determine write sequence too meet boundary condition start <= stop
+    # determine write sequence too meet boundary condition start < stop
     # disclaimer: the driver doesn't enforce it but we don't know about the
     # firmware and it's reasonable anyway
     local rc=0 steprc tseq
 
-    if [ "$new_start" -gt "$old_stop" ]; then
+    if [ "$new_start" -ge "$old_stop" ]; then
         tseq="stop start"
     else
         tseq="start stop"
@@ -520,6 +520,12 @@ batdrv_show_battery_data () {
         254) printf "* natacpi (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
         *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
+    # TEMPLATE: customize to vendor specs
+    if [ "$_bm_thresh" != "none" ]; then
+        printf "Parameter value ranges:\n"
+        printf "* START_CHARGE_THRESH_BAT0/1:  0(off)..100\n"
+        printf "* STOP_CHARGE_THRESH_BAT0/1:   0..100(default)\n"
+    fi
     printf "\n"
 
     # -- show battery data
