@@ -647,7 +647,7 @@ batdrv_write_thresholds () {
     #   - tpacpi:  nothing (maybe BIOS/ECP enforces something)
     local rc=0 steprc tseq
 
-    if [ "$old_stop" != "none" ] && [ $new_start -gt $old_stop ]; then
+    if [ "$old_stop" != "none" ] && [ $new_start -ge $old_stop ]; then
         tseq="stop start"
     else
         tseq="start stop"
