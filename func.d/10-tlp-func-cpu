@@ -6,8 +6,6 @@
 
 # Needs: tlp-func-base
 
-# shellcheck disable=SC2086
-
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -66,7 +64,7 @@ set_cpu_scaling_governor () {
         # apply governor
         ec=0
         for cpu in "${CPUD}"/cpu*/cpufreq/scaling_governor; do
-            if [ -f "$cpu" ] && ! write_sysf "$gov" $cpu; then
+            if [ -f "$cpu" ] && ! write_sysf "$gov" "$cpu"; then
                 echo_debug "pm" "set_cpu_scaling_governor($1).write_error: $cpu $gov; rc=$?"
                 ec=$((ec+1))
             fi
@@ -96,7 +94,7 @@ set_cpu_scaling_min_max_freq () {
         conf=1
         ec=0
         for cpu in "${CPUD}"/cpu*/cpufreq/scaling_min_freq; do
-            if [ -f "$cpu" ] && ! write_sysf "$minfreq" $cpu; then
+            if [ -f "$cpu" ] && ! write_sysf "$minfreq" "$cpu"; then
                 echo_debug "pm" "set_cpu_scaling_min_max_freq($1).min.write_error: $cpu $minfreq; rc=$?"
                 ec=$((ec+1))
             fi
@@ -108,7 +106,7 @@ set_cpu_scaling_min_max_freq () {
         conf=1
         ec=0
         for cpu in "${CPUD}"/cpu*/cpufreq/scaling_max_freq; do
-            if [ -f "$cpu" ] && ! write_sysf "$maxfreq" $cpu; then
+            if [ -f "$cpu" ] && ! write_sysf "$maxfreq" "$cpu"; then
                 echo_debug "pm" "set_cpu_scaling_min_max_freq($1).max.write_error: $cpu $maxfreq; rc=$?"
                 ec=$((ec+1))
             fi
@@ -188,9 +186,9 @@ set_intel_cpu_perf_policy () {
         cnt=0
         ec=0
         for cpuf in "${CPUD}"/cpu*/cpufreq/energy_performance_preference; do
-            if [ -f $cpuf ]; then
+            if [ -f "$cpuf" ]; then
                 cnt=$((cnt+1))
-                if  ! write_sysf "$perf" $cpuf; then
+                if  ! write_sysf "$perf" "$cpuf"; then
                     echo_debug "pm" "set_intel_cpu_perf_policy($1).hwp_epp.write_error: $perf $cpuf; rc=$?"
                     ec=$((ec+1))
                 fi
@@ -230,9 +228,9 @@ set_intel_cpu_perf_policy () {
         cnt=0
         ec=0
         for cpuf in "${CPUD}"/cpu*/power/energy_perf_bias; do
-            if [ -f $cpuf ]; then
+            if [ -f "$cpuf" ]; then
                 cnt=$((cnt + 1))
-                if  ! write_sysf "$pnum" $cpuf; then
+                if  ! write_sysf "$pnum" "$cpuf"; then
                     echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_kernel.write_error: $perf($pnum) $cpuf; rc=$?"
                     ec=$((ec+1))
                 fi
@@ -250,8 +248,8 @@ set_intel_cpu_perf_policy () {
             echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); x86_energy_perf_policy not installed"
         else
             # x86_energy_perf_policy needs kernel module 'msr'
-            load_modules $MOD_MSR
-            $ENERGYPERF $pnum > /dev/null 2>&1
+            load_modules "$MOD_MSR"
+            $ENERGYPERF "$pnum" > /dev/null 2>&1
             rc=$?
             case $rc in
                 0) echo_debug "pm" "set_intel_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$?" ;;

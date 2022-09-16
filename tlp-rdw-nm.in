@@ -5,13 +5,11 @@
 # Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC2086
-
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/25-tlp-func-rf @TLP_FLIB@/30-tlp-func-rf-sw; do
     # shellcheck disable=SC1090
-    . $lib || exit 70
+    . "$lib" || exit 70
 done
 
 # --- Functions
@@ -30,7 +28,7 @@ check_switch_lock() { # switch listed radio devices
         if [ -n "$type" ] && [ "$type" != "$1" ]; then
             # device type is valid and not the originating one
             # --> do switch with state change lock
-            device_switch $type $3 "${RDW_NM_LOCK}_${type}" $RDW_LOCKTIME
+            device_switch "$type" "$3" "${RDW_NM_LOCK}_${type}" "$RDW_LOCKTIME"
         fi
     done
 
@@ -39,7 +37,7 @@ check_switch_lock() { # switch listed radio devices
 
 save_iface_type () { # save interface type -- $1: interface; $2: type
     # rc: 0=saved/1=error
-    [ -d $NETD/$1 ] && { printf '%s\n' "$2" > $RUNDIR/${1}.itype; } 2> /dev/null
+    [ -d "$NETD/$1" ] && { printf '%s\n' "$2" > "$RUNDIR/${1}.itype"; } 2> /dev/null
     return $?
 }
 
@@ -48,8 +46,8 @@ get_iface_type () { # get saved interface type -- $1: interface
     # retval: $itype
     local rc
 
-    itype=$(read_sysf $RUNDIR/${1}.itype); rc=$?
-    rm -f $RUNDIR/${1}.itype
+    itype=$(read_sysf "$RUNDIR/${1}.itype"); rc=$?
+    rm -f "$RUNDIR/${1}.itype"
     return $rc
 }
 
@@ -61,7 +59,7 @@ _bgtask=1
 read_config 1 0
 
 check_tlp_enabled || do_exit 0
-check_run_flag $RDW_KILL && do_exit 0
+check_run_flag "$RDW_KILL" && do_exit 0
 add_sbin2path
 
 # Get args
@@ -79,7 +77,7 @@ itype=""
 #  Quit for virtual interfaces (up action)
 if [ "$action" = "up" ] && readlink "$NETD/$iface" | grep -q '/virtual/'; then
     # save type for down action where $NETD/$iface won't be there anymore
-    save_iface_type $iface virtual
+    save_iface_type "$iface" virtual
     [ "$X_NET_VIRTUAL_TRACE" = 1 ] && \
         echo_debug "nm" "+++ rdw_nm($iface).up.ignore_virtual"
     do_exit 0
@@ -87,7 +85,7 @@ fi
 
 # Get saved interface type (down action)
 if [ "$action" = "down" ]; then
-    get_iface_type $iface
+    get_iface_type "$iface"
 
     # quit for virtual interfaces
     if [ "$itype" = "virtual" ]; then
@@ -112,10 +110,10 @@ if [ -n "$itype" ]; then
     # saved type available (down action)
     echo_debug "nm" "rdw_nm($iface).$action: type=$itype [saved]"
 
-elif cmd_exists $NMCLI ; then
+elif cmd_exists "$NMCLI"; then
     # no saved type but nmcli is available
     # --> check if nmcli dev output matches interface
-    itype="$($NMCLI dev | awk '$1 ~ /^'$iface'$/ { print $2; }')"
+    itype="$($NMCLI dev | awk '$1 ~ /^'"$iface"'$/ { print $2; }')"
 
     if [ -z "$itype" ]; then
         # iface is not found in nmcli dev output: many WWAN devices have

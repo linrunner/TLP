@@ -6,8 +6,6 @@
 
 # Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat
 
-# shellcheck disable=SC2086
-
 # --- Hardware Detection
 
 readonly BATDRV_LENOVO_MD=/sys/bus/platform/drivers/ideapad_acpi
@@ -86,7 +84,7 @@ batdrv_init () {
     # iterate batteries
     local bd bs
     for bd in "$ACPIBATDIR"/BAT[01]; do
-        if [ "$(read_sysf $bd/present)" = "1" ]; then
+        if [ "$(read_sysf "$bd/present")" = "1" ]; then
             # record detected batteries and directories
             bs=${bd##/*/}
             if [ -n "$_batteries" ]; then
@@ -226,7 +224,7 @@ batdrv_write_thresholds () {
 
     # stop: check for 3 digits max, ensure 0 or 1
     if ! is_uint "$new_stop" 3 || \
-       ! is_within_bounds $new_stop 0 1; then
+       ! is_within_bounds "$new_stop" 0 1; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).invalid_stop"
         case $verb in
@@ -265,7 +263,7 @@ batdrv_write_thresholds () {
     local rc=0
     if [ "$old_stop" != "$new_stop" ]; then
         # new threshold differs from effective one --> write it
-        write_sysf "$new_stop" $_bf_stop || rc=5
+        write_sysf "$new_stop" "$_bf_stop" || rc=5
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).write: old=$old_stop; new=$new_stop; rc=$rc"
         case $verb in
             2)
@@ -391,38 +389,38 @@ batdrv_show_battery_data () {
     local ensum=0
 
     for bat in $_batteries; do # iterate batteries
-        batdrv_select_battery $bat
+        batdrv_select_battery "$bat"
 
         printf "+++ Battery Status: %s\n" "$bat"
 
-        printparm "%-59s = ##%s##" $_bd_read/manufacturer
-        printparm "%-59s = ##%s##" $_bd_read/model_name
+        printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
+        printparm "%-59s = ##%s##" "$_bd_read/model_name"
 
-        print_battery_cycle_count "$_bd_read/cycle_count" "$(read_sysf $_bd_read/cycle_count)"
+        print_battery_cycle_count "$_bd_read/cycle_count" "$(read_sysf "$_bd_read/cycle_count")"
 
-        if [ -f $_bd_read/energy_full ]; then
-            printparm "%-59s = ##%6d## [mWh]" $_bd_read/energy_full_design "" 000
-            printparm "%-59s = ##%6d## [mWh]" $_bd_read/energy_full "" 000
-            printparm "%-59s = ##%6d## [mWh]" $_bd_read/energy_now "" 000
-            printparm "%-59s = ##%6d## [mW]" $_bd_read/power_now "" 000
+        if [ -f "$_bd_read/energy_full" ]; then
+            printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full_design" "" 000
+            printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full" "" 000
+            printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_now" "" 000
+            printparm "%-59s = ##%6d## [mW]" "$_bd_read/power_now" "" 000
 
             # store values for charge / capacity calculation below
-            ed=$(read_sysval $_bd_read/energy_full_design)
-            ef=$(read_sysval $_bd_read/energy_full)
-            en=$(read_sysval $_bd_read/energy_now)
+            ed=$(read_sysval "$_bd_read/energy_full_design")
+            ef=$(read_sysval "$_bd_read/energy_full")
+            en=$(read_sysval "$_bd_read/energy_now")
             efsum=$((efsum + ef))
             ensum=$((ensum + en))
 
-        elif [ -f $_bd_read/charge_full ]; then
-            printparm "%-59s = ##%6d## [mAh]" $_bd_read/charge_full_design "" 000
-            printparm "%-59s = ##%6d## [mAh]" $_bd_read/charge_full "" 000
-            printparm "%-59s = ##%6d## [mAh]" $_bd_read/charge_now "" 000
-            printparm "%-59s = ##%6d## [mA]" $_bd_read/current_now "" 000
+        elif [ -f "$_bd_read/charge_full" ]; then
+            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full_design" "" 000
+            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full" "" 000
+            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_now" "" 000
+            printparm "%-59s = ##%6d## [mA]" "$_bd_read/current_now" "" 000
 
             # store values for charge / capacity calculation below
-            ed=$(read_sysval $_bd_read/charge_full_design)
-            ef=$(read_sysval $_bd_read/charge_full)
-            en=$(read_sysval $_bd_read/charge_now)
+            ed=$(read_sysval "$_bd_read/charge_full_design")
+            ef=$(read_sysval "$_bd_read/charge_full")
+            en=$(read_sysval "$_bd_read/charge_now")
             efsum=$((efsum + ef))
             ensum=$((ensum + en))
 
@@ -432,12 +430,12 @@ batdrv_show_battery_data () {
             en=0
         fi
 
-        print_batstate $_bd_read/status
+        print_batstate "$_bd_read/status"
         printf "\n"
 
-        if [ $verbose -eq 1 ]; then
-            printparm "%-59s = ##%6s## [mV]" $_bd_read/voltage_min_design "" 000
-            printparm "%-59s = ##%6s## [mV]" $_bd_read/voltage_now "" 000
+        if [ "$verbose" -eq 1 ]; then
+            printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_min_design" "" 000
+            printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_now" "" 000
             printf "\n"
         fi
 
@@ -445,11 +443,11 @@ batdrv_show_battery_data () {
 
         # --- show charge level (SOC) and capacity
         if [ $ef -ne 0 ]; then
-            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'
+            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
             lf=1
         fi
         if [ $ed -ne 0 ]; then
-            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '$ef' / '$ed');'
+            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '"$ef"' / '"$ed"');'
             lf=1
         fi
         [ $lf -gt 0 ] && printf "\n"
@@ -460,7 +458,7 @@ batdrv_show_battery_data () {
 
     if [ $bcnt -gt 1 ] && [ $efsum -ne 0 ]; then
         # more than one battery detected --> show charge total
-        perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '$ensum' / '$efsum');'
+        perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '"$ensum"' / '"$efsum"');'
         printf "\n"
     fi
 

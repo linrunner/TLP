@@ -4,13 +4,11 @@
 # Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC2086,SC2154
-
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/25-tlp-func-rf @TLP_FLIB@/30-tlp-func-rf-sw; do
     # shellcheck disable=SC1090
-    . $lib
+    . "$lib"
 done
 
 # --- MAIN
@@ -27,23 +25,24 @@ case $self in
     bluetooth|nfc|wifi|wwan)
         case $carg1 in
             on)
-                device_switch $self on
-                echo_device_state $self $_devs
+                device_switch "$self" on
+                # shellcheck disable=SC2154
+                echo_device_state "$self" "$_devs"
                 ;;
 
             off)
-                device_switch $self off
-                echo_device_state $self $_devs
+                device_switch "$self" off
+                echo_device_state "$self" "$_devs"
                 ;;
 
             toggle)
-                device_switch $self toggle
-                echo_device_state $self $_devs
+                device_switch "$self" toggle
+                echo_device_state "$self" "$_devs"
                 ;;
 
             *)
-                device_state $self
-                echo_device_state $self $_devs
+                device_state "$self"
+                echo_device_state "$self" "$_devs"
                 ;;
         esac
         ;;

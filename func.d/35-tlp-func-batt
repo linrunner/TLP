@@ -6,8 +6,6 @@
 
 # Needs: tlp-func-base, 34-tlp-func-platform
 
-# shellcheck disable=SC2086
-
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -46,7 +44,7 @@ set_charge_thresholds () {
     # shellcheck disable=SC2154
     if [ -z "$1" ]; then
         batdrv_apply_configured_thresholds; rc=$?
-    elif wordinlist $_batdrv_plugin "$1"; then
+    elif wordinlist "$_batdrv_plugin" "$1"; then
         batdrv_apply_configured_thresholds; rc=$?
     fi
 
@@ -111,7 +109,7 @@ setcharge_battery () {
     bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
 
     # check bat presence and/or get default(1st) battery
-    if batdrv_select_battery $bat; then
+    if batdrv_select_battery "$bat"; then
         # battery present
 
         # get configured values if requested

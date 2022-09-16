@@ -103,7 +103,7 @@ SHFILES = \
 	tlp.in \
 	tlp-func-base.in \
 	func.d/* \
-	bat.d/*[a-z] \
+	bat.d/* \
 	tlp-rdw.in \
 	tlp-rdw-nm.in \
 	tlp-rdw-udev.in \
@@ -119,7 +119,7 @@ PLFILES = \
 	tlp-readconfs.in \
 	tlp-usblist
 
-BATDRVFILES = $(foreach drv,$(wildcard bat.d/[0-9][0-9]-*[a-z]),$(drv)~)
+BATDRVFILES = $(foreach drv,$(wildcard bat.d/[0-9][0-9]-[a-z]*),$(drv)~)
 
 # Make targets
 all: $(INFILES)

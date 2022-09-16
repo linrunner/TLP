@@ -1,11 +1,10 @@
 #!/usr/bin/clitest
-# Test charge thresholds for ThinkPads
+# Test charge thresholds for System76 laptops
 # Requirements:
-# * Hardware: non-legacy ThinkPad
-# * Batteries: BAT0 only
-# * Power source AC
+# * Hardware: System76 laptop w/ open source EC firmware
+# * Software: kernel 5.16+
 #
-$ # +++ ThinkPad +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ # +++ System76 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
 $ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
@@ -28,11 +27,9 @@ $ sudo tlp start -- START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="96" S
 TLP started in AC mode (auto).
 $ sudo tlp start -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
-$ sudo tlp start -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-TLP started in AC mode (auto).
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
+$ sudo tlp setcharge --  START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)
@@ -54,29 +51,29 @@ Setting temporary charge thresholds for BAT0:
   stop  =  96 (no change)
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Setting temporary charge thresholds for BAT0:
+  start =   0
   stop  = 100
-  start =  96
 $ sudo tlp setcharge -- NATACPI_ENABLE=0 TPACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: battery charge thresholds not available.
 $ #
 $ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 60 100
+$ sudo tlp setcharge 60 100 -- X_BAT_PLUGIN_SIMULATE=system76
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)
-$ sudo tlp setcharge 100 100
+$ sudo tlp setcharge 100 100 -- X_BAT_PLUGIN_SIMULATE=system76
 Error: charge start threshold (100) for BAT0 is not specified, invalid or out of range (0..99). Aborted.
-$ sudo tlp setcharge 0 0
+$ sudo tlp setcharge 0 0 -- X_BAT_PLUGIN_SIMULATE=system76
 Error: charge stop threshold (0) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge 0 101
+$ sudo tlp setcharge 0 101 -- X_BAT_PLUGIN_SIMULATE=system76
 Error: charge stop threshold (101) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge XYZZY 0
+$ sudo tlp setcharge XYZZY 0 -- X_BAT_PLUGIN_SIMULATE=system76
 Error: charge start threshold (XYZZY) for BAT0 is not specified, invalid or out of range (0..99). Aborted.
-$ sudo tlp setcharge 0 XYZZY
+$ sudo tlp setcharge 0 XYZZY -- X_BAT_PLUGIN_SIMULATE=system76
 Error: charge stop threshold (XYZZY) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge 97 97
+$ sudo tlp setcharge 97 97 -- X_BAT_PLUGIN_SIMULATE=system76
 Error: start threshold >= stop threshold for BAT0. Aborted.
-$ sudo tlp setcharge 95 96
+$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=system76
 Setting temporary charge thresholds for BAT0:
   start =  95
   stop  =  96
@@ -92,13 +89,13 @@ Setting temporary charge thresholds for BAT0:
   stop  =  96 (no change)
 $ sudo tlp setcharge DEF DEF
 Setting temporary charge thresholds for BAT0:
+  start =   0
   stop  = 100
-  start =  96
-$ sudo tlp setcharge BAT1
+$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
 Error: battery BAT1 not present.
-$ sudo tlp setcharge 0 3 BAT1
+$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
 Error: battery BAT1 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT1
+$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
 Error: battery BAT1 not present.
 $ #
 $ # --- Reset
@@ -108,48 +105,9 @@ Setting temporary charge thresholds for BAT0:
   stop  = 100 (no change)
 $ #
 $ # --- tlp-stat
-$ # steps require a kernel >= 5.17 -- with 'charge_behaviour'
-$ sudo tlp-stat -b | grep -E 'charge_(control|behaviour)'
+$ sudo tlp-stat -b -- | grep -E 'charge_control'
 /sys/class/power_supply/BAT0/charge_control_start_threshold =     60 [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
-/sys/class/power_supply/BAT0/charge_behaviour               = [auto] inhibit-charge force-discharge
-$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|behaviour)'
+$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
-/sys/class/power_supply/BAT0/charge_behaviour               = [auto] inhibit-charge force-discharge
-$ #
-$ # --- Feature Detection Edge Cases and Kernel Module Recommendations
-$ sudo ./kmod-helper acpi_call restore
-$ sudo ./kmod-helper acpi_call enable
-$ sudo tlp-stat -b -- NATACPI_ENABLE=0 | head -8 | tail -5
-Plugin: thinkpad
-Supported features: charge thresholds, recalibration
-Driver usage:
-* natacpi (thinkpad_acpi) = inactive (disabled by configuration)
-* tpacpi-bat (acpi_call)  = active (charge thresholds, recalibration)
-$ sudo ./kmod-helper acpi_call disable
-$ sudo tlp-stat -b -- NATACPI_ENABLE=0 | head -8 | tail -5
-Plugin: thinkpad
-Supported features: none available
-Driver usage:
-* natacpi (thinkpad_acpi) = inactive (disabled by configuration)
-* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' load error)
-$ sudo ./kmod-helper acpi_call enable
-$ sudo ./kmod-helper acpi_call remove
-$ sudo tlp-stat -b -- NATACPI_ENABLE=0 | head -8 | tail -5
-Plugin: thinkpad
-Supported features: none available
-Driver usage:
-* natacpi (thinkpad_acpi) = inactive (disabled by configuration)
-* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' not installed)
-$ # next step requires a kernel < 5.17 -- without 'charge_behaviour'
-$ sudo tlp-stat -b | grep -A1 '+++ Recommendations'
-+++ Recommendations
-* Install acpi_call kernel module for ThinkPad battery recalibration
-$ sudo ./kmod-helper acpi_call restore
-$ sudo tlp-stat -b -- NATACPI_ENABLE=0 TPACPI_ENABLE=0 | head -8 | tail -5
-Plugin: thinkpad
-Supported features: none available
-Driver usage:
-* natacpi (thinkpad_acpi) = inactive (disabled by configuration)
-* tpacpi-bat (acpi_call)  = inactive (disabled by configuration)

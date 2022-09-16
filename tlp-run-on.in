@@ -9,7 +9,7 @@
 # shellcheck disable=SC2043
 for lib in @TLP_TLIB@/tlp-func-base; do
     # shellcheck disable=SC1090
-    . $lib
+    . "$lib"
 done
 
 # --- MAIN

@@ -4,13 +4,11 @@
 # Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
-# shellcheck disable=SC2086
-
 # --- Source libraries
 
 for lib in @TLP_TLIB@/tlp-func-base @TLP_FLIB@/[0-9][0-9]*; do
     # shellcheck disable=SC1090
-    . $lib || exit 70
+    . "$lib" || exit 70
 done
 
 # --- Constants
@@ -19,16 +17,16 @@ done
 
 apply_common_settings () { # apply settings common to all modes
                            # $1: 0=ac mode, 1=battery mode
-    set_laptopmode $1
-    set_dirty_parms $1
-    set_platform_profile $1
-    set_cpu_scaling_governor $1
-    set_cpu_scaling_min_max_freq $1
-    set_intel_cpu_perf_policy $1
-    set_intel_cpu_perf_pct $1
-    set_cpu_boost_all $1
-    set_intel_cpu_hwp_dyn_boost $1
-    set_sched_powersave $1
+    set_laptopmode "$1"
+    set_dirty_parms "$1"
+    set_platform_profile "$1"
+    set_cpu_scaling_governor "$1"
+    set_cpu_scaling_min_max_freq "$1"
+    set_intel_cpu_perf_policy "$1"
+    set_intel_cpu_perf_pct "$1"
+    set_cpu_boost_all "$1"
+    set_intel_cpu_hwp_dyn_boost "$1"
+    set_sched_powersave "$1"
     set_nmi_watchdog
     set_mem_sleep $1
     set_ahci_port_runtime_pm $1
@@ -38,12 +36,12 @@ apply_common_settings () { # apply settings common to all modes
     set_disk_apm_level $1
     set_disk_spindown_timeout $1
     set_disk_iosched
-    set_pcie_aspm $1
-    set_intel_gpu_min_max_boost_freq $1
-    set_amdgpu_profile $1
-    set_wifi_power_mode $1
+    set_pcie_aspm "$1"
+    set_intel_gpu_min_max_boost_freq "$1"
+    set_amdgpu_profile "$1"
+    set_wifi_power_mode "$1"
     disable_wake_on_lan
-    set_sound_power_mode $1
+    set_sound_power_mode "$1"
 
     return 0
 }
@@ -297,7 +295,7 @@ case "$_cmd" in
 
             stop)
                 # remove usb startup flag
-                [ -f $USB_DONE ] && rm $USB_DONE
+                [ -f "$USB_DONE" ] && rm "$USB_DONE"
 
                 # clear saved power state
                 clear_saved_power_state
@@ -450,6 +448,8 @@ case "$_cmd" in
 
     setcharge) # set charge thresholds (temporarily)
         check_root
+        # quoting args will break $# in setcharge_battery()
+        # shellcheck disable=SC2086
         setcharge_battery $_carg1 $_carg2 $_carg3
         exitcode=$?
         ;;
@@ -457,6 +457,8 @@ case "$_cmd" in
     fullcharge) # charge battery to 100% (temporarily)
         if check_ac_power fullcharge; then
             check_root
+            # quoting args will break $# in setcharge_battery()
+            # shellcheck disable=SC2086
             setcharge_battery DEF DEF $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
@@ -470,6 +472,8 @@ case "$_cmd" in
     chargeonce) # charge battery to stop threshold once
         if check_ac_power chargeonce; then
             check_root
+            # quoting args will break $# in chargeonce_battery()
+            # shellcheck disable=SC2086
             chargeonce_battery $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
@@ -484,6 +488,8 @@ case "$_cmd" in
         if check_ac_power discharge; then
             check_root
             if lock_tlp_nb tlp_discharge; then
+                # quoting args will break $# in discharge_battery()
+                # shellcheck disable=SC2086
                 discharge_battery $_carg1
                 exitcode=$?
             else
@@ -500,6 +506,8 @@ case "$_cmd" in
             if lock_tlp_nb tlp_discharge; then
                 if setcharge_battery DEF DEF "$_carg1" "/discharge/recalibrate"; then
                     sleep 1
+                    # quoting args will break $# in discharge_battery()
+                    # shellcheck disable=SC2086
                     discharge_battery $_carg1
                     exitcode=$?
                     if [ $exitcode -eq 0 ]; then

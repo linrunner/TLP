@@ -7,8 +7,6 @@
 
 # Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat
 
-# shellcheck disable=SC2086
-
 # --- Hardware Detection
 readonly SMAPIBATDIR=/sys/devices/platform/smapi
 
@@ -46,7 +44,7 @@ check_thinkpad () {
 
     _tpmodel=""
 
-    if [ -d $TPACPID ]; then
+    if [ -d "$TPACPID" ]; then
         # kernel module thinkpad_acpi is loaded
 
         if [ -z "$X_SIMULATE_MODEL" ]; then
@@ -177,7 +175,7 @@ batdrv_init () {
     local bd bs
     local done=0
     for bd in "$ACPIBATDIR"/BAT[01]; do
-        if [ "$(read_sysf $bd/present)" = "1" ]; then
+        if [ "$(read_sysf "$bd/present")" = "1" ]; then
             # record detected batteries and directories
             bs=${bd##/*/}
             if [ -n "$_batteries" ]; then
@@ -195,14 +193,14 @@ batdrv_init () {
                 continue
             fi
 
-            if [ -f $bd/charge_control_start_threshold ] \
-                && [ -f $bd/charge_control_end_threshold ]; then
+            if [ -f "$bd/charge_control_start_threshold" ] \
+                && [ -f "$bd/charge_control_end_threshold" ]; then
                 # sysfiles for thresholds exist (kernel 5.9 and newer)
                 _bn_start="charge_control_start_threshold"
                 _bn_stop="charge_control_end_threshold"
                 _natacpi=254
-            elif [ -f $bd/charge_start_threshold ] \
-                && [ -f $bd/charge_stop_threshold ]; then
+            elif [ -f "$bd/charge_start_threshold" ] \
+                && [ -f "$bd/charge_stop_threshold" ]; then
                 # sysfiles for thresholds exist (kernel 4.17 and newer)
                 _bn_start="charge_start_threshold"
                 _bn_stop="charge_stop_threshold"
@@ -213,13 +211,13 @@ batdrv_init () {
                 continue
             fi
 
-            if readable_sysf $bd/$_bn_start \
-               && readable_sysf $bd/$_bn_stop; then
+            if readable_sysf "$bd/$_bn_start" \
+               && readable_sysf "$bd/$_bn_stop"; then
                 # start/stop thresholds are actually readable
                 _natacpi=1
                 _bm_thresh="natacpi"
 
-                if readable_sysf $bd/charge_behaviour; then
+                if readable_sysf "$bd/charge_behaviour"; then
                     # sysfile for force-discharge exists and is actually readable
                     _natacpi=0
                     _bm_dischg="natacpi"
@@ -449,7 +447,7 @@ batdrv_read_threshold () {
                 start) bf=$_bf_start ;;
                 stop)  bf=$_bf_stop  ;;
             esac
-            if ! out=$(read_sysf $bf); then
+            if ! out=$(read_sysf "$bf"); then
                 # not readable/non-existent
                 if [ "$2" != "1" ]; then
                     out=""
@@ -461,7 +459,7 @@ batdrv_read_threshold () {
             # workaround: read threshold sysfile a second time to mitigate
             # the annoying firmware issue on ThinkPad A/E/L/S/X series
             # (refer to issue #369 and FAQ)
-            if ! out=$(read_sysf $bf); then
+            if ! out=$(read_sysf "$bf"); then
                 # not readable/non-existent
                 if [ "$2" != "1" ]; then
                     out=""
@@ -488,7 +486,7 @@ batdrv_read_threshold () {
             esac
             # shellcheck disable=SC2181
             if [ $? -eq 0 ] && is_uint "$out"; then
-                if [ $out -ge 128 ]; then
+                if [ "$out" -ge 128 ]; then
                     # remove offset of 128 for Edge S430 et al.
                     out=$((out - 128))
                 fi
@@ -561,7 +559,7 @@ batdrv_write_thresholds () {
 
     # start: check for 3 digits max, ensure min 0 / max 99
     if ! is_uint "$new_start" 3 || \
-       ! is_within_bounds $new_start 0 99; then
+       ! is_within_bounds "$new_start" 0 99; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str"
         case $verb in
@@ -584,7 +582,7 @@ batdrv_write_thresholds () {
 
     # stop: check for 3 digits max, ensure min 1 / max 100
     if ! is_uint "$new_stop" 3 || \
-       ! is_within_bounds $new_stop 1 100; then
+       ! is_within_bounds "$new_stop" 1 100; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: bat=$_bat_str"
         case $verb in
@@ -606,7 +604,7 @@ batdrv_write_thresholds () {
     fi
 
     # check if start < stop
-    if [ $new_start -ge $new_stop ]; then
+    if [ "$new_start" -ge "$new_stop" ]; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_diff: bat=$_bat_str"
         case $verb in
             1)
@@ -637,7 +635,7 @@ batdrv_write_thresholds () {
         return 4
     fi
 
-    if [ $old_start -ge $old_stop ]; then
+    if [ "$old_start" -ge "$old_stop" ]; then
         # invalid threshold reading, happens on ThinkPad E/L series
         old_start="none"
         old_stop="none"
@@ -649,7 +647,7 @@ batdrv_write_thresholds () {
     #   - tpacpi:  nothing (maybe BIOS/ECP enforces something)
     local rc=0 steprc tseq
 
-    if [ "$old_stop" != "none" ] && [ $new_start -gt $old_stop ]; then
+    if [ "$old_stop" != "none" ] && [ $new_start -ge $old_stop ]; then
         tseq="stop start"
     else
         tseq="start stop"
@@ -680,8 +678,8 @@ batdrv_write_thresholds () {
             case $_bm_thresh in
                 natacpi)
                     case $step in
-                        start) write_sysf "$new_thresh" $_bf_start ;;
-                        stop)  write_sysf "$new_thresh" $_bf_stop  ;;
+                        start) write_sysf "$new_thresh" "$_bf_start" ;;
+                        stop)  write_sysf "$new_thresh" "$_bf_stop"  ;;
                     esac
                     steprc=$?; [ $steprc -ne 0 ] && [ $rc -eq 0 ] && rc=5
                     ;;
@@ -712,12 +710,12 @@ batdrv_write_thresholds () {
                 2)
                     if [ $steprc -eq 0 ]; then
                         if [ "$step" = "start" ] && [ $new_thresh -eq 0 ]; then
-                            printf "  %-5s = %3d (disabled)\n" $step $new_thresh
+                            printf "  %-5s = %3d (disabled)\n" "$step" $new_thresh
                         else
-                            printf "  %-5s = %3d\n" $step $new_thresh
+                            printf "  %-5s = %3d\n" "$step" $new_thresh
                         fi
                     else
-                        printf "  %-5s = %3d (Error: write failed)\n" $step $new_thresh 1>&2
+                        printf "  %-5s = %3d (Error: write failed)\n" "$step" $new_thresh 1>&2
                     fi
                     ;;
                 1)
@@ -730,7 +728,7 @@ batdrv_write_thresholds () {
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.no_change: bat=$_bat_str; old=$old_thresh; new=$new_thresh"
 
             if [ "$verb" = "2" ]; then
-                printf "  %-5s = %3d (no change)\n" $step $new_thresh
+                printf "  %-5s = %3d (no change)\n" "$step" $new_thresh
             fi
         fi
     done # for step
@@ -754,7 +752,7 @@ batdrv_chargeonce () {
     local rc=0
 
     if ! cur_stop=$(batdrv_read_threshold stop 0); then
-        printf "Error: reading charge stop threshold for %s failed. Aborted.\n" $_bat_str 1>&2
+        printf "Error: reading charge stop threshold for %s failed. Aborted.\n" "$_bat_str" 1>&2
         echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).thresh_unknown: stop=$cur_stop; rc=4"
         return 4
     fi
@@ -762,21 +760,21 @@ batdrv_chargeonce () {
     # get current charge level (in %)
     case $_bm_read in
         natacpi) # use ACPI sysfiles
-            if [ -f $_bd_read/energy_full ]; then
-                efull=$(read_sysval $_bd_read/energy_full)
-                enow=$(read_sysval $_bd_read/energy_now)
+            if [ -f "$_bd_read/energy_full" ]; then
+                efull=$(read_sysval "$_bd_read/energy_full")
+                enow=$(read_sysval "$_bd_read/energy_now")
             fi
 
-            if is_uint "$enow" && is_uint "$efull" && [ $efull -ne 0 ]; then
+            if is_uint "$enow" && is_uint "$efull" && [ "$efull" -ne 0 ]; then
                 # calculate charge level rounded to integer
-                ccharge=$(perl -e 'printf("%.0f\n", 100.0 * '$enow' / '$efull')')
+                ccharge=$(perl -e 'printf("%.0f\n", 100.0 * '"$enow"' / '"$efull"')')
             else
                 ccharge=-1
             fi
             ;;
 
         tpsmapi) # use tp-smapi sysfile
-            ccharge=$(read_sysval $_bd_read/remaining_percent) || ccharge=-1
+            ccharge=$(read_sysval "$_bd_read/remaining_percent") || ccharge=-1
             ;;
     esac
 
@@ -797,7 +795,7 @@ batdrv_chargeonce () {
     printf "Setting temporary charge threshold for %s:\n" "$_bat_str"
     case $_bm_thresh in
         natacpi)
-            write_sysf "$temp_start" $_bf_start || rc=5
+            write_sysf "$temp_start" "$_bf_start" || rc=5
             ;;
 
         tpacpi)
@@ -845,7 +843,7 @@ batdrv_read_force_discharge () {
     case $_bm_dischg in
         natacpi)
             # read state from sysfile
-            if out=$(read_sysf $_bf_dischg); then
+            if out=$(read_sysf "$_bf_dischg"); then
                 if [ "$1" != "1" ]; then
                     if echo "$out" | grep -q "\[force-discharge\]"; then
                         out=1
@@ -905,13 +903,13 @@ batdrv_write_force_discharge () {
         natacpi)
             # write force_discharge
             case "$1" in
-                0) write_sysf "auto" $_bf_dischg || rc=5 ;;
-                1) write_sysf "force-discharge" $_bf_dischg || rc=5 ;;
+                0) write_sysf "auto" "$_bf_dischg" || rc=5 ;;
+                1) write_sysf "force-discharge" "$_bf_dischg" || rc=5 ;;
             esac
             ;; # natacpi
 
         tpacpi) # use tpacpi-bat
-            $TPACPIBAT -s FD $_bat_idx $1 > /dev/null 2>&1 || rc=5
+            $TPACPIBAT -s FD $_bat_idx "$1" > /dev/null 2>&1 || rc=5
             ;; # tpcpaci
 
         *) # no discharge api
@@ -972,7 +970,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
 
         # read battery state
         if [ -f "$bsys" ]; then
-            st="$(read_sysf $bsys)"
+            st="$(read_sysf "$bsys")"
             case "$st" in
                 [Dd]ischarging) rc=0 ;;
                 *) rc=1 ;;
@@ -1003,7 +1001,7 @@ batdrv_discharge () {
     rc=0; rp=0
 
     # wait for start == while status not "discharging" -- 15.0 sec timeout
-    printf "Initiating discharge of battery %s " $_bat_str
+    printf "Initiating discharge of battery %s " "$_bat_str"
     wt=15
     while ! batdrv_force_discharge_active && [ $wt -gt 0 ] ; do
         sleep 1
@@ -1023,38 +1021,38 @@ batdrv_discharge () {
             # show current battery state
             case $_bm_read in
                 natacpi|tpacpi) # use ACPI sysfiles
-                    perl -e 'printf ("voltage            = %6d [mV]\n", '"$(read_sysval $_bd_read/voltage_now)"' / 1000.0);'
+                    perl -e 'printf ("voltage            = %6d [mV]\n", '"$(read_sysval "$_bd_read/voltage_now")"' / 1000.0);'
 
-                    en=$(read_sysval $_bd_read/energy_now)
-                    perl -e 'printf ("remaining capacity = %6d [mWh]\n", '$en' / 1000.0);'
+                    en=$(read_sysval "$_bd_read/energy_now")
+                    perl -e 'printf ("remaining capacity = %6d [mWh]\n", '"$en"' / 1000.0);'
 
-                    ef=$(read_sysval $_bd_read/energy_full)
+                    ef=$(read_sysval "$_bd_read/energy_full")
                     if [ "$ef" != "0" ]; then
-                        rp=$(perl -e 'printf ("%d", 100.0 * '$en' / '$ef' );')
-                        perl -e 'printf ("remaining percent  = %6d [%%]\n", '$rp' );'
+                        rp=$(perl -e 'printf ("%d", 100.0 * '"$en"' / '"$ef"' );')
+                        perl -e 'printf ("remaining percent  = %6d [%%]\n", '"$rp"' );'
                     else
                         printf "remaining percent  = not available [%%]\n"
                         rp=0
                     fi
 
-                    pn=$(read_sysval $_bd_read/power_now)
+                    pn=$(read_sysval "$_bd_read/power_now")
                     if [ "$pn" != "0" ]; then
-                        perl -e 'printf ("remaining time     = %6d [min]\n", 60.0 * '$en' / '$pn');'
-                        perl -e 'printf ("power              = %6d [mW]\n", '$pn' / 1000.0);'
+                        perl -e 'printf ("remaining time     = %6d [min]\n", 60.0 * '"$en"' / '"$pn"');'
+                        perl -e 'printf ("power              = %6d [mW]\n", '"$pn"' / 1000.0);'
                     else
                         printf "remaining time     = not discharging [min]\n"
                     fi
-                    printf "state              = %s\n"  "$(read_sysf $_bd_read/status)"
+                    printf "state              = %s\n"  "$("read_sysf $_bd_read/status")"
                     ;; # natacpi, tpsmapi
 
                 tpsmapi) # use tp-smapi sysfiles
-                    printf "voltage            = %6s [mV]\n"  "$(read_sysf $_bd_read/voltage)"
-                    printf "remaining capacity = %6s [mWh]\n" "$(read_sysf $_bd_read/remaining_capacity)"
-                    rp=$(read_sysf $_bd_read/remaining_percent)
+                    printf "voltage            = %6s [mV]\n"  "$(read_sysf "$_bd_read/voltage")"
+                    printf "remaining capacity = %6s [mWh]\n" "$(read_sysf "$_bd_read/remaining_capacity")"
+                    rp=$(read_sysf "$_bd_read/remaining_percent")
                     printf "remaining percent  = %6s [%%]\n"  "$rp"
-                    printf "remaining time     = %6s [min]\n" "$(read_sysf $_bd_read/remaining_running_time_now)"
-                    printf "power              = %6s [mW]\n"  "$(read_sysf $_bd_read/power_avg)"
-                    printf "state              = %s\n"  "$(read_sysf $_bd_read/state)"
+                    printf "remaining time     = %6s [min]\n" "$(read_sysf "$_bd_read/remaining_running_time_now")"
+                    printf "power              = %6s [mW]\n"  "$(read_sysf "$_bd_read/power_avg")"
+                    printf "state              = %s\n"  "$(read_sysf "$_bd_read/state")"
                     ;; # tpsmapi
 
             esac
@@ -1068,26 +1066,26 @@ batdrv_discharge () {
         # read charge level one last time
         case $_bm_read in
             natacpi|tpacpi) # use ACPI sysfiles
-                en=$(read_sysval $_bd_read/energy_now)
-                ef=$(read_sysval $_bd_read/energy_full)
+                en=$(read_sysval "$_bd_read/energy_now")
+                ef=$(read_sysval "$_bd_read/energy_full")
                 if [ "$ef" != "0" ]; then
-                    rp=$(perl -e 'printf ("%d", 100.0 * '$en' / '$ef' );')
+                    rp=$(perl -e 'printf ("%d", 100.0 * '"$en"' / '"$ef"' );')
                 else
                     rp=0
                 fi
                 ;; # natacpi, tpsmapi
 
             tpsmapi) # use tp-smapi sysfiles
-                rp=$(read_sysf $_bd_read/remaining_percent)
+                rp=$(read_sysf "$_bd_read/remaining_percent")
                 ;;
 
         esac
 
-        if [ $rp -gt 0 ]; then
+        if [ "$rp" -gt 0 ]; then
             # battery not emptied --> determine cause
             get_sys_power_supply
             # shellcheck disable=SC2154
-            if [ $_syspwr -eq 1 ]; then
+            if [ "$_syspwr" -eq 1 ]; then
                 # system on battery --> AC power removed
                 echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.ac_removed($_bat_str)"
                 echo "Warning: battery $_bat_str was not discharged completely -- AC/charger removed." 1>&2
@@ -1186,7 +1184,7 @@ batdrv_show_battery_data () {
     local ensum=0
 
     for bat in $_batteries; do # iterate detected batteries
-        batdrv_select_battery $bat
+        batdrv_select_battery "$bat"
 
         case $_bat_idx in
             1) printf "+++ ThinkPad Battery Status: %s (Main / Internal)\n" "$bat" ;;
@@ -1197,21 +1195,21 @@ batdrv_show_battery_data () {
         # --- show basic data
         case $_bm_read in
             natacpi) # use ACPI data
-                printparm "%-59s = ##%s##" $_bd_read/manufacturer
-                printparm "%-59s = ##%s##" $_bd_read/model_name
+                printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
+                printparm "%-59s = ##%s##" "$_bd_read/model_name"
 
-                print_battery_cycle_count "$_bd_read/cycle_count" "$(read_sysf $_bd_read/cycle_count)"
+                print_battery_cycle_count "$_bd_read/cycle_count" "$(read_sysf "$_bd_read/cycle_count")"
 
-                if [ -f $_bd_read/energy_full ]; then
-                    printparm "%-59s = ##%6d## [mWh]" $_bd_read/energy_full_design "" 000
-                    printparm "%-59s = ##%6d## [mWh]" $_bd_read/energy_full "" 000
-                    printparm "%-59s = ##%6d## [mWh]" $_bd_read/energy_now "" 000
-                    printparm "%-59s = ##%6d## [mW]"  $_bd_read/power_now "" 000
+                if [ -f "$_bd_read/energy_full" ]; then
+                    printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full_design" "" 000
+                    printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full" "" 000
+                    printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_now" "" 000
+                    printparm "%-59s = ##%6d## [mW]"  "$_bd_read/power_now" "" 000
 
                     # store values for charge / capacity calculation below
-                    ed=$(read_sysval $_bd_read/energy_full_design)
-                    ef=$(read_sysval $_bd_read/energy_full)
-                    en=$(read_sysval $_bd_read/energy_now)
+                    ed=$(read_sysval "$_bd_read/energy_full_design")
+                    ef=$(read_sysval "$_bd_read/energy_full")
+                    en=$(read_sysval "$_bd_read/energy_now")
                     efsum=$((efsum + ef))
                     ensum=$((ensum + en))
                 else
@@ -1220,52 +1218,52 @@ batdrv_show_battery_data () {
                     en=0
                 fi
 
-                print_batstate $_bd_read/status
+                print_batstate "$_bd_read/status"
                 printf "\n"
 
-                if [ $verbose -eq 1 ]; then
-                    printparm "%-59s = ##%6s## [mV]" $_bd_read/voltage_min_design "" 000
-                    printparm "%-59s = ##%6s## [mV]" $_bd_read/voltage_now "" 000
+                if [ "$verbose" -eq 1 ]; then
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_min_design" "" 000
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_now" "" 000
                     printf "\n"
                 fi
                 ;; # natacpi
 
             tpsmapi) # ThinkPad with active tp-smapi
-                printparm "%-59s = ##%s##" $_bd_read/manufacturer
-                printparm "%-59s = ##%s##" $_bd_read/model
-                printparm "%-59s = ##%s##" $_bd_read/manufacture_date
-                printparm "%-59s = ##%s##" $_bd_read/first_use_date
-                printparm "%-59s = ##%6d##" $_bd_read/cycle_count
+                printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
+                printparm "%-59s = ##%s##" "$_bd_read/model"
+                printparm "%-59s = ##%s##" "$_bd_read/manufacture_date"
+                printparm "%-59s = ##%s##" "$_bd_read/first_use_date"
+                printparm "%-59s = ##%6d##" "$_bd_read/cycle_count"
 
-                if [ -f $_bd_read/temperature ]; then
+                if [ -f "$_bd_read/temperature" ]; then
                     # shellcheck disable=SC2046
-                    perl -e 'printf ("%-59s = %6d [°C]\n", "'$_bd_read/temperature'", '$(read_sysval $_bd_read/temperature)' / 1000.0);'
+                    perl -e 'printf ("%-59s = %6d [°C]\n", "'"$_bd_read/temperature"'", '$(read_sysval "$_bd_read/temperature")' / 1000.0);'
                 fi
 
-                printparm "%-59s = ##%6d## [mWh]" $_bd_read/design_capacity
-                printparm "%-59s = ##%6d## [mWh]" $_bd_read/last_full_capacity
-                printparm "%-59s = ##%6d## [mWh]" $_bd_read/remaining_capacity
-                printparm "%-59s = ##%6d## [%%]" $_bd_read/remaining_percent
-                printparm "%-59s = ##%6s## [min]" $_bd_read/remaining_running_time_now
-                printparm "%-59s = ##%6s## [min]" $_bd_read/remaining_charging_time
-                printparm "%-59s = ##%6d## [mW]" $_bd_read/power_now
-                printparm "%-59s = ##%6d## [mW]" $_bd_read/power_avg
-                print_batstate $_bd_read/state
+                printparm "%-59s = ##%6d## [mWh]" "$_bd_read/design_capacity"
+                printparm "%-59s = ##%6d## [mWh]" "$_bd_read/last_full_capacity"
+                printparm "%-59s = ##%6d## [mWh]" "$_bd_read/remaining_capacity"
+                printparm "%-59s = ##%6d## [%%]" "$_bd_read/remaining_percent"
+                printparm "%-59s = ##%6s## [min]" "$_bd_read/remaining_running_time_now"
+                printparm "%-59s = ##%6s## [min]" "$_bd_read/remaining_charging_time"
+                printparm "%-59s = ##%6d## [mW]" "$_bd_read/power_now"
+                printparm "%-59s = ##%6d## [mW]" "$_bd_read/power_avg"
+                print_batstate "$_bd_read/state"
                 printf "\n"
-                if [ $verbose -eq 1 ]; then
-                    printparm "%-59s = ##%6s## [mV]" $_bd_read/design_voltage
-                    printparm "%-59s = ##%6s## [mV]" $_bd_read/voltage
-                    printparm "%-59s = ##%6s## [mV]" $_bd_read/group0_voltage
-                    printparm "%-59s = ##%6s## [mV]" $_bd_read/group1_voltage
-                    printparm "%-59s = ##%6s## [mV]" $_bd_read/group2_voltage
-                    printparm "%-59s = ##%6s## [mV]" $_bd_read/group3_voltage
+                if [ "$verbose" -eq 1 ]; then
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/design_voltage"
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage"
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/group0_voltage"
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/group1_voltage"
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/group2_voltage"
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/group3_voltage"
                     printf "\n"
                 fi
 
                 # store values for charge / capacity calculation below
-                ed=$(read_sysval $_bd_read/design_capacity)
-                ef=$(read_sysval $_bd_read/last_full_capacity)
-                en=$(read_sysval $_bd_read/remaining_capacity)
+                ed=$(read_sysval "$_bd_read/design_capacity")
+                ef=$(read_sysval "$_bd_read/last_full_capacity")
+                en=$(read_sysval "$_bd_read/remaining_capacity")
                 efsum=$((efsum + ef))
                 ensum=$((ensum + en))
                 ;; # tp-smapi
@@ -1302,12 +1300,12 @@ batdrv_show_battery_data () {
 
         # --- show charge level (SOC) and capacity
         lf=0
-        if [ $ef -ne 0 ]; then
-            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '$en' / '$ef');'
+        if [ "$ef" -ne 0 ]; then
+            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
             lf=1
         fi
-        if [ $ed -ne 0 ]; then
-            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '$ef' / '$ed');'
+        if [ "$ed" -ne 0 ]; then
+            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '"$ef"' / '"$ed"');'
             lf=1
         fi
         [ $lf -gt 0 ] && printf "\n"

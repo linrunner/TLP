@@ -3,6 +3,9 @@
   * Development release
 
   * Features
+    Battery:
+      - System76 laptops with open source EC firmware:
+        start and stop threshold
     Configuration:
     - Allow comments (#) after parameters (Issue #598)
     General:

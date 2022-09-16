@@ -6,8 +6,6 @@
 
 # Needs: tlp-func-base, 15-tlp-func-disk
 
-# shellcheck disable=SC2086
-
 # ----------------------------------------------------------------------------
 # Constants
 
@@ -22,7 +20,7 @@ readonly BAYSTATEFILE=$RUNDIR/bay_saved
 
 get_drivebay_device () { # Find generic dock interface for drive bay
                          # rc: 0; retval: $dock
-    dock=$(grep -l 'ata_bay' $DOCKGLOB/type 2> /dev/null)
+    dock=$(grep -l 'ata_bay' "$DOCKGLOB/type" 2> /dev/null)
     dock=${dock%%/type}
     if [ ! -d "$dock" ]; then
         dock=""
@@ -38,8 +36,8 @@ check_is_docked() { # check if $dock is docked;
 
    # return 0 if any sysfs file indicates "docked"
    for dock_info_file in docked firmware_node/status; do
-        if [ -f $dock/$dock_info_file ] && \
-            read -r dock_status < $dock/$dock_info_file 2>/dev/null; then
+        if [ -f "$dock/$dock_info_file" ] && \
+            read -r dock_status < "$dock/$dock_info_file" 2>/dev/null; then
             # catch empty $dock_status (safety check, unlikely case)
             [ "${dock_status:-0}" != "0" ] && return 0
         fi
@@ -108,22 +106,22 @@ poweroff_drivebay () { # power off optical drive in drive bay
             [ "$2" = "1" ] && echo -n "Powering off drive bay..."
 
             # Unmount media
-            umount -l $optdrv > /dev/null 2>&1
+            umount -l "$optdrv" > /dev/null 2>&1
 
             # Sync drive
             sync
             sleep 1
 
             # Power off drive
-            $HDPARM -Y $optdrv > /dev/null 2>&1
+            $HDPARM -Y "$optdrv" > /dev/null 2>&1
             sleep 5
 
             # Unregister scsi device
-            if syspath="$($UDEVADM info --query=path --name=$optdrv 2> /dev/null)"; then
+            if syspath="$($UDEVADM info --query=path --name="$optdrv" 2> /dev/null)"; then
                 syspath="/sys${syspath%/block/*}"
 
                 if [ "$syspath" != "/sys" ]; then
-                    write_sysf "1" $syspath/delete
+                    write_sysf "1" "$syspath/delete"
                     echo_debug "pm" "poweroff_drivebay($1): syspath=$syspath; rc=$?"
                 else
                     echo_debug "pm" "poweroff_drivebay($1): got empty/invalid syspath for $optdrv"
@@ -133,7 +131,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
             fi
 
             # Turn power off
-            write_sysf "1" $dock/undock
+            write_sysf "1" "$dock/undock"
             echo_debug "pm" "poweroff_drivebay($1).bay_powered_off: rc=$?"
             [ "$2" = "1" ] && echo "done."
         fi
@@ -153,16 +151,16 @@ suspend_drivebay () { # Save power state of drive bay before suspend
         if [ -n "$dock" ]; then
             create_rundir
             if ! check_is_docked; then
-                write_sysf "off" $BAYSTATEFILE
+                write_sysf "off" "$BAYSTATEFILE"
                 echo_debug "pm" "suspend_drivebay($1): bay=off; rc=$?"
             else
-                write_sysf "on" $BAYSTATEFILE
+                write_sysf "on" "$BAYSTATEFILE"
                 echo_debug "pm" "suspend_drivebay($1): bay=on; rc=$?"
             fi
         fi
     else
         # setting not active -> remove state file
-        rm -f $BAYSTATEFILE 2> /dev/null
+        rm -f "$BAYSTATEFILE" 2> /dev/null
     fi
 
     return 0
@@ -172,19 +170,19 @@ resume_drivebay () { #
     # $1: 0=ac mode, 1=battery mode
     local cnt rc
 
-    if [ "$(read_sysf $BAYSTATEFILE)" = "off" ]; then
+    if [ "$(read_sysf "$BAYSTATEFILE")" = "off" ]; then
         # saved state = off
         get_drivebay_device
 
         if [ -n "$dock" ]; then
             if check_is_docked; then
                 # device active -> deactivate
-                if [ -e $dock/undock ]; then
+                if [ -e "$dock/undock" ]; then
                     cnt=5
                     rc=1
                     until [ $rc = 0 ] || [ $cnt = 0 ]; do
                         cnt=$((cnt - 1))
-                        { printf '%s\n' "1" > $dock/undock; } 2> /dev/null
+                        { printf '%s\n' "1" > "$dock/undock"; } 2> /dev/null
                         rc=$?
                         [ $rc = 0 ] || sleep 0.5
                     done
@@ -196,10 +194,10 @@ resume_drivebay () { #
         fi
     else
         # No saved state or state != off --> apply settings
-        poweroff_drivebay $1 0
+        poweroff_drivebay "$1" 0
     fi
 
-    rm -f $BAYSTATEFILE 2> /dev/null
+    rm -f "$BAYSTATEFILE" 2> /dev/null
 
     return 0
 }
