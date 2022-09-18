@@ -9,10 +9,11 @@
     Configuration:
     - Allow comments (#) after parameters (Issue #598)
     General:
+    - MEM_SLEEP_ON_AC/BAT: change system suspend mode
     - Add ZSH command completion
     - tlp-stat -s:
       - Show EC firmware version
-      - Show system sleep mode
+      - Show system suspend mode
     Processor:
       - tlp-stat -p:
         - Show amd_pstate performance and frequency attributes

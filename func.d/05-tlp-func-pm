@@ -13,6 +13,7 @@ readonly ETHTOOL=ethtool
 
 readonly PCID=/sys/bus/pci/devices
 readonly PCIDRV=/sys/bus/pci/drivers
+readonly SLEEPMODE=/sys/power/mem_sleep
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -223,12 +224,12 @@ disable_wake_on_lan () {  # disable WOL
 }
 
 # --- Set suspend method
-    
+
 set_mem_sleep () {
     # $1: 0=ac mode, 1=battery mode
-        
+
     local susp
-        
+
     if [ "$1" = "1" ]; then
         susp=${MEM_SLEEP_ON_BAT:-}
     else
@@ -241,11 +242,11 @@ set_mem_sleep () {
         return 0
     fi
 
-    if [ -f /sys/power/mem_sleep ]; then
-        if write_sysf "$susp" /sys/power/mem_sleep; then
+    if [ -f $SLEEPMODE ]; then
+        if write_sysf "$susp" $SLEEPMODE; then
             echo_debug "pm" "set_mem_sleep($1): $susp"
         else
-            echo_debug "pm" "set_mem_sleep($1).disabled_by_kernel"
+            echo_debug "pm" "set_mem_sleep($1).rejected_by_kernel"
         fi
     else
         echo_debug "pm" "set_mem_sleep($1).not_available"
