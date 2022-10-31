@@ -208,8 +208,6 @@ batdrv_write_thresholds () {
     local new_stop=${2:-}
     local verb=${3:-0}
     local cfg_bat="$4"
-    local new_threshs
-    local rc=0
 
     # insert defaults
     [ "$new_start" = "DEF" ] && new_start=$_bt_def_start
@@ -293,16 +291,10 @@ batdrv_write_thresholds () {
     if [ "$verb" = "2" ]; then
         printf "Setting temporary charge thresholds:\n"
     fi
-    new_threshs="$new_start $new_stop"
-    case $_bm_thresh in
-        natacpi)
-            write_sysf "$new_threshs" "$_bf_start_stop" || rc=5
-            ;;
 
-        *) # no threshold api
-            rc=5
-            ;;
-    esac
+    local rc=0
+    local new_threshs="$new_start $new_stop"
+    write_sysf "$new_threshs" "$_bf_start_stop" || rc=5
     echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4): new=$new_threshs; rc=$rc"
     case $verb in
         2)

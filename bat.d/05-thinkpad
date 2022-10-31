@@ -705,7 +705,6 @@ batdrv_write_thresholds () {
                     ;;
             esac
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.write: bat=$_bat_str; old=$old_thresh; new=$new_thresh; steprc=$steprc"
-
             case $verb in
                 2)
                     if [ $steprc -eq 0 ]; then

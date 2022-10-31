@@ -290,10 +290,11 @@ batdrv_write_thresholds () {
     fi
 
     # write new threshold
-    local rc=0
     if [ "$verb" = "2" ]; then
         printf "Setting temporary charge threshold for %s:\n" "$_bat_str"
     fi
+
+    local rc=0
     write_sysf "$new_stop" "$_bf_stop" || rc=5
     echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).write: bat=$_bat_str; new=$new_stop; rc=$rc"
     case $verb in
