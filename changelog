@@ -6,6 +6,7 @@
     Battery:
       - System76 laptops with open source EC firmware:
         start and stop threshold
+      - Toshiba/Dynabook laptops: stop threshold 80/100%
     Configuration:
     - Allow comments (#) after parameters (Issue #598)
     General:
