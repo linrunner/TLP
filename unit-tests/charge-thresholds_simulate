@@ -519,3 +519,47 @@ $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=system76 | grep -E 'charge_control'
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=system76 X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
+$ #
+$ # +++ Toshiba/Dynabook ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": not specified or invalid (must be 80 or 100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=toshiba NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp setcharge w/o arguments
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Setting temporary charge threshold for BAT0:
+  stop = 100 (no change)
+$ #
+$ # --- tlp setcharge w/ arguments
+$ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Error: charge stop threshold (24) for BAT0 is not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge 42 100 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Setting temporary charge threshold for BAT0:
+  stop = 100 (no change)
+$ sudo tlp setcharge 42 80 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Setting temporary charge threshold for BAT0:
+  stop =  80
+$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=toshiba
+Setting temporary charge threshold for BAT0:
+  stop = 100
+$ sudo tlp setcharge 42 80 BAT1 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Error: battery BAT1 not present.
+$ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Error: battery 2 not present.
+$ #
+$ # --- tlp-stat
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=toshiba | sudo tlp-stat -b | grep -E 'charge_control
+/sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
+$ #

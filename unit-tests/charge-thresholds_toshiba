@@ -1,0 +1,49 @@
+#!/usr/bin/clitest
+# Test charge thresholds for Toshiba/Dynabook laptops
+# Requirements:
+# * Hardware: Toshiba/Dynabook laptop w/ toshiba_acpi driver
+# * Software: kernel 6.0+
+#
+$ # +++ Toshiba/Dynabook ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": not specified or invalid (must be 80 or 100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp setcharge w/o arguments
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Setting temporary charge threshold for BAT0:
+  stop = 100 (no change)
+$ #
+$ # --- tlp setcharge w/ arguments
+$ sudo tlp setcharge 42 24
+Error: charge stop threshold (24) for BAT0 is not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge 42 100
+Setting temporary charge threshold for BAT0:
+  stop = 100 (no change)
+$ sudo tlp setcharge 42 80
+Setting temporary charge threshold for BAT0:
+  stop =  80
+$ sudo tlp setcharge DEF DEF
+Setting temporary charge threshold for BAT0:
+  stop = 100
+$ sudo tlp setcharge 42 80 BAT1
+Error: battery BAT1 not present.
+$ sudo tlp setcharge 2
+Error: battery 2 not present.
+$ #
+$ # --- tlp-stat
+$ sudo tlp-stat -b | sudo tlp-stat -b | grep -E 'charge_control
+/sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
+$ #
