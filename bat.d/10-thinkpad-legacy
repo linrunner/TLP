@@ -555,7 +555,10 @@ batdrv_read_force_discharge () {
     esac
     printf "%s" "$out"
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; out=$out; rc=$rc"
+    if [ "$rc" -gt 0 ]; then
+        # log output in the error case only
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; out=$out; rc=$rc"
+    fi
     return $rc
 }
 
@@ -601,7 +604,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
     # rc: 0=discharging/1=not discharging or read error
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    local rc=1
+    local rc=1 soc
 
     # check if force_discharge is on
     [ "$(batdrv_read_force_discharge 0)" = "1" ] && rc=0
@@ -612,7 +615,8 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
         rc=1
     fi
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active($_bat_str): bm_read=$_bm_read; rc=$rc"
+    soc=$(read_sysf "$_bd_read/remaining_percent")
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active($_bat_str): bm_read=$_bm_read; soc=$soc; rc=$rc"
     return $rc
 }
 
