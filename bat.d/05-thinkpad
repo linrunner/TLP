@@ -1041,7 +1041,7 @@ batdrv_discharge () {
                     else
                         printf "remaining time     = not discharging [min]\n"
                     fi
-                    printf "state              = %s\n"  "$("read_sysf $_bd_read/status")"
+                    printf "state              = %s\n"  "$(read_sysf "$_bd_read/status")"
                     ;; # natacpi, tpsmapi
 
                 tpsmapi) # use tp-smapi sysfiles
