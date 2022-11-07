@@ -646,23 +646,21 @@ load_modules () { # load kernel module(s) -- $*: modules
 
 # --- DMI
 
-read_dmi () { # read DMI data -- $*: keywords; stdout: dmi strings
-    local ds key outr
+read_dmi () { # read DMI data
+    # $1: dmi id
+    # stdout: dmi string
+    # rc: 0=ok/1=nonexistent
 
-    outr=""
-    # shellcheck disable=SC2048
-    for key in $*; do
-        ds="$(read_sysf "${DMID}/$key" | \
-                grep -E -v -i 'not available|to be filled|DMI table is broken')"
-        if [ -n "$outr" ]; then
-            [ -n "$ds" ] && outr="$outr $ds"
-        else
-            outr="$ds"
-        fi
-    done
+    local out
 
-    printf '%s' "$outr"
-    return 0
+    out="$(read_sysf "${DMID}/$1" | \
+            grep -E -v -i 'not available|to be filled|DMI table is broken')"
+    printf '%s' "$out"
+    if [ -n "$out" ]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 # --- Power Source
