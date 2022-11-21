@@ -339,7 +339,7 @@ save_device_states () { # save radio states -- $1: list of rftypes
     local rc=0
 
     # create empty state file
-    if { : > "$RFSTATEFILE"; } 2> /dev/null; then
+    if [ -d "$VARDIR" ] && { : > "$RFSTATEFILE"; } 2> /dev/null; then
         # iterate over all possible devices -> save state in file
         for dev in $devlist; do
             device_state "$dev"
