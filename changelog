@@ -13,6 +13,8 @@
     - MEM_SLEEP_ON_AC/BAT: change system suspend mode
     - Add ZSH command completion
     - tlp-stat -s:
+      - Silence warnings about unmasked systemd-rfkill.service/.socket
+        when DEVICES_TO_ENABLE/DISABLE_ON_STARTUP is actually unconfigured
       - Show EC firmware version
       - Show system suspend mode
     Processor:
