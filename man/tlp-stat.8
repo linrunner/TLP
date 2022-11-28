@@ -87,8 +87,12 @@ View warnings about SATA disks.
 .
 .TP
 .B \-- \fR\fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
-Add configuration parameters to temporarily overwrite the system configuration
-(for this program invocation only).
+Append configuration parameters to a command. These temporarily override
+the system configuration during execution of that command only and are not
+kept afterwards.
+Disclaimer: this feature exists for the sole purpose of test automation
+during TLP's development. It is provided as is and there is no support
+whatsoever.
 .
 .SH FILES
 .I /etc/tlp.conf

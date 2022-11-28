@@ -91,8 +91,12 @@ Show disk ids for configured drives.
 .
 .TP
 .B \-- \fR\fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
-Add configuration parameters to override the system configuration for this
-single program invocation only. They are not kept afterwards.
+Append configuration parameters to a command. These temporarily override
+the system configuration during execution of that command only and are not
+kept afterwards.
+Disclaimer: this feature exists for the sole purpose of test automation
+during TLP's development. It is provided as is and there is no support
+whatsoever.
 .
 .SH NOTES
 For laptops with more than one battery the selection works as follows:
