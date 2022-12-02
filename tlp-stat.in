@@ -309,6 +309,13 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # -- check systemd services
     check_services_activation_status
 
+    # -- check for power-profiles-daemon
+    if check_ppd_active; then
+        echo_message "Warning: TLP's power saving will not apply on boot because the conflicting $PPD_SERVICE is active "`
+                    `"--> Invoke 'systemctl mask $PPD_SERVICE to ensure the full functionality of TLP." "err"
+        echo_message "" "err"
+    fi
+
     # -- show warning if l-m-t detected
     check_laptop_mode_tools
 

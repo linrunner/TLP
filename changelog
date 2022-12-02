@@ -10,6 +10,9 @@
     Configuration:
     - Allow comments (#) after parameters (Issue #598)
     General:
+    - Allow coexistence with power-profiles-daemon: do not apply
+      PLATFORM_PROFILE_ON_AC/BAT, CPU_ENERGY_PERF_POLICY_ON_AC/BAT and
+      CPU_BOOST_ON_BAT/BAT when it is running
     - MEM_SLEEP_ON_AC/BAT: change system suspend mode
     - Add ZSH command completion
     - tlp-stat -s:

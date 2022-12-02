@@ -52,7 +52,7 @@ readonly RE_PS_IGNORE='sbs-charger|hidpp_battery|hid-'
 readonly DEBUG_TAGS_ALL="arg bat cfg disk lock nm path pm ps rf run sysfs udev usb"
 
 readonly TLP_SERVICES="tlp.service"
-readonly CONFLICTING_SERVICES="power-profiles-daemon.service"
+readonly PPD_SERVICE="power-profiles-daemon.service"
 readonly RFKILL_SERVICES="systemd-rfkill.service systemd-rfkill.socket"
 
 # ----------------------------------------------------------------------------
@@ -267,6 +267,24 @@ check_systemd () {
     [ -d /run/systemd/system ] && cmd_exists $SYSTEMCTL
 }
 
+check_service_state () {
+    # check service state
+    # $1: service
+    # $2: state match: active/enabled/masked
+    # rc: 0=yes, 1=no
+    case "$2" in
+        active)  $SYSTEMCTL is-active "$1" > /dev/null 2>&1 ;;
+        enabled) $SYSTEMCTL is-enabled "$1" > /dev/null 2>&1 ;;
+        masked)  $SYSTEMCTL is-enabled "$1" 2> /dev/null | grep -q 'masked' ;;
+    esac
+}
+
+check_ppd_active () {
+    # check if power-profiles-daemon.service is running
+    # rc: 0=yes, 1=no
+    check_service_state "$PPD_SERVICE" active
+}
+
 check_services_activation_status () {
     # issue messages for
     # - TLP service(s) not enabled
@@ -278,33 +296,25 @@ check_services_activation_status () {
     if check_systemd; then
         cnt=0
         for su in $TLP_SERVICES; do
-            if ! $SYSTEMCTL is-enabled "$su" > /dev/null 2>&1 ; then
-                echo_message "Error: TLP's power saving will not apply on boot because $su is not enabled." "err"
-                echo_message ">>> Invoke 'systemctl enable $su' to ensure the full functionality of TLP." "err"
-                echo_message "" "err"
-                rc=1
-            fi
-        done
-        for su in $CONFLICTING_SERVICES; do
-            if $SYSTEMCTL is-enabled "$su" > /dev/null 2>&1 ; then
-                echo_message "Error: TLP's power saving will not apply on boot because the conflicting $su is enabled." "err"
-                echo_message ">>> Invoke 'systemctl mask $su' to ensure the full functionality of TLP." "err"
-                echo_message "" "err"
+            if ! check_service_state "$su" enabled > /dev/null 2>&1 ; then
+                echo_message "Error: TLP's power saving will not apply on boot because $su is not enabled "`
+                            `"--> Invoke 'systemctl enable $su' to ensure the full functionality of TLP." "err"
+                echo_message ""
                 rc=1
             fi
         done
         for su in $RFKILL_SERVICES; do
-            if $SYSTEMCTL is-enabled "$su" 2> /dev/null | grep -q -v 'masked'; then
+            if ! check_service_state "$su" masked 2> /dev/null; then
                 if [ "$RESTORE_DEVICE_STATE_ON_STARTUP" = "1" ]; then
                     echo_message "Warning: TLP's radio device switching on boot may not work as expected because "`
-                                `"RESTORE_DEVICE_STATE_ON_STARTUP=1 is configured and $su is not masked." "err"
-                    echo_message ">>> Invoke 'systemctl mask $su' to ensure the full functionality of TLP." "err"
+                                `"RESTORE_DEVICE_STATE_ON_STARTUP=1 is configured and $su is not masked "`
+                                `"--> Invoke 'systemctl mask $su' to ensure the full functionality of TLP." "err"
                     echo_message ""
                 elif [ -n "$DEVICES_TO_DISABLE_ON_STARTUP" ] || [ -n "$DEVICES_TO_ENABLE_ON_STARTUP" ]; then
                     echo_message "Warning: TLP's radio device switching on boot may not work as expected because "`
                                 `"DEVICES_TO_DISABLE_ON_STARTUP or DEVICES_TO_ENABLE_ON_STARTUP "`
-                                `"is configured and $su is not masked." "err"
-                    echo_message ">>> Invoke 'systemctl mask $su' to ensure the full functionality of TLP." "err"
+                                `"is configured and $su is not masked "`
+                                `"--> Invoke 'systemctl mask $su' to ensure the full functionality of TLP." "err"
                     echo_message ""
                 fi
                 rc=1
