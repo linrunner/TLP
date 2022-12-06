@@ -56,7 +56,7 @@ Warning: PLATFORM_PROFILE_ON_AC/BAT is not set because power-profiles-daemon is 
 Warning: CPU_ENERGY_PERF_POLICY_ON_AC/BAT is not set because power-profiles-daemon is running.
 Warning: CPU_BOOST_ON_BAT/BAT is not set because power-profiles-daemon is running.
 $ sudo tlp-stat -s > /dev/null
-Warning: TLP's power saving will not apply on boot because the conflicting power-profiles-daemon.service is active --> Invoke 'systemctl mask power-profiles-daemon.service to ensure the full functionality of TLP.
+Warning: TLP's power saving will not apply on boot because the conflicting power-profiles-daemon.service is active --> Uninstall power-profiles-daemon or invoke 'systemctl mask power-profiles-daemon.service to ensure the full functionality of TLP.
 
 $ # restore
 $ sudo systemctl -q mask --now power-profiles-daemon.service
