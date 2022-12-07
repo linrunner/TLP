@@ -69,6 +69,7 @@ SED = sed \
 
 INFILES = \
 	tlp \
+	tlp.conf \
 	tlp-func-base \
 	tlp-rdw-nm \
 	tlp-rdw.rules \

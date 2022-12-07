@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# /etc/tlp.conf - TLP user configuration (version 1.4)
+# /etc/tlp.conf - TLP user configuration (version @TLPVER@)
 # See full explanation: https://linrunner.de/tlp/settings
 #
 # Settings are read in the following order:
