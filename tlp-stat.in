@@ -392,14 +392,14 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         printparm "%-54s = ##%3d## [%%]" "$CPU_MIN_PERF_PCT"
         printparm "%-54s = ##%3d## [%%]" "$CPU_MAX_PERF_PCT"
         printparm "%-54s = ##%3d##"      "$CPU_TURBO_PSTATE"
-        printparm "%-54s = ##%3d##"      "$CPU_HWP_DYN_BOOST"
+        printparm "%-54s = ##%3d##"      "$INTEL_DYN_BOOST"
         printparm "%-54s = ##%3d## [%%]" "$INTEL_PSTATED/turbo_pct"
         printparm "%-54s = ##%3d##"      "$INTEL_PSTATED/num_pstates"
 
     elif check_amd_pstate; then
         # show AMD P-state info
         printparm "%-54s = ##%s##" "$AMD_PSTATED/status"
-        printparm "%-54s = ##%s##" "$AMD_PSTATED/cppc_dynamic_boost"
+        printparm "%-54s = ##%s##" "$AMD_DYN_BOOST"
         if [ -f "$CPU_BOOST_ALL_CTRL" ]; then
             printparm "%-54s = ##%d##" "$CPU_BOOST_ALL_CTRL" "not available"
         fi

@@ -140,10 +140,13 @@
 #CPU_BOOST_ON_AC=1
 #CPU_BOOST_ON_BAT=0
 
-# Set the Intel CPU HWP dynamic boost feature:
+# Set Intel/AMD CPU dynamic boost feature:
 #   0=disable, 1=enable.
-# Requires intel_pstate scaling driver in 'active' mode and Intel Core i
-# 6th gen. or newer CPU.
+# Requires:
+# - Intel: Core i  6th gen. or newer CPU with intel_pstate scaling driver
+#   in 'active' mode and
+# - AMD: Zen 2 or newer CPU *EXPERIMENTAL* see notes for energy/performance
+#   policies above
 # Default: <none>
 
 #CPU_HWP_DYN_BOOST_ON_AC=1
