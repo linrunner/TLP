@@ -398,7 +398,11 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
     elif check_amd_pstate; then
         # show AMD P-state info
-        printparm "%-54s = ##%d##" "$CPU_BOOST_ALL_CTRL" "not available"
+        printparm "%-54s = ##%s##" "$AMD_PSTATED/status"
+        printparm "%-54s = ##%s##" "$AMD_PSTATED/cppc_dynamic_boost"
+        if [ -f "$CPU_BOOST_ALL_CTRL" ]; then
+            printparm "%-54s = ##%d##" "$CPU_BOOST_ALL_CTRL" "not available"
+        fi
 
         cpup="$CPUD/cpufreq/policy0"
         if [ -f "$cpup/amd_pstate_highest_perf" ]; then

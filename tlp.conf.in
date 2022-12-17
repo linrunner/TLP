@@ -101,16 +101,20 @@
 #CPU_SCALING_MIN_FREQ_ON_BAT=0
 #CPU_SCALING_MAX_FREQ_ON_BAT=0
 
-# Set Intel CPU energy/performance policies HWP.EPP and EPB:
+# Set CPU energy/performance policies EPP and EPB:
 #   performance, balance_performance, default, balance_power, power.
 # Values are given in order of increasing power saving.
 # Notes:
-# - HWP.EPP: requires kernel 4.10, intel_pstate scaling driver and Intel Core i
-#   6th gen. or newer CPU
-# - EPB: requires kernel 5.2 or module msr and x86_energy_perf_policy from
-#   linux-tools, intel_pstate or intel_cpufreq scaling driver and Intel Core i
-#   2nd gen. or newer CPU
-# - When HWP.EPP is available, EPB is not set
+# * Intel CPU
+#   EPP: requires kernel 4.10, intel_pstate scaling driver and Intel Core i
+#     6th gen. or newer CPU
+#   EPB: requires kernel 5.2 or module msr and x86_energy_perf_policy from
+#     linux-tools, intel_pstate or intel_cpufreq scaling driver and
+#     Intel Core i 2nd gen. or newer CPU
+#   When HPP is available, EPB is not set
+# * AMD Zen 2 or newer CPU *EXPERIMENTAL*
+#   EPP: requires amd_pstate scaling driver in active mode
+#     and kernel 6.1+ with yet unreleased patches
 # Default: balance_performance (AC), balance_power (BAT)
 
 #CPU_ENERGY_PERF_POLICY_ON_AC=balance_performance

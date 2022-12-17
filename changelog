@@ -24,6 +24,9 @@
       - RUNTIME_PM_ENABLE/DISABLE: apply even when RUNTIME_PM_ON_AC/BAT
         is disabled (Issue #614)
     Processor:
+      - CPU_ENERGY_PERF_POLICY_ON_AC/BAT: support AMD Zen 2 or newer CPUs
+        *EXPERIMENTAL* requires amd_pstate scaling driver in active mode
+        provided by kernel 6.1+ with a yet unreleased patchset
       - tlp-stat -p:
         - Show amd_pstate performance and frequency attributes
 

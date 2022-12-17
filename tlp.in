@@ -22,7 +22,7 @@ apply_common_settings () { # apply settings common to all modes
     set_platform_profile "$1"
     set_cpu_scaling_governor "$1"
     set_cpu_scaling_min_max_freq "$1"
-    set_intel_cpu_perf_policy "$1"
+    set_cpu_perf_policy "$1"
     set_intel_cpu_perf_pct "$1"
     set_cpu_boost_all "$1"
     set_intel_cpu_hwp_dyn_boost "$1"
