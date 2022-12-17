@@ -28,7 +28,8 @@
         *EXPERIMENTAL* requires amd_pstate scaling driver in active mode
         provided by kernel 6.1+ with a yet unreleased patchset
       - tlp-stat -p:
-        - Show amd_pstate performance and frequency attributes
+        - Show amd_pstate CPPC operation mode, performance and frequency
+          attributes
 
   * Bugfixes
 
