@@ -1,4 +1,6 @@
 #compdef tlp
+# Copyright (c) 2022 Arvid Norlander and others.
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 # Helper to find installed batteries. Avoid a generic name since this is
 # going into the global scope.

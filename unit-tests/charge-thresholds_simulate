@@ -2,6 +2,8 @@
 # Test charge thresholds for non-ThinkPads (simulated)
 # Requirements:
 # * Hardware: non-legacy ThinkPad
+# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net>.
+# SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ ASUS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #

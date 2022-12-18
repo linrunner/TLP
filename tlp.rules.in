@@ -1,7 +1,7 @@
 # tlp - udev rules
 #
 # Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
-# This software is licensed under the GPL v2 or later.
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 # handle change of power source ac/bat, ignore input device batteries
 ACTION=="change", SUBSYSTEM=="power_supply", KERNEL!="hidpp_battery*", RUN+="@TLP_SBIN@/tlp auto"

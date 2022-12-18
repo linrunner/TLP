@@ -3,6 +3,8 @@
 # Requirements:
 # * Hardware: System76 laptop w/ open source EC firmware
 # * Software: kernel 5.16+
+# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net>.
+# SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ System76 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #

@@ -3,6 +3,8 @@
 # Requirements:
 # * Intel GPU w/ i915 driver
 # * Hardware freq range 700..1100 (or wider)
+# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net>.
+# SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # --- valid freqs
 $ sudo tlp start -- X_SIMULATE_PS=1 INTEL_GPU_MIN_FREQ_ON_BAT=700 INTEL_GPU_MAX_FREQ_ON_BAT=850 INTEL_GPU_BOOST_FREQ_ON_BAT=900

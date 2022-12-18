@@ -2,7 +2,7 @@
 # tlp-func-disk - Storage Device and Filesystem Functions
 #
 # Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
-# This software is licensed under the GPL v2 or later.
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 # Needs: tlp-func-base
 

@@ -1,4 +1,6 @@
 # bash completion for TLP-RDW
+# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 _tlp_rdw() {
     local cur prev words cword opts

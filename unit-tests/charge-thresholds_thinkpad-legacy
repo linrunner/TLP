@@ -2,6 +2,8 @@
 # Test charge thresholds for Legacy ThinkPads
 # Requirements:
 # * Hardware: Legacy ThinkPad (<= X201/T410)
+# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net>.
+# SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ Legacy ThinkPad +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #

@@ -1,4 +1,6 @@
 #compdef bluetooth nfc wifi wwan
+# Copyright (c) 2022 Arvid Norlander and others.
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 local -a args reply
 args=(

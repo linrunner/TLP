@@ -2,7 +2,7 @@
 # tlp-pcilist - list pci devices with runtime pm mode and device class
 #
 # Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
-# This software is licensed under the GPL v2 or later.
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 # Cmdline options
 #   --verbose: show Runtime PM device status
