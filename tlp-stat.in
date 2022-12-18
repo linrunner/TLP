@@ -347,11 +347,9 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                 if [ -f "$cpuf/scaling_min_freq" ]; then
                     printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(read_sysf "$cpuf/scaling_min_freq")"
                 fi
-
                 if [ -f "$cpuf/scaling_max_freq" ]; then
                     printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(read_sysf "$cpuf/scaling_max_freq")"
                 fi
-
                 if [ -f "$cpuf/scaling_available_frequencies" ]; then
                     printf "%s = " "$cpuf/scaling_available_frequencies"
                     for freq in $(read_sysf "$cpuf/scaling_available_frequencies"); do
@@ -360,8 +358,18 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                     printf "[kHz]\n"
                 fi
 
+                if [ -f "$cpuf/amd_pstate_highest_perf" ]; then
+                    printf "%-70s = %8d [%%]\n" "$cpuf/amd_pstate_highest_perf" "$(read_sysf "$cpuf/amd_pstate_highest_perf")"
+                fi
+                if [ -f "$cpuf/amd_pstate_max_freq" ]; then
+                    printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_max_freq" "$(read_sysf "$cpuf/amd_pstate_max_freq")"
+                fi
+                if [ -f "$cpuf/amd_pstate_lowest_nonlinear_freq" ]; then
+                    printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_lowest_nonlinear_freq" "$(read_sysf "$cpuf/amd_pstate_lowest_nonlinear_freq")"
+                fi
+
                 if [ -f "$cpuf/energy_performance_preference" ]; then
-                    printparm "%s = ##%s## [HWP.EPP]" "$cpuf/energy_performance_preference"
+                    printparm "%s = ##%s## [EPP]" "$cpuf/energy_performance_preference"
                     epp=1
                 fi
                 if [ -f "$cpuf/energy_performance_available_preferences" ]; then
@@ -402,17 +410,6 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         printparm "%-54s = ##%s##" "$AMD_DYN_BOOST"
         if [ -f "$CPU_BOOST_ALL_CTRL" ]; then
             printparm "%-54s = ##%d##" "$CPU_BOOST_ALL_CTRL" "not available"
-        fi
-
-        cpup="$CPUD/cpufreq/policy0"
-        if [ -f "$cpup/amd_pstate_highest_perf" ]; then
-            printf "%-72s = %8d [%%]\n" "$cpup/amd_pstate_highest_perf" "$(read_sysf "$cpup/amd_pstate_highest_perf")"
-        fi
-        if [ -f "$cpup/amd_pstate_max_freq" ]; then
-            printf "%-72s = %8d [kHz]\n" "$cpup/amd_pstate_max_freq" "$(read_sysf "$cpup/amd_pstate_max_freq")"
-        fi
-        if [ -f "$cpup/amd_pstate_lowest_nonlinear_freq" ]; then
-            printf "%-72s = %8d [kHz]\n" "$cpup/amd_pstate_lowest_nonlinear_freq" "$(read_sysf "$cpup/amd_pstate_lowest_nonlinear_freq")"
         fi
 
     elif [ -f "$CPU_BOOST_ALL_CTRL" ]; then
