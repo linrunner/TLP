@@ -27,7 +27,7 @@
       - CPU_ENERGY_PERF_POLICY_ON_AC/BAT,
         CPU_HWP_DYN_BOOST_ON_AC/BAT: support AMD Zen 2 or newer CPUs
         *EXPERIMENTAL* requires amd_pstate scaling driver in active mode
-        provided by kernel 6.1+ with a yet unreleased patchset
+        provided by a yet unreleased kernel 6.x
       - tlp-stat -p:
         - Show amd_pstate operation mode, dynamic boost, performance
           and frequency attributes

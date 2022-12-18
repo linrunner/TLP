@@ -70,11 +70,12 @@
 #MAX_LOST_WORK_SECS_ON_BAT=60
 
 # Select a CPU frequency scaling governor.
-# Intel processor with intel_pstate driver:
+# Intel processor with intel_pstate driver or
+# AMD processor with amd_pstate driver in active mode:
 #   performance, powersave(*).
-# Intel processor with intel_cpufreq driver (aka intel_pstate passive mode):
-#   conservative, ondemand, userspace, powersave, performance, schedutil(*).
-# Intel and other processor brands with acpi-cpufreq driver:
+# Intel processor with intel_cpufreq driver (aka intel_pstate passive mode) or
+# AMD processor with amd_pstate driver in passive mode or
+# Intel, AMD and other processor brands with acpi-cpufreq driver:
 #   conservative, ondemand(*), userspace, powersave, performance, schedutil(*).
 # Use tlp-stat -p to show the active driver and available governors.
 # Important:
@@ -114,7 +115,7 @@
 #   When HPP is available, EPB is not set
 # * AMD Zen 2 or newer CPU *EXPERIMENTAL*
 #   EPP: requires amd_pstate scaling driver in active mode
-#     and kernel 6.1+ with yet unreleased patches
+#     provided by a yet unreleased kernel 6.x
 # Default: balance_performance (AC), balance_power (BAT)
 
 #CPU_ENERGY_PERF_POLICY_ON_AC=balance_performance
