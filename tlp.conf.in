@@ -117,7 +117,7 @@
 #     Intel Core i 2nd gen. or newer CPU
 #   When HPP is available, EPB is not set
 # * AMD Zen 2 or newer CPU *EXPERIMENTAL*
-#   EPP: requires amd_pstate scaling driver in active mode
+#   EPP: requires amd_pstate scaling driver in 'active' mode
 #     provided by a yet unreleased kernel 6.x
 # Default: balance_performance (AC), balance_power (BAT)
 
@@ -138,19 +138,23 @@
 
 # Set the CPU "turbo boost" (Intel) or "turbo core" (AMD) feature:
 #   0=disable, 1=allow.
+# Allows to raise the maximum frequency/P-state of some cores if the
+# CPU chip is not fully utilized and below it's intended thermal budget.
 # Note: a value of 1 does *not* activate boosting, it just allows it.
 # Default: <none>
 
 #CPU_BOOST_ON_AC=1
 #CPU_BOOST_ON_BAT=0
 
-# Set Intel/AMD CPU dynamic boost feature:
+# Set Intel/AMD CPU dynamic boost feature.
 #   0=disable, 1=enable.
+# Improve performance by increasing minimum P-state limit dynamically
+# whenever a task previously waiting on I/O is selected to run
 # Requires:
 # - Intel: Core i  6th gen. or newer CPU with intel_pstate scaling driver
 #   in 'active' mode and
-# - AMD: Zen 2 or newer CPU *EXPERIMENTAL* see notes for energy/performance
-#   policies above
+# - AMD: Zen 2 or newer CPU amd_pstate scaling driver in 'active' mode
+#   *EXPERIMENTAL* see notes for energy/performance policies above
 # Default: <none>
 
 #CPU_HWP_DYN_BOOST_ON_AC=1
