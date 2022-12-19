@@ -146,7 +146,7 @@
 #CPU_BOOST_ON_AC=1
 #CPU_BOOST_ON_BAT=0
 
-# Set Intel/AMD CPU dynamic boost feature.
+# Set Intel/AMD CPU dynamic boost feature:
 #   0=disable, 1=enable.
 # Improve performance by increasing minimum P-state limit dynamically
 # whenever a task previously waiting on I/O is selected to run
