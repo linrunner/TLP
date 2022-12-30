@@ -250,8 +250,7 @@ batdrv_write_thresholds () {
     fi
 
     # stop: check for 3 digits max, ensure 80 or 100
-    if ! is_uint "$new_stop" 3 || \
-       [ $new_stop -ne 80 ] && [ $new_stop -ne 100 ]; then
+    if ! is_uint "$new_stop" 3 || ! wordinlist "$new_stop" "80 100"; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).invalid_stop: bat=$_bat_str"
         case $verb in
