@@ -69,15 +69,15 @@ Setting temporary charge thresholds for BAT1:
   start =  60
   stop  = 100 (no change)
 $ sudo tlp setcharge 100 100 BAT1
-Error: charge start threshold (100) for BAT1 is not specified, invalid or out of range (0..99). Aborted.
+Error: start charge threshold (100) for BAT1 is not specified, invalid or out of range (0..99). Aborted.
 $ sudo tlp setcharge 0 0 BAT1
-Error: charge stop threshold (0) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
+Error: stop charge threshold (0) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge 0 101 BAT1
-Error: charge stop threshold (101) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
+Error: stop charge threshold (101) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge XYZZY 0 BAT1
-Error: charge start threshold (XYZZY) for BAT1 is not specified, invalid or out of range (0..99). Aborted.
+Error: start charge threshold (XYZZY) for BAT1 is not specified, invalid or out of range (0..99). Aborted.
 $ sudo tlp setcharge 0 XYZZY BAT1
-Error: charge stop threshold (XYZZY) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
+Error: stop charge threshold (XYZZY) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge 97 97 BAT1
 Error: start threshold >= stop threshold for BAT1. Aborted.
 $ sudo tlp setcharge 95 96 BAT1

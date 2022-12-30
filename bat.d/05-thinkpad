@@ -573,7 +573,7 @@ batdrv_write_thresholds () {
                 if [ -n "$cfg_bat" ]; then
                     printf "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..99). Aborted.\n" "$cfg_bat" "$new_start" 1>&2
                 else
-                    printf "Error: charge start threshold (%s) for %s is not specified, invalid or out of range (0..99). Aborted.\n" "$new_start" "$_bat_str" 1>&2
+                    printf "Error: start charge threshold (%s) for %s is not specified, invalid or out of range (0..99). Aborted.\n" "$new_start" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -596,7 +596,7 @@ batdrv_write_thresholds () {
                 if [ -n "$cfg_bat" ]; then
                     printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (1..100). Aborted.\n" "$cfg_bat" "$new_stop" 1>&2
                 else
-                    printf "Error: charge stop threshold (%s) for %s is not specified, invalid or out of range (1..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
+                    printf "Error: stop charge threshold (%s) for %s is not specified, invalid or out of range (1..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -751,7 +751,7 @@ batdrv_chargeonce () {
     local rc=0
 
     if ! cur_stop=$(batdrv_read_threshold stop 0); then
-        printf "Error: reading charge stop threshold for %s failed. Aborted.\n" "$_bat_str" 1>&2
+        printf "Error: reading stop charge threshold for %s failed. Aborted.\n" "$_bat_str" 1>&2
         echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).thresh_unknown: stop=$cur_stop; rc=4"
         return 4
     fi

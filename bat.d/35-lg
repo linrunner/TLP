@@ -261,7 +261,7 @@ batdrv_write_thresholds () {
                 if [ -n "$cfg_bat" ]; then
                     printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified or invalid (must be 80 or 100). Aborted.\n" "$cfg_bat" "$new_stop" 1>&2
                 else
-                    printf "Error: charge stop threshold (%s) not specified or invalid (must be 80 or 100). Aborted.\n" "$new_stop" 1>&2
+                    printf "Error: stop charge threshold (%s) not specified or invalid (must be 80 or 100). Aborted.\n" "$new_stop" 1>&2
                 fi
                 ;;
         esac
@@ -272,8 +272,8 @@ batdrv_write_thresholds () {
     if ! old_stop=$(batdrv_read_threshold); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).read_error"
         case $verb in
-            1) echo_message "Error: could not read current charge stop threshold. Skipped." ;;
-            2) printf "Error: could not read current charge stop threshold. Aborted.\n" 1>&2 ;;
+            1) echo_message "Error: could not read current stop charge threshold. Skipped." ;;
+            2) printf "Error: could not read current stop charge threshold. Aborted.\n" 1>&2 ;;
         esac
         return 4
     fi
@@ -306,7 +306,7 @@ batdrv_write_thresholds () {
                 ;;
             1)
                 if [ $rc -gt 0 ]; then
-                    echo_message "Error: writing charge stop threshold failed."
+                    echo_message "Error: writing stop charge threshold failed."
                 fi
                 ;;
         esac

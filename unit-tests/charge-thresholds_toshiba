@@ -31,7 +31,7 @@ Setting temporary charge threshold for BAT1:
 $ #
 $ # --- tlp setcharge w/ threshold arguments
 $ sudo tlp setcharge 42 24 BAT1
-Error: charge stop threshold (24) for BAT1 is not specified or invalid (must be 80 or 100). Aborted.
+Error: stop charge threshold (24) for BAT1 is not specified or invalid (must be 80 or 100). Aborted.
 $ sudo tlp setcharge 42 100 BAT1
 Setting temporary charge threshold for BAT1:
   stop = 100 (no change)
