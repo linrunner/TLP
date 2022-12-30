@@ -115,7 +115,8 @@
 #   EPB: requires kernel 5.2 or module msr and x86_energy_perf_policy from
 #     linux-tools, intel_pstate or intel_cpufreq scaling driver and
 #     Intel Core i 2nd gen. or newer CPU
-#   When HPP is available, EPB is not set
+#   EPP and EPB are mutually exclusive: when EPP is available, Intel CPUs
+#   will not honor EPB. Only the matching feature will be applied by TLP.
 # * AMD Zen 2 or newer CPU *EXPERIMENTAL*
 #   EPP: requires amd_pstate scaling driver in 'active' mode
 #     provided by a yet unreleased kernel 6.x
