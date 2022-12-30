@@ -1,22 +1,17 @@
 #!/bin/sh
-# lg - Battery Plugin for LG laptops w/ lg_laptop driver
+# lg-legacy - Battery Plugin for LG laptops w/ lg_laptop driver provided
+# by kernel 5.17 or older (see plugin 'lg' for newer kernels)
 #
 # Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-# Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat
+# Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat, 35-lg
 
-# --- Hardware Detection
-
-readonly BATDRV_LG_MD=/sys/devices/platform/lg-laptop
-
-batdrv_is_lg () {
-    # check if kernel module loaded
-    # rc: 0=LG, 1=other hardware
-    [ -d $BATDRV_LG_MD ]
-}
+# --- Hardware Detection: function provided by 35-lg
 
 # --- Plugin API functions
+
+readonly BATDRV_LG_BCL="${BATDRV_LG_MD}/battery_care_limit"
 
 batdrv_init () {
     # detect hardware and initialize driver
@@ -44,7 +39,7 @@ batdrv_init () {
     #    sysfile                                --> retval $_bf_stop,
     #    default                                --> retval $_bt_def_stop;
 
-    _batdrv_plugin="lg"
+    _batdrv_plugin="lg-legacy"
     _batdrv_kmod="lg_laptop" # kernel module for natacpi
 
     # check plugin simulation override and denylist
@@ -76,12 +71,11 @@ batdrv_init () {
     _batteries=""
     # shellcheck disable=SC2034
     _bt_cfg_bat="BAT0"
-    _bn_stop=""
+    _bf_stop=""
     _bt_def_stop=100
 
     # iterate batteries
-    local bd bs sp
-    local done=0
+    local bd bs
     for bd in "$ACPIBATDIR"/CMB[01] "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf "$bd/present")" = "1" ]; then
             # record detected batteries and directories
@@ -91,38 +85,37 @@ batdrv_init () {
             else
                 _batteries="$bs"
             fi
-            # skip natacpi detection for 2nd and subsequent batteries
-            [ $done -eq 1 ] && continue
-
-            if [ "$NATACPI_ENABLE" = "0" ]; then
-                # natacpi disabled in configuration --> skip actual detection
-                _natacpi=32
-            elif sp="$(read_sysf "$bd/charge_control_end_threshold")"; then
-                # sysfile for stop threshold exists and is actually readable
-                if [ "$sp" != "0" ]; then
-                    # threshold is non-zero
-                    _natacpi=0
-                    _bm_thresh="natacpi"
-                    _bn_stop="charge_control_end_threshold"
-                else
-                    # zero means laptop not supported via the kernel driver
-                    _natacpi=254
-                fi
-            elif [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
-                # simulate api
-                _natacpi=0
-                _bm_thresh="natacpi"
-                _bn_stop="charge_control_end_threshold"
-            else
-                # nothing detected
-                _natacpi=254
-            fi
         fi
     done
 
+    # check for vendor specific kernel api
+    if [ "$NATACPI_ENABLE" = "0" ]; then
+        # natacpi disabled in configuration --> skip actual detection
+        _natacpi=32
+    elif sp="${X_THRESH_SIMULATE_STOP:-$(read_sysf $BATDRV_LG_BCL)}"; then
+        # sysfile exists and is actually readable --> check threshold value
+        if [ "$sp" != "0" ]; then
+            # threshold is non-zero
+            _natacpi=0
+            _bm_thresh="natacpi"
+            _bf_stop="$BATDRV_LG_BCL"
+        else
+            # zero means laptop not supported via the kernel driver
+            _natacpi=254
+        fi
+    elif [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
+        # simulate api
+        _natacpi=0
+        _bm_thresh="natacpi"
+        _bf_stop="$BATDRV_LG_BCL"
+    else
+        # nothing detected
+        _natacpi=254
+    fi
+
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bn_stop=$_bn_stop"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bf_stop=$_bf_stop"
     return 0
 }
 
@@ -156,13 +149,10 @@ batdrv_select_battery () {
             ;;
     esac
 
-    # determine natacpi sysfile
+    # determine natacpi sysfiles
     _bd_read="$ACPIBATDIR/$_bat_str"
-    if [ "$_bm_thresh" = "natacpi" ]; then
-        _bf_stop="$ACPIBATDIR/$_bat_str/$_bn_stop"
-    fi
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; bd_read=$_bd_read; bf_stop=$_bf_stop"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; bd_read=$_bd_read;"
     return 0
 }
 
@@ -183,20 +173,9 @@ batdrv_read_threshold () {
     fi
 
     if [ "$_bm_thresh" = "natacpi" ]; then
-        if ! out=$(read_sysf "$_bf_stop"); then
-            # not readable/non-existent
-            if [ "$1" != "1" ]; then
-                out=""
-            else
-                out="(not available)"
-            fi
-            rc=4
-        fi
+        out=$(read_sysf $_bf_stop) || rc=4
     else
         # no threshold api
-        if [ "$1" = "1" ]; then
-            out="(not available)"
-        fi
         rc=255
     fi
 
@@ -204,9 +183,6 @@ batdrv_read_threshold () {
     if [ "$X_THRESH_SIMULATE_READERR" != "1" ]; then
         printf "%s" "$out"
     else
-        if [ "$1" = "1" ]; then
-            printf "(not available)\n"
-        fi
         rc=4
     fi
 
@@ -253,15 +229,15 @@ batdrv_write_thresholds () {
         case $verb in
             1)
                 if [ -n "$cfg_bat" ]; then
-                    echo_message "Error in configuration at STOP_CHARGE_THRESH_${cfg_bat}=\"${new_stop}\": not specified or invalid (must be 80 or 100). Skipped."
+                    echo_message "Error in configuration at STOP_CHARGE_THRESH_${cfg_bat}=\"${new_stop}\": care limit not specified or invalid (must be 80 or 100). Skipped."
                 fi
                 ;;
 
             2)
                 if [ -n "$cfg_bat" ]; then
-                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified or invalid (must be 80 or 100). Aborted.\n" "$cfg_bat" "$new_stop" 1>&2
+                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": care limit not specified or invalid (must be 80 or 100). Aborted.\n" "$cfg_bat" "$new_stop" 1>&2
                 else
-                    printf "Error: charge stop threshold (%s) not specified or invalid (must be 80 or 100). Aborted.\n" "$new_stop" 1>&2
+                    printf "Error: care limit (%s) not specified or invalid (must be 80 or 100). Aborted.\n" "$new_stop" 1>&2
                 fi
                 ;;
         esac
@@ -272,15 +248,15 @@ batdrv_write_thresholds () {
     if ! old_stop=$(batdrv_read_threshold); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).read_error"
         case $verb in
-            1) echo_message "Error: could not read current charge stop threshold. Skipped." ;;
-            2) printf "Error: could not read current charge stop threshold. Aborted.\n" 1>&2 ;;
+            1) echo_message "Error: could not read current care limit. Skipped." ;;
+            2) printf "Error: could not read current care limit. Aborted.\n" 1>&2 ;;
         esac
         return 4
     fi
 
     # write new threshold
     if [ "$verb" = "2" ]; then
-        printf "Setting temporary charge threshold for %s:\n" "$_bat_str"
+        printf "Setting temporary charge threshold for all batteries:\n"
     fi
 
     local rc=0
@@ -299,21 +275,21 @@ batdrv_write_thresholds () {
         case $verb in
             2)
                 if [ $rc -eq 0 ]; then
-                    printf "  stop = %d\n" $new_stop
+                    printf "  care limit = %d\n" $new_stop
                 else
-                    printf "  stop = %d (Error: write failed)\n" $new_stop 1>&2
+                    printf "  care limit = %d (Error: write failed)\n" $new_stop 1>&2
                 fi
                 ;;
             1)
                 if [ $rc -gt 0 ]; then
-                    echo_message "Error: writing charge stop threshold failed."
+                    echo_message "Error: writing care limit failed."
                 fi
                 ;;
         esac
     else
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).no_change: old=$old_stop; new=$new_stop"
         if [ "$verb" = "2" ]; then
-                printf "  stop = %d (no change)\n" $new_stop
+                printf "  care limit = %d (no change)\n" $new_stop
         fi
     fi
 
@@ -327,23 +303,10 @@ batdrv_chargeonce () {
 }
 
 batdrv_apply_configured_thresholds () {
-    # apply configured stop thresholds from configuration to all batteries
+    # apply configured battery care limit from configuration (concerns all batteries)
     # output parameter errors only
 
-    if batdrv_select_battery BAT0; then
-        batdrv_write_thresholds "DEF" "$STOP_CHARGE_THRESH_BAT0" 1 "BAT0"; rc=$?
-    fi
-    if batdrv_select_battery BAT1; then
-        batdrv_write_thresholds "DEF" "$STOP_CHARGE_THRESH_BAT1" 1 "BAT1"; rc=$?
-    fi
-    # CMB0 uses BAT0 settings
-    if batdrv_select_battery CMB0; then
-        batdrv_write_thresholds "DEF" "$STOP_CHARGE_THRESH_BAT0" 1 "BAT0"; rc=$?
-    fi
-    # CMB1 uses BAT1 settings
-    if batdrv_select_battery CMB1; then
-        batdrv_write_thresholds "DEF" "$STOP_CHARGE_THRESH_BAT1" 1 "BAT1"; rc=$?
-    fi
+    batdrv_write_thresholds "DEF" "$STOP_CHARGE_THRESH_BAT0" 1 "BAT0"; rc=$?
 
     return 0
 }
@@ -401,16 +364,22 @@ batdrv_show_battery_data () {
     printf "Driver usage:\n"
     # vendor specific kernel api
     case $_natacpi in
-        0)   printf "* natacpi (%s) = active (charge threshold)\n" "$_batdrv_kmod" ;;
-        32)  printf "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
-        128) printf "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
-        254) printf "* natacpi (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
-        *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
+        0)   printf "* vendor (%s) = active (charge threshold)\n" "$_batdrv_kmod" ;;
+        32)  printf "* vendor (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
+        128) printf "* vendor (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
+        254) printf "* vendor (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
+        *)   printf "* vendor (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
     if [ "$_bm_thresh" = "natacpi" ]; then
+        local th
         printf "Parameter value range:\n"
-        printf "* STOP_CHARGE_THRESH_BAT0: 80(on), 100(off)\n"
+        printf "* STOP_CHARGE_THRESH_BAT0: 80(on), 100(off) -- battery care limit\n\n"
+        if th=$(batdrv_read_threshold); then
+            printf "%-59s = %d [%%]\n" "$_bf_stop" "$th"
+        else
+            printf "%-59s = %s\n" "$_bf_stop" "(not available)"
+        fi
     fi
     printf "\n"
 
@@ -473,10 +442,6 @@ batdrv_show_battery_data () {
         fi
 
         # --- show battery features: thresholds
-        if [ "$_bm_thresh" = "natacpi" ]; then
-            printf "%-59s = %6s [%%]\n" "$_bf_stop" "$(batdrv_read_threshold 1)"
-            printf "\n"
-        fi
 
         # --- show charge level (SOC) and capacity
         if [ $ef -ne 0 ]; then
