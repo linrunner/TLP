@@ -43,7 +43,7 @@ get_devc () { # get control device for radio type
     _devon="1"
     _devoff="0"
 
-    case $1 in
+    case "$1" in
         wwan|bluetooth|nfc)
             for i in /sys/class/rfkill/rfkill* ; do
                 if [ "$(read_sysf "$i/type")" = "$1" ]; then
@@ -165,19 +165,19 @@ device_switch () { # switch radio type state
 
     # get current device state
     get_devs "$1"
-    curst=$_devs
+    curst="$_devs"
 
     # quit if device state is hard blocked or invalid
-    if [ $_devs -ge 2 ]; then
-        case $_devs in
+    if [ "$_devs" -ge 2 ]; then
+        case "$_devs" in
             2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$_devs" ;;
             *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$_devs" ;;
         esac
-        return $_devs
+        return "$_devs"
     fi
 
     # determine desired device state
-    case $2 in
+    case "$2" in
         1|on)     newst=1 ;;
         0|off)    newst=0 ;;
         toggle) newst=$((curst ^ 1)) ;;
@@ -192,15 +192,15 @@ device_switch () { # switch radio type state
         # record device state after nmcli
         get_devs "$1"
         # update current state
-        curst=$_devs
+        curst="$_devs"
 
         # quit if device state is hard blocked or invalid
-        if [ $_devs -ge 2 ]; then
-            case $_devs in
+        if [ "$_devs" -ge 2 ]; then
+            case "$_devs" in
                 2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$_devs" ;;
                 *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$_devs" ;;
             esac
-            return $_devs
+            return "$_devs"
         fi
     fi
 
@@ -217,9 +217,9 @@ device_switch () { # switch radio type state
             set_timed_lock "$3" "$4"
 
         # determine value for direct write
-        case $newst in
-            1) devn=$_devon  ;;
-            0) devn=$_devoff ;;
+        case "$newst" in
+            1) devn="$_devon"  ;;
+            0) devn="$_devoff" ;;
         esac
 
         # switch device state when either rfkill isn't disabled
@@ -229,7 +229,7 @@ device_switch () { # switch radio type state
                 if test_rfkill_perms ; then
                     # use rfkill
                     echo_debug "rf" "device_switch($1, $2).rfkill"
-                    case $newst in
+                    case "$newst" in
                         1) $RFKILL unblock "$1" > /dev/null 2>&1 ;;
                         0) $RFKILL block "$1"   > /dev/null 2>&1 ;;
                         *) ;;
@@ -265,12 +265,12 @@ device_switch () { # switch radio type state
     fi
 
     # quit if device state is hard blocked or invalid
-    if [ $_devs -ge 2 ]; then
-        case $_devs in
+    if [ "$_devs" -ge 2 ]; then
+        case "$_devs" in
             2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$_devs" ;;
             *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$_devs" ;;
         esac
-        return $_devs
+        return "$_devs"
     fi
 
     # compare old and new device state
@@ -285,7 +285,7 @@ device_switch () { # switch radio type state
 }
 
 echo_device_state () { # print radio type state -- $1: rftype, $2: state
-    case $1 in
+    case "$1" in
         bluetooth)
             devstr="bluetooth"
             ;;
@@ -307,7 +307,7 @@ echo_device_state () { # print radio type state -- $1: rftype, $2: state
             ;;
     esac
 
-    case $2 in
+    case "$2" in
         0)
             echo "$devstr = off (software)"
             ;;

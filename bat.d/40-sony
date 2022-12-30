@@ -174,7 +174,7 @@ batdrv_read_threshold () {
     fi
 
     if [ "$_bm_thresh" = "natacpi" ]; then
-        out=$(read_sysf $_bf_stop) || rc=4
+        out=$(read_sysf "$_bf_stop") || rc=4
     else
         # no threshold api
         rc=255
@@ -270,14 +270,14 @@ batdrv_write_thresholds () {
     local rc=0
     if [ "$old_stop" != "$sony_stop" ]; then
         # new threshold differs from effective one --> write it
-        write_sysf "$sony_stop" $_bf_stop || rc=5
+        write_sysf "$sony_stop" "$_bf_stop" || rc=5
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).write: old=$old_stop; new=$sony_stop; rc=$rc"
         case $verb in
             2)
                 if [ $rc -eq 0 ]; then
-                    printf "  care limiter = %d\n" $new_stop
+                    printf "  care limiter = %d\n" "$new_stop"
                 else
-                    printf "  care limiter = %d (Error: write failed)\n" $new_stop 1>&2
+                    printf "  care limiter = %d (Error: write failed)\n" "$new_stop" 1>&2
                 fi
                 ;;
             1)
@@ -289,7 +289,7 @@ batdrv_write_thresholds () {
     else
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).no_change: old=$old_stop; new=$sony_stop"
         if [ "$verb" = "2" ]; then
-                printf "  care limiter = %d (no change)\n" $new_stop
+                printf "  care limiter = %d (no change)\n" "$new_stop"
         fi
     fi
 
@@ -448,15 +448,15 @@ batdrv_show_battery_data () {
         # --- show battery features: thresholds
 
         # --- show charge level (SOC) and capacity
-        if [ $ef -ne 0 ]; then
+        if [ "$ef" -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
             lf=1
         fi
-        if [ $ed -ne 0 ]; then
+        if [ "$ed" -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '"$ef"' / '"$ed"');'
             lf=1
         fi
-        [ $lf -gt 0 ] && printf "\n"
+        [ "$lf" -gt 0 ] && printf "\n"
 
         bcnt=$((bcnt+1))
 

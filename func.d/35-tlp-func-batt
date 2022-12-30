@@ -164,7 +164,7 @@ chargeonce_battery () {
     fi
 
     # check bat presence and/or get default(1st) battery
-    if ! batdrv_select_battery $bat; then
+    if ! batdrv_select_battery "$bat"; then
         # battery not present
         printf "Error: battery %s not present.\n" "$bat" 1>&2
         echo_debug "bat" "chargeonce_battery.not_present($_bat_str)"
@@ -215,7 +215,7 @@ discharge_battery () {
     fi
 
     # check bat presence and/or get default(1st) battery
-    if ! batdrv_select_battery $bat; then
+    if ! batdrv_select_battery "$bat"; then
         # battery not present
         echo "Error: battery $bat not present." 1>&2
         echo_debug "bat" "discharge_battery.not_present($bat)"

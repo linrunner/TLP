@@ -174,7 +174,7 @@ batdrv_read_threshold () {
     fi
 
     if [ "$_bm_thresh" = "natacpi" ]; then
-        out=$(read_sysf $_bf_start_stop) || rc=4
+        out=$(read_sysf "$_bf_start_stop") || rc=4
     else
         rc=255
     fi
@@ -299,9 +299,9 @@ batdrv_write_thresholds () {
     case $verb in
         2)
             if [ $rc -eq 0 ]; then
-                printf "  %s = %d, %s = %d\n" start $new_start stop $new_stop
+                printf "  %s = %d, %s = %d\n" start "$new_start" stop "$new_stop"
             else
-                printf "  %s = %d, %s = %d (Error: write failed)\n" start $new_start stop $new_stop 1>&2
+                printf "  %s = %d, %s = %d (Error: write failed)\n" start "$new_start" stop "$new_stop" 1>&2
             fi
             ;;
         1)
@@ -469,15 +469,15 @@ batdrv_show_battery_data () {
 
         # --- show charge level (SOC) and capacity
         lf=0
-        if [ $ef -ne 0 ]; then
+        if [ "$ef" -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
             lf=1
         fi
-        if [ $ed -ne 0 ]; then
+        if [ "$ed" -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '"$ef"' / '"$ed"');'
             lf=1
         fi
-        [ $lf -gt 0 ] && printf "\n"
+        [ "$lf" -gt 0 ] && printf "\n"
 
         bcnt=$((bcnt+1))
 

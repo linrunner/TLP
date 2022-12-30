@@ -72,7 +72,7 @@ parse_args () { # parse command-line arguments
 
         elif [ "$_cmd" = "nil" ]; then
             # command
-            case $1 in
+            case "$1" in
                 ac|auto|bat|bayoff|false|diskid|resume|suspend|start|true|usb)
                     # commands without further arguments
                     _cmd="$1"
@@ -126,7 +126,7 @@ parse_args () { # parse command-line arguments
 
         elif [ "$_cmd2" = "nil" ]; then
             # subcommand
-            case $1 in
+            case "$1" in
                 start|stop|restart|force-reload)
                     _cmd2="$1"
                     ;;
@@ -209,7 +209,7 @@ case "$_cmd" in
     auto|resume)
         # if manual mode is set, use instead of current power state
         # shellcheck disable=SC2154
-        [ "$_manual_mode" != "none" ] && pwrmode=$_manual_mode
+        [ "$_manual_mode" != "none" ] && pwrmode="$_manual_mode"
         ;;
 
     true|bat)
@@ -259,13 +259,13 @@ case "$_cmd" in
         # do init business ...
         # shellcheck disable=SC2034
         _bgtask=1
-        case $_cmd2 in
+        case "$_cmd2" in
             start)
                 # apply power save settings
-                compare_and_save_power_state $pwrmode
+                compare_and_save_power_state "$pwrmode"
                 echo -n "Applying power save settings..."
-                apply_common_settings $pwrmode
-                poweroff_drivebay $pwrmode 0
+                apply_common_settings "$pwrmode"
+                poweroff_drivebay "$pwrmode" 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
 
@@ -280,10 +280,10 @@ case "$_cmd" in
 
             restart|force-reload)
                 # apply power save settings
-                compare_and_save_power_state $pwrmode
+                compare_and_save_power_state "$pwrmode"
                 echo -n "Applying power save settings..."
-                apply_common_settings $pwrmode
-                poweroff_drivebay $pwrmode 0
+                apply_common_settings "$pwrmode"
+                poweroff_drivebay "$pwrmode" 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
 
@@ -304,7 +304,7 @@ case "$_cmd" in
                 if [ "$X_TLP_SHUTDOWN_ACMODE" = "1" ]; then
                     echo -n "Applying power save settings..."
                     apply_common_settings 0
-                    poweroff_drivebay $pwrmode 0
+                    poweroff_drivebay "$pwrmode" 0
                     echo "done."
                 fi
 
@@ -338,10 +338,10 @@ case "$_cmd" in
         _bgtask=1
         check_services_activation_status
         if lock_tlp_nb; then
-            if compare_and_save_power_state $pwrmode; then
-                apply_common_settings $pwrmode
-                poweroff_drivebay $pwrmode 0
-                set_radio_device_states $pwrmode
+            if compare_and_save_power_state "$pwrmode"; then
+                apply_common_settings "$pwrmode"
+                poweroff_drivebay "$pwrmode" 0
+                set_radio_device_states "$pwrmode"
                 if [ "$RESTORE_THRESHOLDS_ON_BAT" = "1" ] \
                     && [ "$pwrmode" = "1" ]; then
                     set_charge_thresholds
@@ -356,16 +356,16 @@ case "$_cmd" in
         check_services_activation_status
         check_root
         if lock_tlp; then
-            compare_and_save_power_state $pwrmode
-            apply_common_settings $pwrmode
-            poweroff_drivebay $pwrmode 0
+            compare_and_save_power_state "$pwrmode"
+            apply_common_settings "$pwrmode"
+            poweroff_drivebay "$pwrmode" 0
             set_usb_suspend 0 auto
             set_charge_thresholds
-            set_radio_device_states $pwrmode
+            set_radio_device_states "$pwrmode"
             save_runconf
             unlock_tlp
 
-            echo_started_mode $pwrmode
+            echo_started_mode "$pwrmode"
         else
             echo_tlp_locked
         fi
@@ -377,7 +377,7 @@ case "$_cmd" in
         if lock_tlp; then
             compare_and_save_power_state 1
             apply_common_settings 1
-            poweroff_drivebay $pwrmode 0
+            poweroff_drivebay "$pwrmode" 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
             set_radio_device_states 1
             save_runconf
@@ -395,7 +395,7 @@ case "$_cmd" in
         if lock_tlp; then
             compare_and_save_power_state 0
             apply_common_settings 0
-            poweroff_drivebay $pwrmode 0
+            poweroff_drivebay "$pwrmode" 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
             set_radio_device_states 0
             save_runconf
@@ -410,7 +410,7 @@ case "$_cmd" in
     suspend) # handle suspend/hibernate
         check_root
         save_device_states "bluetooth wwan"
-        suspend_drivebay $pwrmode
+        suspend_drivebay "$pwrmode"
 
         # DISABLED: apply ac settings
         if [ "$X_TLP_SUSPEND_ACMODE" = "1" ]; then
@@ -427,9 +427,9 @@ case "$_cmd" in
         if lock_tlp; then
             restore_device_states
 
-            compare_and_save_power_state $pwrmode
-            apply_common_settings $pwrmode
-            resume_drivebay $pwrmode
+            compare_and_save_power_state "$pwrmode"
+            apply_common_settings "$pwrmode"
+            resume_drivebay "$pwrmode"
             set_charge_thresholds "asus huawei"
             save_runconf
             unlock_tlp
@@ -443,7 +443,7 @@ case "$_cmd" in
 
     bayoff) # power off drive bay
         check_root
-        poweroff_drivebay $pwrmode 1
+        poweroff_drivebay "$pwrmode" 1
         ;;
 
     setcharge) # set charge thresholds (temporarily)

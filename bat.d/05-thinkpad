@@ -384,7 +384,7 @@ batdrv_select_battery () {
 
         BAT1)
             _bat_str="$bs"
-            if [ $_tpacpi -le 1 ]; then
+            if [ "$_tpacpi" -le 1 ]; then
                 # tpacpi: try to read start threshold for index 2
                 if $TPACPIBAT -g ST 2 2> /dev/null 1>&2 ; then
                     _bat_idx=2 # BAT1 is aux
@@ -473,15 +473,15 @@ batdrv_read_threshold () {
         tpacpi)
             case $1 in
                 start)
-                    out=$($TPACPIBAT -g ST $_bat_idx 2> /dev/null | cut -f1 -d' ')
+                    out=$($TPACPIBAT -g ST "$_bat_idx" 2> /dev/null | cut -f1 -d' ')
                     # workaround: read threshold a second time (see above)
-                    out=$($TPACPIBAT -g ST $_bat_idx 2> /dev/null | cut -f1 -d' ')
+                    out=$($TPACPIBAT -g ST "$_bat_idx" 2> /dev/null | cut -f1 -d' ')
                     ;;
 
                 stop)
-                    out=$($TPACPIBAT -g SP $_bat_idx 2> /dev/null | cut -f1 -d' ')
+                    out=$($TPACPIBAT -g SP "$_bat_idx" 2> /dev/null | cut -f1 -d' ')
                     # workaround: read threshold a second time (see above)
-                    out=$($TPACPIBAT -g SP $_bat_idx 2> /dev/null | cut -f1 -d' ')
+                    out=$($TPACPIBAT -g SP "$_bat_idx" 2> /dev/null | cut -f1 -d' ')
                     ;;
             esac
             # shellcheck disable=SC2181
@@ -490,7 +490,7 @@ batdrv_read_threshold () {
                     # remove offset of 128 for Edge S430 et al.
                     out=$((out - 128))
                 fi
-                if [ "$1" = "stop" ] && [ $out -eq 0 ]; then
+                if [ "$1" = "stop" ] && [ "$out" -eq 0 ]; then
                     # stop: 0 (hardware default) means 100
                     out=100
                 fi
@@ -647,7 +647,7 @@ batdrv_write_thresholds () {
     #   - tpacpi:  nothing (maybe BIOS/ECP enforces something)
     local rc=0 steprc tseq
 
-    if [ "$old_stop" != "none" ] && [ $new_start -ge $old_stop ]; then
+    if [ "$old_stop" != "none" ] && [ "$new_start" -ge "$old_stop" ]; then
         tseq="stop start"
     else
         tseq="start stop"
@@ -686,13 +686,13 @@ batdrv_write_thresholds () {
 
                 tpacpi)
                     case $step in
-                        start) $TPACPIBAT -s ST $_bat_idx $new_thresh > /dev/null 2>&1 ;;
+                        start) $TPACPIBAT -s ST "$_bat_idx" "$new_thresh" > /dev/null 2>&1 ;;
                         stop)
-                            if [ $new_thresh -eq 100 ]; then
+                            if [ "$new_thresh" -eq 100 ]; then
                                 # tpacpi-bat won't accept 100
-                                $TPACPIBAT -s SP $_bat_idx 0 > /dev/null 2>&1
+                                $TPACPIBAT -s SP "$_bat_idx" 0 > /dev/null 2>&1
                             else
-                                $TPACPIBAT -s SP $_bat_idx $new_thresh > /dev/null 2>&1
+                                $TPACPIBAT -s SP "$_bat_idx" "$new_thresh" > /dev/null 2>&1
                             fi
                             ;;
                     esac
@@ -708,13 +708,13 @@ batdrv_write_thresholds () {
             case $verb in
                 2)
                     if [ $steprc -eq 0 ]; then
-                        if [ "$step" = "start" ] && [ $new_thresh -eq 0 ]; then
-                            printf "  %-5s = %3d (disabled)\n" "$step" $new_thresh
+                        if [ "$step" = "start" ] && [ "$new_thresh" -eq 0 ]; then
+                            printf "  %-5s = %3d (disabled)\n" "$step" "$new_thresh"
                         else
-                            printf "  %-5s = %3d\n" "$step" $new_thresh
+                            printf "  %-5s = %3d\n" "$step" "$new_thresh"
                         fi
                     else
-                        printf "  %-5s = %3d (Error: write failed)\n" "$step" $new_thresh 1>&2
+                        printf "  %-5s = %3d (Error: write failed)\n" "$step" "$new_thresh" 1>&2
                     fi
                     ;;
                 1)
@@ -727,7 +727,7 @@ batdrv_write_thresholds () {
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.no_change: bat=$_bat_str; old=$old_thresh; new=$new_thresh"
 
             if [ "$verb" = "2" ]; then
-                printf "  %-5s = %3d (no change)\n" "$step" $new_thresh
+                printf "  %-5s = %3d (no change)\n" "$step" "$new_thresh"
             fi
         fi
     done # for step
@@ -777,14 +777,14 @@ batdrv_chargeonce () {
             ;;
     esac
 
-    if [ $ccharge -eq -1 ]; then
+    if [ "$ccharge" -eq -1 ]; then
         printf "Error: cannot determine charge level for %s.\n" "$_bat_str" 1>&2
         echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_unknown: enow=$enow; efull=$efull; rc=2"
         return 2
     fi
 
     temp_start=$(( cur_stop - 1 ))
-    if [ $ccharge -gt $temp_start ]; then
+    if [ "$ccharge" -gt "$temp_start" ]; then
         printf "Error: the %s charge level is %s%%. " "$_bat_str" "$ccharge"  1>&2
         printf "For this command to work, it must not exceed %s%% (stop threshold - 1).\n" "$temp_start" 1>&2
         echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_too_high: soc=$ccharge; stop=$cur_stop; rc=3"
@@ -798,14 +798,14 @@ batdrv_chargeonce () {
             ;;
 
         tpacpi)
-            $TPACPIBAT -s ST $_bat_idx $temp_start > /dev/null 2>&1 || rc=5
+            $TPACPIBAT -s ST "$_bat_idx" "$temp_start" > /dev/null 2>&1 || rc=5
             ;;
     esac
 
     if [ $rc -eq 0 ]; then
-        printf "  start = %3d\n" $temp_start
+        printf "  start = %3d\n" "$temp_start"
     else
-        printf "  start = %3d (Error: write failed)\n" $temp_start 1>&2
+        printf "  start = %3d (Error: write failed)\n" "$temp_start" 1>&2
     fi
     echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str): soc=$ccharge; start=$temp_start; stop=$cur_stop; rc=$rc"
 
@@ -862,7 +862,7 @@ batdrv_read_force_discharge () {
             ;;
 
         tpacpi) # read via tpacpi-bat
-            case $($TPACPIBAT -g FD $_bat_idx 2> /dev/null) in
+            case "$($TPACPIBAT -g FD "$_bat_idx" 2> /dev/null)" in
                 yes) out=1 ;;
                 no)  out=0 ;;
                 *)
@@ -911,7 +911,7 @@ batdrv_write_force_discharge () {
             ;; # natacpi
 
         tpacpi) # use tpacpi-bat
-            $TPACPIBAT -s FD $_bat_idx "$1" > /dev/null 2>&1 || rc=5
+            $TPACPIBAT -s FD "$_bat_idx" "$1" > /dev/null 2>&1 || rc=5
             ;; # tpcpaci
 
         *) # no discharge api
@@ -1312,7 +1312,7 @@ batdrv_show_battery_data () {
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '"$ef"' / '"$ed"');'
             lf=1
         fi
-        [ $lf -gt 0 ] && printf "\n"
+        [ "$lf" -gt 0 ] && printf "\n"
 
         bcnt=$((bcnt+1))
 

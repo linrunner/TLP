@@ -286,8 +286,8 @@ batdrv_write_thresholds () {
     local rc=0
     if [ "$old_stop" != "$new_stop" ]; then
         # new threshold differs from effective one --> write it
-        if write_sysf "$new_stop" $_bf_stop; then
-            if [ "$(read_sysf $_bf_stop)" != "$new_stop" ]; then
+        if write_sysf "$new_stop" "$_bf_stop"; then
+            if [ "$(read_sysf "$_bf_stop")" != "$new_stop" ]; then
                 #  write discarded by kernel or firmware
                 rc=6
             fi
@@ -299,9 +299,9 @@ batdrv_write_thresholds () {
         case $verb in
             2)
                 if [ $rc -eq 0 ]; then
-                    printf "  stop = %d\n" $new_stop
+                    printf "  stop = %d\n" "$new_stop"
                 else
-                    printf "  stop = %d (Error: write failed)\n" $new_stop 1>&2
+                    printf "  stop = %d (Error: write failed)\n" "$new_stop" 1>&2
                 fi
                 ;;
             1)
@@ -313,7 +313,7 @@ batdrv_write_thresholds () {
     else
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).no_change: old=$old_stop; new=$new_stop"
         if [ "$verb" = "2" ]; then
-                printf "  stop = %d (no change)\n" $new_stop
+                printf "  stop = %d (no change)\n" "$new_stop"
         fi
     fi
 
@@ -479,15 +479,15 @@ batdrv_show_battery_data () {
         fi
 
         # --- show charge level (SOC) and capacity
-        if [ $ef -ne 0 ]; then
+        if [ "$ef" -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
             lf=1
         fi
-        if [ $ed -ne 0 ]; then
+        if [ "$ed" -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '"$ef"' / '"$ed"');'
             lf=1
         fi
-        [ $lf -gt 0 ] && printf "\n"
+        [ "$lf" -gt 0 ] && printf "\n"
 
         bcnt=$((bcnt+1))
 
