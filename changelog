@@ -33,6 +33,8 @@
       - tlp-stat -p:
         - Show amd_pstate operation mode, dynamic boost, performance
           and frequency attributes
+    Radio Devices:
+       - Support Thunderbolt docks to switch radio devices
 
   * Bugfixes
 
