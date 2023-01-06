@@ -32,3 +32,6 @@ ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}
 
 # ThinkPad USB-C Dock Gen 2 [P/N 40AS]
 ACTION=="add|remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="17ef/a396/*", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
+
+# Thunderbolt docks
+ACTION=="add|remove", SUBSYSTEM=="thunderbolt", ENV{DEVTYPE}=="thunderbolt_device", ENV{USB4_TYPE}=="hub", RUN+="@TLP_ULIB@/tlp-rdw-udev %p usb_dock"
