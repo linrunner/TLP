@@ -62,7 +62,7 @@ batdrv_init () {
         return 1
     else
         # check if hardware matches
-        if ! batdrv_is_huawei; then
+        if ! batdrv_is_toshiba; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match"
             return 1
         fi
