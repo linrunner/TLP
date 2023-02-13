@@ -12,7 +12,7 @@
 readonly CPUD=/sys/devices/system/cpu
 readonly CPU_BOOST_ALL_CTRL=${CPUD}/cpufreq/boost
 readonly INTEL_PSTATED=${CPUD}/intel_pstate
-readonly AMD_PSTATED=${CPUD}/amd-pstate
+readonly AMD_PSTATED=${CPUD}/amd_pstate
 readonly CPU_MIN_PERF_PCT=$INTEL_PSTATED/min_perf_pct
 readonly CPU_MAX_PERF_PCT=$INTEL_PSTATED/max_perf_pct
 readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
