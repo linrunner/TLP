@@ -34,6 +34,8 @@
       - tlp-stat -p:
         - Show amd_pstate operation mode, dynamic boost, performance
           and frequency attributes
+        - Show min/max operating frequency the processor can run at
+          (cpuinfo_min/max_freq)
     Radio Devices:
        - Support Thunderbolt docks to switch radio devices
 
