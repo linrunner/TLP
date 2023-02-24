@@ -48,17 +48,24 @@ check_thinkpad () {
         # kernel module thinkpad_acpi is loaded
 
         if [ -z "$X_SIMULATE_MODEL" ]; then
-            # get DMI product string and sanitize it
+            # get DMI product_version string and sanitize it
             pv="$(read_dmi product_version | tr -C -d 'a-zA-Z0-9 ')"
         else
             # simulate arbitrary model
             pv="$X_SIMULATE_MODEL"
         fi
 
-        # check DMI product string for occurrence of "ThinkPad"
+        # stock BIOS: check DMI product_version string for occurrence of "ThinkPad"
         if printf '%s' "$pv" | grep -E -q 'Think[Pp]ad'; then
             # it's a real ThinkPad --> save model substring
             _tpmodel=$(printf '%s\n' "$pv" | sed -r 's/^Think[Pp]ad //')
+        elif [ -z "$X_SIMULATE_MODEL" ]; then
+            # Libreboot uses DMI product_name, check it too
+            pv="$(read_dmi product_name | tr -C -d 'a-zA-Z0-9 ')"
+            if printf '%s' "$pv" | grep -E -q 'Think[Pp]ad'; then
+                # it's a librebooted' ThinkPad --> save model substring
+                _tpmodel=$(printf '%s\n' "$pv" | sed -r 's/^Think[Pp]ad //')
+            fi
         fi
     else
         # not a ThinkPad: get DMI product string
