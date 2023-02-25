@@ -23,6 +23,7 @@
         when DEVICES_TO_ENABLE/DISABLE_ON_STARTUP is actually unconfigured
       - Show EC firmware version
       - Show system suspend mode
+      - Show proper ThinkPad model string with Libreboot (Issue #679)
     PCI(e) devices:
       - RUNTIME_PM_ENABLE/DISABLE: apply even when RUNTIME_PM_ON_AC/BAT
         is disabled (Issue #614)

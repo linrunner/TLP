@@ -231,12 +231,18 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # --- show system info
     # simulate arbitrary model
     if [ -z "$X_SIMULATE_MODEL" ]; then
-        model="$(read_dmi product_version)"
+        product_version="$(read_dmi product_version)"
+        product_name="$(read_dmi product_name)"
+        if printf '%s' "$product_name" | grep -E -q 'Think[Pp]ad'; then
+            model="$product_name"
+        else
+            model="$product_version $product_name"
+        fi
     else
         model="$X_SIMULATE_MODEL"
     fi
     echo "+++ System Info"
-    echo "System         = $(read_dmi sys_vendor) $model $(read_dmi product_name)"
+    echo "System         = $(read_dmi sys_vendor) $model"
     echo "BIOS           = $(read_dmi bios_version)"
     ecfw="$(read_dmi ec_firmware_release)" && printf "EC Firmware    = %s\n" "$ecfw"
 
