@@ -96,7 +96,7 @@
 # the output of tlp-stat -p.
 # Notes:
 # - Min/max frequencies must always be specified for both AC *and* BAT
-# - Not recommended for use with the intel_pstate scaling driver, use
+# - Not recommended for use with the intel_pstate driver, use
 #   CPU_MIN/MAX_PERF_ON_AC/BAT below instead
 # Default: <none>
 
@@ -108,18 +108,16 @@
 # Set CPU energy/performance policies EPP and EPB:
 #   performance, balance_performance, default, balance_power, power.
 # Values are given in order of increasing power saving.
-# Notes:
+# Requires:
 # * Intel CPU
-#   EPP: requires kernel 4.10, intel_pstate scaling driver and Intel Core i
-#     6th gen. or newer CPU
-#   EPB: requires kernel 5.2 or module msr and x86_energy_perf_policy from
-#     linux-tools, intel_pstate or intel_cpufreq scaling driver and
-#     Intel Core i 2nd gen. or newer CPU
+#   EPP: Intel Core i 6th gen. or newer CPU with intel_pstate driver
+#   EPB: Intel Core i 2nd gen. or newer CPU with intel_pstate or intel_cpufreq
+#     driver as of kernel 5.2; alternatively modules msr and
+#     x86_energy_perf_policy from linux-tools
 #   EPP and EPB are mutually exclusive: when EPP is available, Intel CPUs
 #   will not honor EPB. Only the matching feature will be applied by TLP.
-# * AMD Zen 2 or newer CPU *EXPERIMENTAL*
-#   EPP: requires amd_pstate scaling driver in 'active' mode
-#     provided by a yet unreleased kernel 6.x
+# * AMD Zen 2 or newer CPU
+#   EPP: amd_pstate driver in active mode as of kernel 6.3
 # Default: balance_performance (AC), balance_power (BAT)
 
 #CPU_ENERGY_PERF_POLICY_ON_AC=balance_performance
@@ -128,8 +126,8 @@
 # Set Intel CPU P-state performance: 0..100 (%).
 # Limit the max/min P-state to control the power dissipation of the CPU.
 # Values are stated as a percentage of the available performance.
-# Requires intel_pstate or intel_cpufreq driver and Intel Core i 2nd gen. or
-# newer CPU.
+# Requires Intel Core i 2nd gen. or newer CPU with intel_pstate or
+# intel_cpufreq driver.
 # Default: <none>
 
 #CPU_MIN_PERF_ON_AC=0
@@ -150,12 +148,11 @@
 # Set Intel/AMD CPU dynamic boost feature:
 #   0=disable, 1=enable.
 # Improve performance by increasing minimum P-state limit dynamically
-# whenever a task previously waiting on I/O is selected to run
+# whenever a task previously waiting on I/O is selected to run.
 # Requires:
-# - Intel: Core i  6th gen. or newer CPU with intel_pstate scaling driver
-#   in 'active' mode and
-# - AMD: Zen 2 or newer CPU amd_pstate scaling driver in 'active' mode
-#   *EXPERIMENTAL* see notes for energy/performance policies above
+# * Intel Core i  6th gen. or newer CPU: intel_pstate driver in active mode
+# * AMD Zen 2 or newer CPU: amd_pstate driver in active mode provided by
+#     a yet unreleased kernel 6.x
 # Default: <none>
 
 #CPU_HWP_DYN_BOOST_ON_AC=1
@@ -255,7 +252,7 @@
 
 # AHCI link power management (ALPM) for SATA disks:
 #   min_power, med_power_with_dipm(*), medium_power, max_performance.
-# (*) Kernel 4.15 (or newer) required, then recommended.
+# (*) recommended.
 # Multiple values separated with spaces are tried sequentially until success.
 # Default:
 #  - "med_power_with_dipm max_performance" (AC)
@@ -516,8 +513,8 @@
 # For more explanations and vendor specific details refer to
 #   https://linrunner.de/tlp/settings/battery.html
 # Notes:
-# - ThinkPads may require external kernel module(s), refer to the output of
-#   tlp-stat -b
+# - Older ThinkPads may require an external kernel module, refer to the
+#   output of tlp-stat -b
 # - Vendor specific threshold levels are shown by tlp-stat -b, some support
 #   only 1(on))/0(off) instead of a percentage level.
 # - If your hardware supports a start *and* a stop threshold, you must
