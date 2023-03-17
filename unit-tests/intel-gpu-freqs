@@ -3,7 +3,7 @@
 # Requirements:
 # * Intel GPU w/ i915 driver
 # * Hardware freq range 700..1100 (or wider)
-# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net>.
+# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # --- valid freqs

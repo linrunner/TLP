@@ -4,7 +4,7 @@
 # * Hardware: non-legacy ThinkPad
 # * Batteries: BAT0 + BAT1
 # * Power source AC
-# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net>.
+# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ ThinkPad +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

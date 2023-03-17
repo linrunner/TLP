@@ -2,7 +2,7 @@
 # 45-system76 - Battery Plugin for System76 laptops
 #   w/ open source EC firmware and system76_acpi driver
 #
-# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat

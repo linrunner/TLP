@@ -2,7 +2,7 @@
 # /etc/tlp.conf - TLP user configuration (version @TLPVER@)
 # See full explanation: https://linrunner.de/tlp/settings
 #
-# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 # Settings are read in the following order:

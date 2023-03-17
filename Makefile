@@ -1,5 +1,5 @@
 # Makefile for TLP
-# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 TLPVER := $(shell read _ver _dummy < ./VERSION; printf '%s' "$${_ver:-undef}")
 

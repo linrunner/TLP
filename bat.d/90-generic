@@ -2,7 +2,7 @@
 # 90-generic - Battery plugin catchall for laptops that either not provide
 # a kernel interface for battery care or TLP doesn't support it yet.
 #
-# Copyright (c) 2022 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat
