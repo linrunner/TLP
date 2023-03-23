@@ -179,7 +179,7 @@ set_cpu_perf_policy () {
         return 0
     fi
 
-    if check_intel_pstate && supports_intel_cpu_epp || check_amd_pstate && supports_amd_cpu_epp; then
+    if { check_intel_pstate && supports_intel_cpu_epp; } || { check_amd_pstate && supports_amd_cpu_epp; }; then
         # validate EPP setting
         case "$perf" in
             performance|balance_performance|default|balance_power|power) # OK --> continue
