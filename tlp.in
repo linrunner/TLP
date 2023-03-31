@@ -46,6 +46,14 @@ apply_common_settings () { # apply settings common to all modes
     return 0
 }
 
+apply_suspend_settings () { # apply settings before suspending
+
+    set_ahci_port_runtime_pm "2"
+    set_ahci_disk_runtime_pm "2"
+
+    return 0
+}
+
 show_usage () {
     echo "Usage: tlp start|true|bat|false|ac|usb|bayoff|chargeonce|discharge|setcharge|fullcharge|recalibrate|diskid" 1>&2
 }
@@ -300,8 +308,8 @@ case "$_cmd" in
                 # clear saved power state
                 clear_saved_power_state
 
-                # DISABLED: apply ac settings
                 if [ "$X_TLP_SHUTDOWN_ACMODE" = "1" ]; then
+                    # workaround (optional): apply ac settings
                     echo -n "Applying power save settings..."
                     apply_common_settings 0
                     poweroff_drivebay "$pwrmode" 0
@@ -412,14 +420,26 @@ case "$_cmd" in
         save_device_states "bluetooth wwan"
         suspend_drivebay "$pwrmode"
 
-        # DISABLED: apply ac settings
-        if [ "$X_TLP_SUSPEND_ACMODE" = "1" ]; then
-            if lock_tlp; then
-                apply_common_settings 0
-                save_runconf
-                unlock_tlp
-            fi
-        fi
+        case "$X_TLP_SUSPEND_ACMODE" in
+            1) # workaround (optional): apply ac settings
+                if lock_tlp; then
+                    apply_common_settings 0
+                    save_runconf
+                    unlock_tlp
+                fi
+                ;;
+
+            0) # workaround disabled: do nothing
+                ;;
+
+            *) # workaround (default): apply selected settings to avoid freezes on wakeup
+                if lock_tlp; then
+                    apply_suspend_settings
+                    save_runconf
+                    unlock_tlp
+                fi
+                ;;
+        esac
         ;;
 
     resume) # handle resume

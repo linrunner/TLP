@@ -479,17 +479,17 @@ set_sata_link_power () { # set ahci link power management
 }
 
 set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
-    # $1: 0=ac mode, 1=battery mode
+    # $1: 0=ac mode, 1=battery mode, 2=suspend mode
     # $2: target disk device (optional)
 
     local target="$2"
     local control dev timeout rc
 
-    if [ "$1" = "1" ]; then
-        control=${AHCI_RUNTIME_PM_ON_BAT:-}
-    else
-        control=${AHCI_RUNTIME_PM_ON_AC:-}
-    fi
+    case "$1" in
+        0) control=${AHCI_RUNTIME_PM_ON_AC:-} ;;
+        1) control=${AHCI_RUNTIME_PM_ON_BAT:-} ;;
+        2) control="on" ;;
+    esac
 
     # calc timeout in millisecs
     timeout="$AHCI_RUNTIME_PM_TIMEOUT"
@@ -497,7 +497,7 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
 
     # check values
     case "$control" in
-        on|auto)       ;;
+        on|auto) ;;
         *) control="" ;; # invalid input --> unconfigured
     esac
 
@@ -556,15 +556,21 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
 }
 
 set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
-    # $1: 0=ac mode, 1=battery mode
+    # $1: 0=ac mode, 1=battery mode, 2=suspend mode
 
     local control device
 
-    if [ "$1" = "1" ]; then
-        control=${AHCI_RUNTIME_PM_ON_BAT:-}
-    else
-        control=${AHCI_RUNTIME_PM_ON_AC:-}
-    fi
+    case "$1" in
+        0) control=${AHCI_RUNTIME_PM_ON_AC:-} ;;
+        1) control=${AHCI_RUNTIME_PM_ON_BAT:-} ;;
+        2) control="on" ;;
+    esac
+
+    # check values
+    case "$control" in
+        on|auto) ;;
+        *) control="" ;; # invalid input --> unconfigured
+    esac
 
     if [ -z "$control" ]; then
         # do nothing if unconfigured
