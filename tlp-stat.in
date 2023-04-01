@@ -439,13 +439,6 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
          printparm "%-54s = (not available)" "$CPU_BOOST_ALL_CTRL"
     fi
 
-    # --- show sched power save info
-    for pool in mc smp smt; do
-        sdev="${CPUD}/sched_${pool}_power_savings"
-        printparm "%-54s = ##%d##" "$sdev" _
-    done
-    echo
-
     # --- show Intel energy and performance bias hint (EPB)
     if check_intel_pstate; then
         if [ $epp -eq 0 ] || [ "$X_FORCE_EPB" = "1" ]; then

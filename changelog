@@ -32,6 +32,7 @@
         CPU_HWP_DYN_BOOST_ON_AC/BAT: support AMD Zen 2 or newer CPUs
         *EXPERIMENTAL* requires amd_pstate scaling driver in active mode
         provided by a yet unreleased kernel 6.x
+      - SCHED_POWERSAVE_ON_AC/BAT removed (unavailable since kernel 3.5)
       - tlp-stat -p:
         - Show amd_pstate operation mode, dynamic boost, performance
           and frequency attributes

@@ -79,7 +79,7 @@
 # Intel processor with intel_cpufreq driver (aka intel_pstate passive mode) or
 # AMD processor with amd_pstate driver in passive mode or
 # Intel, AMD and other processor brands with acpi-cpufreq driver:
-#   conservative, ondemand(*), userspace, powersave, performance, schedutil(*).
+#   conservative, ondemand(*), userspace, powersave, performance, util(*).
 # Use tlp-stat -p to show the active driver and available governors.
 # Important:
 #   Governors marked (*) above are power efficient for *almost all* workloads
@@ -157,13 +157,6 @@
 
 #CPU_HWP_DYN_BOOST_ON_AC=1
 #CPU_HWP_DYN_BOOST_ON_BAT=0
-
-# Minimize number of used CPU cores/hyper-threads under light load conditions:
-#   0=disable, 1=enable.
-# Default: 0 (AC), 1 (BAT)
-
-#SCHED_POWERSAVE_ON_AC=0
-#SCHED_POWERSAVE_ON_BAT=1
 
 # Kernel NMI Watchdog:
 #   0=disable (default, saves power), 1=enable (for kernel debugging only).

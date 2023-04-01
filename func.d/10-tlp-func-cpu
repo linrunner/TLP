@@ -412,37 +412,6 @@ set_cpu_dyn_boost () {
 
     return 0
 }
-set_sched_powersave () { # set multi-core/-thread powersave policy
-    # $1: 0=ac mode, 1=battery mode
-
-    local pwr pool sdev
-    local avail=0
-
-    if [ "$1" = "1" ]; then
-        pwr=${SCHED_POWERSAVE_ON_BAT:-}
-    else
-        pwr=${SCHED_POWERSAVE_ON_AC:-}
-    fi
-
-    if [ -z "$pwr" ]; then
-        # do nothing if unconfigured
-        echo_debug "pm" "set_sched_powersave($1).not_configured"
-        return 0
-    fi
-
-    for pool in mc smp smt; do
-        sdev="${CPUD}/sched_${pool}_power_savings"
-        if [ -f "$sdev" ]; then
-            write_sysf "$pwr" $sdev
-            echo_debug "pm" "set_sched_powersave($1): ${sdev##/*/} $pwr; rc=$?"
-            avail=1
-        fi
-    done
-
-    [ "$avail" = "1" ] || echo_debug "pm" "set_sched_powersave($1).not_available"
-
-    return 0
-}
 
 # --- Misc
 
