@@ -12,6 +12,9 @@
       - Toshiba/Dynabook laptops: stop threshold 80/100%
     Configuration:
     - Allow comments (#) after parameters (Issue #598)
+    Disks:
+    - SATA_LINKPWR_ON_AC/BAT: remove fallbacks for outdated kernels
+      before 4.15 from defaults (still available via explicit configuration)
     General:
     - Allow coexistence with power-profiles-daemon: do not apply
       PLATFORM_PROFILE_ON_AC/BAT, CPU_ENERGY_PERF_POLICY_ON_AC/BAT and
