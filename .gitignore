@@ -1,4 +1,5 @@
 *.geany
+.idea
 *.log
 PKGBUILD
 pkg
