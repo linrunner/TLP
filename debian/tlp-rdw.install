@@ -1,5 +1,5 @@
 usr/bin/tlp-rdw
 etc/NetworkManager/dispatcher.d/99tlp-rdw-nm
-usr/lib/udev/rules.d/85-tlp-rdw.rules
-usr/lib/udev/tlp-rdw-udev
+lib/udev/rules.d/85-tlp-rdw.rules
+lib/udev/tlp-rdw-udev
 usr/share/bash-completion/completions/tlp-rdw

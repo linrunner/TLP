@@ -1,11 +1,11 @@
 etc/tlp.conf
 etc/tlp.d
 etc/init.d/tlp
-usr/lib/elogind/system-sleep/49-tlp-sleep
-usr/lib/systemd/system/tlp.service
-usr/lib/systemd/system-sleep/tlp
-usr/lib/udev/rules.d/85-tlp.rules
-usr/lib/udev/tlp-usb-udev
+lib/elogind/system-sleep/49-tlp-sleep
+lib/systemd/system/tlp.service
+lib/systemd/system-sleep/tlp
+lib/udev/rules.d/85-tlp.rules
+lib/udev/tlp-usb-udev
 usr/bin/bluetooth
 usr/bin/nfc
 usr/bin/run-on-ac

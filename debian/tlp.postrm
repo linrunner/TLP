@@ -3,15 +3,10 @@ set -e
 
 #DEBHELPER#
 
-SLEEP="/lib/systemd/system-sleep/tlp"
-SLEEPUSR="/usr${SLEEP}"
 SERVICES2MASK="systemd-rfkill.service systemd-rfkill.socket"
 
 case "$1" in
     remove|purge)
-        # UsrMerge: remove backwards compatibility for systemd resume hook
-        [ -L $SLEEP ] && rm -f $SLEEP
-
         # Unmask conflicting systemd services
         for svc in $SERVICES2MASK; do
             deb-systemd-helper unmask $svc 2> /dev/null || true

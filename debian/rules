@@ -3,12 +3,6 @@
 # output every command that modifies files on the build system.
 #export DH_VERBOSE = 1
 
-# UsrMerge: install systemd/udev files below /usr/lib/
-export TLP_ELOD=/usr/lib/elogind/system-sleep
-export TLP_SDSL=/usr/lib/systemd/system-sleep
-export TLP_SYSD=/usr/lib/systemd/system
-export TLP_ULIB=/usr/lib/udev
-
 # Debian and Ubuntu provide x86_energy_perf_policy in different packages
 ifeq ($(shell dpkg-vendor --derives-from Ubuntu && echo yes),yes)
 	SUBSTVARS = -Vdist:Suggests="linux-tools-generic | linux-tools"
