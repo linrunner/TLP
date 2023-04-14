@@ -2,7 +2,16 @@ tlp (1.6.0~alpha.0-1) UNRELEASED; urgency=medium
 
   * Start 1.6 development cycle
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 25 May 2022 19:04:50 +0200
+  [ Thomas Koch ]
+  * tlp-rdw: relocate NetworkManager hook
+    - Install to /usr/lib/NetworkManager/dispatcher.d/99tlp-rdw-nm
+    - rm_conffile /etc/NetworkManager/dispatcher.d/99tlp-rdw-nm
+  * Add ZSH completion
+
+  [ Raphaël Halimi ]
+  * Revert UsrMerge changes for Bookworm (Closes: #1034233)
+
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 14 Apr 2023 19:21:21 +0200
 
 tlp (1.5.0-1) unstable; urgency=medium
 
