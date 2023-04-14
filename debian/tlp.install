@@ -20,6 +20,10 @@ usr/share/bash-completion/completions/tlp
 usr/share/bash-completion/completions/tlp-stat
 usr/share/bash-completion/completions/wifi
 usr/share/bash-completion/completions/wwan
+usr/share/zsh/vendor-completions/_tlp
+usr/share/zsh/vendor-completions/_tlp-radio-device
+usr/share/zsh/vendor-completions/_tlp-run-on
+usr/share/zsh/vendor-completions/_tlp-stat
 usr/share/tlp/defaults.conf
 usr/share/tlp/rename.conf
 usr/share/tlp/func.d/*

@@ -3,6 +3,9 @@
 # output every command that modifies files on the build system.
 #export DH_VERBOSE = 1
 
+# Override Makefile defaults
+export TLP_ZSHCPL=/usr/share/zsh/vendor-completions
+
 # Debian and Ubuntu provide x86_energy_perf_policy in different packages
 ifeq ($(shell dpkg-vendor --derives-from Ubuntu && echo yes),yes)
 	SUBSTVARS = -Vdist:Suggests="linux-tools-generic | linux-tools"
