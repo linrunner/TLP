@@ -7,6 +7,7 @@ tlp (1.6.0~alpha.0-1) UNRELEASED; urgency=medium
     - Install to /usr/lib/NetworkManager/dispatcher.d/99tlp-rdw-nm
     - rm_conffile /etc/NetworkManager/dispatcher.d/99tlp-rdw-nm
   * Add ZSH completion
+  * Remove Suggests: acpi-call-dkms
 
   [ Raphaël Halimi ]
   * Revert UsrMerge changes for Bookworm (Closes: #1034233)
