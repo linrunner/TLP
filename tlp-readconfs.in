@@ -27,6 +27,7 @@ use constant CONF_USR => "@TLP_CONFUSR@";
 use constant CONF_DIR => "@TLP_CONFDIR@";
 use constant CONF_DEF => "@TLP_CONFDEF@";
 use constant CONF_REN => "@TLP_CONFREN@";
+use constant CONF_DPR => "@TLP_CONFDPR@";
 use constant CONF_OLD => "@TLP_CONF@";
 
 # Exit codes
@@ -40,6 +41,7 @@ my %config_idx = ();  # hash: parameter name => index into the name-value array
 my %rename = ();      # hash: OLD_PARAMETER => NEW_PARAMETER
 my $renrex;           # compiled regex for renaming parameters
 my $do_rename = 0;    # enable renaming (when $renrex not empty)
+my %dprmsg = ();      # hash: PARAMETER => deprecated message
 
 my $notrace = 0;
 my $debug   = 0;
@@ -168,13 +170,17 @@ sub write_runconf {
 
     foreach ( @config_val ) {
         my ($name, $value, $source, $default) = @$_;
+        my $msg = "";
+        if ( defined $dprmsg{$name} ) {
+            $msg = " #! $dprmsg{$name}";
+        }
         if ( $runconf eq *STDOUT ) {
             # --cdiff: do not show user config lines matching the default
             if ( ! $cdiff || $value ne $default ) {
-                printf {$runconf} "%s: %s=\"%s\"\n", $source, $name, $value;
+                printf {$runconf} "%s: %s=\"%s\"%s\n", $source, $name, $value, $msg;
             }
         } else  {
-            printf {$runconf} "%s=\"%s\"\n", $name, $value;
+            printf {$runconf} "%s=\"%s\"%s\n", $name, $value, $msg;
         }
     }
     close ($runconf);
@@ -212,12 +218,39 @@ sub parse_renfile {
     return 0;
 }
 
+# Parse deprecated parameters and messages from file
+# $_[0]: parameters file
+# return: 0=ok/1=file non-existent
+sub parse_dprfile {
+    my $fname = $_[0];
+
+    open (my $df, "<", $fname) || return 1;
+
+    # accumulate deprecated params and mesgs
+    while ( my $line = <$df> ) {
+        chomp $line;
+        # select lines with format 'PARAMETER<whitespace># message'
+        if ( $line =~ /^(?<param_name>[A-Z_]+[0-9]*)\s+#\s+(?<param_msg>.*)$/ ) {
+            my $param_name = $+{param_name};
+            my $param_msg = $+{param_msg};
+            $dprmsg{$param_name} = $param_msg;
+        }
+    }
+    close ($df);
+
+    return 0;
+}
+
+
 # --- MAIN
 # parse arguments
 GetOptions ('outfile=s' => \$outfile, 'notrace' => \$notrace, 'cdiff' => \$cdiff);
 
 # read parameter renaming rules
 parse_renfile (CONF_REN);
+
+# read deprecated parameter messages
+parse_dprfile (CONF_DPR);
 
 # 1. read intrinsic defaults (no renaming)
 parse_configfile (CONF_DEF, 0) == 0 || exit EXIT_DEFCONF;
