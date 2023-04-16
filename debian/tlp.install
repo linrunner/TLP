@@ -26,6 +26,7 @@ usr/share/zsh/vendor-completions/_tlp-run-on
 usr/share/zsh/vendor-completions/_tlp-stat
 usr/share/tlp/defaults.conf
 usr/share/tlp/rename.conf
+usr/share/tlp/deprecated.conf
 usr/share/tlp/func.d/*
 usr/share/tlp/bat.d/*
 usr/share/tlp/tlp-func-base
