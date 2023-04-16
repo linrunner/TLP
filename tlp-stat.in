@@ -369,6 +369,9 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                 if [ -f "$cpuf/cpuinfo_max_freq" ]; then
                     printf "%-54s = %8d [kHz]\n" "$cpuf/cpuinfo_max_freq" "$(read_sysf "$cpuf/cpuinfo_max_freq")"
                 fi
+                if [ -f "$cpuf/bios_limit" ]; then
+                    printf "%-54s = %8d [kHz]\n" "$cpuf/bios_limit" "$(read_sysf "$cpuf/bios_limit")"
+                fi
 
                 if [ -f "$cpuf/amd_pstate_highest_perf" ]; then
                     printf "%-70s = %8d [%%]\n" "$cpuf/amd_pstate_highest_perf" "$(read_sysf "$cpuf/amd_pstate_highest_perf")"
