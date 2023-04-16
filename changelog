@@ -45,6 +45,8 @@
        - Support Thunderbolt docks to switch radio devices
 
   * Bugfixes
+    Processor:
+    - Set governor although not listed in scaling_available_governors
     Operation:
     - Deactivate AHCI_RUNTIME_PM before suspend to avoid resume freezes
       (Issue #587, #593, #606)
