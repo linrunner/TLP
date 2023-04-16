@@ -43,7 +43,7 @@ check_amd_pstate () {
 
 set_cpu_scaling_governor () {
     # set CPU scaling governor -- $1: 0=ac mode, 1=battery mode
-    local available_govs cfg cpu ec gov
+    local cfg cpu ec gov
 
     if [ "$1" = "1" ]; then
         gov=${CPU_SCALING_GOVERNOR_ON_BAT:-}
@@ -54,14 +54,6 @@ set_cpu_scaling_governor () {
     fi
 
     if [ -n "$gov" ]; then
-        # check if configured governor is available
-        available_govs="$(read_sysf "${CPUD}"/cpu0/cpufreq/scaling_available_governors)"
-        if [ -n "$available_govs" ] && ! wordinlist "$gov" "$available_govs"; then
-            echo_debug "pm" "set_cpu_scaling_governor($1).not_available: $gov; available=$available_govs"
-            echo_message "Error in configuration at ${cfg}=\"${gov}\": governor not available. Skipped."
-            return 1
-        fi
-
         # apply governor
         ec=0
         for cpu in "${CPUD}"/cpu*/cpufreq/scaling_governor; do
@@ -70,6 +62,12 @@ set_cpu_scaling_governor () {
                 ec=$((ec+1))
             fi
         done
+        if [ "$ec" -gt 0 ]; then
+            # kernel rejected the configured governor
+            echo_debug "pm" "set_cpu_scaling_governor($1).not_available: $gov; ec=$ec"
+            echo_message "Error in configuration at ${cfg}=\"${gov}\": governor not available."
+            return 1
+        fi
         echo_debug "pm" "set_cpu_scaling_governor($1): $gov; ec=$ec"
     else
         echo_debug "pm" "set_cpu_scaling_governor($1).not_configured"
