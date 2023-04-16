@@ -12,6 +12,8 @@
       - Toshiba/Dynabook laptops: stop threshold 80/100%
     Configuration:
     - Allow comments (#) after parameters (Issue #598)
+    - tlp-stat -c/--cdiff: append a notice to deprecated or removed
+      parameters
     Disks:
     - SATA_LINKPWR_ON_AC/BAT: remove fallbacks for outdated kernels
       before 4.15 from defaults (still available via explicit configuration)
