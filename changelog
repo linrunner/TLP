@@ -44,7 +44,12 @@
         - Show min/max operating frequency the processor can run at
           (cpuinfo_min/max_freq) and limit imposed by the BIOS (bios_limit)
     Radio Devices:
-       - Support Thunderbolt docks to switch radio devices
+    - Support Thunderbolt docks to switch radio devices
+    - DEVICES_TO_ENABLE/DISABLE_ON_SHUTDOWN: deprecated, feature will be
+      removed with the next release
+    USB:
+    - USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN: deprecated, feature will be
+      removed with the next release
 
   * Bugfixes
     Processor:
