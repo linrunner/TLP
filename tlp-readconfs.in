@@ -170,17 +170,18 @@ sub write_runconf {
 
     foreach ( @config_val ) {
         my ($name, $value, $source, $default) = @$_;
-        my $msg = "";
-        if ( defined $dprmsg{$name} ) {
-            $msg = " #! $dprmsg{$name}";
-        }
         if ( $runconf eq *STDOUT ) {
+            my $msg = "";
+            # stdout: check for deprecated message
+            if ( defined $dprmsg{$name} ) {
+                $msg = " #! $dprmsg{$name}";
+            }
             # --cdiff: do not show user config lines matching the default
             if ( ! $cdiff || $value ne $default ) {
                 printf {$runconf} "%s: %s=\"%s\"%s\n", $source, $name, $value, $msg;
             }
         } else  {
-            printf {$runconf} "%s=\"%s\"%s\n", $name, $value, $msg;
+            printf {$runconf} "%s=\"%s\"\n", $name, $value;
         }
     }
     close ($runconf);
