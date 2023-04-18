@@ -242,7 +242,6 @@ sub parse_dprfile {
     return 0;
 }
 
-
 # --- MAIN
 # parse arguments
 GetOptions ('outfile=s' => \$outfile, 'notrace' => \$notrace, 'cdiff' => \$cdiff);
