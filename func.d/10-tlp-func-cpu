@@ -109,8 +109,8 @@ set_cpu_scaling_min_max_freq () {
                 echo_debug "pm" "set_cpu_scaling_min_max_freq($1).max.write_error: $cpu $maxfreq; rc=$?"
                 ec=$((ec+1))
             fi
-            echo_debug "pm" "set_cpu_scaling_min_max_freq($1).max: $maxfreq; ec=$ec"
         done
+        echo_debug "pm" "set_cpu_scaling_min_max_freq($1).max: $maxfreq; ec=$ec"
     fi
 
     [ $conf -eq 1 ] || echo_debug "pm" "set_cpu_scaling_min_max_freq($1).not_configured"
