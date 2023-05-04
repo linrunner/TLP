@@ -117,7 +117,7 @@
 #   EPP and EPB are mutually exclusive: when EPP is available, Intel CPUs
 #   will not honor EPB. Only the matching feature will be applied by TLP.
 # * AMD Zen 2 or newer CPU
-#   EPP: amd_pstate driver in active mode as of kernel 6.3
+#   EPP: amd_pstate driver in active mode (amd_pstate_epp) as of kernel 6.3
 # Default: balance_performance (AC), balance_power (BAT)
 
 #CPU_ENERGY_PERF_POLICY_ON_AC=balance_performance
@@ -499,18 +499,20 @@
 # Charging starts when the charger is connected and the charge level
 # is below the start threshold. Charging stops when the charge level
 # is above the stop threshold.
-# Required hardware: Lenovo ThinkPads and select other laptop brands are driven
-# via specific plugins, the actual support status is shown by tlp-stat -b.
-# For more explanations and vendor specific details refer to
-#   https://linrunner.de/tlp/settings/battery.html
-# Notes:
+# Required hardware: Lenovo ThinkPads and select other laptop brands
+# are driven via specific plugins
+# - Active plugin and support status are shown by tlp-stat -b
+# - Vendor specific threshold levels are shown by tlp-stat -b, some
+#   laptops support only 1 (on)/ 0 (off) instead of a percentage level
+# - When your hardware supports a start *and* a stop threshold, you must
+#   specify both, otherwise TLP will refuse to apply the single threshold
+# - When your hardware supports only a stop threshold, set the start
+#   value to 0
 # - Older ThinkPads may require an external kernel module, refer to the
 #   output of tlp-stat -b
-# - Vendor specific threshold levels are shown by tlp-stat -b, some support
-#   only 1(on))/0(off) instead of a percentage level.
-# - If your hardware supports a start *and* a stop threshold, you must
-#   specify both, otherwise TLP will refuse to apply the single threshold
-# - If your hardware supports only a stop threshold, set the start value to 0
+# For further explanation and vendor specific details refer to
+# - https://linrunner.de/tlp/settings/battery.html
+# - https://linrunner.de/tlp/settings/bc-vendors.html
 
 # BAT0: Primary / Main / Internal battery
 # Note: also use for batteries BATC, BATT and CMB0
