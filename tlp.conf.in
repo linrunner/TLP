@@ -128,6 +128,10 @@
 # Values are stated as a percentage of the available performance.
 # Requires Intel Core i 2nd gen. or newer CPU with intel_pstate or
 # intel_cpufreq driver.
+# Notes:
+# - Min/max frequencies should always be specified for both AC *and* BAT
+#     e.g. not setting the AC values results in BAT values used when switching
+#     from battery to AC power
 # Default: <none>
 
 #CPU_MIN_PERF_ON_AC=0
