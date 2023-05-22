@@ -118,7 +118,9 @@ SHFILES = \
 	tlp-sleep \
 	tlp-sleep.elogind \
 	tlp-stat.in \
-	tlp-usb-udev.in
+	tlp-usb-udev.in \
+	unit-tests/test-func \
+	unit-tests/test-cpufreq.sh
 
 PLFILES = \
 	tlp-pcilist \

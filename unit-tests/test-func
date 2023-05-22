@@ -1,0 +1,136 @@
+#!/bin/sh
+# func-test - Unit Test Helper Functions
+#
+# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net> and others.
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+# ----------------------------------------------------------------------------
+# Constants
+
+# ----------------------------------------------------------------------------
+# Functions
+
+printf_msg () {
+    # print message to stderr and logfile
+    # $1: format string
+    # $2..$n: message string(s)
+    local fmt="$1"
+    shift
+    # shellcheck disable=SC2154,SC2059
+    printf "$fmt" "$@" | tee "${_logfile:-/dev/null}" 1>&2
+}
+
+test_root () {
+    # test root privilege -- rc: 0=root, 1=not root
+    [ "$(id -u)" = "0" ]
+}
+
+check_root () {
+    # show error message and quit when root privilege missing
+    if ! test_root; then
+        echo "Error: missing root privilege." 1>&2
+        exit 42
+    fi
+}
+
+cmd_exists () {
+    # test if command exists -- $1: command
+    command -v "$1" > /dev/null 2>&1
+}
+
+read_sysf () {
+    # read and print contents of a sysfile
+    # return 1 and print default if read fails
+    # $1: sysfile
+    # $2: default
+    # rc: 0=ok/1=error
+    if cat "$1" 2> /dev/null; then
+        return 0
+    else
+        printf "%s" "$2"
+        return 1
+    fi
+}
+
+write_sysf () { # write string to a sysfile
+    # $1: string
+    # $2: sysfile
+    # rc: 0=ok/1=error
+    { printf '%s\n' "$1" > "$2"; } 2> /dev/null
+}
+
+compare_sysf () {
+    # Compare a string to the contents of a sysfile
+    # expression
+    # $1: string
+    # $2: file
+
+    local cmp_str="$1"
+    local sys_str
+
+    if [ -f "$2" ] && sys_str=$(read_sysf "$2"); then
+        if [ "$sys_str" != "$cmp_str" ]; then
+            printf_msg "\n*** Deviation at %s: %s (act) != %s (exp)\n" "$2" "$sys_str" "$cmp_str"
+            return 1
+        fi
+    else
+        printf_msg "\n*** Deviation for %s: sysfile does not exist.\n" "$2"
+        return 2
+    fi
+
+    return 0
+}
+
+glob_compare_sysf () {
+    # Compare a string to the contents of sysfiles selected by a glob
+    # expression
+    # $1: string
+    # $2..$n: file, ...
+
+    local cmp_str="$1"
+    local file_pat="$*"
+    file_pat="${file_pat#* }"
+    local sys_str
+    local cnt=0
+
+    while shift && [ $# -gt 0 ]; do
+        if [ -f "$1" ] && sys_str=$(read_sysf "$1"); then
+            cnt=$((cnt + 1))
+            if [ "$sys_str" != "$cmp_str" ]; then
+                printf_msg "\n*** Deviation at %s: %s (act) != %s (exp)\n" "$1" "$sys_str" "$cmp_str"
+                return 1
+            fi
+        fi
+    done
+
+    if [ "$cnt" -eq 0 ]; then
+        printf_msg "\n*** Deviation for %s: no matching sysfile(s) exist(s).\n" "$file_pat"
+        return 2
+    fi
+
+    return 0
+}
+
+print_nth_arg () {
+    # Get n-th argument
+    # $1: n
+    # $2..$m: arguments
+    local n="$1"
+    [ "$1" -gt 0 ] || return
+
+    until [ "$n" -eq 0 ] || [ $# -eq 0 ]; do
+        shift
+        n=$((n - 1))
+    done
+    printf "%s" "$1"
+}
+
+on_ac () {
+    # Detect AC power
+    # rc: 0=AC/1=BAT
+    # Note: compared to get_sys_power_supply() this is primitive. but it will do.
+    upower -i /org/freedesktop/UPower/devices/line_power_AC 2> /dev/null | grep -qE 'online:\s+yes'
+}
+
+# ----------------------------------------------------------------------------
+# Variables
