@@ -15,7 +15,6 @@ done
 
 readonly TLPUSB=@TLP_TLIB@/tlp-usblist
 readonly TLPPCI=@TLP_TLIB@/tlp-pcilist
-readonly TLPRDW=tlp-rdw
 
 readonly JOURNALCTL=journalctl
 
@@ -282,7 +281,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     fi
 
     # --- show RDW status
-    if cmd_exists "$TLPRDW"; then
+    if check_rdw_installed; then
         if ! check_tlp_enabled; then
             printf "RDW state      = disabled (TLP disabled)\n"
         elif check_run_flag "$RDW_KILL"; then

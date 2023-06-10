@@ -31,6 +31,8 @@ readonly SYSTEMCTL=systemctl
 readonly TPACPIBAT=@TPACPIBAT@
 readonly UDEVADM=udevadm
 
+readonly TLPRDW=tlp-rdw
+
 readonly LOCKFILE=$RUNDIR/lock
 readonly LOCKTIMEOUT=2
 
@@ -259,6 +261,10 @@ check_tlp_enabled () {
         [ "${1:-0}" = "1" ] && echo "Error: TLP power save is disabled. Set TLP_ENABLE=1 in ${CONF_USR}." 1>&2
         return 1
     fi
+}
+
+check_rdw_installed () {
+    cmd_exists "$TLPRDW"
 }
 
 check_systemd () {
@@ -1002,4 +1008,3 @@ check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=
         return 0
     fi
 }
-
