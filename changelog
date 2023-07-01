@@ -4,8 +4,10 @@
 
   * Features
     Battery:
-      - LG Gram laptops: use standard sysfs attribute
-        'charge_control_end_threshold' provided by kernel 5.18 and newer
+      - LG Gram laptops:
+        - Use standard sysfs attribute 'charge_control_end_threshold'
+          provided by kernel 5.18 and newer
+        - Restore threshold after hibernate
       - System76 laptops with open source EC firmware:
         start and stop threshold
       - ThinkPads: model detection adapted for Libreboot (Issue #679)

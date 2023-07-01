@@ -449,7 +449,7 @@ case "$_cmd" in
             compare_and_save_power_state "$pwrmode"
             apply_common_settings "$pwrmode"
             resume_drivebay "$pwrmode"
-            set_charge_thresholds "asus huawei"
+            set_charge_thresholds "asus huawei lg"
             save_runconf
             unlock_tlp
         fi
