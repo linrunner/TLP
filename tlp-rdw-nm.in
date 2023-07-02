@@ -28,7 +28,7 @@ check_switch_lock() { # switch listed radio devices
         if [ -n "$type" ] && [ "$type" != "$1" ]; then
             # device type is valid and not the originating one
             # --> do switch with state change lock
-            device_switch "$type" "$3" "${RDW_NM_LOCK}_${type}" "$RDW_LOCKTIME"
+            device_switch "$type" "$3" "${RDW_NM_LOCK}_${type}" "$RDW_NM_LOCKTIME"
         fi
     done
 
@@ -51,6 +51,13 @@ get_iface_type () { # get saved interface type -- $1: interface
     return $rc
 }
 
+echo_env () {
+    # record environment
+    if [ "$X_USB_ENV_TRACE" = "1" ]; then
+        echo_debug "nm" "tlp_rdw_nm.env: $(printenv)"
+    fi
+}
+
 # --- MAIN
 # shellcheck disable=SC2034
 _bgtask=1
@@ -58,141 +65,159 @@ _bgtask=1
 # read configuration: quit on error, trace allowed
 read_config 1 0
 
+# quit if TLP disabled
 check_tlp_enabled || do_exit 0
+
+# quit if RDW disabled
 check_run_flag "$RDW_KILL" && do_exit 0
 add_sbin2path
 
-# Get args
+# get args
 iface="$1"
 action="$2"
 itype=""
 
-# Quit for invalid interfaces
-# shellcheck disable=SC2015
-[ -n "$iface" ] && [ "$iface" != "none" ] || do_exit 0
-
-# Quit for actions other than "up" and "down"
-[ "$action" = "up" ] || [ "$action" = "down" ] || do_exit 0
-
-#  Quit for virtual interfaces (up action)
-if [ "$action" = "up" ] && readlink "$NETD/$iface" | grep -q '/virtual/'; then
-    # save type for down action where $NETD/$iface won't be there anymore
-    save_iface_type "$iface" virtual
-    [ "$X_NET_VIRTUAL_TRACE" = 1 ] && \
-        echo_debug "nm" "+++ rdw_nm($iface).up.ignore_virtual"
-    do_exit 0
-fi
-
-# Get saved interface type (down action)
-if [ "$action" = "down" ]; then
-    get_iface_type "$iface"
-
-    # quit for virtual interfaces
-    if [ "$itype" = "virtual" ]; then
-        [ "$X_NET_VIRTUAL_TRACE" = 1 ] && \
-            echo_debug "nm" "+++ rdw_nm($iface).down.ignore_virtual"
-        do_exit 0
-    fi
-fi
-
-echo_debug "nm" "+++ rdw_nm($iface).$action"
-# shellcheck disable=SC2154
-if [ -n "$_addpath" ]; then
-    # shellcheck disable=SC2154
-    echo_debug "path" "PATH=${_oldpath}[${_addpath}]"
-else
-    # shellcheck disable=SC2154
-    echo_debug "path" "PATH=${_oldpath}"
-fi
-
-# Determine interface type
-if [ -n "$itype" ]; then
-    # saved type available (down action)
-    echo_debug "nm" "rdw_nm($iface).$action: type=$itype [saved]"
-
-elif cmd_exists "$NMCLI"; then
-    # no saved type but nmcli is available
-    # --> check if nmcli dev output matches interface
-    itype="$($NMCLI dev | awk '$1 ~ /^'"$iface"'$/ { print $2; }')"
-
-    if [ -z "$itype" ]; then
-        # iface is not found in nmcli dev output: many WWAN devices have
-        # different devices for control and the actual network connection
-        # --> check if interface matches a WWAN device
-        get_wwan_ifaces
-        # shellcheck disable=SC2154
-        if wordinlist "$iface" "$_wanifaces"; then
-            itype="wwan"
-        else
-            # fallback:
-            # if interface type detection with nmcli failed, then try to
-            # deduct it using interface name: it can happen if e.g.
-            # usb network card is unplugged
-            case "$iface" in
-                en* | eth*)
-                    itype="ethernet"
-                    ;;
-
-                wl*)
-                    itype="wifi"
-                    ;;
-
-                ww*)
-                    itype="wwan"
-                    ;;
-
-                *)
-                    itype="unknown"
-                    ;;
-            esac
+case "$action" in
+    up|down) # interface up/down
+        # quit for invalid interfaces
+        if [ -z "$iface" ] || [ "$iface" = "none" ]; then
+            echo_debug "nm" "tlp_rdw_nm($iface).${action}.no_interface"
+            echo_env
+            do_exit 0
         fi
-    fi
 
-    # save interface type (up action)
-    [ "$action" = "up" ] && save_iface_type "$iface" "$itype"
+        #  quit for virtual interfaces (up action)
+        if [ "$action" = "up" ] && readlink "$NETD/${iface}" | grep -q '/virtual/'; then
+            # save type for down action where $NETD/$iface won't be there anymore
+            save_iface_type "$iface" virtual
+            echo_debug "nm" "tlp_rdw_nm($iface).${action}.ignore_virtual"
+            echo_env
+            do_exit 0
+        fi
 
-    echo_debug "nm" "rdw_nm($iface).$action: type=$itype [nmcli]"
+        # get saved interface type (down action)
+        if [ "$action" = "down" ]; then
+            get_iface_type "$iface"
 
-else
-    # nmcli is not available
-    itype="unknown"
-    echo_debug "nm" "rdw_nm($iface)$action: type=$itype [none]"
-fi
+            # quit for virtual interfaces
+            if [ "$itype" = "virtual" ]; then
+                echo_debug "nm" "tlp_rdw_nm($iface).${action}.ignore_virtual"
+                do_exit 0
+            fi
+        fi
 
-case $action in
-    up) # interface up, disable configured interfaces
+        echo_debug "nm" "+++ tlp_rdw_nm($iface).$action"
+        echo_env
+        # shellcheck disable=SC2154
+        if [ -n "$_addpath" ]; then
+            # shellcheck disable=SC2154
+            echo_debug "path" "PATH=${_oldpath}[${_addpath}]"
+        else
+            # shellcheck disable=SC2154
+            echo_debug "path" "PATH=${_oldpath}"
+        fi
 
-        case $itype in
-            *ethernet)
-                check_switch_lock LAN "$DEVICES_TO_DISABLE_ON_LAN_CONNECT" off
-                ;;
+        # determine interface type
+        if [ -n "$itype" ]; then
+            # saved type available (down action)
+            echo_debug "nm" "tlp_rdw_nm($iface).${action}: type=$itype [saved]"
 
-            *wireless|wifi)
-                check_switch_lock wifi "$DEVICES_TO_DISABLE_ON_WIFI_CONNECT" off
-                ;;
+        elif cmd_exists "$NMCLI"; then
+            # no saved type but nmcli is available
+            # --> check if nmcli dev output matches interface
+            itype="$($NMCLI dev | awk '$1 ~ /^'"$iface"'$/ { print $2; }')"
 
-            gsm|wwan)
-                check_switch_lock wwan "$DEVICES_TO_DISABLE_ON_WWAN_CONNECT" off
-                ;;
+            if [ -z "$itype" ]; then
+                # iface is not found in nmcli dev output: many WWAN devices have
+                # different devices for control and the actual network connection
+                # --> check if interface matches a WWAN device
+                get_wwan_ifaces
+                # shellcheck disable=SC2154
+                if wordinlist "$iface" "$_wanifaces"; then
+                    itype="wwan"
+                else
+                    # fallback:
+                    # if interface type detection with nmcli failed, then try to
+                    # deduct it using interface name: it can happen if e.g.
+                    # usb network card is unplugged
+                    case "$iface" in
+                        en* | eth*)
+                            itype="ethernet"
+                            ;;
+
+                        wl*)
+                            itype="wifi"
+                            ;;
+
+                        ww*)
+                            itype="wwan"
+                            ;;
+
+                        *)
+                            itype="unknown"
+                            ;;
+                    esac
+                fi
+            fi
+
+            # save interface type (up action)
+            [ "$action" = "up" ] && save_iface_type "$iface" "$itype"
+
+            echo_debug "nm" "tlp_rdw_nm($iface).${action}: type=$itype [nmcli]"
+
+        else
+            # nmcli is not available
+            itype="unknown"
+            echo_debug "nm" "tlp_rdw_nm($iface).${action}: type=$itype [none]"
+        fi
+
+        case "$action" in
+            up) # interface up, disable configured interfaces
+
+                case $itype in
+                    *ethernet)
+                        check_switch_lock LAN "$DEVICES_TO_DISABLE_ON_LAN_CONNECT" off
+                        ;;
+
+                    *wireless|wifi)
+                        check_switch_lock wifi "$DEVICES_TO_DISABLE_ON_WIFI_CONNECT" off
+                        ;;
+
+                    gsm|wwan)
+                        check_switch_lock wwan "$DEVICES_TO_DISABLE_ON_WWAN_CONNECT" off
+                        ;;
+                esac
+                ;; # up
+
+            down) # interface down, enable configured interfaces
+                case $itype in
+                    *ethernet)
+                        check_switch_lock LAN "$DEVICES_TO_ENABLE_ON_LAN_DISCONNECT" on
+                        ;;
+
+                    *wireless|wifi)
+                        check_switch_lock wifi "$DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT" on
+                        ;;
+
+                    gsm|wwan)
+                        check_switch_lock wwan "$DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT" on
+                        ;;
+                esac
+                ;; # down
+
         esac
-        ;; # up
+        ;; # up/down
 
-    down) # interface down, enable configured interfaces
-        case $itype in
-            *ethernet)
-                check_switch_lock LAN "$DEVICES_TO_ENABLE_ON_LAN_DISCONNECT" on
-                ;;
+    connectivity-change)
+        # connectivity change: just record
+        echo_debug "nm" "+++ tlp_rdw_nm($iface).${action}: CONNECTIVITY_STATE=${CONNECTIVITY_STATE}"
+        echo_env
+        ;;
 
-            *wireless|wifi)
-                check_switch_lock wifi "$DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT" on
-                ;;
+    *)
+        # other calls: do nothing
+        ;;
 
-            gsm|wwan)
-                check_switch_lock wwan "$DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT" on
-                ;;
-        esac
-        ;; # down
-
-esac
+esac # action
 
 do_exit 0

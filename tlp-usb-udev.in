@@ -22,7 +22,6 @@ _bgtask=1
 read_config 1 0
 
 # quit if TLP disabled
-# shellcheck disable=SC2015
 check_tlp_enabled || do_exit 0
 
 if [ "$X_USB_ENV_TRACE" = "1" ]; then

@@ -63,36 +63,36 @@ case $action in
     dock) # laptop was docked
 
         # lock for 2 seconds in case dock has multiple devices
-        set_timed_lock "$RDW_DOCK_LOCK" "$RDW_LOCKTIME"
+        set_timed_lock "$RDW_DOCK_LOCK" "$RDW_NM_LOCKTIME"
 
         # enable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_ENABLE_ON_DOCK; do
             [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
-                && device_switch "$dev" on "${RDW_NM_LOCK}_${dev}" "$RDW_LOCKTIME"
+                && device_switch "$dev" on "${RDW_NM_LOCK}_${dev}" "$RDW_NM_LOCKTIME"
         done
 
         # disable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_DISABLE_ON_DOCK; do
             [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
-                && device_switch "$dev" off "${RDW_NM_LOCK}_${dev}" "$RDW_LOCKTIME"
+                && device_switch "$dev" off "${RDW_NM_LOCK}_${dev}" "$RDW_NM_LOCKTIME"
         done
         ;;
 
     undock) # laptop was undocked
 
         # lock for 2 seconds in case dock has multiple devices
-        set_timed_lock "$RDW_DOCK_LOCK" "$RDW_LOCKTIME"
+        set_timed_lock "$RDW_DOCK_LOCK" "$RDW_NM_LOCKTIME"
 
         # enable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_ENABLE_ON_UNDOCK; do
             [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
-                && device_switch "$dev" on "${RDW_NM_LOCK}_${dev}" "$RDW_LOCKTIME"
+                && device_switch "$dev" on "${RDW_NM_LOCK}_${dev}" "$RDW_NM_LOCKTIME"
         done
 
         # disable configured radios (obey rdw nm locks too)
         for dev in $DEVICES_TO_DISABLE_ON_UNDOCK; do
             [ -n "$dev" ] && ! check_timed_lock "${RDW_NM_LOCK}_${dev}" \
-                && device_switch "$dev" off "${RDW_NM_LOCK}_${dev}" "$RDW_LOCKTIME"
+                && device_switch "$dev" off "${RDW_NM_LOCK}_${dev}" "$RDW_NM_LOCKTIME"
         done
         ;;
 
