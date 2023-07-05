@@ -208,12 +208,6 @@ case "$action" in
         esac
         ;; # up/down
 
-    connectivity-change)
-        # connectivity change: just record
-        echo_debug "nm" "+++ tlp_rdw_nm($iface).${action}: CONNECTIVITY_STATE=${CONNECTIVITY_STATE}"
-        echo_env
-        ;;
-
     *)
         # other calls: do nothing
         ;;
