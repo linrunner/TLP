@@ -35,10 +35,14 @@
       - RUNTIME_PM_ENABLE/DISABLE: apply even when RUNTIME_PM_ON_AC/BAT
         is disabled (Issue #614)
     Processor:
-      - CPU_ENERGY_PERF_POLICY_ON_AC/BAT,
-        CPU_HWP_DYN_BOOST_ON_AC/BAT: support AMD Zen 2 or newer CPUs
-        *EXPERIMENTAL* requires amd_pstate scaling driver in active mode
-        provided by a yet unreleased kernel 6.x
+      - CPU_DRIVER_OPMODE_ON_AC/BAT: select CPU scaling driver operating mode
+        (active, guided, passive); requires intel_pstate or amd_pstate driver
+      - CPU_ENERGY_PERF_POLICY_ON_AC/BAT: support AMD Zen 2 or newer CPUs;
+        requires amd_pstate scaling driver in active mode ('amd-pstate-epp')
+        and kernel 6.3
+      - CPU_HWP_DYN_BOOST_ON_AC/BAT: *EXPERIMENTAL* requires amd_pstate
+        scaling driver in active mode ('amd-pstate-epp') and a yet
+        unreleased kernel 6.x
       - SCHED_POWERSAVE_ON_AC/BAT removed (unavailable since kernel 3.5)
       - tlp-stat -p:
         - Show amd_pstate operation mode, dynamic boost, performance

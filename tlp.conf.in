@@ -75,14 +75,20 @@
 #MAX_LOST_WORK_SECS_ON_AC=15
 #MAX_LOST_WORK_SECS_ON_BAT=60
 
+# Select a CPU scaling driver operating mode:
+#   active, guided, passive.
+# Default: <none>
+#CPU_DRIVER_OPMODE_ON_AC=active
+#CPU_DRIVER_OPMODE_ON_BAT=active
+
 # Select a CPU frequency scaling governor.
 # Intel processor with intel_pstate driver or
-# AMD processor with amd_pstate driver in active mode:
+# AMD processor with amd_pstate driver in active mode ('amd-pstate-epp'):
 #   performance, powersave(*).
-# Intel processor with intel_cpufreq driver (aka intel_pstate passive mode) or
-# AMD processor with amd_pstate driver in passive mode or
+# Intel processor with intel_pstate driver in passive mode ('intel_cpufreq') or
+# AMD processor with amd_pstate driver in passive or guided mode ('amd-pstate') or
 # Intel, AMD and other processor brands with acpi-cpufreq driver:
-#   conservative, ondemand(*), userspace, powersave, performance, util(*).
+#   conservative, ondemand(*), userspace, powersave, performance, schedutil(*).
 # Use tlp-stat -p to show the active driver and available governors.
 # Important:
 #   Governors marked (*) above are power efficient for *almost all* workloads
