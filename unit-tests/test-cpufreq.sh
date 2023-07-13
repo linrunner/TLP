@@ -34,7 +34,7 @@ readonly FWACPID="/sys/firmware/acpi"
 # --- Functions
 
 check_cpu_driver_opmode () {
-    # apply cpu driver operating mode
+    # apply cpu driver operation mode
 
     local opm opm_save opm_seq opm_cur
     local psfx psfsq sc=0

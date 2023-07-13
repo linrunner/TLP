@@ -42,7 +42,7 @@ check_amd_pstate () {
 }
 
 set_cpu_driver_opmode () {
-    # set CPU driver operating mode -- $1: 0=ac mode, 1=battery mode
+    # set CPU driver operation mode -- $1: 0=ac mode, 1=battery mode
     local cfg opmode
 
     if [ "$1" = "1" ]; then

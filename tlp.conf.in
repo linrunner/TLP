@@ -75,19 +75,22 @@
 #MAX_LOST_WORK_SECS_ON_AC=15
 #MAX_LOST_WORK_SECS_ON_BAT=60
 
-# Select a CPU scaling driver operating mode:
-#   active, guided, passive.
+# Select a CPU scaling driver operation mode.
+# Intel CPU with intel_pstate driver:
+#   active, passive.
+# AMD Zen 2 or newer CPU with amd_pstate_driver as of kernel 6.3/6.4(*):
+#   active, passive, guided(*).
 # Default: <none>
 #CPU_DRIVER_OPMODE_ON_AC=active
 #CPU_DRIVER_OPMODE_ON_BAT=active
 
 # Select a CPU frequency scaling governor.
-# Intel processor with intel_pstate driver or
-# AMD processor with amd_pstate driver in active mode ('amd-pstate-epp'):
+# Intel CPU with intel_pstate driver or
+# AMD CPU with amd_pstate driver in active mode ('amd-pstate-epp'):
 #   performance, powersave(*).
-# Intel processor with intel_pstate driver in passive mode ('intel_cpufreq') or
-# AMD processor with amd_pstate driver in passive or guided mode ('amd-pstate') or
-# Intel, AMD and other processor brands with acpi-cpufreq driver:
+# Intel CPU with intel_pstate driver in passive mode ('intel_cpufreq') or
+# AMD CPU with amd_pstate driver in passive or guided mode ('amd-pstate') or
+# Intel, AMD and other CPU brands with acpi-cpufreq driver:
 #   conservative, ondemand(*), userspace, powersave, performance, schedutil(*).
 # Use tlp-stat -p to show the active driver and available governors.
 # Important:
@@ -120,13 +123,13 @@
 # Requires:
 # * Intel CPU
 #   EPP: Intel Core i 6th gen. or newer CPU with intel_pstate driver
-#   EPB: Intel Core i 2nd gen. or newer CPU with intel_pstate or intel_cpufreq
-#     driver as of kernel 5.2; alternatively modules msr and
+#   EPB: Intel Core i 2nd gen. or newer CPU with intel_pstate driver
+#     as of kernel 5.2; alternatively module msr and
 #     x86_energy_perf_policy from linux-tools
 #   EPP and EPB are mutually exclusive: when EPP is available, Intel CPUs
 #   will not honor EPB. Only the matching feature will be applied by TLP.
 # * AMD Zen 2 or newer CPU
-#   EPP: amd_pstate driver in active mode (amd_pstate_epp) as of kernel 6.3
+#   EPP: amd_pstate driver in active mode ('amd-pstate-epp') as of kernel 6.3
 # Default: balance_performance (AC), balance_power (BAT)
 
 #CPU_ENERGY_PERF_POLICY_ON_AC=balance_performance
@@ -135,8 +138,7 @@
 # Set Intel CPU P-state performance: 0..100 (%).
 # Limit the max/min P-state to control the power dissipation of the CPU.
 # Values are stated as a percentage of the available performance.
-# Requires Intel Core i 2nd gen. or newer CPU with intel_pstate or
-# intel_cpufreq driver.
+# Requires Intel Core i 2nd gen. or newer CPU with intel_pstate driver.
 # Default: <none>
 
 #CPU_MIN_PERF_ON_AC=0
@@ -160,8 +162,8 @@
 # whenever a task previously waiting on I/O is selected to run.
 # Requires:
 # * Intel Core i  6th gen. or newer CPU: intel_pstate driver in active mode
-# * AMD Zen 2 or newer CPU: amd_pstate driver in active mode provided by
-#     a yet unreleased kernel 6.x
+# * AMD Zen 2 or newer CPU: amd_pstate driver in active mode ('amd-pstate-epp')
+#   provided by a yet unreleased kernel 6.x
 # Default: <none>
 
 #CPU_HWP_DYN_BOOST_ON_AC=1
