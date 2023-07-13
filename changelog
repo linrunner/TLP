@@ -36,15 +36,15 @@
         is disabled (Issue #614)
     Processor:
       - CPU_DRIVER_OPMODE_ON_AC/BAT: set CPU scaling driver operation mode
-        (active, guided, passive); amd_pstate/intel_pstate driver required
+        (active, guided, passive); amd-pstate/intel_pstate driver required
       - CPU_ENERGY_PERF_POLICY_ON_AC/BAT: support AMD Zen 2 or newer CPUs;
-        kernel 6.3 with amd_pstate driver in active mode required
+        kernel 6.3 with amd-pstate driver in active mode required
       - CPU_HWP_DYN_BOOST_ON_AC/BAT: *EXPERIMENTAL* support AMD Zen 2 or
-        newer CPUs; yet unreleased kernel 6.x and amd_pstate driver
+        newer CPUs; yet unreleased kernel 6.x and amd-pstate driver
         in active mode required
       - SCHED_POWERSAVE_ON_AC/BAT removed (unavailable since kernel 3.5)
       - tlp-stat -p:
-        - Show amd_pstate operation mode, dynamic boost, performance
+        - Show amd-pstate operation mode, dynamic boost, performance
           and frequency attributes
         - Show min/max operating frequency the processor can run at
           (cpuinfo_min/max_freq) and limit imposed by the BIOS (bios_limit)

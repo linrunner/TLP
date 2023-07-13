@@ -78,7 +78,7 @@
 # Select a CPU scaling driver operation mode.
 # Intel CPU with intel_pstate driver:
 #   active, passive.
-# AMD Zen 2 or newer CPU with amd_pstate_driver as of kernel 6.3/6.4(*):
+# AMD Zen 2 or newer CPU with amd-pstate_driver as of kernel 6.3/6.4(*):
 #   active, passive, guided(*).
 # Default: <none>
 #CPU_DRIVER_OPMODE_ON_AC=active
@@ -86,10 +86,10 @@
 
 # Select a CPU frequency scaling governor.
 # Intel CPU with intel_pstate driver or
-# AMD CPU with amd_pstate driver in active mode ('amd-pstate-epp'):
+# AMD CPU with amd-pstate driver in active mode ('amd-pstate-epp'):
 #   performance, powersave(*).
 # Intel CPU with intel_pstate driver in passive mode ('intel_cpufreq') or
-# AMD CPU with amd_pstate driver in passive or guided mode ('amd-pstate') or
+# AMD CPU with amd-pstate driver in passive or guided mode ('amd-pstate') or
 # Intel, AMD and other CPU brands with acpi-cpufreq driver:
 #   conservative, ondemand(*), userspace, powersave, performance, schedutil(*).
 # Use tlp-stat -p to show the active driver and available governors.
@@ -129,7 +129,7 @@
 #   EPP and EPB are mutually exclusive: when EPP is available, Intel CPUs
 #   will not honor EPB. Only the matching feature will be applied by TLP.
 # * AMD Zen 2 or newer CPU
-#   EPP: amd_pstate driver in active mode ('amd-pstate-epp') as of kernel 6.3
+#   EPP: amd-pstate driver in active mode ('amd-pstate-epp') as of kernel 6.3
 # Default: balance_performance (AC), balance_power (BAT)
 
 #CPU_ENERGY_PERF_POLICY_ON_AC=balance_performance
@@ -162,7 +162,7 @@
 # whenever a task previously waiting on I/O is selected to run.
 # Requires:
 # * Intel Core i  6th gen. or newer CPU: intel_pstate driver in active mode
-# * AMD Zen 2 or newer CPU: amd_pstate driver in active mode ('amd-pstate-epp')
+# * AMD Zen 2 or newer CPU: amd-pstate driver in active mode ('amd-pstate-epp')
 #   provided by a yet unreleased kernel 6.x
 # Default: <none>
 
