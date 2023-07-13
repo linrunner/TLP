@@ -50,6 +50,7 @@ apply_suspend_settings () { # apply settings before suspending
 
     set_ahci_port_runtime_pm "2"
     set_ahci_disk_runtime_pm "2"
+    set_pcie_aspm "2"
 
     return 0
 }
