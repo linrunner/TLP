@@ -13,8 +13,8 @@
 # Supported CPU scaling drivers:
 # * acpi-cpufreq
 # * apple-cpufreq
-# * amd_pstate
-# * amd_pstate_epp
+# * amd-pstate
+# * amd-pstate-epp
 # * intel_pstate
 # * intel_cpufreq
 #
@@ -28,9 +28,174 @@ readonly TLP="tlp"
 readonly CPUD="/sys/devices/system/cpu"
 readonly CPU0="${CPUD}/cpu0"
 readonly INTELPSD="/sys/devices/system/cpu/intel_pstate"
+readonly AMDPSD="/sys/devices/system/cpu/amd_pstate"
 readonly FWACPID="/sys/firmware/acpi"
 
 # --- Functions
+
+check_cpu_driver_opmode () {
+    # apply cpu driver operating mode
+
+    local opm opm_save opm_seq opm_cur
+    local psfx psfsq sc=0
+    local rc=0 errcnt=0
+
+    printf_msg "check_cpu_driver_opmode {{{\n"
+
+    # determine test sequence for parameter suffix _AC/BAT, active power source goes first
+    if on_ac; then
+        psfsq="AC BAT"
+    else
+        psfsq="BAT AC"
+    fi
+
+    for psfx in $psfsq; do
+        sc=$((sc + 1))
+
+        case "$_cpu_driver" in
+            amd?pstate?epp|amd?pstate)
+                if [ $sc -eq 1 ]; then
+                    # power source matches parameter suffix
+
+                    # save initial policy
+                    opm_save="$(read_sysf "${AMDPSD}/status")"
+                    printf_msg " initial: %s\n" "$opm_save"
+
+                    printf_msg " %s(active):" "$psfx"
+
+                    # iterate policies supported by the driver, return to initial policy
+                    case "$opm_save" in
+                        active) opm_seq="guided passive active" ;;
+                        guided) opm_seq="passive active guided" ;;
+                        passive) opm_seq="active guided passive" ;;
+                    esac
+
+                    for opm in $opm_seq; do
+                        case "$psfx" in
+                            AC)  ${TLP} start -- CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${TLP} start -- CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
+                        esac
+
+                        # expect change
+                        compare_sysf "$opm" "${AMDPSD}/status"
+                        rc=$?
+                        if [ "$rc" -eq 0 ]; then
+                            printf_msg " %s=ok" "$opm"
+                        else
+                            printf_msg " %s=%s" "$opm" "$rc"
+                            errcnt=$((errcnt + 1))
+                        fi
+                    done # opm
+                else
+                    # power source does not match parameter suffix
+                    printf_msg "\n %s(inactive):" "$psfx"
+
+                    # save current policy
+                    opm_cur="$(read_sysf "${AMDPSD}/status")"
+
+                    # try different policy
+                    case "$opm_cur" in
+                        active)  opm="guided" ;;
+                        guided)  opm="passive" ;;
+                        passive) opm="active" ;;
+                    esac
+                    case "$psfx" in
+                        AC)  ${TLP} start -- CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${TLP} start -- CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
+                    esac
+
+                    # do not expect change
+                    compare_sysf "$opm_cur" "${AMDPSD}/status"
+                    rc=$?
+                    if [ "$rc" -eq 0 ]; then
+                        printf_msg " %s=ignored(ok)" "$opm"
+                    else
+                        printf_msg " %s=err(%s)" "$opm" "$rc"
+                        errcnt=$((errcnt + 1))
+                    fi
+
+                    # print resulting policy
+                    printf_msg "\n result: %s\n" "$(read_sysf "${AMDPSD}/status")"
+                fi
+                ;; # amd_pstate
+
+            intel_pstate)
+                if [ $sc -eq 1 ]; then
+                    # power source matches parameter suffix
+
+                    # save initial policy
+                    opm_save="$(read_sysf "${INTELPSD}/status")"
+                    printf_msg " initial: %s\n" "$opm_save"
+
+                    printf_msg " %s(active):" "$psfx"
+
+                    # iterate policies supported by the driver, return to initial policy
+                    case "$opm_save" in
+                        active) opm_seq="passive active" ;;
+                        passive) opm_seq="active passive" ;;
+                    esac
+
+                    for opm in $opm_seq; do
+                        case "$psfx" in
+                            AC)  ${TLP} start -- CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${TLP} start -- CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
+                        esac
+
+                        # expect change
+                        compare_sysf "$opm" "${INTELPSD}/status"
+                        rc=$?
+                        if [ "$rc" -eq 0 ]; then
+                            printf_msg " %s=ok" "$opm"
+                        else
+                            printf_msg " %s=%s" "$opm" "$rc"
+                            errcnt=$((errcnt + 1))
+                        fi
+                    done # opm
+                else
+                    # power source does not match parameter suffix
+                    printf_msg "\n %s(inactive):" "$psfx"
+
+                    # save current policy
+                    opm_cur="$(read_sysf "${INTELPSD}/status")"
+
+                    # try different policy
+                    case "$opm_cur" in
+                        active)  opm="passive" ;;
+                        passive) opm="active" ;;
+                    esac
+                    case "$psfx" in
+                        AC)  ${TLP} start -- CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${TLP} start -- CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
+                    esac
+
+                    # do not expect change
+                    compare_sysf "$opm_cur" "${INTELPSD}/status"
+                    rc=$?
+                    if [ "$rc" -eq 0 ]; then
+                        printf_msg " %s=ignored(ok)" "$opm"
+                    else
+                        printf_msg " %s=err(%s)" "$opm" "$rc"
+                        errcnt=$((errcnt + 1))
+                    fi
+
+                    # print resulting policy
+                    printf_msg "\n result: %s\n" "$(read_sysf "${INTELPSD}/status")"
+                fi
+                ;; # intel_pstate
+
+            *)
+                printf_msg "*** unsupported cpu\n"
+                break
+                ;;
+
+        esac # _cpu_driver
+    done # psfx
+
+    printf_msg "}}} errcnt=%s\n\n" "$errcnt"
+    _testcnt=$((_testcnt + 1))
+    [ "$errcnt" -gt 0 ] && _failcnt=$((_failcnt + 1))
+    return $errcnt
+}
 
 check_cpu_scaling_governor () {
     # apply cpu scaling governor
@@ -52,7 +217,7 @@ check_cpu_scaling_governor () {
         sc=$((sc + 1))
 
         case "$_cpu_driver" in
-            amd_pstate|amd_pstate_epp|intel_pstate)
+            amd?pstate|amd?pstate?epp|intel_pstate)
                 if [ $sc -eq 1 ]; then
                     # power source matches parameter suffix
 
@@ -216,7 +381,7 @@ check_cpu_scaling_freq () {
         sc=$((sc + 1))
 
         case "$_cpu_driver" in
-            amd_pstate|amd_pstate_epp|intel_pstate|acpi-cpufreq|apple-cpufreq|intel_cpufreq)
+            amd?pstate|amd?pstate?epp|intel_pstate|acpi-cpufreq|apple-cpufreq|intel_cpufreq)
                 if [ $sc -eq 1 ]; then
                     # power source matches parameter suffix
 
@@ -355,7 +520,7 @@ check_cpu_epp () {
         sc=$((sc + 1))
 
         case "$_cpu_driver" in
-            amd_pstate_epp|intel_pstate|intel_cpufreq)
+            amd?pstate?epp|intel_pstate|intel_cpufreq)
                 if [ $sc -eq 1 ]; then
                     # power source matches parameter suffix
 
@@ -919,6 +1084,7 @@ _failcnt=0
 printf_msg "+++ %s --- cpu_driver: %s\n\n" "${0##*/}" "$_cpu_driver"
 
 # --- Checks
+check_cpu_driver_opmode
 check_cpu_scaling_governor
 check_cpu_scaling_freq
 check_cpu_epp
