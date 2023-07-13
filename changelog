@@ -44,10 +44,11 @@
         in active mode required
       - SCHED_POWERSAVE_ON_AC/BAT removed (unavailable since kernel 3.5)
       - tlp-stat -p:
-        - Show amd-pstate operation mode, dynamic boost, performance
-          and frequency attributes
+        - Show amd-pstate operation mode, dynamic boost and performance
+          attributes
         - Show min/max operating frequency the processor can run at
           (cpuinfo_min/max_freq) and limit imposed by the BIOS (bios_limit)
+        - (-v) Show acpi_cppc performance and frequency attributes
     Radio Devices:
     - Support Thunderbolt docks to switch radio devices
     - DEVICES_TO_ENABLE/DISABLE_ON_SHUTDOWN: deprecated, feature will be

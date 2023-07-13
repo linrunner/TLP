@@ -340,6 +340,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     for cn in $(glob_dirs '/cpu[0-9]*' "$CPUD" | sed 's/.*\/cpu//' | sort -n); do
 
         cpuf="${CPUD}/cpu${cn}/cpufreq"
+        cpua="${CPUD}/cpu${cn}/acpi_cppc"
         if [ -f "$cpuf/scaling_driver" ]; then
             cpu="cpu${cn}"
 
@@ -372,22 +373,45 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                     printf "%-54s = %8d [kHz]\n" "$cpuf/bios_limit" "$(read_sysf "$cpuf/bios_limit")"
                 fi
 
-                if [ -f "$cpuf/amd_pstate_highest_perf" ]; then
-                    printf "%-70s = %8d [%%]\n" "$cpuf/amd_pstate_highest_perf" "$(read_sysf "$cpuf/amd_pstate_highest_perf")"
-                fi
-                if [ -f "$cpuf/amd_pstate_max_freq" ]; then
-                    printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_max_freq" "$(read_sysf "$cpuf/amd_pstate_max_freq")"
-                fi
-                if [ -f "$cpuf/amd_pstate_lowest_nonlinear_freq" ]; then
-                    printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_lowest_nonlinear_freq" "$(read_sysf "$cpuf/amd_pstate_lowest_nonlinear_freq")"
-                fi
-
                 if [ -f "$cpuf/energy_performance_preference" ]; then
                     printparm "%s = ##%s## [EPP]" "$cpuf/energy_performance_preference"
                     epp=1
                 fi
                 if [ -f "$cpuf/energy_performance_available_preferences" ]; then
                     printparm "%s = ##%s##" "$cpuf/energy_performance_available_preferences"
+                fi
+
+                if [ $show_verbose -eq 1 ]; then
+                    if [ -f "$cpuf/amd_pstate_highest_perf" ]; then
+                        printf "%-70s = %8d [%%]\n" "$cpuf/amd_pstate_highest_perf" "$(read_sysf "$cpuf/amd_pstate_highest_perf")"
+                    fi
+                    if [ -f "$cpuf/amd_pstate_max_freq" ]; then
+                        printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_max_freq" "$(read_sysf "$cpuf/amd_pstate_max_freq")"
+                    fi
+                    if [ -f "$cpuf/amd_pstate_lowest_nonlinear_freq" ]; then
+                        printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_lowest_nonlinear_freq" "$(read_sysf "$cpuf/amd_pstate_lowest_nonlinear_freq")"
+                    fi
+                    if [ -f "$cpua/lowest_perf" ]; then
+                        printf "%-61s = %5d\n" "$cpua/lowest_perf" "$(read_sysf "$cpua/lowest_perf")"
+                    fi
+                    if [ -f "$cpua/lowest_nonlinear_perf" ]; then
+                        printf "%-61s = %5d\n" "$cpua/lowest_nonlinear_perf" "$(read_sysf "$cpua/lowest_nonlinear_perf")"
+                    fi
+                    if [ -f "$cpua/nominal_perf" ]; then
+                        printf "%-61s = %5d\n" "$cpua/nominal_perf" "$(read_sysf "$cpua/nominal_perf")"
+                    fi
+                    if [ -f "$cpua/reference_perf" ]; then
+                        printf "%-61s = %5d\n" "$cpua/reference_perf" "$(read_sysf "$cpua/reference_perf")"
+                    fi
+                    if [ -f "$cpua/highest_perf" ]; then
+                        printf "%-61s = %5d\n" "$cpua/highest_perf" "$(read_sysf "$cpua/highest_perf")"
+                    fi
+                    if [ -f "$cpua/lowest_freq" ]; then
+                        printf "%-61s = %5d [MHz]\n" "$cpua/lowest_freq" "$(read_sysf "$cpua/lowest_freq")"
+                    fi
+                    if [ -f "$cpua/nominal_freq" ]; then
+                        printf "%-61s = %5d [MHz]\n" "$cpua/nominal_freq" "$(read_sysf "$cpua/nominal_freq")"
+                    fi
                 fi
 
                 printf "\n"
