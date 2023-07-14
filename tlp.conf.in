@@ -22,7 +22,7 @@
 # - Default *: intrinsic default that is effective when the parameter is missing
 #   or disabled by a leading '#'; use PARAM="" to disable an intrinsic default
 # - Default <none>: do nothing or use kernel/hardware defaults
-# - IMPORTANT: parameters without default must always be specified for
+# - IMPORTANT: parameters must always be specified pairwise i.e. for
 #   both AC and BAT. Omitting one of the two makes the set value effective for
 #   both power sources, since a change only occurs when different values are
 #   defined.
