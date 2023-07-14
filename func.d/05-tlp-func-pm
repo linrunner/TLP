@@ -128,12 +128,16 @@ set_runtime_pm () { # set runtime power management
 set_pcie_aspm () { # set pcie active state power management
     # $1: 0=ac mode, 1=battery mode
 
-    local pwr
+    local pwr=""
 
     case "$1" in
         0) pwr="${PCIE_ASPM_ON_AC:-}" ;;
         1) pwr="${PCIE_ASPM_ON_BAT:-}" ;;
-        2) pwr="default" ;;
+        2) # reset on suspend only when configured
+            if [ -n "${PCIE_ASPM_ON_AC:-}${PCIE_ASPM_ON_BAT:-}" ]; then
+                pwr="default"
+            fi
+            ;;
     esac
 
     if [ -z "$pwr" ]; then

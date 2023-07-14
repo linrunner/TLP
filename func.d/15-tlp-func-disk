@@ -488,7 +488,11 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
     case "$1" in
         0) control=${AHCI_RUNTIME_PM_ON_AC:-} ;;
         1) control=${AHCI_RUNTIME_PM_ON_BAT:-} ;;
-        2) control="on" ;;
+        2) # reset on suspend only when configured
+            if [ -n "${AHCI_RUNTIME_PM_ON_AC:-}${AHCI_RUNTIME_PM_ON_BAT:-}" ]; then
+                control="on"
+            fi
+            ;;
     esac
 
     # calc timeout in millisecs
@@ -563,7 +567,11 @@ set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
     case "$1" in
         0) control=${AHCI_RUNTIME_PM_ON_AC:-} ;;
         1) control=${AHCI_RUNTIME_PM_ON_BAT:-} ;;
-        2) control="on" ;;
+        2) # reset on suspend only when configured
+            if [ -n "${AHCI_RUNTIME_PM_ON_AC:-}${AHCI_RUNTIME_PM_ON_BAT:-}" ]; then
+                control="on"
+            fi
+            ;;
     esac
 
     # check values
