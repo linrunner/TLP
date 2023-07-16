@@ -58,11 +58,13 @@
       removed with the next release
 
   * Bugfixes
-    Processor:
-    - Set governor although not listed in scaling_available_governors
+    Configuration:
+    - Strip trailing blanks from unquoted parameter values
     Operation:
     - Deactivate AHCI_RUNTIME_PM and PCIE_ASPM before suspend to avoid
       resume freezes (Issue #587, #593, #606, #698)
+    Processor:
+    - Set governor although not listed in scaling_available_governors
 
 +++ 1.5.0 --- 07.01.2022 +++
 
