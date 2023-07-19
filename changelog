@@ -1,6 +1,6 @@
-+++ 1.6.0-alpha.0 --- <unreleased> +++
++++ 1.6.0-beta.1 --- 20.07.2023 +++
 
-  * Development release
+  * Beta release
 
   * Features
     Battery:
@@ -51,11 +51,11 @@
         - (-v) Show acpi_cppc performance and frequency attributes
     Radio Devices:
     - Support Thunderbolt docks to switch radio devices
-    - DEVICES_TO_ENABLE/DISABLE_ON_SHUTDOWN: deprecated, feature will be
-      removed with the next release
+    - DEVICES_TO_ENABLE/DISABLE_ON_SHUTDOWN: *DEPRECATED* feature will be
+      removed in TLP 1.7
     USB:
-    - USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN: deprecated, feature will be
-      removed with the next release
+    - USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN: *DEPRECATED* feature will be
+      removed in TLP 1.7
 
   * Bugfixes
     Configuration:
