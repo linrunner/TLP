@@ -187,9 +187,9 @@
 #PLATFORM_PROFILE_ON_BAT=low-power
 
 # System suspend mode:
-#   s2idle: Suspend-to-Idle - a pure software, light-weight, system sleep state
-#   deep:   Suspend-to-RAM - the whole system is put into a low-power state,
-#     except for memory, usually resulting in higher savings than s2idle
+#   s2idle: Idle standby - a pure software, light-weight, system sleep state,
+#   deep: Suspend to RAM - the whole system is put into a low-power state,
+#     except for memory, usually resulting in higher savings than s2idle.
 # CAUTION: changing suspend mode may lead to system instability and even
 # data loss. As for the availability of different modes on your system,
 # check the output of tlp-stat -s. If unsure, stick with the system default
