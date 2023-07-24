@@ -82,7 +82,7 @@ batdrv_init () {
     # iterate batteries and check for native kernel ACPI
     local bd bs
     local done=0
-    for bd in "$ACPIBATDIR"/BAT[01CT]; do
+    for bd in "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf "$bd/present")" = "1" ]; then
             # record detected batteries and directories
             bs=${bd##/*/}
@@ -398,7 +398,7 @@ batdrv_show_battery_data () {
 
     if [ "$_bm_thresh" = "natacpi" ]; then
         printf "Parameter value range:\n"
-        printf "* STOP_CHARGE_THRESH_BAT0/1: 0(off)..100(default)\n"
+        printf "* STOP_CHARGE_THRESH_BAT0/1: 80(on), 100(off)\n"
     fi
     printf "\n"
 
