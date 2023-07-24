@@ -139,7 +139,7 @@ batdrv_show_battery_data () { # output battery data
 
     if [ -z "$_batteries" ]; then
         printf "+++ Battery Status\n"
-        printf "No battery data available.\n\n"
+        printf "No batteries detected.\n\n"
         return 1
     fi
 
