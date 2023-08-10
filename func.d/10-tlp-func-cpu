@@ -27,7 +27,7 @@ readonly FWACPID=/sys/firmware/acpi
 # ----------------------------------------------------------------------------
 # Functions
 
-# --- Scaling Governor
+# --- Scaling Driver and Governor
 
 check_intel_pstate () {
     # detect intel_pstate driver -- rc: 0=present/1=absent
@@ -39,6 +39,11 @@ check_amd_pstate () {
     # detect amd_pstate driver -- rc: 0=present/1=absent
     # note: intel_pstate requires Linux 5.17 or higher
     [ -d $AMD_PSTATED ]
+}
+
+print_cpu_driver () {
+    # print active CPU scaling driver
+    read_sysf "${CPUD}/cpu0/cpufreq/scaling_driver" || printf "cpu"
 }
 
 set_cpu_driver_opmode () {
@@ -62,16 +67,24 @@ set_cpu_driver_opmode () {
         if write_sysf "$opmode" "${INTEL_PSTATED}/status"; then
             echo_debug "pm" "set_cpu_driver_opmode($1).intel_pstate: $opmode; rc=$?"
         else
+            # kernel rejected the configured opmode
             echo_debug "pm" "set_cpu_driver_opmode($1).intel_pstate: $opmode; rc=$?"
+            echo_message "Error in configuration at ${cfg}=\"${opmode}\": this operation mode is not supported by the intel_pstate driver."
+            return 1
         fi
     elif check_amd_pstate; then
         if write_sysf "$opmode" "${AMD_PSTATED}/status"; then
             echo_debug "pm" "set_cpu_driver_opmode($1).amd_pstate: $opmode; rc=$?"
         else
+            # kernel rejected the configured opmode
             echo_debug "pm" "set_cpu_driver_opmode($1).amd_pstate: $opmode; rc=$?"
+            echo_message "Error in configuration at ${cfg}=\"${opmode}\": this operation mode is not supported by the amd-pstate driver."
+            return 1
         fi
     else
         echo_debug "pm" "set_cpu_driver_opmode($1).unsupported_driver"
+        echo_message "Error in configuration at ${cfg}=\"${opmode}\": the $(print_cpu_driver) driver does not support operation modes."
+        return 1
     fi
 
     return 0
@@ -153,7 +166,7 @@ set_cpu_scaling_min_max_freq () {
     return 0
 }
 
-# --- Performance Policies
+# --- Performance Policies and Boost
 
 supports_intel_cpu_epb () {
     # rc: 0=CPU supports EPB/1=false
