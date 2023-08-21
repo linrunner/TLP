@@ -1,6 +1,8 @@
 +++ 1.6.0-rc.0 --- <unreleased> +++
 
-  * Changes since beta.1
+  * Changes since 1.6.0-beta.1
+    Battery:
+    - System76: default start threshold set to 90% (due to EC firmware change)
     Processor:
     - CPU_DRIVER_OPMODE_ON_AC/BAT: check if operation mode is actually
       supported by the current CPU driver
