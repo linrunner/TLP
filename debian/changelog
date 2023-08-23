@@ -1,6 +1,6 @@
-tlp (1.6.0~beta.1-1) unstable; urgency=medium
+tlp (1.6.0-1) unstable; urgency=medium
 
-  * New upstream version 1.6.0-beta.1
+  * New upstream version 1.6.0
 
   [ Thomas Koch ]
   * tlp-rdw: relocate NetworkManager hook
@@ -16,7 +16,7 @@ tlp (1.6.0~beta.1-1) unstable; urgency=medium
   [ Raphaël Halimi ]
   * Revert UsrMerge changes for Bookworm (Closes: #1034233)
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 19 Jul 2023 21:12:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 24 Aug 2023 05:42:42 +0200
 
 tlp (1.5.0-1) unstable; urgency=medium
 
