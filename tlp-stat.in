@@ -137,7 +137,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
             "-w"|"--warn")
                 show_all=0
                 show_warn=1
-                : ${needs_root_priv:=0}
+                : ${needs_root_priv:=1}
                 ;;
 
             "-P"|"--pev")
