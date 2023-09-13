@@ -532,8 +532,13 @@ add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
     return 0
 }
 
+# --- Directories and Files
 create_rundir () { # make sure $RUNDIR exists
     [ -d $RUNDIR ] || mkdir -p $RUNDIR 2> /dev/null 1>&2
+}
+
+chmod_readable4all () { # make file world readable -- $1: file
+    chmod -f o+r "$1"
 }
 
 # -- Battery Plugins
@@ -961,6 +966,7 @@ set_manual_mode () { # set manual operation mode
 
     create_rundir
     write_sysf "$1" $MANUALMODEFILE
+    chmod_readable4all $MANUALMODEFILE
     _manual_mode="$1"
 
     echo_debug "pm" "set_manual_mode($1)"

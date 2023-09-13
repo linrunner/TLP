@@ -2,6 +2,10 @@
 
   * Development release
 
+  * Bugfixes
+      General:
+        - tlp-stat -s: report manual mode despite restrictive umask (Issue #702)
+
 +++ 1.6.0 --- 24.08.2023 +++
 
   * Changes since 1.6.0-beta.1
