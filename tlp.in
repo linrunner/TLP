@@ -203,6 +203,7 @@ else
     # shellcheck disable=SC2154
     echo_debug "path" "PATH=${_oldpath}"
 fi
+echo_debug "run" "SHELL=$(print_shell); umask=$(umask)"
 
 # get current power state
 get_power_mode "$_cmd"; pwrmode=$?

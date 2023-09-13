@@ -503,7 +503,11 @@ check_timed_lock () { # check if active timestamp exists
     return 1
 }
 
-# --- PATH
+# --- Environment
+print_shell () { # determine the shell executing this script
+    readlink -n "/proc/$$/exe"
+}
+
 add_sbin2path () { # check if /sbin /usr/sbin in $PATH, otherwise add them
                    # retval: $PATH, $_oldpath, $_addpath
     local sp
