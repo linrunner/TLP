@@ -1,3 +1,9 @@
+tlp (1.7.0~alpha.0-1) UNRELEASED; urgency=medium
+
+  * Start 1.7 development cycle
+
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 13 Sep 2023 18:42:21 +0200
+
 tlp (1.6.0-1) unstable; urgency=medium
 
   * New upstream version 1.6.0
