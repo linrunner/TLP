@@ -120,6 +120,12 @@ batdrv_init () {
         fi
     done
 
+    if  [ $_natacpi -ge 32 ]; then
+        # let's probe lg-legacy next (kernel 5.17 and older)
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_natacpi: batteries=$_batteries; natacpi=$_natacpi"
+        return 1
+    fi
+
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bn_stop=$_bn_stop"
