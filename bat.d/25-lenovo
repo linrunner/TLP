@@ -439,8 +439,6 @@ batdrv_show_battery_data () {
             printf "\n"
         fi
 
-        # --- show battery features: thresholds
-
         # --- show charge level (SOC) and capacity
         if [ "$ef" -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
