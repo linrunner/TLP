@@ -255,7 +255,7 @@ batdrv_write_thresholds () {
     # $1: new start threshold 0(disabled)..100/DEF(default)
     # $2: new stop threshold 0..100/DEF(default)
     # $3: 0=quiet/1=output parameter errors/2=output progress and errors
-    # $4: battery - non-empty string indicates thresholds stem from configuration
+    # $4: config battery - non-empty string indicates thresholds stem from configuration
     # global param: $_bm_thresh, $_bat_str, $_bf_start, $_bf_stop
     # rc: 0=ok/
     #     1=not configured/
@@ -579,8 +579,8 @@ batdrv_show_battery_data () {
 
         # --- show battery features: thresholds
         if [ "$_bm_thresh" = "natacpi" ]; then
-            printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start)"
-            printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop)"
+            printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
+            printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
             printf "\n"
         fi
 
