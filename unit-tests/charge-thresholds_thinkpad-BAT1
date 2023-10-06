@@ -2,6 +2,7 @@
 # Test charge thresholds for ThinkPads
 # Requirements:
 # * Hardware: non-legacy ThinkPad
+# * Kernel: >= 5.17
 # * Batteries: BAT0 + BAT1
 # * Power source AC
 # Copyright (c) 2023 Thomas Koch <linrunner at gmx.net>.
@@ -99,24 +100,22 @@ Setting temporary charge thresholds for BAT1:
   stop  = 100
   start =  96
 $ #
-$ # --- Reset
-$ sudo tlp setcharge BAT0 -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
-Setting temporary charge thresholds for BAT0:
-  start =  60
-  stop  = 100 (no change)
-$ sudo tlp setcharge BAT1 -- START_CHARGE_THRESH_BAT1="61" STOP_CHARGE_THRESH_BAT1="100"
-Setting temporary charge thresholds for BAT1:
-  start =  61
-  stop  = 100 (no change)
-$ #
 $ # --- tlp-stat
 $ # steps require a kernel >= 5.17 -- with 'charge_behaviour'
+$ sudo tlp setcharge 61 91 BAT1
+Setting temporary charge thresholds for BAT1:
+  start =  61
+  stop  =  91
+$ sudo tlp setcharge 60 90 BAT0
+Setting temporary charge thresholds for BAT0:
+  start =  60
+  stop  =  90
 $ sudo tlp-stat -b | grep -E 'charge_(control|behaviour)'
 /sys/class/power_supply/BAT0/charge_control_start_threshold =     60 [%]
-/sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   =     90 [%]
 /sys/class/power_supply/BAT0/charge_behaviour               = [auto] inhibit-charge force-discharge
 /sys/class/power_supply/BAT1/charge_control_start_threshold =     61 [%]
-/sys/class/power_supply/BAT1/charge_control_end_threshold   =    100 [%]
+/sys/class/power_supply/BAT1/charge_control_end_threshold   =     91 [%]
 /sys/class/power_supply/BAT1/charge_behaviour               = [auto] inhibit-charge force-discharge
 $ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|behaviour)'
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
@@ -125,3 +124,8 @@ $ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|beh
 /sys/class/power_supply/BAT1/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT1/charge_control_end_threshold   = (not available) [%]
 /sys/class/power_supply/BAT1/charge_behaviour               = [auto] inhibit-charge force-discharge
+$ #
+$ # --- Reset test machine to configured thresholds
+$ sudo tlp setcharge BAT0  > /dev/null 2>&1
+$ sudo tlp setcharge BAT1  > /dev/null 2>&1
+$ #
