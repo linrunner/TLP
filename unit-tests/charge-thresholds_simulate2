@@ -1,0 +1,396 @@
+#!/usr/bin/clitest
+# Test charge thresholds for non-ThinkPads (simulated) - Part 2: MSI..Toshiba
+# Requirements:
+# * Hardware: non-legacy ThinkPad
+# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net>.
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+$ # +++ MSI ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- initialize
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp start
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="70" STOP_CHARGE_THRESH_BAT0="90" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="9" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="9": not specified, invalid or out of range (10..100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (10..100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="97" STOP_CHARGE_THRESH_BAT0="97" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="96" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp setcharge w/o arguments
+$ sudo tlp setcharge 70 100 > /dev/null 2>&1 # re-initialize
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="70" STOP_CHARGE_THRESH_BAT0="90"
+Setting temporary charge thresholds for BAT0:
+  stop  =  90
+  start =  80 (changed to meet hardware constraint)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="70" STOP_CHARGE_THRESH_BAT0="90"
+Setting temporary charge thresholds for BAT0:
+  stop  =  90 (no change)
+  start =  80 (no change)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="XYZZY"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": not specified, invalid or out of range (10..100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="9"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="9": not specified, invalid or out of range (10..100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (10..100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="97" STOP_CHARGE_THRESH_BAT0="97"
+Setting temporary charge thresholds for BAT0:
+  stop  =  97
+  start =  87 (changed to meet hardware constraint)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="96"
+Setting temporary charge thresholds for BAT0:
+  stop  =  96
+  start =  86 (changed to meet hardware constraint)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="96"
+Setting temporary charge thresholds for BAT0:
+  stop  =  96 (no change)
+  start =  86 (no change)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Setting temporary charge thresholds for BAT0:
+  stop  = 100
+  start =  90 (changed to meet hardware constraint)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi NATACPI_ENABLE=0 TPACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: battery charge thresholds not available.
+$ #
+$ # --- tlp setcharge w/ arguments
+$ sudo tlp setcharge 70 100 > /dev/null 2>&1 # re-initialize
+$ sudo tlp setcharge 70 90 -- X_BAT_PLUGIN_SIMULATE=msi
+Setting temporary charge thresholds for BAT0:
+  stop  =  90
+  start =  80 (changed to meet hardware constraint)
+$ sudo tlp setcharge 70 90 -- X_BAT_PLUGIN_SIMULATE=msi
+Setting temporary charge thresholds for BAT0:
+  stop  =  90 (no change)
+  start =  80 (no change)
+$ sudo tlp setcharge 0 XYZZY -- X_BAT_PLUGIN_SIMULATE=msi
+Error: stop charge threshold (XYZZY) for BAT0 is not specified, invalid or out of range (10..100). Aborted.
+$ sudo tlp setcharge 0 9 -- X_BAT_PLUGIN_SIMULATE=msi
+Error: stop charge threshold (9) for BAT0 is not specified, invalid or out of range (10..100). Aborted.
+$ sudo tlp setcharge 0 101 -- X_BAT_PLUGIN_SIMULATE=msi
+Error: stop charge threshold (101) for BAT0 is not specified, invalid or out of range (10..100). Aborted.
+$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=msi
+Setting temporary charge thresholds for BAT0:
+  stop  = 100
+  start =  90 (changed to meet hardware constraint)
+$ sudo tlp setcharge 97 97 -- X_BAT_PLUGIN_SIMULATE=msi
+Setting temporary charge thresholds for BAT0:
+  stop  =  97
+  start =  87 (changed to meet hardware constraint)
+$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=msi
+Setting temporary charge thresholds for BAT0:
+  stop  =  96
+  start =  86 (changed to meet hardware constraint)
+$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=msi X_THRESH_SIMULATE_READERR="1"
+Error: could not read current stop charge threshold for BAT0. Aborted.
+$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=msi X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+Setting temporary charge thresholds for BAT0:
+  stop  =  96
+  start =  86 (changed to meet hardware constraint)
+$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=msi
+Setting temporary charge thresholds for BAT0:
+  stop  =  96 (no change)
+  start =  86 (no change)
+$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=msi
+Error: battery BAT1 not present.
+$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=msi
+Error: battery BAT1 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=msi
+Error: battery BAT1 not present.
+$ #
+$ # --- tlp-stat
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=msi | grep -E 'charge_control'
+/sys/class/power_supply/BAT0/charge_control_start_threshold =     86 [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   =     96 [%]
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=msi X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
+/sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
+$ #
+$ # +++ Samsung ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": life extender not specified or invalid (must be 0 or 1). Skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error: writing life extender failed.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=samsung NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp setcharge w/o arguments
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": life extender not specified or invalid (must be 0 or 1). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=samsung START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_THRESH_SIMULATE_STOP="0"
+Setting temporary charge threshold for all batteries:
+  life extender = 1 (Error: write failed)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=samsung NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: battery charge thresholds not available.
+$ #
+$ # --- tlp setcharge w/ arguments
+$ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=samsung
+Error: life extender (24) not specified or invalid (must be 0 or 1). Aborted.
+$ sudo tlp setcharge ABCDE XYZZY -- X_BAT_PLUGIN_SIMULATE=samsung
+Error: life extender (XYZZY) not specified or invalid (must be 0 or 1). Aborted.
+$ sudo tlp setcharge 42 1 -- X_BAT_PLUGIN_SIMULATE=samsung  X_THRESH_SIMULATE_STOP="0"
+Setting temporary charge threshold for all batteries:
+  life extender = 1 (Error: write failed)
+$ sudo tlp setcharge 42 1 -- X_BAT_PLUGIN_SIMULATE=samsung  X_THRESH_SIMULATE_STOP="1"
+Setting temporary charge threshold for all batteries:
+  life extender = 1 (no change)
+$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=samsung  X_THRESH_SIMULATE_STOP="0"
+Setting temporary charge threshold for all batteries:
+  life extender = 0 (no change)
+$ sudo tlp setcharge 42 24 BAT1 -- X_BAT_PLUGIN_SIMULATE=samsung
+Error: battery BAT1 not present.
+$ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=samsung
+Error: battery 2 not present.
+$ #
+$ # --- tlp-stat
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=samsung | grep "battery_life_extender"
+/sys/devices/platform/samsung/battery_life_extender         = (not available)
+$ #
+$ # +++ Sony ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": care limiter not specified or invalid (must be 50, 80 or 100). Skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="50" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error: writing care limiter failed.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" X_THRESH_SIMULATE_STOP="50" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error: writing care limiter failed.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="100" X_THRESH_SIMULATE_STOP="80" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error: writing care limiter failed.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_STOP="50" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error: writing care limiter failed.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=sony NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp setcharge w/o arguments
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": care limiter not specified or invalid (must be 50, 80 or 100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="XYZZY"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": care limiter not specified or invalid (must be 50, 80 or 100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="50" X_THRESH_SIMULATE_STOP="0"
+Setting temporary charge threshold for all batteries:
+  care limiter = 50 (Error: write failed)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" X_THRESH_SIMULATE_STOP="50"
+Setting temporary charge threshold for all batteries:
+  care limiter = 80 (Error: write failed)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="100" X_THRESH_SIMULATE_STOP="80"
+Setting temporary charge threshold for all batteries:
+  care limiter = 100 (Error: write failed)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=sony NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: battery charge thresholds not available.
+$ #
+$ # --- tlp setcharge w/ arguments
+$ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=sony
+Error: care limiter (24) not specified or invalid (must be 50, 80 or 100). Aborted.
+$ sudo tlp setcharge ABCDE XYZZY -- X_BAT_PLUGIN_SIMULATE=sony
+Error: care limiter (XYZZY) not specified or invalid (must be 50, 80 or 100). Aborted.
+$ sudo tlp setcharge 42 50 -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="0"
+Setting temporary charge threshold for all batteries:
+  care limiter = 50 (Error: write failed)
+$ sudo tlp setcharge 42 80 -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="50"
+Setting temporary charge threshold for all batteries:
+  care limiter = 80 (Error: write failed)
+$ sudo tlp setcharge 42 100 -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="80"
+Setting temporary charge threshold for all batteries:
+  care limiter = 100 (Error: write failed)
+$ sudo tlp setcharge 42 80 -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="80"
+Setting temporary charge threshold for all batteries:
+  care limiter = 80 (no change)
+$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="0"
+Setting temporary charge threshold for all batteries:
+  care limiter = 100 (no change)
+$ sudo tlp setcharge 42 24 BAT1 -- X_BAT_PLUGIN_SIMULATE=sony
+Error: battery BAT1 not present.
+$ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=sony
+Error: battery 2 not present.
+$ #
+$ # --- tlp-stat
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=sony | grep "battery_care_limiter"
+/sys/devices/platform/sony-laptop/battery_care_limiter      = (not available) [%]
+$ #
+$ # +++ System76 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at START_CHARGE_THRESH_BAT0="100": not specified, invalid or out of range (0..99). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (1..100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (1..100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="97" STOP_CHARGE_THRESH_BAT0="97" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration: START_CHARGE_THRESH_BAT0 >= STOP_CHARGE_THRESH_BAT0. Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="96" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp setcharge w/o arguments
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=system76  START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
+Setting temporary charge thresholds for BAT0:
+  start =  60
+  stop  = 100 (no change)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100"
+Error in configuration at START_CHARGE_THRESH_BAT0="100": not specified, invalid or out of range (0..99). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="100"
+Error in configuration at START_CHARGE_THRESH_BAT0="ABCDE": not specified, invalid or out of range (0..99). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="XYZZY"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="97" STOP_CHARGE_THRESH_BAT0="97"
+Error in configuration: START_CHARGE_THRESH_BAT0 >= STOP_CHARGE_THRESH_BAT0. Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="96"
+Setting temporary charge thresholds for BAT0:
+  start =  95
+  stop  =  96
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="96"
+Setting temporary charge thresholds for BAT0:
+  start =  95 (no change)
+  stop  =  96 (no change)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=system76 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Setting temporary charge thresholds for BAT0:
+  start =  90
+  stop  = 100
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=system76 NATACPI_ENABLE=0 TPACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: battery charge thresholds not available.
+$ #
+$ # --- tlp setcharge w/ arguments
+$ sudo tlp setcharge 60 100 -- X_BAT_PLUGIN_SIMULATE=system76
+Setting temporary charge thresholds for BAT0:
+  start =  60
+  stop  = 100 (no change)
+$ sudo tlp setcharge 100 100 -- X_BAT_PLUGIN_SIMULATE=system76
+Error: start charge threshold (100) for BAT0 is not specified, invalid or out of range (0..99). Aborted.
+$ sudo tlp setcharge 0 0 -- X_BAT_PLUGIN_SIMULATE=system76
+Error: stop charge threshold (0) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge 0 101 -- X_BAT_PLUGIN_SIMULATE=system76
+Error: stop charge threshold (101) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge ABCDE 0 -- X_BAT_PLUGIN_SIMULATE=system76
+Error: start charge threshold (ABCDE) for BAT0 is not specified, invalid or out of range (0..99). Aborted.
+$ sudo tlp setcharge 0 XYZZY -- X_BAT_PLUGIN_SIMULATE=system76
+Error: stop charge threshold (XYZZY) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge 97 97 -- X_BAT_PLUGIN_SIMULATE=system76
+Error: start threshold >= stop threshold for BAT0. Aborted.
+$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=system76
+Setting temporary charge thresholds for BAT0:
+  start =  95
+  stop  =  96
+$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=system76 X_THRESH_SIMULATE_READERR="1"
+Error: could not read current charge threshold(s) for BAT0. Aborted.
+$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=system76 X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+Setting temporary charge thresholds for BAT0:
+  start =  95
+  stop  =  96
+$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=system76
+Setting temporary charge thresholds for BAT0:
+  start =  95 (no change)
+  stop  =  96 (no change)
+$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=system76
+Setting temporary charge thresholds for BAT0:
+  start =  90
+  stop  = 100
+$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
+Error: battery BAT1 not present.
+$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
+Error: battery BAT1 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
+Error: battery BAT1 not present.
+$ #
+$ # --- tlp-stat
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=system76 | grep -E 'charge_control'
+/sys/class/power_supply/BAT0/charge_control_start_threshold =     90 [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=system76 X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
+/sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
+$ #
+$ # +++ Toshiba/Dynabook ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- initialize
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0="35" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp start
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": not specified or invalid (must be 80 or 100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=toshiba NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp setcharge w/o arguments
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="XYZZY"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=toshiba START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Setting temporary charge threshold for BAT0:
+  stop = 100 (no change)
+$ #
+$ # --- tlp setcharge w/ arguments
+$ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Error: stop charge threshold (24) for BAT0 is not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge ABCDE XYZZY -- X_BAT_PLUGIN_SIMULATE=toshiba
+Error: stop charge threshold (XYZZY) for BAT0 is not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge 42 100 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Setting temporary charge threshold for BAT0:
+  stop = 100 (no change)
+$ sudo tlp setcharge 42 80 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Setting temporary charge threshold for BAT0:
+  stop =  80
+$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=toshiba
+Setting temporary charge threshold for BAT0:
+  stop = 100
+$ sudo tlp setcharge 42 80 BAT1 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Error: battery BAT1 not present.
+$ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Error: battery 2 not present.
+$ #
+$ # --- tlp-stat
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=toshiba | grep -E 'charge_control'
+/sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
+$ #
+$ # --- Reset test machine to configured thresholds
+$ sudo tlp setcharge BAT0  > /dev/null 2>&1
+$ #
