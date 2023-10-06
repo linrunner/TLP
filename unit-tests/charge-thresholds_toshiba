@@ -38,13 +38,15 @@ Setting temporary charge threshold for BAT1:
 $ sudo tlp setcharge 42 80 BAT1
 Setting temporary charge threshold for BAT1:
   stop =  80
-$ sudo tlp setcharge DEF DEF BAT1
-Setting temporary charge threshold for BAT1:
-  stop = 100
 $ sudo tlp setcharge 42 80
 Error: battery BAT0 not present.
 $ sudo tlp setcharge 2
 Error: battery 2 not present.
+$ #
+$ # --- Reset to hardware defaults
+$ sudo tlp setcharge DEF DEF BAT1
+Setting temporary charge thresholds for BAT1:
+  stop  = 100
 $ #
 $ # --- tlp-stat
 $ sudo tlp-stat -b | sudo tlp-stat -b | grep -E 'charge_control
