@@ -356,7 +356,7 @@ batdrv_write_thresholds () {
             write_sysf "$new_start" "$_bf_start"
         fi
         if [ "$verb" = "2" ]; then
-            printf "  %-5s = %3d (changed to meet hardware constraints)\n" "start" "$new_start"
+            printf "  %-5s = %3d (changed to meet hardware constraint)\n" "start" "$new_start"
         fi
 
     else
