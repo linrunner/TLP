@@ -1,4 +1,4 @@
-#!/usr/bin/clitest
+#!/usr/bin/env clitest
 # Test services check
 # Requirements:
 # * installed: systemd, power-profile-daemon

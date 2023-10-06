@@ -1,4 +1,4 @@
-#!/usr/bin/clitest
+#!/usr/bin/env clitest
 # Test charge thresholds for MSI laptops
 # Requirements:
 # * Hardware: MSI laptop supported by msi_ec driver

@@ -1,4 +1,4 @@
-#!/usr/bin/clitest
+#!/usr/bin/env clitest
 # Test Processor features
 # Requirements:
 # * Intel Core i processor gen. 6 or newer
