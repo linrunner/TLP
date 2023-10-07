@@ -1,8 +1,5 @@
 #!/bin/sh
-# Battery Plugin AppleSMC for laptops providing standard sysfs nodes for
-# charge thresholds:
-# * /sys/class/power_supply/macsmc-battery/charge_control_start_threshold
-# * /sys/class/power_supply/macsmc-battery/charge_control_end_threshold
+# 60-macbook - Battery Plugin for Apple Silicon Macbooks w/ applesmc driver
 #
 # Copyright (c) 2023 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
@@ -50,7 +47,7 @@ batdrv_init () {
     #    start threshold                        --> retval $_bt_def_start,
     #    stop threshold                         --> retval $_bt_def_stop;
 
-    _batdrv_plugin="apple"
+    _batdrv_plugin="macbook"
     _batdrv_kmod="applesmc" # kernel module for natacpi
 
     # check plugin simulation override and denylist
