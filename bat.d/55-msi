@@ -306,9 +306,7 @@ batdrv_write_thresholds () {
     nom_start=$((new_stop - 10))
 
     # start: silently ignore non-numeric or invalid threshold, substitute it with stop - 10
-    if ! is_uint "$new_start" 3 || \
-       [ "$new_start" -ne "$nom_start" ]; then
-        #
+    if ! is_uint "$new_start" 3 || [ "$new_start" -ne "$nom_start" ]; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str; nom=$nom_start"
         new_start="$nom_start"
     fi
@@ -356,7 +354,7 @@ batdrv_write_thresholds () {
             write_sysf "$new_start" "$_bf_start"
         fi
         if [ "$verb" = "2" ]; then
-            printf "  %-5s = %3d (changed to meet hardware constraint)\n" "start" "$new_start"
+            printf "  %-5s = %3d (due to hardware constraint)\n" "start" "$new_start"
         fi
 
     else
@@ -453,7 +451,7 @@ batdrv_show_battery_data () {
     esac
     if [ "$_bm_thresh" != "none" ]; then
         printf "Parameter value ranges:\n"
-        printf "* START_CHARGE_THRESH_BAT0/1:  0..90(default) [hardware enforces stop - 10]\n"
+        printf "* START_CHARGE_THRESH_BAT0/1:  don't care (hardware enforces stop - 10)\n"
         printf "* STOP_CHARGE_THRESH_BAT0/1:   10..100(default)\n"
     fi
     printf "\n"
