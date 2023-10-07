@@ -219,7 +219,9 @@ case "$_cmd" in
     auto|resume)
         # if manual mode is set, use instead of current power state
         # shellcheck disable=SC2154
-        [ "$_manual_mode" != "none" ] && pwrmode="$_manual_mode"
+        case $_manual_mode in
+            0|1) pwrmode="$_manual_mode" ;;
+        esac
         ;;
 
     true|bat)
@@ -240,11 +242,7 @@ case "$_syspwr" in
     *) echo_debug "run" "power_source=unknown ($_syspwr)" ;;
 esac
 
-case "$_manual_mode" in
-    0) echo_debug "run" "manual_mode=ac" ;;
-    1) echo_debug "run" "manual_mode=bat" ;;
-    *) echo_debug "run" "manual_mode=none" ;;
-esac
+echo_debug "run" "manual_mode=$_manual_mode"
 
 case "$pwrmode" in
     0) echo_debug "run" "power_mode=ac" ;;

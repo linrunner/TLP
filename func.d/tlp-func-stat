@@ -197,9 +197,9 @@ print_saved_powerstate () {
     get_manual_mode
     # shellcheck disable=SC2154
     case "$_manual_mode" in
-        0|1) printf " (manual)\n" ;;
+        0|1|a) printf " (manual)\n" ;;
 
-        *) # check for persistent mode
+        n) # check for persistent mode
             # shellcheck disable=SC2154
             if get_persist_mode && [ "$_persist_mode" = "$sps" ]; then
                 printf " (persistent)\n"

@@ -955,7 +955,7 @@ echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
     else
         printf "TLP started in battery mode"
     fi
-    if [ "$_manual_mode" != "none" ]; then
+    if [ "$_manual_mode" != "n" ]; then
         printf " (manual).\n"
     else
         printf " (auto).\n"
@@ -966,40 +966,56 @@ echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
 
 set_manual_mode () { # set manual operation mode
     # $1: 0=ac mode, 1=battery mode
-    # retval: $_manual_mode (0=ac, 1=battery, none=not found)
+    # retval: $_manual_mode (0=ac, 1=battery)
+
+    if [ "$1" != "0" ] && [ "$1" != "1" ]; then
+        echo_debug "pm" "set_manual_mode($1).invalid"
+        return 1
+    fi
 
     create_rundir
-    write_sysf "$1" $MANUALMODEFILE
-    chmod_readable4all $MANUALMODEFILE
-    _manual_mode="$1"
-
-    echo_debug "pm" "set_manual_mode($1)"
-    return 0
+    if write_sysf "$1" $MANUALMODEFILE; then
+        _manual_mode="$1"
+        echo_debug "pm" "set_manual_mode($1).ok"
+        return 0
+    else
+        echo_debug "pm" "set_manual_mode($1).write_error"
+        return 1
+    fi
 }
 
 clear_manual_mode () { # remove manual operation mode
     # retval: $_manual_mode (none)
 
     rm -f $MANUALMODEFILE 2> /dev/null
-    _manual_mode="none"
+    _manual_mode="n"
 
     echo_debug "pm" "clear_manual_mode"
     return 0
 }
 
 get_manual_mode () { # get manual operation mode
-    # rc: 0=ok/1=not found
-    # retval: $_manual_mode (0=ac, 1=battery, none=not found)
+    # rc: 0=active/1=inactive
+    # retval: $_manual_mode (0=ac, 1=battery, a=active, n=inactive)
     local rc=1
-    _manual_mode="none"
+    _manual_mode="n"
 
     if [ -f $MANUALMODEFILE ]; then
         # read mode file
-        _manual_mode=$(read_sysf $MANUALMODEFILE)
-        case $_manual_mode in
-            0|1) rc=0 ;;
-            *) _manual_mode="none" ;;
-        esac
+        if _manual_mode=$(read_sysf $MANUALMODEFILE); then
+            case $_manual_mode in
+                0|1) rc=0 ;;
+                *) _manual_mode="n" ;;
+            esac
+        else
+            # cannot read mode file - possible cause:
+            #   tlp-stat -s is running without root privilege and the file is not world readable
+            #   because tlp ac/bat is invoked with sudo when creating the file and thereby a
+            #   restrictive umask applies; see https://github.com/linrunner/TLP/issues/702
+            # -> manual mode is active but operation mode cannot be determined
+            _manual_mode="a"
+            rc=0
+        fi
     fi
     return $rc
 }
