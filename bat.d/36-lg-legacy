@@ -194,7 +194,7 @@ batdrv_write_thresholds () {
     # write charge thresholds for a battery
     # use pre-determined method and sysfiles from global parms
     # $1: new start threshold -- unused dummy for plugin api compatibility
-    # $2: new stop threshold 80,100/DEF(default)
+    # $2: new stop threshold 80/100/DEF(default)
     # $3: 0=quiet/1=output parameter errors/2=output progress and errors
     # $4: battery - non-empty string indicates thresholds stem from configuration
     # global param: $_bat_str, $_bf_stop
