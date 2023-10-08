@@ -48,7 +48,7 @@ batdrv_init () {
     #    stop threshold                         --> retval $_bt_def_stop;
 
     _batdrv_plugin="macbook"
-    _batdrv_kmod="applesmc" # kernel module for natacpi
+    _batdrv_kmod="macsmc_power" # kernel module for natacpi
 
     # check plugin simulation override and denylist
     if [ -n "$X_BAT_PLUGIN_SIMULATE" ]; then
