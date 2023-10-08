@@ -1,5 +1,5 @@
 #!/usr/bin/env clitest
-# Test charge thresholds for non-ThinkPads (simulated) - Part 1: ASUS..Toshiba
+# Test charge thresholds for non-ThinkPads (simulated) - Part 1: ASUS..LG
 # Requirements:
 # * Hardware: non-legacy ThinkPad
 # Copyright (c) 2023 Thomas Koch <linrunner at gmx.net>.
