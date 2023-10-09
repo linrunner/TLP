@@ -74,10 +74,10 @@ batdrv_init () {
     # shellcheck disable=SC2034
     _bm_read="natacpi"
     _bm_thresh="none"
-    # shellcheck disable=SC2034
     _bm_dischg="none"
     _bn_start=""
     _bn_stop=""
+    _bn_dischg=""
     _batteries=""
     _bt_def_start=95
     _bt_def_stop=100
@@ -126,6 +126,12 @@ batdrv_init () {
                 # threshold sysfiles are actually readable
                 _natacpi=0
                 _bm_thresh="natacpi"
+
+                if readable_sysf "$bd/charge_behaviour"; then
+                    # sysfile for force-discharge exists and is actually readable
+                    _bm_dischg="natacpi"
+                    _bn_dischg="charge_behaviour"
+                fi
             fi
         fi
     done
@@ -138,7 +144,7 @@ batdrv_init () {
 
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop;"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop; dischg=$_bm_dischg; bn_dischg=$_bn_dischg"
     return 0
 }
 
@@ -157,6 +163,7 @@ batdrv_select_battery () {
     _bd_read=""   # no directory
     _bf_start=""
     _bf_stop=""
+    _bf_dischg=""
 
     # validate battery param
     local bs
@@ -183,7 +190,11 @@ batdrv_select_battery () {
         _bf_stop="$ACPIBATDIR/$_bat_str/$_bn_stop"
     fi
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop"
+    if [ "$_bm_dischg" = "natacpi" ]; then
+        _bf_dischg="$ACPIBATDIR/$_bat_str/$_bn_dischg"
+    fi
+
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg"
     return 0
 }
 
@@ -416,9 +427,51 @@ batdrv_apply_configured_thresholds () {
 }
 
 batdrv_read_force_discharge () {
-    # function not implemented
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge.not_implemented"
-    return 255
+    # read and print force-discharge state
+    # $1: 0=api/1=tlp-stat output
+    # global param: $_bm_dischg, $_bf_dischg, $_bat_idx
+    # out:
+    # - api: 0=off/1=on/"" on error
+    # - tlp-stat: status text/"(not available)" on error
+    # rc: 0=ok/4=read error/255=no api
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local rc=0 out=""
+
+    if [ "$_bm_dischg" = "natacpi" ]; then
+        # read state from sysfile
+        if out=$(read_sysf "$_bf_dischg"); then
+            if [ "$1" != "1" ]; then
+                if echo "$out" | grep -q "\[force-discharge\]"; then
+                    out=1
+                else
+                    out=0
+                fi
+            fi
+        else
+            # not readable/non-existent
+            if [ "$1" != "1" ]; then
+                out=""
+            else
+                out="(not available)"
+            fi
+            rc=4
+        fi
+    else
+        # no discharge api
+        if [ "$1" = "1" ]; then
+            out="(not available)"
+        fi
+        rc=255
+    fi
+    printf "%s" "$out"
+
+    if [ "$rc" -gt 0 ]; then
+        # log output in the error case only
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; out=$out; rc=$rc"
+    fi
+    return $rc
+
 }
 
 batdrv_write_force_discharge () {
@@ -539,12 +592,18 @@ batdrv_show_battery_data () {
             printf "\n"
         fi
 
-        # --- show battery features: thresholds
+        # --- show battery features: thresholds, force_discharge
+        local lf=0
         if [ "$_bm_thresh" = "natacpi" ]; then
             printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
             printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
-            printf "\n"
+            lf=1
         fi
+        if [ "$_bm_dischg" = "natacpi" ]; then
+            printf "%-59s = %6s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
+            lf=1
+        fi
+        [ $lf -gt 0 ] && printf "\n"
 
         # --- show charge level (SOC) and capacity
         lf=0
