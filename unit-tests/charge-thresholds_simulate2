@@ -34,7 +34,7 @@ $ sudo tlp setcharge 70 100 > /dev/null 2>&1 # re-initialize
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="70" STOP_CHARGE_THRESH_BAT0="90"
 Setting temporary charge thresholds for BAT0:
   stop  =  90
-  start =  80 (changed to meet hardware constraint)
+  start =  80 (due to hardware constraint)
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="70" STOP_CHARGE_THRESH_BAT0="90"
 Setting temporary charge thresholds for BAT0:
   stop  =  90 (no change)
@@ -48,11 +48,11 @@ Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid 
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="97" STOP_CHARGE_THRESH_BAT0="97"
 Setting temporary charge thresholds for BAT0:
   stop  =  97
-  start =  87 (changed to meet hardware constraint)
+  start =  87 (due to hardware constraint)
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="96"
 Setting temporary charge thresholds for BAT0:
   stop  =  96
-  start =  86 (changed to meet hardware constraint)
+  start =  86 (due to hardware constraint)
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="96"
 Setting temporary charge thresholds for BAT0:
   stop  =  96 (no change)
@@ -60,7 +60,7 @@ Setting temporary charge thresholds for BAT0:
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Setting temporary charge thresholds for BAT0:
   stop  = 100
-  start =  90 (changed to meet hardware constraint)
+  start =  90 (due to hardware constraint)
 $ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=msi NATACPI_ENABLE=0 TPACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: battery charge thresholds not available.
 $ #
@@ -69,7 +69,7 @@ $ sudo tlp setcharge 70 100 > /dev/null 2>&1 # re-initialize
 $ sudo tlp setcharge 70 90 -- X_BAT_PLUGIN_SIMULATE=msi
 Setting temporary charge thresholds for BAT0:
   stop  =  90
-  start =  80 (changed to meet hardware constraint)
+  start =  80 (due to hardware constraint)
 $ sudo tlp setcharge 70 90 -- X_BAT_PLUGIN_SIMULATE=msi
 Setting temporary charge thresholds for BAT0:
   stop  =  90 (no change)
@@ -83,21 +83,21 @@ Error: stop charge threshold (101) for BAT0 is not specified, invalid or out of 
 $ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=msi
 Setting temporary charge thresholds for BAT0:
   stop  = 100
-  start =  90 (changed to meet hardware constraint)
+  start =  90 (due to hardware constraint)
 $ sudo tlp setcharge 97 97 -- X_BAT_PLUGIN_SIMULATE=msi
 Setting temporary charge thresholds for BAT0:
   stop  =  97
-  start =  87 (changed to meet hardware constraint)
+  start =  87 (due to hardware constraint)
 $ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=msi
 Setting temporary charge thresholds for BAT0:
   stop  =  96
-  start =  86 (changed to meet hardware constraint)
+  start =  86 (due to hardware constraint)
 $ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=msi X_THRESH_SIMULATE_READERR="1"
 Error: could not read current stop charge threshold for BAT0. Aborted.
 $ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=msi X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
 Setting temporary charge thresholds for BAT0:
   stop  =  96
-  start =  86 (changed to meet hardware constraint)
+  start =  86 (due to hardware constraint)
 $ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=msi
 Setting temporary charge thresholds for BAT0:
   stop  =  96 (no change)
