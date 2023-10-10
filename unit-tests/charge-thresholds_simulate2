@@ -1,10 +1,90 @@
 #!/usr/bin/env clitest
-# Test charge thresholds for non-ThinkPads (simulated) - Part 2: MSI..Toshiba
+# Test charge thresholds for non-ThinkPads (simulated) - Part 2: Macbook..Toshiba
 # Requirements:
 # * Hardware: non-legacy ThinkPad
 # Copyright (c) 2023 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
+$ # +++ Apple Silicon Macbooks ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- initialize
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp start
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=macbook START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=macbook START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=macbook START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="9" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="9": not specified or invalid (must be 80 or 100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=macbook START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified or invalid (must be 80 or 100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=macbook START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp setcharge w/o arguments
+$ sudo tlp setcharge 95 100 > /dev/null 2>&1 # re-initialize
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=macbook START_CHARGE_THRESH_BAT0="77" STOP_CHARGE_THRESH_BAT0="80"
+Setting temporary charge thresholds for BAT0:
+  start =  75 (due to hardware constraint)
+  stop  =  80
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=macbook START_CHARGE_THRESH_BAT0="66" STOP_CHARGE_THRESH_BAT0="80"
+Setting temporary charge thresholds for BAT0:
+  start =  75 (no change)
+  stop  =  80 (no change)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=macbook START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="XYZZY"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=macbook START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="42"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="42": not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=macbook START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=macbook START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Setting temporary charge thresholds for BAT0:
+  stop  = 100
+  start =  95 (due to hardware constraint)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=macbook NATACPI_ENABLE=0 TPACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: battery charge thresholds not available.
+$ #
+$ # --- tlp setcharge w/ arguments
+$ sudo tlp setcharge 95 100 > /dev/null 2>&1 # re-initialize
+$ sudo tlp setcharge 77 80 -- X_BAT_PLUGIN_SIMULATE=macbook
+Setting temporary charge thresholds for BAT0:
+  start =  75 (due to hardware constraint)
+  stop  =  80
+$ sudo tlp setcharge 66 80 -- X_BAT_PLUGIN_SIMULATE=macbook
+Setting temporary charge thresholds for BAT0:
+  start =  75 (no change)
+  stop  =  80 (no change)
+$ sudo tlp setcharge 0 XYZZY -- X_BAT_PLUGIN_SIMULATE=macbook
+Error: stop charge threshold (XYZZY) for BAT0 is not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge 0 42 -- X_BAT_PLUGIN_SIMULATE=macbook
+Error: stop charge threshold (42) for BAT0 is not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge 0 101 -- X_BAT_PLUGIN_SIMULATE=macbook
+Error: stop charge threshold (101) for BAT0 is not specified or invalid (must be 80 or 100). Aborted.
+$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=macbook
+Setting temporary charge thresholds for BAT0:
+  stop  = 100
+  start =  95 (due to hardware constraint)
+$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=macbook X_THRESH_SIMULATE_READERR="1"
+Error: could not read current stop charge threshold for BAT0. Aborted.
+$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=macbook
+Error: battery BAT1 not present.
+$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=macbook
+Error: battery BAT1 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=macbook
+Error: battery BAT1 not present.
+$ #
+$ # --- tlp-stat
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=macbook | grep -E 'charge_control'
+/sys/class/power_supply/BAT0/charge_control_start_threshold =     95 [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=macbook X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
+/sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
+$ #
 $ # +++ MSI ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- initialize
