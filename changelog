@@ -2,6 +2,11 @@
 
   * Development version
 
+  * Features
+    Battery:
+    - MSI laptops supported by the msi_ec driver in kernel 6.3 and newer:
+      start and stop threshold (Issue #707)
+
   * Bugfixes
     General:
     - tlp-stat -s: rework manual mode detection (Issue #702)
