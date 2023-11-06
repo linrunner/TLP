@@ -8,6 +8,8 @@
       start and stop threshold (Issue #707)
 
   * Bugfixes
+    Battery:
+    - ThinkPads: fix Edge 11 battery enumeration (Issue #714)
     General:
     - tlp-stat -s: rework manual mode detection (Issue #702)
 
