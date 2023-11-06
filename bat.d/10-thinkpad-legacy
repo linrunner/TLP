@@ -15,7 +15,7 @@ batdrv_init () {
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
     # retval: $_batdrv_plugin, $batdrv_kmod
     #
-    # 1. check for tp-smapi external kernel module
+    # 1. check for tp_smapi external kernel module
     #    --> retval $_tpsmapi
     #       0=supported/
     #       32=disabled/
@@ -80,57 +80,85 @@ batdrv_init () {
     # shellcheck disable=SC2034
     _bt_def_stop=100
 
-    local bs bd
+    local bs bd done=0
 
-    # iterate batteries
-    for bd in "$ACPIBATDIR"/BAT[01]; do
-        if [ "$(read_sysf "$bd/present")" = "1" ]; then
-            # record detected batteries and directories
-            bs=${bd##/*/}
-            if [ -n "$_batteries" ]; then
-                _batteries="$_batteries $bs"
-            else
-                _batteries="$bs"
-            fi
-        fi
-    done
+    if [ "$TPSMAPI_ENABLE" = "0" ]; then
+        # tp-smapi disabled by configuration
+        _tpsmapi=32
+    else
+        # probe tp_smapi external kernel module
+        load_modules "$MOD_TPSMAPI"
 
-    # quit if no battery detected, there is no point in activating the plugin
-    if [ -z "$_batteries" ]; then
-        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
-        return 2
-    fi
+        if [ -d "$SMAPIBATDIR" ]; then
+            # module loaded --> tp-smapi available
+            # enumerate tp_smapi batteries
+            # note: tp_smapi battery names may diverge from ACPI names,
+            #   refer to https://github.com/linrunner/TLP/issues/714
+            for bd in "$SMAPIBATDIR"/BAT[01]; do
+                if [ "$(read_sysf "$bd/installed")" = "1" ]; then
+                    # record detected batteries and directories
+                    bs=${bd##/*/}
+                    if [ -n "$_batteries" ]; then
+                        _batteries="$_batteries $bs"
+                    else
+                        _batteries="$bs"
+                    fi
+                    # skip tp-smapi detection for 2nd battery
+                    [ $done -eq 1 ] && continue
 
-    # --- probe tp-smapi external kernel module
-    load_modules "$MOD_TPSMAPI"
-
-    if [ -d "$SMAPIBATDIR" ]; then
-        # module loaded --> tp-smapi available
-        if [ "$TPSMAPI_ENABLE" = "0" ]; then
-            # tpsmapi disabled by configuration
-            _tpsmapi=32
-        else
-            # check if all required sysfiles exist for 1st battery
-            for bs in $_batteries; do
-                bds="$SMAPIBATDIR/$bs"
-                if readable_sysf "$bds/$_bn_start" \
-                   && readable_sysf "$bds/$_bn_stop" \
-                   && readable_sysf "$bds/$_bn_dischg"; then
-                    # all sysfiles are actually readable
-                    _tpsmapi=0
-                    _bm_read="tpsmapi"
-                    _bm_thresh="tpsmapi"
-                    _bm_dischg="tpsmapi"
-                    break # quit loop
+                    done=1
+                    if readable_sysf "$bd/$_bn_start" \
+                       && readable_sysf "$bd/$_bn_stop" \
+                       && readable_sysf "$bd/$_bn_dischg"; then
+                        # tp-smapi sysfiles are actually readable
+                        _tpsmapi=0
+                        _bm_read="tpsmapi"
+                        _bm_thresh="tpsmapi"
+                        _bm_dischg="tpsmapi"
+                    fi
                 fi
             done
+
+            # quit if no battery detected, there is no point in activating the plugin
+            if [ -z "$_batteries" ]; then
+                echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
+                return 2
+            fi
         fi
-    elif $MODINFO "$MOD_TPSMAPI" > /dev/null 2>&1; then
-        # module installed but not loaded
-        _tpsmapi=64
-    else
-        # module neither installed nor builtin
-        _tpsmapi=128
+    fi
+
+    if [ "$_tpsmapi" -ne 0 ]; then
+        # tp-smapi unavailable or disabled
+        # enumerate ACPI batteries so that at least tlp-stat -b can show their data
+        _batteries=""
+        for bd in "$ACPIBATDIR"/BAT[01]; do
+            if [ "$(read_sysf "$bd/present")" = "1" ]; then
+                # record detected batteries and directories
+                bs=${bd##/*/}
+                if [ -n "$_batteries" ]; then
+                    _batteries="$_batteries $bs"
+                else
+                    _batteries="$bs"
+                fi
+            fi
+        done
+
+        # quit if no battery detected, there is no point in activating the plugin
+        if [ -z "$_batteries" ]; then
+            echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
+            return 2
+        fi
+
+        # remaining tp-smapi inavailability cases
+        if [ "$_tpsmapi" -eq 32 ]; then
+            : # tp-smapi disabled
+        elif $MODINFO "$MOD_TPSMAPI" > /dev/null 2>&1; then
+            # module installed but not loaded
+            _tpsmapi=64
+        else
+            # module neither installed nor builtin
+            _tpsmapi=128
+        fi
     fi
 
     # shellcheck disable=SC2034
@@ -186,7 +214,7 @@ batdrv_select_battery () {
         BAT1) _bat_idx=2 ;;
     esac
 
-    # determine tpsmapi sysfiles
+    # determine tp-smapi sysfiles
     if [ "$_bm_thresh" = "tpsmapi" ]; then
         _bf_start="$SMAPIBATDIR/$bs/$_bn_start"
         _bf_stop="$SMAPIBATDIR/$bs/$_bn_stop"
@@ -379,7 +407,7 @@ batdrv_write_thresholds () {
 
     # determine write sequence because driver's intrinsic boundary conditions
     # must be met in all write stages:
-    #   - tpsmapi: start <= stop - 4 (changes value for compliance)
+    #   - tp-smapi: start <= stop - 4 (changes value for compliance)
     local rc=0 steprc tseq
 
     if [ "$new_start" -gt "$old_stop" ]; then
@@ -666,7 +694,7 @@ batdrv_discharge () {
                     printf "remaining time     = %6s [min]\n" "$(read_sysf "$_bd_read/remaining_running_time_now")"
                     printf "power              = %6s [mW]\n"  "$(read_sysf "$_bd_read/power_avg")"
                     printf "state              = %s\n"  "$(read_sysf "$_bd_read/state")"
-                    ;; # tpsmapi
+                    ;;
 
             esac
             printf "force discharge    = %s\n"  "$(batdrv_read_force_discharge 0)"
@@ -772,7 +800,7 @@ batdrv_show_battery_data () {
 
         # --- show basic data
         case $_bm_read in
-            natacpi) # use ACPI data
+            natacpi) # no tp-smapi --> use ACPI data
                 printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
                 printparm "%-59s = ##%s##" "$_bd_read/model_name"
 
@@ -806,7 +834,7 @@ batdrv_show_battery_data () {
                 fi
                 ;; # natacpi
 
-            tpsmapi) # ThinkPad with active tp-smapi
+            tpsmapi) # tp-smapi active
                 printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
                 printparm "%-59s = ##%s##" "$_bd_read/model"
                 printparm "%-59s = ##%s##" "$_bd_read/manufacture_date"
