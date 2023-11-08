@@ -1093,7 +1093,7 @@ batdrv_discharge () {
         esac
 
         if [ "$rp" -gt 0 ]; then
-            # battery not emptied --> determine cause
+            # SOC > 0% = battery not emptied --> determine cause
             get_sys_power_supply
             # shellcheck disable=SC2154
             if [ "$_syspwr" -eq 1 ]; then
@@ -1101,8 +1101,8 @@ batdrv_discharge () {
                 echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.ac_removed($_bat_str)"
                 echo "Warning: battery $_bat_str was not discharged completely -- AC/charger removed." 1>&2
                 rc=3
-            else
-                # discharging terminated by unknown reason
+            elif [ "$rp" -gt 1 ]; then
+                # system on AC, SOC > 1% --> discharging terminated by unknown reason
                 echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_emptied($_bat_str)"
                 echo "Error: battery $_bat_str was not discharged completely i.e. terminated by the firmware -- check your hardware (battery, charger)." 1>&2
                 rc=2
