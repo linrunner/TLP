@@ -1193,7 +1193,7 @@ batdrv_show_battery_data () {
     local ed ef en
     local efsum=0
     local ensum=0
-    local corelibreboot=0
+    local coreboot=0
 
     for bat in $_batteries; do # iterate detected batteries
         batdrv_select_battery "$bat"
@@ -1226,16 +1226,16 @@ batdrv_show_battery_data () {
                     ensum=$((ensum + en))
 
                 elif [ -f "$_bd_read/charge_full" ]; then
-                    # workaround: Coreboot/Libreboot provide ACPI mW(h) data incorrectly:
+                    # workaround: coreboot (Skulls) provides ACPI mW(h) values incorrectly:
                     # -  using sysfiles for mA(h)
                     # -  one decimal place too little
                     # refer to https://github.com/linrunner/TLP/issues/657
-                    corelibreboot=1
+                    coreboot=1
 
-                    printparm "%-59s = ##%6d## [mWh]" "$_bd_read/charge_full_design" "" 00
-                    printparm "%-59s = ##%6d## [mWh]" "$_bd_read/charge_full" "" 00
-                    printparm "%-59s = ##%6d## [mWh]" "$_bd_read/charge_now" "" 00
-                    printparm "%-59s = ##%6d## [mW]" "$_bd_read/current_now" "" 00
+                    printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_full_design" "" 00
+                    printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_full" "" 00
+                    printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_now" "" 00
+                    printparm "%-59s = ##%6d## [mW] *" "$_bd_read/current_now" "" 00
 
                     # store values for charge / capacity calculation below
                     ed=$(read_sysval "$_bd_read/charge_full_design")
@@ -1352,8 +1352,8 @@ batdrv_show_battery_data () {
         printf "\n"
     fi
 
-    if [ "$corelibreboot" = "1" ]; then
-        printf "Notice: battery values in units of mW(h) are possibly incorrect because Coreboot/Libreboot provides them in the wrong format.\n\n"
+    if [ "$coreboot" = "1" ]; then ### DEVEL ###
+        printf "*) Converted coreboot charge readings may differ.\n\n"
     fi
 
     return 0
