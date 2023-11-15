@@ -11,8 +11,7 @@
     Battery:
     - ThinkPads:
       - Fix Edge 11 battery enumeration (Issue #714)
-      - tlp-stat -b: [try to] display meaningful battery charge data with
-        Coreboot/Libreboot (Issue #657)
+      - tlp-stat -b: fix coreboot charge readings (Issue #657)
     General:
     - tlp-stat -s: rework manual mode detection (Issue #702)
 
