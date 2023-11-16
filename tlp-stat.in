@@ -25,7 +25,11 @@ readonly OSRELEASE=/etc/os-release
 readonly SWITCHEROO=/sys/kernel/debug/vgaswitcheroo/switch
 readonly WQPE=/sys/module/workqueue/parameters/power_efficient
 
-readonly CORETEMP_DIRS="
+readonly ACPITEMP_DIR="/sys/devices/virtual/thermal"
+readonly ACPITEMP_GLOB="
+/sys/devices/virtual/thermal/thermal_zone*"
+readonly CORETEMP_DIR="/sys/devices/platform/coretemp.0"
+readonly CORETEMP_GLOB="
 /sys/devices/platform/coretemp.0
 /sys/devices/platform/coretemp.0/hwmon/hwmon*"
 readonly HWMONFAN_DIRS="
@@ -545,14 +549,27 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     if [ -f "$IBMTHERMAL" ] && [ "$X_IGNORE_IBM_TEMPFAN" != "1" ]; then
         # use ThinkPad-specific sysfile
         echo "$IBMTHERMAL = $(read_sysf $IBMTHERMAL | cut -f2  ) [°C]"
-    else
+    elif [ -d "$CORETEMP_DIR" ]; then
         # use coretemp sensors
         cmax=0
-        # find max value of all packages (just in case there are several)
-        # temp1_input is "Package"
-        for sens in $(glob_files '/temp1_input' "$CORETEMP_DIRS"); do
+        # find max value of all CPU packages (just in case there are several)
+        # temp1_input is "package"
+        for sens in $(glob_files '/temp1_input' "$CORETEMP_GLOB"); do
             ctemp=$(read_sysval "$sens")
             [ "$ctemp" -gt "$cmax" ] && cmax=$ctemp
+        done
+        if [ "$cmax" -gt 0 ]; then
+            perl -e 'printf ("CPU temp               = %5d [°C]\n", '"$cmax"' / 1000.0);'
+        fi
+    elif [ -d "$ACPITEMP_DIR" ]; then
+        # use ACPI thermal zone sensors for CPUs
+        cmax=0
+        # find max value of all CPUs (just in case there are several)
+        for sens in $(glob_files '/temp' "$ACPITEMP_GLOB"); do
+            if [ "$(read_sysf "${sens%temp}type")" = "acpitz" ]; then
+                ctemp=$(read_sysval "$sens")
+                [ "$ctemp" -gt "$cmax" ] && cmax=$ctemp
+            fi
         done
         if [ "$cmax" -gt 0 ]; then
             perl -e 'printf ("CPU temp               = %5d [°C]\n", '"$cmax"' / 1000.0);'
