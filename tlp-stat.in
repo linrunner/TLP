@@ -545,11 +545,13 @@ fi # show_proc
 
 if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show temperatures
+    tempshown=0
     echo "+++ Temperatures"
     if [ -f "$IBMTHERMAL" ] && [ "$X_IGNORE_IBM_TEMPFAN" != "1" ]; then
         # use ThinkPad-specific sysfile
         echo "$IBMTHERMAL = $(read_sysf $IBMTHERMAL | cut -f2  ) [°C]"
-    elif [ -d "$CORETEMP_DIR" ]; then
+        tempshown=1
+    elif [ -d "$CORETEMP_DIR" ] && [ "$X_IGNORE_CORETEMP" != "1" ]; then
         # use coretemp sensors
         cmax=0
         # find max value of all CPU packages (just in case there are several)
@@ -560,8 +562,9 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         done
         if [ "$cmax" -gt 0 ]; then
             perl -e 'printf ("CPU temp               = %5d [°C]\n", '"$cmax"' / 1000.0);'
+            tempshown=1
         fi
-    elif [ -d "$ACPITEMP_DIR" ]; then
+    elif [ -d "$ACPITEMP_DIR" ] && [ "$X_IGNORE_ACPITEMP" != "1" ]; then
         # use ACPI thermal zone sensors for CPUs
         cmax=0
         # find max value of all CPUs (just in case there are several)
@@ -573,29 +576,34 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         done
         if [ "$cmax" -gt 0 ]; then
             perl -e 'printf ("CPU temp               = %5d [°C]\n", '"$cmax"' / 1000.0);'
+            tempshown=1
         fi
+    fi
+    if [ "$tempshown" -eq "0" ]; then
+        # no CPU sensor detected
+        printf "CPU temp               = (not available)\n"
     fi
 
     # --- show fan speed
+    fanshown=0
     if [ -f $IBMFAN ] && [ "$X_IGNORE_IBM_TEMPFAN" != "1" ]; then
         # use thinkpad-specific sysfile
         awk '$1 ~ /speed:/ { printf "'$IBMFAN'     = %5d [/min]\n", $2 }' $IBMFAN
-    else
+        fanshown=1
+    elif [ "$X_IGNORE_HWMONFAN" != "1" ]; then
         # use hwmon
-        have_any_fan=
         # shellcheck disable=SC2086
         for fan in $(glob_files '/fan?*_input' $HWMONFAN_DIRS); do
             if fan_speed=$(read_sysval "$fan"); then
                 fan_name="${fan##*/}"; fan_name="${fan_name%_input}"
-                have_any_fan=y
-
+                fanshown=1
                 printf "Fan speed (%s)       = %5d [/min]\n" \
                     "${fan_name}" "${fan_speed}"
             fi
         done
-        if [ -z "${have_any_fan}" ]; then
-            printf "Fan speed              = (not available)\n"
-        fi
+    fi
+    if [ "$fanshown" -eq "0" ]; then
+        printf "Fan speed              = (not available)\n"
     fi
     echo
 fi # show_temp
