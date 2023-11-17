@@ -6,14 +6,19 @@
     Battery:
     - MSI laptops supported by the msi_ec driver in kernel 6.3 and newer:
       start and stop threshold (Issue #707)
+    - ThinkPads:
+      - tlp-stat -b improvements for coreboot:
+        - Fix charge readings (Issue #657)
+        - Show that recalibration is not available
+    Processor:
+    - tlp-stat -t:
+      - Show AMD CPU temperatures
+      - Indicate unavailable fan speed
 
   * Bugfixes
     Battery:
     - ThinkPads:
       - Fix Edge 11 battery enumeration (Issue #714)
-      - tlp-stat -b improvements for coreboot:
-        - Fix charge readings (Issue #657)
-        - Show that recalibration is not available
     General:
     - tlp-stat -s: rework manual mode detection (Issue #702)
 
