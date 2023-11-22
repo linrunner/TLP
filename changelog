@@ -6,6 +6,8 @@
     Battery:
     - MSI laptops supported by the msi_ec driver in kernel 6.3 and newer:
       start and stop threshold (Issue #707)
+    - Lenovo laptops (non-ThinkPad series): tlp-stat -b: figure 60% removed
+      as the threshold value varies depending on the model (Issue #717)
     - ThinkPads:
       - tlp-stat -b improvements for coreboot:
         - Fix charge readings (Issue #657)
