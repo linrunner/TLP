@@ -370,8 +370,8 @@ batdrv_show_battery_data () {
         printf "* STOP_CHARGE_THRESH_BAT0: 0(off), 1(on) -- battery conservation mode\n\n"
         if th=$(batdrv_read_threshold); then
             case $th in
-                0) sfx=" (100%)" ;;
-                1) sfx=" (60%)" ;;
+                0) sfx=" (off)" ;;
+                1) sfx=" (on)" ;;
                 *) sfx=" (invalid)" ;;
             esac
             printf "%-59s = %d%s\n" "$_bf_stop" "$th" "$sfx"
