@@ -12,6 +12,9 @@
       - tlp-stat -b improvements for coreboot:
         - Fix charge readings (Issue #657)
         - Show that recalibration is not available
+    Disks:
+    - tlp diskid: filter duplicates
+    - tlp-stat -d: replace disk serial number with asterisks (for privacy)
     Processor:
     - tlp-stat -t:
       - Show AMD CPU temperatures
