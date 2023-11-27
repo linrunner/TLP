@@ -204,11 +204,13 @@ get_disk_dev () { # translate disk id to device (sdX)
 
 show_disk_ids () { # show disk id's
     local dev
+    local shown=""
 
     { # iterate SATA and NVMe disks
         for dev in $(glob_files '/*' /dev/disk/by-id/ | sed -rn 's/.*\/((ata|ieee1394|nvme|usb))/\1/p' | grep -E -v '(^nvme-eui|-part[1-9]+)'); do
-            if [ -n "$dev" ]; then
-                get_disk_dev "$dev" && printf '%s: %s\n' "$_disk_dev" "$_disk_id"
+            if [ -n "$dev" ] && get_disk_dev "$dev" && ! wordinlist "$_disk_dev" "$shown" ; then
+                printf '%s: %s\n' "$_disk_dev" "$_disk_id"
+                shown="$shown $_disk_dev"
             fi
         done
     } | sort
