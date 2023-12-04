@@ -18,6 +18,10 @@
     - tlp-stat -t:
       - Show AMD CPU temperatures
       - Indicate unavailable fan speed
+    Radio Devices:
+    - DEVICES_TO_ENABLE/DISABLE_ON_SHUTDOWN removed
+    USB:
+    - USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN removed
 
   * Bugfixes
     Battery:
