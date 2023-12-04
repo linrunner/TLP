@@ -380,8 +380,8 @@ set_radio_device_states () { # set/initialize all radio states
                 ;;
 
             stop) # system shutdown
-                devs2disable="$DEVICES_TO_DISABLE_ON_SHUTDOWN"
-                devs2enable="$DEVICES_TO_ENABLE_ON_SHUTDOWN"
+                devs2disable=""
+                devs2enable=""
 
                 if [ "$X_WIFI_ON_SHUTDOWN" != "0" ]; then
                     # NM workaround: if

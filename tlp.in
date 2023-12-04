@@ -316,13 +316,6 @@ case "$_cmd" in
                     echo "done."
                 fi
 
-                # disable usb autosuspend if configured
-                if [ "$USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN" = "1" ]; then
-                    echo -n "Disabling usb autosuspend..."
-                    set_usb_suspend 0 on
-                    echo "done."
-                fi
-
                 # apply radio states
                 set_radio_device_states stop
                 ;;

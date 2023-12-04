@@ -452,12 +452,6 @@
 
 #USB_ALLOWLIST="1111:2222 3333:4444"
 
-# Set to 1 to disable autosuspend before shutdown, 0 to do nothing
-# Note: use as a workaround for USB devices that cause shutdown problems.
-# Default: 0
-
-#USB_AUTOSUSPEND_DISABLE_ON_SHUTDOWN=0
-
 # Restore radio device state (Bluetooth, WiFi, WWAN) from previous shutdown
 # on system startup: 0=disable, 1=enable.
 # Note: the parameters DEVICES_TO_DISABLE/ENABLE_ON_STARTUP/SHUTDOWN below
@@ -477,18 +471,6 @@
 # Default: <none>
 
 #DEVICES_TO_ENABLE_ON_STARTUP="wifi"
-
-# Radio devices to disable on shutdown: bluetooth, nfc, wifi, wwan.
-# Note: use as a workaround for devices that are blocking shutdown.
-# Default: <none>
-
-#DEVICES_TO_DISABLE_ON_SHUTDOWN="bluetooth nfc wifi wwan"
-
-# Radio devices to enable on shutdown: bluetooth, nfc, wifi, wwan.
-# (to prevent other operating systems from missing radios).
-# Default: <none>
-
-#DEVICES_TO_ENABLE_ON_SHUTDOWN="wwan"
 
 # Radio devices to enable on AC: bluetooth, nfc, wifi, wwan.
 # Default: <none>
