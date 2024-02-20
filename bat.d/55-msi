@@ -202,7 +202,7 @@ batdrv_read_threshold () {
     esac
     if [ -n "$out" ]; then
         printf "%s" "$out"
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1).simulate: bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1, $2).simulate: bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
         return 0
     fi
 
@@ -239,7 +239,7 @@ batdrv_read_threshold () {
         rc=4
     fi
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1): bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1, $2): bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
     return $rc
 }
 

@@ -184,7 +184,7 @@ batdrv_read_threshold () {
     out="$X_THRESH_SIMULATE_STOP"
     if [ -n "$out" ]; then
         printf "%s" "$out"
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold.simulate: bf_stop=$_bf_stop; out=$out; rc=$rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1).simulate: bf_stop=$_bf_stop; out=$out; rc=$rc"
         return 0
     fi
 
@@ -216,7 +216,7 @@ batdrv_read_threshold () {
         rc=4
     fi
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold: bf_stop=$_bf_stop; out=$out; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1): bf_stop=$_bf_stop; out=$out; rc=$rc"
     return $rc
 }
 
