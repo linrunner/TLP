@@ -2,7 +2,7 @@
 
 # tlp - systemd suspend/resume hook
 #
-# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net> and others.
 # This software is licensed under the GPL v2 or later.
 
 case $1 in

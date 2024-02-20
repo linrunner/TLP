@@ -4,7 +4,7 @@
 # * Hardware: Toshiba/Dynabook laptop w/ toshiba_acpi driver
 # * Battery: BAT1
 # * Software: kernel 6.0+
-# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net>.
+# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ Toshiba/Dynabook ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

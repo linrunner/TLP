@@ -18,7 +18,7 @@
 # * intel_pstate
 # * intel_cpufreq
 #
-# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # --- Constants

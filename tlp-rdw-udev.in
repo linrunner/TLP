@@ -1,7 +1,7 @@
 #!/bin/sh
 # tlp-rdw - handle dock/undock events
 #
-# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # --- Source libraries

@@ -2,7 +2,7 @@
 # tlp-rdw - network manager dispatcher hook:
 #           enable/disable radios on ifup/ifdown
 #
-# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # --- Source libraries

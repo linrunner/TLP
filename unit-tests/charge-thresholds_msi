@@ -3,7 +3,7 @@
 # Requirements:
 # * Hardware: MSI laptop supported by msi_ec driver
 # * Software: kernel 6.3+
-# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net>.
+# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ MSI ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

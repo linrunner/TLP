@@ -3,7 +3,7 @@
 # Requirements:
 # * installed: systemd, power-profile-daemon
 # * RESTORE_DEVICE_STATE_ON_STARTUP, DEVICES_TO_DISABLE_ON_STARTUP, DEVICES_TO_ENABLE_ON_STARTUP not configured
-# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net>.
+# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # --- tlp.service
