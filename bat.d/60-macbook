@@ -1,7 +1,7 @@
 #!/bin/sh
 # 60-macbook - Battery Plugin for Apple Silicon Macbooks w/ applesmc driver
 #
-# Copyright (c) 2023 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat
@@ -48,7 +48,7 @@ batdrv_init () {
     #    stop threshold                         --> retval $_bt_def_stop;
 
     _batdrv_plugin="macbook"
-    _batdrv_kmod="macsmc_power" # kernel module for natacpi
+    _batdrv_kmod="macsmc_power" # kernel module for natacpi (Asahi Linux)
 
     # check plugin simulation override and denylist
     if [ -n "$X_BAT_PLUGIN_SIMULATE" ]; then
@@ -79,7 +79,7 @@ batdrv_init () {
     _bn_stop=""
     _bn_dischg=""
     _batteries=""
-    _bt_def_start=95
+    _bt_def_start=100
     _bt_def_stop=100
 
     # iterate batteries and check for native kernel ACPI
@@ -261,7 +261,12 @@ batdrv_read_threshold () {
 batdrv_write_thresholds () {
     # write both charge thresholds for a battery
     # use pre-determined method and sysfiles from global parms
-    # $1: new start threshold 75/95/DEF(default)
+    # notes:
+    # * Apple Silicon hardware with MacOS 13.0 or later firmware provides only two discrete threshold value pairs:
+    #   100/100 or 75/80
+    # * The kernel driver discards writes to the start threshold; upon reading, it returns a discrete value that
+    #   matches the stop threshold
+    # $1: new start threshold -- unused dummy for plugin api compatibility
     # $2: new stop threshold 80/100/DEF(default)
     # $3: 0=quiet/1=output parameter errors/2=output progress and errors
     # $4: config battery - non-empty string indicates thresholds stem from configuration
@@ -277,52 +282,46 @@ batdrv_write_thresholds () {
     local new_stop=${2:-}
     local verb=${3:-0}
     local cfg_bat="$4"
-    local old_start old_stop
-    local nom_start
+    local old_stop
 
     # insert defaults
     [ "$new_start" = "DEF" ] && new_start=$_bt_def_start
     [ "$new_stop" = "DEF" ] && new_stop=$_bt_def_stop
 
     # --- validate thresholds
-    local rc
-
     if [ -n "$cfg_bat" ] && [ -z "$new_start" ] && [ -z "$new_stop" ]; then
         # do nothing if unconfigured
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).not_configured: bat=$_bat_str"
         return 1
     fi
 
-     # stop: check for 3 digits max, ensure 80 or 100
-     if ! is_uint "$new_stop" 3 || ! wordinlist "$new_stop" "80 100"; then
-         # threshold out of range
-         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).invalid_stop"
-         case $verb in
-             1)
-                 if [ -n "$cfg_bat" ]; then
-                     echo_message "Error in configuration at STOP_CHARGE_THRESH_${cfg_bat}=\"${new_stop}\": not specified or invalid (must be 80 or 100). Battery skipped."
-                 fi
-                 ;;
+    # stop: check for 3 digits max, ensure 80 or 100
+    if ! is_uint "$new_stop" 3 || ! wordinlist "$new_stop" "80 100"; then
+        # threshold out of range
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($2, $3, $4).invalid_stop"
+        case $verb in
+            1)
+                if [ -n "$cfg_bat" ]; then
+                    echo_message "Error in configuration at STOP_CHARGE_THRESH_${cfg_bat}=\"${new_stop}\": not specified or invalid (must be 80 or 100). Battery skipped."
+                fi
+                ;;
 
-             2)
-                 if [ -n "$cfg_bat" ]; then
-                     printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified or invalid (must be 80 or 100). Aborted.\n" "$cfg_bat" "$new_stop" 1>&2
-                 else
-                     printf "Error: stop charge threshold (%s) for %s is not specified or invalid (must be 80 or 100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
-                 fi
-                 ;;
+            2)
+                if [ -n "$cfg_bat" ]; then
+                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified or invalid (must be 80 or 100). Aborted.\n" "$cfg_bat" "$new_stop" 1>&2
+                else
+                    printf "Error: stop charge threshold (%s) for %s is not specified or invalid (must be 80 or 100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
+                fi
+                ;;
          esac
          return 2
-     fi
-
-    # hardware constraint: start = stop - 5
-    nom_start=$((new_stop - 5))
-
-    # start: silently ignore non-numeric or invalid threshold, substitute it with stop - 5
-    if ! is_uint "$new_start" 3 || [ "$new_start" -ne "$nom_start" ]; then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str; nom=$nom_start"
-        new_start="$nom_start"
     fi
+
+    # start threshold value depends on stop threshold (hardware constraint)
+    case "$new_stop" in
+        80) new_start="75" ;;
+        100) new_start="100" ;;
+    esac
 
     # read active stop threshold value
     if ! old_stop=$(batdrv_read_threshold stop 0); then
@@ -333,73 +332,41 @@ batdrv_write_thresholds () {
         esac
         return 4
     fi
-    old_start=$((old_stop - 5))
 
-    # determine write sequence too meet boundary condition start < stop
-    # disclaimer: the driver doesn't enforce it but we don't know about the
-    # firmware and it's reasonable anyway
-    local rc=0 steprc tseq
-
-    if [ "$new_start" -ge "$old_stop" ]; then
-        tseq="stop start"
-    else
-        tseq="start stop"
-    fi
-
-    # write new thresholds in determined sequence
+    # write new stop threshold
     if [ "$verb" = "2" ]; then
         printf "Setting temporary charge thresholds for %s:\n" "$_bat_str"
     fi
 
-    for step in $tseq; do
-        local old_thresh new_thresh steprc
+    local rc=0
+    if [ "$old_stop" != "$new_stop" ]; then
+        # new threshold differs from effective one --> write it
+        write_sysf "$new_stop" "$_bf_stop" || rc=5
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).stop.write: bat=$_bat_str; old=$old_stop; new=$new_stop; rc=$rc"
 
-        case $step in
-            start)
-                old_thresh=$old_start
-                new_thresh=$new_start
+        case $verb in
+            2)
+                if [ $rc -eq 0 ]; then
+                    printf "  stop  = %3d\n" "$new_stop"
+                    printf "  start = %3d (due to hardware constraint)\n" "$new_start"
+                else
+                    printf "  stop  = %3d (Error: write failed)\n" "$new_stop" 1>&2
+                fi
                 ;;
-
-            stop)
-                old_thresh=$old_stop
-                new_thresh=$new_stop
+            1)
+                if [ $rc -gt 0 ]; then
+                    echo_message "Error: writing stop charge threshold for $_bat_str failed."
+                fi
                 ;;
         esac
+    else
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).stop.no_change: bat=$_bat_str; old=$old_stop; new=$new_stop"
 
-        if [ "$old_thresh" != "$new_thresh" ]; then
-            # new threshold differs from effective one --> write it
-            case $step in
-                start) write_sysf "$new_thresh" "$_bf_start" ;;
-                stop)  write_sysf "$new_thresh" "$_bf_stop"  ;;
-            esac
-            steprc=$?; [ $steprc -ne 0 ] && rc=5
-            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.write: bat=$_bat_str; old=$old_thresh; new=$new_thresh; steprc=$steprc"
-
-            case $verb in
-                2)
-                    if [ $steprc -eq 0 ]; then
-                        case $step in
-                            start) printf "  %-5s = %3d (due to hardware constraint)\n" "$step" "$new_thresh" ;;
-                            stop)  printf "  %-5s = %3d\n" "$step" "$new_thresh"  ;;
-                        esac
-                    else
-                        printf "  %-5s = %3d (Error: write failed)\n" "$step" "$new_thresh" 1>&2
-                    fi
-                    ;;
-                1)
-                    if [ $steprc -gt 0 ]; then
-                        echo_message "Error: writing charge $step threshold for $_bat_str failed."
-                    fi
-                    ;;
-            esac
-        else
-            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.no_change: bat=$_bat_str; old=$old_thresh; new=$new_thresh"
-
-            if [ "$verb" = "2" ]; then
-                printf "  %-5s = %3d (no change)\n" "$step" "$new_thresh"
-            fi
+        if [ "$verb" = "2" ]; then
+            printf "  stop  = %3d (no change)\n" "$new_stop"
+            printf "  start = %3d (no change)\n" "$new_start"
         fi
-    done # for step
+    fi
 
     echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).complete: bat=$_bat_str; rc=$rc"
     return $rc
