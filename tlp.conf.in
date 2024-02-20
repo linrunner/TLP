@@ -390,9 +390,9 @@
 # Note: this preserves the kernel driver default, to force a certain state
 # use RUNTIME_PM_ENABLE/DISABLE instead.
 # Separate multiple drivers with spaces.
-# Default: "mei_me nouveau radeon", use "" to disable completely.
+# Default: "mei_me nouveau radeon xhci_hcd", use "" to disable completely.
 
-#RUNTIME_PM_DRIVER_DENYLIST="mei_me nouveau radeon"
+#RUNTIME_PM_DRIVER_DENYLIST="mei_me nouveau radeon xhci_hcd"
 
 # Permanently enable/disable Runtime PM for listed PCIe device addresses
 # (independent of the power source). This has priority over all preceding
