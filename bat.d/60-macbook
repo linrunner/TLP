@@ -496,7 +496,7 @@ batdrv_show_battery_data () {
     esac
     if [ "$_bm_thresh" != "none" ]; then
         printf "Parameter value ranges:\n"
-        printf "* START_CHARGE_THRESH_BAT0:  don't care (hardware enforces stop - 5)\n"
+        printf "* START_CHARGE_THRESH_BAT0:  don't care (hardware enforces 75, 100)\n"
         printf "* STOP_CHARGE_THRESH_BAT0:   80, 100(default)\n"
     fi
     printf "\n"
