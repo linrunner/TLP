@@ -1360,7 +1360,7 @@ batdrv_show_battery_data () {
         printf "\n"
     fi
 
-    if [ "$coreboot" = "1" ]; then ### DEVEL ###
+    if [ "$coreboot" = "1" ]; then
         printf "*) Converted coreboot charge readings may differ.\n\n"
     fi
 
