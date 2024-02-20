@@ -729,7 +729,7 @@ batdrv_write_thresholds () {
                     ;;
                 1)
                     if [ $steprc -gt 0 ]; then
-                        echo_message "Error: writing charge $step threshold for $_bat_str failed."
+                        echo_message "Error: writing $step charge threshold for $_bat_str failed."
                     fi
                     ;;
             esac
