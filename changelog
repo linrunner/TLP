@@ -11,7 +11,7 @@
     - ThinkPads:
       - tlp-stat -b improvements for coreboot:
         - Fix charge readings (Issue #657)
-        - Show that recalibration is not available
+        - Indicate when recalibration is not possible
     Disks:
     - tlp-stat -d: replace disk serial number with asterisks (for privacy)
     Processor:
@@ -32,6 +32,9 @@
     - tlp diskid: filter duplicates
     General:
     - tlp-stat -s: rework manual mode detection (Issue #702)
+    USB:
+    - Prevent USB devices from being unrecognized or malfunctioning on battery;
+      adds xhci_hcd to RUNTIME_PM_DRIVER_DENYLIST defaults (Issues #436, #587)
 
 +++ 1.6.1 --- 18.09.2023 +++
 
