@@ -61,6 +61,7 @@ show_usb=0
 show_verbose=0
 show_warn=0
 show_mode=0
+quiet=0
 
 # --- Functions
 
@@ -108,6 +109,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
             "-m"|"--mode")
                 show_all=0
                 show_mode=1
+                quiet=1
                 : ${needs_root_priv:=0}
                 ;;
 
@@ -115,6 +117,11 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 show_all=0
                 show_proc=1
                 needs_root_priv=1
+                ;;
+
+            "-q"|"--quiet")
+                show_all=0
+                quiet=1
                 ;;
 
             "-r"|"--rfkill")
@@ -221,8 +228,10 @@ if [ "$needs_root_priv" = "1" ]; then
 fi
 get_sys_power_supply
 
-echo "--- TLP $TLPVER --------------------------------------------"
-echo
+if [ "$quiet" = "0" ]; then
+  echo "--- TLP $TLPVER --------------------------------------------"
+  echo
+fi
 
 # --- show configuration
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
