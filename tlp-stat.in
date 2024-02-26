@@ -196,13 +196,15 @@ parse_args () { # parse command-line -- $@: arguments to parse
             *)
                 echo "Usage: tlp-stat [ -b | --battery   | -c | --config    |"
                 echo "                  -d | --disk      | -e | --pcie      |"
-                echo "                  -g | --graphics  | -p | --processor |"
+                echo "                  -g | --graphics  | -m | --mode      |"
+                echo "                  -p | --processor | -q | --quiet     |"
                 echo "                  -r | --rfkill    | -s | --system    |"
                 echo "                  -t | --temp      | -u | --usb       |"
                 echo "                  -w | --warn      | -v | --verbose   |"
-                echo "                     | --cdiff     |    | --pev       |"
-                echo "                  -P | --psup      | -T | --trace     |"
-                echo "                     | --udev ]"
+                echo "                     | --version   |    | --cdiff     |"
+                echo "                     | --pev       | -P | --psup      |"
+                echo "                  -T | --trace     |    | --udev      |"
+                echo "                ]"
                 do_exit 3
                 ;;
         esac
