@@ -61,6 +61,7 @@ show_usb=0
 show_verbose=0
 show_warn=0
 show_mode=0
+show_version=0
 quiet=0
 
 # --- Functions
@@ -182,6 +183,13 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 : ${needs_root_priv:=0}
                 ;;
 
+            "--version")
+                show_all=0
+                show_version=1
+                quiet=1
+                : ${needs_root_priv:=0}
+                ;;
+
             "--") # config values follow --> quit loop
                 break
                 ;;
@@ -249,6 +257,10 @@ fi # show_conf
 if [ "$show_mode" = "1" ]; then
   printf "%s" "$(print_saved_powerstate)"
 fi # show_mode
+
+if [ "$show_version" = "1" ]; then
+  echo "$TLPVER"
+fi # show_version
 
 if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # --- show system info
