@@ -37,9 +37,21 @@ View PCIe device information. Add \fB-v\fR to see device runtime status.
 View graphics card information.
 .
 .TP
+.B \-m, \-\-mode
+Print the current status of tlp.
+.sp
+When in quiet, only output current mode
+(AC, battery, AC (manual), battery (manual)).
+.
+.TP
 .B \-p, \-\-processor
 View processor information. For clarity the standard output shows only cpu0.
 Add \fB-v\fR to see all.
+Add \fB-q\fR to see only current state of cup0.
+.
+.TP
+.B \-q, \-\-quiet
+Show less information in mode, processor, temperature.
 .
 .TP
 .B \-r, \-\-rfkill
@@ -60,6 +72,10 @@ View USB device information. Add \fB-v\fR to see device runtime status.
 .TP
 .B \-v, \-\-verbose
 Show more information in battery, PCIe, processor and USB categories.
+.
+.TP
+.B \-\-version
+Print version of TLP
 .
 .PP
 Diagnostics and debugging:
