@@ -84,7 +84,7 @@ batdrv_init () {
     _bt_def_stop=100
 
     # iterate batteries and check for native kernel ACPI
-    # note: atm we assume only one battery called "macsmc-battery
+    # note: assume only one battery called "macsmc-battery"
     local bd bs
     local done=0
     local bat_glob="macsmc-battery"
@@ -157,8 +157,9 @@ batdrv_select_battery () {
     # retval: $_bat_str:    macsmc-battery;
     #         $_bt_cfg_bat: config parameter suffix (BAT0);
     #         $_bd_read:    directory with battery data sysfiles;
-    #         $_bf_start:   sysfile for stop threshold;
+    #         $_bf_start:   sysfile for start threshold;
     #         $_bf_stop:    sysfile for stop threshold;
+    #         $_bf_dischg:  sysfile for force-discharge;
 
     # prerequisite: batdrv_init()
 
@@ -232,7 +233,7 @@ batdrv_read_threshold () {
     esac
     if [ -n "$out" ]; then
         printf "%s" "$out"
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1).simulate: bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1, $2).simulate: bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
         return 0
     fi
 
@@ -269,7 +270,7 @@ batdrv_read_threshold () {
         rc=4
     fi
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1): bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold($1, $2): bm_thresh=$_bm_thresh; bf=$bf; out=$out; rc=$rc"
     return $rc
 }
 
@@ -390,15 +391,18 @@ batdrv_chargeonce () {
     # function not implemented
     # global param: $_batdrv_plugin
     # prerequisite: batdrv_init()
+
     echo_debug "bat" "batdrv.${_batdrv_plugin}.charge_once.not_implemented"
     return 255
 }
 
 batdrv_apply_configured_thresholds () {
     # apply configured stop thresholds from configuration to all batteries
+    # - called for bg tasks tlp init [re]start/auto and tlp start
     # output parameter errors only
     # global param: $_batdrv_plugin
     # prerequisite: batdrv_init()
+
     if [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
         if batdrv_select_battery BAT0; then
             batdrv_write_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0" 1 1; rc=$?
@@ -462,14 +466,18 @@ batdrv_read_force_discharge () {
 batdrv_write_force_discharge () {
     # function not implemented
     # global param: $_batdrv_plugin
-    # prerequisite: batdrv_init()    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_force_discharge.not_implemented"
+    # prerequisite: batdrv_init()
+
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_force_discharge.not_implemented"
     return 255
 }
 
 batdrv_cancel_force_discharge () {
     # function not implemented
     # global param: $_batdrv_plugin
-    # prerequisite: batdrv_init()echo_debug "bat" "batdrv.${_batdrv_plugin}.cancel_force_discharge.not_implemented"
+    # prerequisite: batdrv_init()
+
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.cancel_force_discharge.not_implemented"
     return 255
 }
 
@@ -477,6 +485,7 @@ batdrv_force_discharge_active () {
     # function not implemented
     # global param: $_batdrv_plugin
     # prerequisite: batdrv_init()
+
     echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active.not_implemented"
     return 255
 }
@@ -498,6 +507,7 @@ batdrv_show_battery_data () {
     # $1: 1=verbose
     # global param: $_batteries, $_batdrv_kmod, $_bd_read, $_bf_start, $_bf_stop, $_bf_dischg
     # prerequisite: batdrv_init()
+
     local verbose=${1:-0}
 
     printf "+++ Battery Care\n"
@@ -586,12 +596,12 @@ batdrv_show_battery_data () {
         # --- show battery features: thresholds, force_discharge
         local lf=0
         if [ "$_bm_thresh" = "natacpi" ]; then
-            printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
-            printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
+            printf "%-69s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
+            printf "%-69s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
             lf=1
         fi
         if [ "$_bm_dischg" = "natacpi" ]; then
-            printf "%-59s = %6s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
+            printf "%-69s = %6s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
             lf=1
         fi
         [ $lf -gt 0 ] && printf "\n"
@@ -623,5 +633,6 @@ batdrv_show_battery_data () {
 
 batdrv_recommendations () {
      # no recommendations
+
     return 0
 }
