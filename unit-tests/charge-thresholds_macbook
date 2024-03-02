@@ -77,7 +77,7 @@ Setting temporary charge thresholds for macsmc-battery:
 $ #
 $ # --- tlp-stat
 $ sudo tlp-stat -b -- | grep -E 'charge_control'
-/sys/class/power_supply/macsmc-battery/charge_control_start_threshold =     95 [%]
+/sys/class/power_supply/macsmc-battery/charge_control_start_threshold =    100 [%]
 /sys/class/power_supply/macsmc-battery/charge_control_end_threshold   =    100 [%]
 $ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
 /sys/class/power_supply/macsmc-battery/charge_control_start_threshold = (not available) [%]
