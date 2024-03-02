@@ -78,12 +78,12 @@ $ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=macbook
 Error: battery BAT1 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=macbook X_THRESH_SIMULATE_START=95 | grep -E 'charge_control'
-/sys/class/power_supply/BAT0/charge_control_start_threshold =     95 [%]
-/sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=macbook X_THRESH_SIMULATE_START=100 | grep -E 'charge_control'
+/sys/class/power_supply/BAT0/charge_control_start_threshold           =    100 [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold             =    100 [%]
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=macbook X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
-/sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
-/sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
+/sys/class/power_supply/BAT0/charge_control_start_threshold           = (not available) [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold             = (not available) [%]
 $ #
 $ # +++ MSI ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
