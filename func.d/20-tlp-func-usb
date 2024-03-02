@@ -29,14 +29,13 @@ usb_suspend_device () {
 
     if [ -f "$usbdev/power/autosuspend_delay_ms" ]; then
         # device is autosuspendable
-        # shellcheck disable=SC2155
-        local vendor="$(read_sysf "$usbdev/idVendor")"
-        # shellcheck disable=SC2155
-        local usbid="$vendor:$(read_sysf "$usbdev/idProduct")"
-        # shellcheck disable=SC2155
-        local busdev="Bus $(read_sysf "$usbdev/busnum") Dev $(read_sysf "$usbdev/devnum")"
-        # shellcheck disable=SC2155
-        local dclass="$(read_sysf "$usbdev/bDeviceClass")"
+        local vendor usbid busdev dclass
+
+        vendor="$(read_sysf "$usbdev/idVendor")"
+        usbid="$vendor:$(read_sysf "$usbdev/idProduct")"
+        busdev="Bus $(read_sysf "$usbdev/busnum") Dev $(read_sysf "$usbdev/devnum")"
+        dclass="$(read_sysf "$usbdev/bDeviceClass")"
+
         local control="${3:-auto}"
         local caller="$2"
         local exc=""
@@ -274,4 +273,3 @@ set_usb_suspend () {
 
     return 0
 }
-

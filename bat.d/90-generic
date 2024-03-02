@@ -59,9 +59,10 @@ batdrv_select_battery () {
     # $1: battery
     # retval: $_bd_read:   directory with battery data sysfiles
 
+    local bat="$1"
+
     # convert battery param to uppercase
-    # shellcheck disable=SC2155
-    local bat="$(printf '%s' "$1" | tr "[:lower:]" "[:upper:]")"
+    bat="$(printf '%s' "$1" | tr "[:lower:]" "[:upper:]")"
 
    _bd_read="$ACPIBATDIR/$bat"
     return 0
