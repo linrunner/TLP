@@ -173,9 +173,7 @@ batdrv_init () {
     _bn_stop=""
     _bn_dischg=""
     _batteries=""
-    # shellcheck disable=SC2034
     _bt_def_start=96
-    # shellcheck disable=SC2034
     _bt_def_stop=100
 
     # --- 1. iterate batteries and check for native kernel ACPI
@@ -348,14 +346,15 @@ batdrv_init () {
 batdrv_select_battery () {
     # determine battery sysfiles and tpacpi-bat index
     # $1: BAT0/BAT1/DEF
-    # global param: $_bm_read
+    # global params: $_batdrv_plugin, $_batteries, $_bm_read, $_bm_dischg, $_bn_start, $_bn_stop, $_bn_dischg
     # rc: 0=bat exists/1=bat non-existent
-    # retval: $_bat_str:   BAT0/BAT1;
-    #         $_bat_idx:   1/2;
-    #         $_bd_read:   directory with battery data sysfiles;
-    #         $_bf_start:  sysfile for start threshold;
-    #         $_bf_stop:   sysfile for stop threshold;
-    #         $_bf_dischg: sysfile for force discharge
+    # retval: $_bat_str:    BAT0/BAT1;
+    #         $_bt_cfg_bat: config suffix = BAT0/BAT1;
+    #         $_bat_idx:    1/2;
+    #         $_bd_read:    directory with battery data sysfiles;
+    #         $_bf_start:   sysfile for start threshold;
+    #         $_bf_stop:    sysfile for stop threshold;
+    #         $_bf_dischg:  sysfile for force discharge
     # prerequisite: batdrv_init()
 
     # defaults
@@ -365,17 +364,23 @@ batdrv_select_battery () {
     _bf_start=""
     _bf_stop=""
     _bf_dischg=""
+    _bt_cfg_bat=""
+
+    local bat="$1"
+
+    # convert battery param to uppercase
+    bat="$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")"
 
     # validate battery param
     local bs
-    case $1 in
+    case "$bat" in
         DEF) # 1st battery is default
             bs="${_batteries%% *}"
             ;;
 
         *)
-            if wordinlist "$1" "$_batteries"; then
-                bs=$1
+            if wordinlist "$bat" "$_batteries"; then
+                bs="$bat"
             else
                 # battery not present --> quit
                 echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1).not_present"
@@ -384,7 +389,7 @@ batdrv_select_battery () {
             ;;
     esac
 
-    # determine bat index for tpacpi and main/aux distinction
+    # determine battery name and index for tpacpi and main/aux distinction
     case $bs in
         BAT0)
             _bat_str="$bs"
@@ -408,6 +413,9 @@ batdrv_select_battery () {
             ;;
     esac
 
+    # config suffix equals battery name
+    _bt_cfg_bat="$_bat_str"
+
     # determine natacpi sysfiles
     if [ "$_bm_thresh" = "natacpi" ]; then
         _bf_start="$ACPIBATDIR/$bs/$_bn_start"
@@ -423,7 +431,7 @@ batdrv_select_battery () {
         tpsmapi) _bd_read="$SMAPIBATDIR/$bs" ;;
     esac
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; bat_idx=$_bat_idx; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; cfg=$_bt_cfg_bat; bat_idx=$_bat_idx; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg"
     return 0
 }
 
@@ -431,7 +439,7 @@ batdrv_read_threshold () {
     # read and print charge threshold
     # $1: start/stop
     # $2: 0=api/1=tlp-stat output
-    # global param: $_bm_thresh, $_bf_start, $_bf_stop, $_bat_idx
+    # global params: $_batdrv_plugin, $_bm_thresh, $_bf_start, $_bf_stop, $_bat_idx
     # out:
     # - api: 0..100/"" on error
     # - tlp-stat: 0..100/"(not available)" on error
@@ -539,8 +547,8 @@ batdrv_write_thresholds () {
     # $1: new start threshold 0(disabled)..99/DEF(default)
     # $2: new stop threshold 1..100/DEF(default)
     # $3: 0=quiet/1=output parameter errors/2=output progress and errors
-    # $4: battery - non-empty string indicates thresholds stem from configuration
-    # global param: $_bm_thresh, $_bat_str, $_bat_idx, $_bf_start, $_bf_stop
+    # $4: non-empty string indicates thresholds stem from configuration
+    # global params: $_batdrv_plugin, $_bm_thresh, $_bat_str, $_bat_idx, $_bt_cfg_bat, $_bf_start, $_bf_stop, $_bt_def_start, $_bt_def_stop
     # rc: 0=ok/
     #     1=not configured/
     #     2=threshold(s) out of range or non-numeric/
@@ -551,7 +559,6 @@ batdrv_write_thresholds () {
     local new_start=${1:-}
     local new_stop=${2:-}
     local verb=${3:-0}
-    local cfg_bat="$4"
     local old_start old_stop
 
     # insert defaults
@@ -561,9 +568,9 @@ batdrv_write_thresholds () {
     # --- validate thresholds
     local rc
 
-    if [ -n "$cfg_bat" ] && [ -z "$new_start" ] && [ -z "$new_stop" ]; then
+    if [ -n "$4" ] && [ -z "$new_start" ] && [ -z "$new_stop" ]; then
         # do nothing if unconfigured
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).not_configured: bat=$_bat_str"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).not_configured: bat=$_bat_str; cfg=$_bt_cfg_bat"
         return 1
     fi
 
@@ -571,17 +578,17 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_start" 3 || \
        ! is_within_bounds "$new_start" 0 99; then
         # threshold out of range
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
             1)
-                if [ -n "$cfg_bat" ]; then
-                    echo_message "Error in configuration at START_CHARGE_THRESH_${cfg_bat}=\"${new_start}\": not specified, invalid or out of range (0..99). Battery skipped."
+                if [ -n "$4" ]; then
+                    echo_message "Error in configuration at START_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_start}\": not specified, invalid or out of range (0..99). Battery skipped."
                 fi
                 ;;
 
             2)
-                if [ -n "$cfg_bat" ]; then
-                    printf "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..99). Aborted.\n" "$cfg_bat" "$new_start" 1>&2
+                if [ -n "$4" ]; then
+                    printf "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..99). Aborted.\n" "$_bt_cfg_bat" "$new_start" 1>&2
                 else
                     printf "Error: start charge threshold (%s) for %s is not specified, invalid or out of range (0..99). Aborted.\n" "$new_start" "$_bat_str" 1>&2
                 fi
@@ -594,17 +601,17 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_stop" 3 || \
        ! is_within_bounds "$new_stop" 1 100; then
         # threshold out of range
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: bat=$_bat_str"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
             1)
-                if [ -n "$cfg_bat" ]; then
-                    echo_message "Error in configuration at STOP_CHARGE_THRESH_${cfg_bat}=\"${new_stop}\": not specified, invalid or out of range (1..100). Battery skipped."
+                if [ -n "$4" ]; then
+                    echo_message "Error in configuration at STOP_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_stop}\": not specified, invalid or out of range (1..100). Battery skipped."
                 fi
                 ;;
 
             2)
-                if [ -n "$cfg_bat" ]; then
-                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (1..100). Aborted.\n" "$cfg_bat" "$new_stop" 1>&2
+                if [ -n "$4" ]; then
+                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (1..100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
                 else
                     printf "Error: stop charge threshold (%s) for %s is not specified, invalid or out of range (1..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
                 fi
@@ -615,17 +622,17 @@ batdrv_write_thresholds () {
 
     # check if start < stop
     if [ "$new_start" -ge "$new_stop" ]; then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_diff: bat=$_bat_str"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_diff: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
             1)
-                if [ -n "$cfg_bat" ]; then
-                    echo_message "Error in configuration: START_CHARGE_THRESH_${cfg_bat} >= STOP_CHARGE_THRESH_${cfg_bat}. Battery skipped."
+                if [ -n "$4" ]; then
+                    echo_message "Error in configuration: START_CHARGE_THRESH_${_bt_cfg_bat} >= STOP_CHARGE_THRESH_${_bt_cfg_bat}. Battery skipped."
                 fi
                 ;;
 
             2)
-                if [ -n "$cfg_bat" ]; then
-                    printf "Error in configuration: START_CHARGE_THRESH_%s >= STOP_CHARGE_THRESH_%s. Aborted.\n" "$cfg_bat" "$cfg_bat" 1>&2
+                if [ -n "$4" ]; then
+                    printf "Error in configuration: START_CHARGE_THRESH_%s >= STOP_CHARGE_THRESH_%s. Aborted.\n" "$_bt_cfg_bat" "$_bt_cfg_bat" 1>&2
                 else
                     printf "Error: start threshold >= stop threshold for %s. Aborted.\n" "$_bat_str" 1>&2
                 fi
@@ -637,7 +644,7 @@ batdrv_write_thresholds () {
     # read active threshold values
     if ! old_start=$(batdrv_read_threshold start 0) || \
        ! old_stop=$(batdrv_read_threshold stop 0); then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
             1) echo_message "Warning: could not read current charge threshold(s) for $_bat_str. Battery skipped." ;;
             2) printf "Error: could not read current charge threshold(s) for %s. Aborted.\n" "$_bat_str" 1>&2 ;;
@@ -714,7 +721,7 @@ batdrv_write_thresholds () {
                     rc=5
                     ;;
             esac
-            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.write: bat=$_bat_str; old=$old_thresh; new=$new_thresh; steprc=$steprc"
+            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.write: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_thresh; new=$new_thresh; steprc=$steprc"
             case $verb in
                 2)
                     if [ $steprc -eq 0 ]; then
@@ -734,7 +741,7 @@ batdrv_write_thresholds () {
                     ;;
             esac
         else
-            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.no_change: bat=$_bat_str; old=$old_thresh; new=$new_thresh"
+            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.no_change: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_thresh; new=$new_thresh"
 
             if [ "$verb" = "2" ]; then
                 printf "  %-5s = %3d (no change)\n" "$step" "$new_thresh"
@@ -742,14 +749,14 @@ batdrv_write_thresholds () {
         fi
     done # for step
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).complete: bat=$_bat_str; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).complete: bat=$_bat_str; cfg=$_bt_cfg_bat; rc=$rc"
     return $rc
 }
 
 batdrv_chargeonce () {
     # charge battery to stop threshold once
     # use pre-determined method and sysfiles from global parms
-    # global param: $_bm_thresh, $_bat_str, $_bat_idx, $_bf_start, $_bf_stop
+    # global params: $_batdrv_plugin, $_bm_thresh, $_bat_str, $_bat_idx, $_bf_start, $_bf_stop
     # rc: 0=ok/
     #     2=charge level read error
     #     3=charge level too high/
@@ -823,16 +830,20 @@ batdrv_chargeonce () {
 }
 
 batdrv_apply_configured_thresholds () {
-    # apply configured thresholds from configuration to all batteries
+    # apply configured stop thresholds from configuration to all batteries
+    # - called for bg tasks tlp init [re]start/auto and tlp start
     # output parameter errors only
+    # prerequisite: batdrv_init()
 
-    if batdrv_select_battery BAT0; then
-        batdrv_write_thresholds "$START_CHARGE_THRESH_BAT0" "$STOP_CHARGE_THRESH_BAT0" 1 "BAT0"; rc=$?
-    fi
-    if batdrv_select_battery BAT1; then
-        # write configured thresholds, output parameter errors
-        batdrv_write_thresholds "$START_CHARGE_THRESH_BAT1" "$STOP_CHARGE_THRESH_BAT1" 1 "BAT1"; rc=$?
-    fi
+    local bat start_thresh stop_thresh
+
+    for bat in BAT0 BAT1; do
+        if batdrv_select_battery "$bat"; then
+            eval start_thresh="\$START_CHARGE_THRESH_${_bt_cfg_bat}"
+            eval stop_thresh="\$STOP_CHARGE_THRESH_${_bt_cfg_bat}"
+            batdrv_write_thresholds "$start_thresh" "$stop_thresh" 1 1
+        fi
+    done
 
     return 0
 }
@@ -840,7 +851,7 @@ batdrv_apply_configured_thresholds () {
 batdrv_read_force_discharge () {
     # read and print force-discharge state
     # $1: 0=api/1=tlp-stat output
-    # global param: $_bm_dischg, $_bf_dischg, $_bat_idx
+    # global params: $_batdrv_plugin, $_bm_dischg, $_bat_str, $_bf_dischg, $_bat_idx
     # out:
     # - api: 0=off/1=on/"" on error
     # - tlp-stat: status text/"(not available)" on error
@@ -905,7 +916,7 @@ batdrv_read_force_discharge () {
 batdrv_write_force_discharge () {
     # write force discharge state
     # $1: 0=off/1=on
-    # global param: $_bat_str, $_bat_idx, $_bm_dischg, $_bf_dischg
+    # global params: $_batdrv_plugin, $_bat_str, $_bat_idx, $_bm_dischg, $_bf_dischg
     # rc: 0=done/5=write error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
@@ -935,7 +946,7 @@ batdrv_write_force_discharge () {
 
 batdrv_cancel_force_discharge () {
     # trap: called from batdrv_discharge
-    # global param: $_bat_str
+    # global params: $_batdrv_plugin, $_bat_str
     # prerequisite: batdrv_discharge()
 
     batdrv_write_force_discharge 0
@@ -947,7 +958,7 @@ batdrv_cancel_force_discharge () {
 }
 
 batdrv_force_discharge_active () { # check if battery is in 'force_discharge' state
-    # global param: $_bat_str, $_bm_read, $_bd_read
+    # global params: $_batdrv_plugin, $_bat_str, $_bm_read, $_bd_read
     # rc: 0=discharging/1=not discharging/2=AC detached/255=no api
     # retval: $_bat_soc, $_bat_en, $_bat_ef
     # prerequisite: batdrv_init(), batdrv_select_battery()
@@ -1005,7 +1016,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
 
 batdrv_discharge () {
     # discharge battery
-    # global param: $_bm_dischg, $_bat_idx, $_bf_dischg
+    # global params: $_batdrv_plugin, $_bm_dischg, $_bat_str, $_bat_idx, $_bd_read, $_bf_dischg, $_bat_en, $_bat_soc
     # rc: 0=done/1=malfunction/2=not emptied/3=ac removed/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
@@ -1135,7 +1146,8 @@ batdrv_discharge () {
 batdrv_show_battery_data () {
     # output battery status
     # $1: 1=verbose
-    # global param: $_batteries
+    # global params: $_batdrv_plugin, $_batteries, $_batdrv_kmod, $_natacpi, $_tpacpi, $_tpsmapi,
+    #                $_bm_thresh, $_bm_dischg, $_bd_read, $_bf_start, $_bf_stop, $_bf_dischg
     # prerequisite: batdrv_init()
     local verbose=${1:-0}
 
@@ -1356,7 +1368,7 @@ batdrv_show_battery_data () {
 
     if [ $bcnt -gt 1 ] && [ $efsum -ne 0 ]; then
         # more than one battery detected --> show charge total
-        perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '$ensum' / '$efsum');'
+        perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '"$ensum"' / '"$efsum"');'
         printf "\n"
     fi
 

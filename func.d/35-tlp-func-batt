@@ -15,8 +15,8 @@ readonly ACPIBATDIR=/sys/class/power_supply
 # ----------------------------------------------------------------------------
 # Functions
 
-set_charge_thresholds () {
-    # apply configured thresholds from configuration to all batteries
+init_batteries_thresholds () {
+    # apply thresholds from configuration to all batteries
     # optional depending on active plugin when specified in $1
     # - called from bg tasks tlp init [re]start/auto and tlp start
     # $1: plugin list (space separated)
@@ -52,8 +52,8 @@ set_charge_thresholds () {
 }
 
 setcharge_battery () {
-    # write charge thresholds
-    # - called from tlp setcharge/fullcharge/recalibrate
+    # apply charge thresholds for a single battery
+    # - called from cmdline tlp setcharge/fullcharge/recalibrate
     # $1: start charge threshold,
     # $2: stop charge threshold
     # $3: battery
@@ -105,19 +105,14 @@ setcharge_battery () {
             ;;
     esac
 
-    # convert bat to uppercase
-    bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
-
     # check bat presence and/or get default(1st) battery
     if batdrv_select_battery "$bat"; then
-        # battery present
-
-        # get configured values if requested
+        # battery present -> get configured values if requested
         if [ $use_cfg -eq 1 ]; then
             # shellcheck disable=SC2154
-            eval start_thresh="\$START_CHARGE_THRESH_${_bt_cfg_bat:-$_bat_str}"
+            eval start_thresh="\$START_CHARGE_THRESH_${_bt_cfg_bat}"
             # shellcheck disable=SC2154
-            eval stop_thresh="\$STOP_CHARGE_THRESH_${_bt_cfg_bat:-$_bat_str}"
+            eval stop_thresh="\$STOP_CHARGE_THRESH_${_bt_cfg_bat}"
         fi
     else
         # battery not present
@@ -129,7 +124,7 @@ setcharge_battery () {
     # apply thresholds
     if [ $use_cfg -eq 1 ]; then
         # from configuration
-        batdrv_write_thresholds "$start_thresh" "$stop_thresh" 2 "$_bat_str"; rc=$?
+        batdrv_write_thresholds "$start_thresh" "$stop_thresh" 2 1; rc=$?
     else
         # from command line
         batdrv_write_thresholds "$start_thresh" "$stop_thresh" 2; rc=$?
@@ -167,6 +162,7 @@ chargeonce_battery () {
     if ! batdrv_select_battery "$bat"; then
         # battery not present
         printf "Error: battery %s not present.\n" "$bat" 1>&2
+        # shellcheck disable=SC2154
         echo_debug "bat" "chargeonce_battery.not_present($_bat_str)"
         return 1
     fi

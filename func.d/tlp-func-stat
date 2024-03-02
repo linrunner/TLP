@@ -750,7 +750,7 @@ print_batstate () {
     # print battery charging state with
     # an explanation when a threshold inhibits charging
     # $1: sysfile
-    # global param: $_bm_thresh, $_syspwr
+    # global params: $_bm_thresh, $_syspwr
     local sysf val
 
     # check if bat state sysfile exists
