@@ -238,8 +238,8 @@ fi
 get_sys_power_supply
 
 if [ "$quiet" = "0" ]; then
-  echo "--- TLP $TLPVER --------------------------------------------"
-  echo
+    echo "--- TLP $TLPVER --------------------------------------------"
+    echo
 fi
 
 # --- show configuration
@@ -258,7 +258,7 @@ fi # show_conf
 print_status () { # print current status
     # --- show TLP status
     if [ "$quiet" = "0" ]; then
-      echo "+++ TLP Status"
+        echo "+++ TLP Status"
     fi
     if check_tlp_enabled; then
         printf "State          = enabled\n"
@@ -293,19 +293,19 @@ print_status () { # print current status
         *) printf "Power source   = unknown\n" ;;
     esac
     if [ "$quiet" = "0" ]; then
-      if check_ac_quirk "$model"; then
-        echo "Notice: system may not detect AC/charger -- see: https://linrunner.de/faq/operation.html#faq-ac-quirk"
-      fi
-      echo
+        if check_ac_quirk "$model"; then
+            echo "Notice: system may not detect AC/charger -- see: https://linrunner.de/faq/operation.html#faq-ac-quirk"
+        fi
+        echo
 
     # -- check systemd services
     check_services_activation_status
 
     # -- check for power-profiles-daemon
     if check_ppd_active; then
-      echo_message "Warning: TLP's power saving will not apply on boot because the conflicting $PPD_SERVICE is active "`
-      `"--> Uninstall power-profiles-daemon or invoke 'systemctl mask $PPD_SERVICE to ensure the full functionality of TLP." "err"
-      echo_message "" "err"
+        echo_message "Warning: TLP's power saving will not apply on boot because the conflicting $PPD_SERVICE is active "`
+        `"--> Uninstall power-profiles-daemon or invoke 'systemctl mask $PPD_SERVICE to ensure the full functionality of TLP." "err"
+        echo_message "" "err"
     fi
     # -- show warning if l-m-t detected
     check_laptop_mode_tools
@@ -314,76 +314,76 @@ print_status () { # print current status
 
 if [ "$show_mode" = "1" ]; then
 
-  if [ "$quiet" = "0" ]; then
-    print_status
-  else
+    if [ "$quiet" = "0" ]; then
+        print_status
+    else
 
-  printf "%s" "$(print_saved_powerstate)"
-  
-  fi
+        printf "%s" "$(print_saved_powerstate)"
+
+    fi
 fi # show_mode
 
 if [ "$show_version" = "1" ]; then
-  echo "$TLPVER"
+    echo "$TLPVER"
 fi # show_version
 
 if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
-  if [ "$quiet" = "0" ]; then
-    # --- show system info
-    # simulate arbitrary model
-    if [ -z "$X_SIMULATE_MODEL" ]; then
-      product_version="$(read_dmi product_version)"
-      product_name="$(read_dmi product_name)"
-      if printf '%s' "$product_name" | grep -E -q 'Think[Pp]ad'; then
-        model="$product_name"
-      else
-        model="$product_version $product_name"
-      fi
-    else
-      model="$X_SIMULATE_MODEL"
-    fi
-    echo "+++ System Info"
-    echo "System         = $(read_dmi sys_vendor) $model"
-    echo "BIOS           = $(read_dmi bios_version)"
-    ecfw="$(read_dmi ec_firmware_release)" && printf "EC Firmware    = %s\n" "$ecfw"
+    if [ "$quiet" = "0" ]; then
+        # --- show system info
+        # simulate arbitrary model
+        if [ -z "$X_SIMULATE_MODEL" ]; then
+            product_version="$(read_dmi product_version)"
+            product_name="$(read_dmi product_name)"
+            if printf '%s' "$product_name" | grep -E -q 'Think[Pp]ad'; then
+                model="$product_name"
+            else
+                model="$product_version $product_name"
+            fi
+        else
+            model="$X_SIMULATE_MODEL"
+        fi
+        echo "+++ System Info"
+        echo "System         = $(read_dmi sys_vendor) $model"
+        echo "BIOS           = $(read_dmi bios_version)"
+        ecfw="$(read_dmi ec_firmware_release)" && printf "EC Firmware    = %s\n" "$ecfw"
 
     # --- show release & kernel info
     printf "OS Release     = "
     if ! sed -rn 's/PRETTY_NAME="(.*)"/\1/p' $OSRELEASE 2> /dev/null; then
-      echo "unknown"
+        echo "unknown"
     fi
     echo "Kernel         = $(uname -r -m -v)"
     printparm "%-14s = %s" /proc/cmdline
 
     # --- show init system info
     if check_systemd; then
-      echo "Init system    = systemd $(systemd --version 2> /dev/null | sed -rn 's/systemd ([0-9]+)/v\1/p')"
+        echo "Init system    = systemd $(systemd --version 2> /dev/null | sed -rn 's/systemd ([0-9]+)/v\1/p')"
     elif check_upstart; then
-      echo "Init system    = upstart"
+        echo "Init system    = upstart"
     elif check_openrc; then
-      echo "Init system    = openrc"
+        echo "Init system    = openrc"
     else
-      echo "Init system    = sysvinit"
+        echo "Init system    = sysvinit"
     fi
     if [ -d $EFID ]; then
-      echo "Boot mode      = UEFI"
+        echo "Boot mode      = UEFI"
     else
-      echo "Boot mode      = BIOS (CSM, Legacy)"
+        echo "Boot mode      = BIOS (CSM, Legacy)"
     fi
     printf   "Suspend mode   = %s\n" "$(read_sysf "$SLEEPMODE" "(not available)")"
     print_selinux
     echo
-  fi
-  print_status
+    fi
+    print_status
 
 fi # show_system
 
 if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
-  if [ "$quiet" = "0" ]; then
-    # --- show cpu info
-    echo "+++ Processor"
-    sed -rn 's/model name[ \t]+: (.+)/CPU model      = \1/p' /proc/cpuinfo | head -1
-    echo
+    if [ "$quiet" = "0" ]; then
+        # --- show cpu info
+        echo "+++ Processor"
+        sed -rn 's/model name[ \t]+: (.+)/CPU model      = \1/p' /proc/cpuinfo | head -1
+        echo
 
     # -- show scaling gov and freq info
     cnt=0
@@ -392,100 +392,100 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     cpulast=""
     for cn in $(glob_dirs '/cpu[0-9]*' "$CPUD" | sed 's/.*\/cpu//' | sort -n); do
 
-      cpuf="${CPUD}/cpu${cn}/cpufreq"
-      cpua="${CPUD}/cpu${cn}/acpi_cppc"
-      if [ -f "$cpuf/scaling_driver" ]; then
-        cpu="cpu${cn}"
+        cpuf="${CPUD}/cpu${cn}/cpufreq"
+        cpua="${CPUD}/cpu${cn}/acpi_cppc"
+        if [ -f "$cpuf/scaling_driver" ]; then
+            cpu="cpu${cn}"
 
             # show only cpu0, unless verbose mode is enabled
             if [ $cnt -eq 0 ] || [ "$show_verbose" = "1" ] ; then
-              printparm "%-54s = ##%s##" "$cpuf/scaling_driver"
-              printparm "%-54s = ##%s##" "$cpuf/scaling_governor"
-              printparm "%s = ##%s##" "$cpuf/scaling_available_governors" _
+                printparm "%-54s = ##%s##" "$cpuf/scaling_driver"
+                printparm "%-54s = ##%s##" "$cpuf/scaling_governor"
+                printparm "%s = ##%s##" "$cpuf/scaling_available_governors" _
 
-              if [ -f "$cpuf/scaling_min_freq" ]; then
-                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(read_sysf "$cpuf/scaling_min_freq")"
-              fi
-              if [ -f "$cpuf/scaling_max_freq" ]; then
-                printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(read_sysf "$cpuf/scaling_max_freq")"
-              fi
-              if [ -f "$cpuf/scaling_available_frequencies" ]; then
-                printf "%s = " "$cpuf/scaling_available_frequencies"
-                for freq in $(read_sysf "$cpuf/scaling_available_frequencies"); do
-                  printf "%s " "$freq"
-                done
-                printf "[kHz]\n"
-              fi
-              if [ -f "$cpuf/cpuinfo_min_freq" ]; then
-                printf "%-54s = %8d [kHz]\n" "$cpuf/cpuinfo_min_freq" "$(read_sysf "$cpuf/cpuinfo_min_freq")"
-              fi
-              if [ -f "$cpuf/cpuinfo_max_freq" ]; then
-                printf "%-54s = %8d [kHz]\n" "$cpuf/cpuinfo_max_freq" "$(read_sysf "$cpuf/cpuinfo_max_freq")"
-              fi
-              if [ -f "$cpuf/bios_limit" ]; then
-                printf "%-54s = %8d [kHz]\n" "$cpuf/bios_limit" "$(read_sysf "$cpuf/bios_limit")"
-              fi
+                if [ -f "$cpuf/scaling_min_freq" ]; then
+                    printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_min_freq" "$(read_sysf "$cpuf/scaling_min_freq")"
+                fi
+                if [ -f "$cpuf/scaling_max_freq" ]; then
+                    printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(read_sysf "$cpuf/scaling_max_freq")"
+                fi
+                if [ -f "$cpuf/scaling_available_frequencies" ]; then
+                    printf "%s = " "$cpuf/scaling_available_frequencies"
+                    for freq in $(read_sysf "$cpuf/scaling_available_frequencies"); do
+                        printf "%s " "$freq"
+                    done
+                    printf "[kHz]\n"
+                fi
+                if [ -f "$cpuf/cpuinfo_min_freq" ]; then
+                    printf "%-54s = %8d [kHz]\n" "$cpuf/cpuinfo_min_freq" "$(read_sysf "$cpuf/cpuinfo_min_freq")"
+                fi
+                if [ -f "$cpuf/cpuinfo_max_freq" ]; then
+                    printf "%-54s = %8d [kHz]\n" "$cpuf/cpuinfo_max_freq" "$(read_sysf "$cpuf/cpuinfo_max_freq")"
+                fi
+                if [ -f "$cpuf/bios_limit" ]; then
+                    printf "%-54s = %8d [kHz]\n" "$cpuf/bios_limit" "$(read_sysf "$cpuf/bios_limit")"
+                fi
 
-              if [ -f "$cpuf/energy_performance_preference" ]; then
-                printparm "%s = ##%s## [EPP]" "$cpuf/energy_performance_preference"
-                epp=1
-              fi
-              if [ -f "$cpuf/energy_performance_available_preferences" ]; then
-                printparm "%s = ##%s##" "$cpuf/energy_performance_available_preferences"
-              fi
+                if [ -f "$cpuf/energy_performance_preference" ]; then
+                    printparm "%s = ##%s## [EPP]" "$cpuf/energy_performance_preference"
+                    epp=1
+                fi
+                if [ -f "$cpuf/energy_performance_available_preferences" ]; then
+                    printparm "%s = ##%s##" "$cpuf/energy_performance_available_preferences"
+                fi
 
-              if [ $show_verbose -eq 1 ]; then
-                if [ -f "$cpuf/amd_pstate_highest_perf" ]; then
-                  printf "%-70s = %8d [%%]\n" "$cpuf/amd_pstate_highest_perf" "$(read_sysf "$cpuf/amd_pstate_highest_perf")"
+                if [ $show_verbose -eq 1 ]; then
+                    if [ -f "$cpuf/amd_pstate_highest_perf" ]; then
+                        printf "%-70s = %8d [%%]\n" "$cpuf/amd_pstate_highest_perf" "$(read_sysf "$cpuf/amd_pstate_highest_perf")"
+                    fi
+                    if [ -f "$cpuf/amd_pstate_max_freq" ]; then
+                        printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_max_freq" "$(read_sysf "$cpuf/amd_pstate_max_freq")"
+                    fi
+                    if [ -f "$cpuf/amd_pstate_lowest_nonlinear_freq" ]; then
+                        printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_lowest_nonlinear_freq" "$(read_sysf "$cpuf/amd_pstate_lowest_nonlinear_freq")"
+                    fi
+                    if [ -f "$cpua/lowest_perf" ]; then
+                        printf "%-61s = %5d\n" "$cpua/lowest_perf" "$(read_sysf "$cpua/lowest_perf")"
+                    fi
+                    if [ -f "$cpua/lowest_nonlinear_perf" ]; then
+                        printf "%-61s = %5d\n" "$cpua/lowest_nonlinear_perf" "$(read_sysf "$cpua/lowest_nonlinear_perf")"
+                    fi
+                    if [ -f "$cpua/nominal_perf" ]; then
+                        printf "%-61s = %5d\n" "$cpua/nominal_perf" "$(read_sysf "$cpua/nominal_perf")"
+                    fi
+                    if [ -f "$cpua/reference_perf" ]; then
+                        printf "%-61s = %5d\n" "$cpua/reference_perf" "$(read_sysf "$cpua/reference_perf")"
+                    fi
+                    if [ -f "$cpua/highest_perf" ]; then
+                        printf "%-61s = %5d\n" "$cpua/highest_perf" "$(read_sysf "$cpua/highest_perf")"
+                    fi
+                    if [ -f "$cpua/lowest_freq" ]; then
+                        printf "%-61s = %5d [MHz]\n" "$cpua/lowest_freq" "$(read_sysf "$cpua/lowest_freq")"
+                    fi
+                    if [ -f "$cpua/nominal_freq" ]; then
+                        printf "%-61s = %5d [MHz]\n" "$cpua/nominal_freq" "$(read_sysf "$cpua/nominal_freq")"
+                    fi
                 fi
-                if [ -f "$cpuf/amd_pstate_max_freq" ]; then
-                  printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_max_freq" "$(read_sysf "$cpuf/amd_pstate_max_freq")"
-                fi
-                if [ -f "$cpuf/amd_pstate_lowest_nonlinear_freq" ]; then
-                  printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_lowest_nonlinear_freq" "$(read_sysf "$cpuf/amd_pstate_lowest_nonlinear_freq")"
-                fi
-                if [ -f "$cpua/lowest_perf" ]; then
-                  printf "%-61s = %5d\n" "$cpua/lowest_perf" "$(read_sysf "$cpua/lowest_perf")"
-                fi
-                if [ -f "$cpua/lowest_nonlinear_perf" ]; then
-                  printf "%-61s = %5d\n" "$cpua/lowest_nonlinear_perf" "$(read_sysf "$cpua/lowest_nonlinear_perf")"
-                fi
-                if [ -f "$cpua/nominal_perf" ]; then
-                  printf "%-61s = %5d\n" "$cpua/nominal_perf" "$(read_sysf "$cpua/nominal_perf")"
-                fi
-                if [ -f "$cpua/reference_perf" ]; then
-                  printf "%-61s = %5d\n" "$cpua/reference_perf" "$(read_sysf "$cpua/reference_perf")"
-                fi
-                if [ -f "$cpua/highest_perf" ]; then
-                  printf "%-61s = %5d\n" "$cpua/highest_perf" "$(read_sysf "$cpua/highest_perf")"
-                fi
-                if [ -f "$cpua/lowest_freq" ]; then
-                  printf "%-61s = %5d [MHz]\n" "$cpua/lowest_freq" "$(read_sysf "$cpua/lowest_freq")"
-                fi
-                if [ -f "$cpua/nominal_freq" ]; then
-                  printf "%-61s = %5d [MHz]\n" "$cpua/nominal_freq" "$(read_sysf "$cpua/nominal_freq")"
-                fi
-              fi
 
-              printf "\n"
+                printf "\n"
             fi
 
             if [ $cnt -eq 1 ]; then
-              # remember 2nd cpu core
-              cpu2nd=$cpu
+                # remember 2nd cpu core
+                cpu2nd=$cpu
             else
-              # remember last cpu core
-              cpulast=$cpu
+                # remember last cpu core
+                cpulast=$cpu
             fi
             cnt=$((cnt + 1))
-      fi
+        fi
     done
 
     if [ "$show_verbose" = "0" ] && [ $cnt -gt 1 ]; then
-      printf "%s/%s..%s: omitted for clarity, use -v to show all\n\n" "$CPUD" "$cpu2nd" "$cpulast"
+        printf "%s/%s..%s: omitted for clarity, use -v to show all\n\n" "$CPUD" "$cpu2nd" "$cpulast"
     fi
 
-  fi
+    fi
     if check_intel_pstate; then
         # show Intel P-state info
         printparm "%-54s = ##%s##"       "$INTEL_PSTATED/status"
@@ -516,7 +516,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         fi
 
     else
-         printparm "%-54s = (not available)" "$CPU_BOOST_ALL_CTRL"
+        printparm "%-54s = (not available)" "$CPU_BOOST_ALL_CTRL"
     fi
 
     # --- show Intel energy and performance bias hint (EPB)
@@ -546,28 +546,28 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                         eperf=$($ENERGYPERF -r 2> /dev/null)
                         case $? in
                             0)  if [ -n "$eperf" ]; then
-                                    # parse x86_energy_perf_policy output:
-                                    # - replace numbers with descriptive strings
-                                    # - remove ":"
-                                    # - indent and align
-                                    $ENERGYPERF -r 2>/dev/null | grep -v 'HWP_' | \
-                                        sed -r 's/://;
-                                                s/(0x0000000000000000|EPB 0)/0 \(performance\)/;
-                                                s/(0x0000000000000004|EPB 4)/4 \(balance_performance\)/;
-                                                s/(0x0000000000000006|EPB 6)/6 \(default\)/;
-                                                s/(0x0000000000000008|EPB 8)/8 \(balance_power\)/;
-                                                s/(0x000000000000000f|EPB 15)/15 \(power\)/' | \
-                                        awk '{ printf "x86_energy_perf_policy.%-31s = %s %s [EPB]\n", $1, $2, $3; }'
-                                    printf "\n"
-                                fi
-                                ;;
+                                # parse x86_energy_perf_policy output:
+                                # - replace numbers with descriptive strings
+                                # - remove ":"
+                                # - indent and align
+                                $ENERGYPERF -r 2>/dev/null | grep -v 'HWP_' | \
+                                    sed -r 's/://;
+                                                                    s/(0x0000000000000000|EPB 0)/0 \(performance\)/;
+                                                                    s/(0x0000000000000004|EPB 4)/4 \(balance_performance\)/;
+                                                                    s/(0x0000000000000006|EPB 6)/6 \(default\)/;
+                                                                    s/(0x0000000000000008|EPB 8)/8 \(balance_power\)/;
+                                                                    s/(0x000000000000000f|EPB 15)/15 \(power\)/' | \
+                                                                        awk '{ printf "x86_energy_perf_policy.%-31s = %s %s [EPB]\n", $1, $2, $3; }'
+                                                                                                                                            printf "\n"
+                            fi
+                            ;;
 
-                            2) printf "x86_energy_perf_policy: program for your kernel not installed.\n\n" ;;
-                            *) printf "x86_energy_perf_policy: not available.\n\n" ;;
-                        esac
-                    else
-                        echo "x86_energy_perf_policy: program not installed."
-                        echo
+                        2) printf "x86_energy_perf_policy: program for your kernel not installed.\n\n" ;;
+                        *) printf "x86_energy_perf_policy: not available.\n\n" ;;
+                    esac
+                else
+                    echo "x86_energy_perf_policy: program not installed."
+                    echo
                     fi
                 fi
             else
@@ -597,7 +597,7 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     # --- show temperatures
     tempshown=0
     if [ "$quiet" = "0" ]; then
-      echo "+++ Temperatures"
+        echo "+++ Temperatures"
     fi
     if [ -f "$IBMTHERMAL" ] && [ "$X_IGNORE_IBM_TEMPFAN" != "1" ]; then
         # use ThinkPad-specific sysfile
@@ -658,7 +658,7 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         printf "Fan speed              = (not available)\n"
     fi
     if [ "$quiet" = "0" ]; then
-      echo
+        echo
     fi
 fi # show_temp
 
@@ -809,8 +809,8 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
                 wifipm=$($IW dev "$iface" get power_save 2> /dev/null | \
                     grep 'Power save' | \
                     sed -r 's/.*Power save: (on|off).*/\1/')
-            else
-                wifipm=""
+                                else
+                                    wifipm=""
             fi
 
             # get wifi driver
