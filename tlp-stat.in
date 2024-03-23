@@ -253,11 +253,11 @@ if [ "$show_cdiff" = "1" ]; then
     echo "+++ Configured Settings (only differences to defaults):"
     $READCONFS --notrace --cdiff
     echo
-fi # show_conf
+fi # show_cdiff
 
 # --- show opmode
 if [ "$show_mode" = "1" ]; then
-    printf "%s" "$(print_saved_powerstate)"
+    printf "%s\n" "$(print_saved_powerstate)"
 fi # show_mode
 
 # --- show version
@@ -265,8 +265,8 @@ if [ "$show_version" = "1" ]; then
     echo "$TLPVER"
 fi # show_version
 
+# --- show system info and status
 if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
-    # --- show system info
     if [ -z "$X_SIMULATE_MODEL" ]; then
         product_version="$(read_dmi product_version)"
         product_name="$(read_dmi product_name)"
@@ -285,7 +285,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     echo "BIOS           = $(read_dmi bios_version)"
     ecfw="$(read_dmi ec_firmware_release)" && printf "EC Firmware    = %s\n" "$ecfw"
 
-    # --- show release & kernel info
+    # --- release & kernel info
     printf "OS Release     = "
     if ! sed -rn 's/PRETTY_NAME="(.*)"/\1/p' $OSRELEASE 2> /dev/null; then
         echo "unknown"
@@ -293,7 +293,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     echo "Kernel         = $(uname -r -m -v)"
     printparm "%-14s = %s" /proc/cmdline
 
-    # --- show init system info
+    # --- init system info
     if check_systemd; then
         echo "Init system    = systemd $(systemd --version 2> /dev/null | sed -rn 's/systemd ([0-9]+)/v\1/p')"
     elif check_upstart; then
@@ -312,7 +312,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     print_selinux
     echo
 
-    # --- show TLP status
+    # --- TLP status
     echo "+++ TLP Status"
     if check_tlp_enabled; then
         printf "State          = enabled\n"
@@ -320,7 +320,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         printf "State          = disabled\n"
     fi
 
-    # --- show RDW status
+    # --- RDW status
     if check_rdw_installed; then
         if ! check_tlp_enabled; then
             printf "RDW state      = disabled (TLP disabled)\n"
@@ -333,13 +333,13 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         printf "RDW state      = not installed\n"
     fi
 
-    # --- show last invocation time
+    # --- last invocation time
     printf "Last run       = %s\n" "$(print_file_modtime_and_age "$PWRRUNFILE")"
 
-    # --- show actual opmode
+    # --- actual opmode
     printf "Mode           = %s\n" "$(print_saved_powerstate)"
 
-    # ---- show actual power source
+    # ---- actual power source
     get_sys_power_supply
     case $? in
         0) printf "Power source   = AC\n" ;;
@@ -361,19 +361,18 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         echo_message "" "err"
     fi
 
-    # -- show warning if l-m-t detected
+    # -- warning if l-m-t detected
     check_laptop_mode_tools
-
 fi # show_system
 
+# --- show cpu info
 if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
-    # --- show cpu info
     if [ "$quiet" = "0" ]; then
         echo "+++ Processor"
         sed -rn 's/model name[ \t]+: (.+)/CPU model      = \1/p' /proc/cpuinfo | head -1
         echo
 
-        # -- show scaling gov and freq info
+        # -- scaling gov and freq info
         cnt=0
         epp=0
         cpu2nd=""
@@ -475,7 +474,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     fi # !quiet
 
     if check_intel_pstate; then
-        # show Intel P-state info
+        # Intel P-state
         printparm "%-54s = ##%s##"       "$INTEL_PSTATED/status"
         printparm "%-54s = ##%3d## [%%]" "$CPU_MIN_PERF_PCT"
         printparm "%-54s = ##%3d## [%%]" "$CPU_MAX_PERF_PCT"
@@ -485,7 +484,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         printparm "%-54s = ##%3d##"      "$INTEL_PSTATED/num_pstates"
 
     elif check_amd_pstate; then
-        # show AMD P-state info
+        # AMD P-state
         printparm "%-54s = ##%s##" "$AMD_PSTATED/status"
         printparm "%-54s = ##%s##" "$AMD_DYN_BOOST"
         if [ -f "$CPU_BOOST_ALL_CTRL" ]; then
@@ -493,7 +492,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         fi
 
     elif [ -f "$CPU_BOOST_ALL_CTRL" ]; then
-        # show turbo boost info
+        # turbo boost
         boost=$(read_sysval "$CPU_BOOST_ALL_CTRL")
 
         # simple test for attribute "w" doesn't work, so actually write
@@ -507,7 +506,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         printparm "%-54s = (not available)" "$CPU_BOOST_ALL_CTRL"
     fi
 
-    # --- show Intel energy and performance bias hint (EPB)
+    # --- Intel energy and performance bias hint (EPB)
     if check_intel_pstate; then
         if [ "$epp" -eq 0 ] || [ "$X_FORCE_EPB" = "1" ]; then
             # show only when HWP.EPP not present (or forced)
@@ -565,24 +564,23 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     fi
 
-    # --- show workqueue power efficient status
+    # --- workqueue power efficient status
     printparm "%-54s = ##%s##" "$WQPE"
 
-    # --- show nmi watchdog
+    # --- nmi watchdog
     printparm "%-54s = ##%d##" "$NMIWD"
     echo
 
-    # --- show platform profile
+    # --- platform profile
     printf "+++ Platform Profile\n"
     printparm "%-54s = ##%s##" "$FWACPID/platform_profile"
     printparm "%-54s = ##%s##" "$FWACPID/platform_profile_choices"
     [ -d "$TPACPID" ] && printparm "%-54s = ##%s##" "$TPACPID/dytc_lapmode"
     printf "\n"
-
 fi # show_proc
 
+# --- show temperatures
 if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
-    # --- show temperatures
     if [ "$quiet" = "0" ]; then
         echo "+++ Temperatures"
     fi
@@ -625,7 +623,7 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         printf "CPU temp               = (not available)\n"
     fi
 
-    # --- show fan speed
+    # --- fan speed
     fanshown=0
     if [ -f $IBMFAN ] && [ "$X_IGNORE_IBM_TEMPFAN" != "1" ]; then
         # use thinkpad-specific sysfile
@@ -651,8 +649,8 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     fi
 fi # show_temp
 
+# --- show laptop-mode, dirty buffers params
 if [ "$show_all" = "1" ]; then
-    # --- show laptop-mode, dirty buffers params
     echo "+++ File System"
     printparm "%-38s = ##%5d##" /proc/sys/vm/laptop_mode
     printparm "%-38s = ##%5d##" /proc/sys/vm/dirty_writeback_centisecs
@@ -665,8 +663,8 @@ if [ "$show_all" = "1" ]; then
     echo
 fi # show_all
 
+# --- show disk info
 if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
-    # --- show disk info
     echo "+++ Disks"
     # list for storage device iteration
     disklist="$DISK_DEVICES"
@@ -682,7 +680,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     fi
     echo
 
-    # --- show sata alpm mode
+    # --- sata alpm mode
     if stat -t "${ALPMD}/link_power_management_policy" > /dev/null 2>&1; then
         echo "+++ AHCI Link Power Management (ALPM) :: SATA Links"
         for i in ${ALPMD} ; do
@@ -691,7 +689,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
         echo
     fi
 
-    # --- show ahci runtime pm
+    # --- ahci runtime pm
     if stat -t "${AHCID}/power" > /dev/null 2>&1; then
         echo "+++ AHCI Port Runtime Power Management :: SATA/ATA Ports"
         for dev in ${AHCID}/power ; do
@@ -700,7 +698,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
         echo
     fi
 
-    # -- show docks
+    # -- docks
     cnt=0
     for dock in $DOCKGLOB; do
         [ ! -d "$dock" ] && break # no dock/bay detected
@@ -743,21 +741,20 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     [ $cnt -gt 0 ] && echo
 fi # show_disk
 
+# --- show hybrid graphics switch (nouveau, radeon only)
 if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
-    # --- show hybrid graphics switch (nouveau, radeon only)
     if [ -f $SWITCHEROO ]; then
         echo "+++ Hybrid Graphics Switch"
         printparm_ml "  " $SWITCHEROO
     fi
 
-    # --- show GPU date for all drivers
+    # --- gpu data for all drivers
     show_gpu_data
-
 fi # show_graf
 
+# --- show rfkill state
 if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Wireless"
-    # --- show rfkill state
     for i in bluetooth nfc wifi wwan; do
         get_devc $i
         get_devs $i
@@ -768,7 +765,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
 
     ifshown=0
 
-    # --- show bluetooth
+    # --- bluetooth
     get_bluetooth_ifaces
     # shellcheck disable=SC2154
     for iface in $_bifaces; do
@@ -786,7 +783,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     done
 
-    # --- show wifi data
+    # --- wifi
     get_wifi_ifaces
     # shellcheck disable=SC2154
     for iface in $_wifaces; do
@@ -819,7 +816,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     done
 
-    # --- show wwan data
+    # --- wwan
     get_wwan_ifaces
     # shellcheck disable=SC2154
     for iface in $_wanifaces; do
@@ -839,11 +836,10 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     done
     [ "$ifshown" = "1" ] && echo
-
 fi # show_rfkill
 
+# --- show sound power mode
 if [ "$show_all" = "1" ]; then
-    # --- show sound power mode
     echo "+++ Audio"
     if [ -d /sys/module/snd_hda_intel ]; then
         printparm "%-58s = ##%s##" "/sys/module/snd_hda_intel/parameters/power_save"
@@ -855,8 +851,9 @@ if [ "$show_all" = "1" ]; then
     echo
 fi # show_all
 
+# --- show pcie info
 if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
-    # --- show pcie aspm state
+    # --- aspm state
     echo "+++ PCIe Active State Power Management"
     if [ -f $ASPM ]; then
         pol=$(read_sysf $ASPM | sed -r 's/[[:space:]]+$//')
@@ -871,7 +868,7 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
     fi
     echo
 
-    # -- show runtime pm
+    # --- runtime pm
     echo "+++ PCIe Runtime Power Management"
     echo "Enable devices    = ${RUNTIME_PM_ENABLE:-(disabled)}"
     echo "Disable devices   = ${RUNTIME_PM_DISABLE:-(disabled)}"
@@ -891,8 +888,8 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
     echo
 fi # show_pcie
 
+# --- show usb autosuspend
 if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
-    # -- show usb autosuspend
     echo "+++ USB"
     if [ "$USB_AUTOSUSPEND" = "1" ]; then
         echo "Autosuspend       = enabled"
@@ -938,16 +935,16 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
         echo "Error: missing subcommand $TLPUSB." 1>&2
     fi
     echo
-
 fi # show_usb
 
+# -- show battery info
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
     select_batdrv
     batdrv_show_battery_data $show_verbose
 fi # show_bat
 
+# --- show warnings
 if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
-    # --- show warnings
     # ata errors (possibly) caused by SATA_LINKPWR_ON_AC/BAT != max_performance
     ecnt=$(check_ata_errors)
     if [ "$ecnt" -ne 0 ]; then
@@ -963,12 +960,10 @@ if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; th
         echo "No warnings detected."
         echo ""
     fi
-
 fi # show_warn
 
+# -- show recommendations
 if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
-    # -- show recommendations
-
     # battery plugin specific recommendations
     reout="$(batdrv_recommendations)"
 
@@ -985,12 +980,10 @@ if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         printf "$reout" | sed -r 's/^/\* /'
         echo
     fi
-
 fi # show_all
 
+# --- show udev power_supply events
 if [ "$show_pev" = "1" ]; then
-    # --- show udev power_supply events
-
     # check for udevadm
     if cmd_exists "$UDEVADM"; then
         echo "+++ Monitor power supply events -- cancel with ^C"
@@ -999,8 +992,8 @@ if [ "$show_pev" = "1" ]; then
     fi
 fi # show_pev
 
+# --- show power_supply diagnostic
 if [ "$show_psup" = "1" ]; then
-    # --- show power_supply diagnostic
     printf "+++ Power supply diagnostic\n"
     for ps in /sys/class/power_supply/*; do
         # shellcheck disable=SC2063
@@ -1020,16 +1013,15 @@ if [ "$show_psup" = "1" ]; then
     check_udev_rule_ps
 fi # show_psup
 
+# --- show udev diagnostic
 if [ "$show_udev" = "1" ]; then
-    # --- show udev diagnostic
     printf "+++ udev diagnostic\n"
     check_udev_rule_ps
     check_udev_rule_usb
-fi # show_sup
+fi # show_udev
 
+# --- show debug log
 if [ "$show_trace" = "1" ]; then
-    # --- show debug log
-
     # check for systemd journal
     jdone=0
     if cmd_exists $JOURNALCTL; then
