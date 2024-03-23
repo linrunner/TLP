@@ -110,6 +110,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
             "-m"|"--mode")
                 show_all=0
                 show_mode=1
+                quiet=0
                 : ${needs_root_priv:=0}
                 ;;
 
@@ -120,7 +121,6 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 ;;
 
             "-q"|"--quiet")
-                show_all=0
                 quiet=1
                 ;;
 
@@ -242,6 +242,11 @@ if [ "$quiet" = "0" ]; then
     echo
 fi
 
+# --- show version
+if [ "$show_version" = "1" ]; then
+    echo "$TLPVER"
+fi # show_version
+
 # --- show configuration
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Configured Settings:"
@@ -259,11 +264,6 @@ fi # show_cdiff
 if [ "$show_mode" = "1" ]; then
     printf "%s\n" "$(print_saved_powerstate)"
 fi # show_mode
-
-# --- show version
-if [ "$show_version" = "1" ]; then
-    echo "$TLPVER"
-fi # show_version
 
 # --- show system info and status
 if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
@@ -367,8 +367,8 @@ fi # show_system
 
 # --- show cpu info
 if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
+    [ "$quiet" = "0" ] || [ "$show_all" = "1" ] && echo "+++ Processor"
     if [ "$quiet" = "0" ]; then
-        echo "+++ Processor"
         sed -rn 's/model name[ \t]+: (.+)/CPU model      = \1/p' /proc/cpuinfo | head -1
         echo
 
@@ -569,10 +569,11 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- nmi watchdog
     printparm "%-54s = ##%d##" "$NMIWD"
-    echo
 
     # --- platform profile
-    printf "+++ Platform Profile\n"
+    if [ "$quiet" = "0" ] || [ "$show_all" = "1" ] ; then
+        printf "\n+++ Platform Profile\n"
+    fi
     printparm "%-54s = ##%s##" "$FWACPID/platform_profile"
     printparm "%-54s = ##%s##" "$FWACPID/platform_profile_choices"
     [ -d "$TPACPID" ] && printparm "%-54s = ##%s##" "$TPACPID/dytc_lapmode"
@@ -581,7 +582,7 @@ fi # show_proc
 
 # --- show temperatures
 if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
-    if [ "$quiet" = "0" ]; then
+    if [ "$quiet" = "0" ] || [ "$show_all" = "1" ]; then
         echo "+++ Temperatures"
     fi
 
@@ -644,7 +645,7 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     if [ "$fanshown" -eq "0" ]; then
         printf "Fan speed              = (not available)\n"
     fi
-    if [ "$quiet" = "0" ]; then
+    if [ "$quiet" = "0" ] || [ "$show_all" = "1" ]; then
         echo
     fi
 fi # show_temp
