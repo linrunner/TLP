@@ -368,13 +368,20 @@ fi # show_system
 # --- show cpu info
 if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     [ "$quiet" = "0" ] || [ "$show_all" = "1" ] && echo "+++ Processor"
+
+    # check EPP availability
+    if [ -f "${CPUD}/cpu0/cpufreq/energy_performance_preference" ]; then
+        epp=1
+    else
+        epp=0
+    fi
+
     if [ "$quiet" = "0" ]; then
         sed -rn 's/model name[ \t]+: (.+)/CPU model      = \1/p' /proc/cpuinfo | head -1
         echo
 
         # -- scaling gov and freq info
         cnt=0
-        epp=0
         cpu2nd=""
         cpulast=""
         for cn in $(glob_dirs '/cpu[0-9]*' "$CPUD" | sed 's/.*\/cpu//' | sort -n); do
@@ -415,7 +422,6 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
                     if [ -f "$cpuf/energy_performance_preference" ]; then
                         printparm "%s = ##%s## [EPP]" "$cpuf/energy_performance_preference"
-                        epp=1
                     fi
                     if [ -f "$cpuf/energy_performance_available_preferences" ]; then
                         printparm "%s = ##%s##" "$cpuf/energy_performance_available_preferences"
