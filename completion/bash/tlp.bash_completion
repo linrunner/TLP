@@ -72,9 +72,9 @@ _tlp_stat() {
     local cur prev words cword opts
     _init_completion || return
 
-    opts="--battery --cdiff --config --disk --graphics --pcie --pev --processor
-          --psup --rfkill --system --temp --trace --udev --usb --verbose
-          --warn"
+    opts="--battery --cdiff --config --disk --graphics --mode --pcie --pev
+          --processor --psup --quiet --rfkill --system --temp --trace --udev
+          --usb --verbose --warn"
 
     if [ $cword -eq 1 ]; then
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
