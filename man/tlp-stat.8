@@ -38,20 +38,17 @@ View graphics card information.
 .
 .TP
 .B \-m, \-\-mode
-Print the current status of tlp.
-.sp
-When in quiet, only output current mode
-(AC, battery, AC (manual), battery (manual)).
+Print current power mode.
 .
 .TP
 .B \-p, \-\-processor
 View processor information. For clarity the standard output shows only cpu0.
-Add \fB-v\fR to see all.
-Add \fB-q\fR to see only current state of cup0.
+Add \fB-v\fR to see all cpus.
+Add \fB-q\fR to see cpu driver state only.
 .
 .TP
 .B \-q, \-\-quiet
-Show less information in mode, processor, temperature.
+Omit version header and show less information in processor category.
 .
 .TP
 .B \-r, \-\-rfkill
@@ -59,7 +56,7 @@ View radio device states.
 .
 .TP
 .B \-s, \-\-system
-View system information.
+View system information and TLP status.
 .
 .TP
 .B \-t, \-\-temp
