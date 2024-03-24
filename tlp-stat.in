@@ -110,7 +110,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
             "-m"|"--mode")
                 show_all=0
                 show_mode=1
-                quiet=0
+                quiet=1
                 : ${needs_root_priv:=0}
                 ;;
 
