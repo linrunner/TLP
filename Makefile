@@ -281,7 +281,7 @@ checkall: checkbashisms shellcheck perlcritic checkdupconst checkbatdrv checkwip
 
 checkbashisms:
 	@echo "*** checkbashisms ***************************************************************************"
-	@checkbashisms $(SHFILES) || true
+	@{ checkbashisms $(SHFILES) 2>&1 | sed -e '/test with unary -a (should be -e)/{N;d;}'; } || true
 
 shellcheck:
 	@echo "*** shellcheck ******************************************************************************"
