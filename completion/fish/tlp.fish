@@ -4,10 +4,10 @@ set -l tlp_commands start bat true ac false usb bayoff setcharge fullcharge disc
 set -l tlp_rf_devices bluetooth nfc wifi wwan
 set -l tlp_rf_devices_commands on off toggle
 
-set current_command (status basename | path change-extension '')
+set -l current_command (status basename | path change-extension '')
 
 if test $current_command = "tlp"
-    set bats
+    set -l bats
 
     for b in /sys/class/power_supply/*
         if not string match -r hid $b; and test -f $b/present; and test (cat $b/present) = "1"; and test (cat $b/type) = "Battery"
