@@ -1,6 +1,6 @@
 # Fish shell completion for tlp and radio device command: bluetooth nfc wifi wwan
 
-set -l tlp_commands start bat ac usb bayoff setcharge fullcharge discharge recalibrate chargeonce
+set -l tlp_commands start bat ac usb bayoff setcharge fullcharge discharge recalibrate chargeonce diskid
 set -l tlp_rf_devices bluetooth nfc wifi wwan
 set -l tlp_rf_devices_commands on off toggle
 
@@ -26,7 +26,8 @@ if test $current_command = "tlp"
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a chargeonce -d "Charge battery to the stop charge threshold once (ThinkPads only)"
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a discharge -d "Force a complete discharge of the battery (ThinkPads only)"
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a recalibrate -d "Perform a battery recalibration (ThinkPads only)"
-    complete -c tlp -f -n "__fish_seen_subcommand_from $tlp_commands[8..12] && not __fish_seen_subcommand_from $bats" -a "$bats"
+    complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a diskid -d "Show disk ids"
+    complete -c tlp -f -n "__fish_seen_subcommand_from $tlp_commands[6..10] && not __fish_seen_subcommand_from $bats" -a "$bats"
 end
 
 if contains $current_command $tlp_rf_devices
