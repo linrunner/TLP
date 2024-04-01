@@ -23,6 +23,7 @@ TLP_SYSV    ?= /etc/init.d
 TLP_ELOD    ?= /lib/elogind/system-sleep
 TLP_SHCPL   ?= /usr/share/bash-completion/completions
 TLP_ZSHCPL  ?= /usr/share/zsh/site-functions
+TLP_FISHCPL ?= /usr/share/fish/vendor_completions.d
 TLP_MAN     ?= /usr/share/man
 TLP_META    ?= /usr/share/metainfo
 TLP_RUN     ?= /run/tlp
@@ -49,6 +50,7 @@ _SYSV    = $(DESTDIR)$(TLP_SYSV)
 _ELOD    = $(DESTDIR)$(TLP_ELOD)
 _SHCPL   = $(DESTDIR)$(TLP_SHCPL)
 _ZSHCPL  = $(DESTDIR)$(TLP_ZSHCPL)
+_FISHCPL = $(DESTDIR)$(TLP_FISHCPL)
 _MAN     = $(DESTDIR)$(TLP_MAN)
 _META    = $(DESTDIR)$(TLP_META)
 _RUN     = $(DESTDIR)$(TLP_RUN)
@@ -191,6 +193,14 @@ ifneq ($(TLP_NO_ZSHCOMP),1)
 	install -D -m 644 completion/zsh/_tlp-run-on $(_ZSHCPL)/_tlp-run-on
 	install -D -m 644 completion/zsh/_tlp-stat $(_ZSHCPL)/_tlp-stat
 endif
+ifneq ($(TLP_NO_FISHCOMP),1)
+	install -D -m 644 completion/fish/tlp.fish $(_FISHCPL)/tlp.fish
+	install -D -m 644 completion/fish/tlp-stat.fish $(_FISHCPL)/tlp-stat.fish
+	ln -sf tlp.fish $(_FISHCPL)/bluetooth.fish
+	ln -sf tlp.fish $(_FISHCPL)/nfc.fish
+	ln -sf tlp.fish $(_FISHCPL)/wifi.fish
+	ln -sf tlp.fish $(_FISHCPL)/wwan.fish
+endif
 	install -D -m 644 de.linrunner.tlp.metainfo.xml $(_META)/de.linrunner.tlp.metainfo.xml
 	install -d -m 755 $(_VAR)
 
@@ -205,6 +215,9 @@ ifneq ($(TLP_NO_BASHCOMP),1)
 endif
 ifneq ($(TLP_NO_ZSHCOMP),1)
 	install -D -m 644 completion/zsh/_tlp-rdw $(_ZSHCPL)/_tlp-rdw
+endif
+ifneq ($(TLP_NO_FISHCOMP),1)
+	install -D -m 644 completion/fish/tlp-rdw.fish $(_FISHCPL)/tlp-rdw.fish
 endif
 
 install-man-tlp:
@@ -252,6 +265,12 @@ uninstall-tlp:
 	rm -f $(_ZSHCPL)/_tlp-radio-device
 	rm -f $(_ZSHCPL)/_tlp-run-on
 	rm -f $(_ZSHCPL)/_tlp-stat
+	rm -f $(_FISHCPL)/tlp.fish
+	rm -f $(_FISHCPL)/tlp-stat.fish
+	rm -f $(_FISHCPL)/bluetooth.fish
+	rm -f $(_FISHCPL)/nfc.fish
+	rm -f $(_FISHCPL)/wifi.fish
+	rm -f $(_FISHCPL)/wwan.fish
 	rm -f $(_META)/de.linrunner.tlp.metainfo.xml
 	rm -r $(_VAR)
 
@@ -263,6 +282,7 @@ uninstall-rdw:
 	rm $(_NMDSP)/99tlp-rdw-nm
 	rm -f $(_SHCPL)/tlp-rdw
 	rm -f $(_ZSHCPL)/_tlp-rdw
+	rm -f $(_FISHCPL)/tlp-rdw.fish
 
 uninstall-man-tlp:
 	# manpages
