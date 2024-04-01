@@ -18,7 +18,7 @@ args=(
     '(-t --temp)'{--temp,-t}'[View temperatures and fan speed]'
     '(-u --usb)'{--usb,-u}'[View USB device information]'
     '(-v --verbose)'{--verbose,-v}'[Show more information]'
-    '--version[View current version]'
+    '--version[Print TLP version]'
     '(-P --pev)'{--pev,-P}'[Monitor power supply udev events]'
     '--psup[View power supply diagnostics]'
     '(-T --trace)'{--trace,-T}'[View trace output]'
