@@ -10,7 +10,7 @@ if test $current_command = "tlp"
     set -l bats
 
     for b in /sys/class/power_supply/*
-        if not string match -r hid $b; and test -f $b/present; and test (cat $b/present) = "1"; and test (cat $b/type) = "Battery"
+        if not string match -q -r hid $b; and test -f $b/present; and test (cat $b/present) = "1"; and test (cat $b/type) = "Battery"
             set -a bats (path basename $b)
         end
     end
