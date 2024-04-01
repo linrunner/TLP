@@ -16,6 +16,12 @@
         - Indicate when recalibration is not possible
     Disks:
     - tlp-stat -d: replace disk serial number with asterisks (for privacy)
+    General:
+    - Add tlp-stat output options:
+      -m|--mode: print current power mode
+      -q|--quiet: omit version header and show less information in the processor category
+      --version: print TLP version
+    - Add Fish shell command completion
     Processor:
     - tlp-stat -t:
       - Show AMD CPU temperatures
