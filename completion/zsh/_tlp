@@ -50,7 +50,7 @@ _regex_words commands 'tlp command' \
     'setcharge:Change charge thresholds temporarily:$subcmd_setcharge' \
     'fullcharge:Charge battery to full capacity:$subcmd_batteries' \
     'recalibrate:Perform a battery recalibration (ThinkPads only):$subcmd_batteries' \
-    'diskid:Show disk ids for configured drives' \
+    'diskid:Print disk ids for configured drives' \
     '--version:Print TLP version'
 args+=("$reply[@]")
 

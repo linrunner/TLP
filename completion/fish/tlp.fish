@@ -26,7 +26,7 @@ if test $current_command = "tlp"
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a chargeonce -d "Charge battery to the stop charge threshold once (ThinkPads only)"
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a discharge -d "Force a complete discharge of the battery (ThinkPads only)"
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a recalibrate -d "Perform a battery recalibration (ThinkPads only)"
-    complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a diskid -d "Show disk ids"
+    complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a diskid -d "Print disk ids for configured drives"
     complete -c tlp -l version -d 'Print TLP version'
     complete -c tlp -f -n "__fish_seen_subcommand_from $tlp_commands[6..10] && not __fish_seen_subcommand_from $bats" -a "$bats"
 end
