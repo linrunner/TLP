@@ -10,7 +10,8 @@ args=(
 
 _regex_words commands 'tlp-rdw command' \
     'disable:Disable RDW actions' \
-    'enable:Enable RDW actions'
+    'enable:Enable RDW actions' \
+    '--version:Print TLP version'
 args+=("$reply[@]")
 
 _regex_arguments _tlp-rdw "$args[@]"

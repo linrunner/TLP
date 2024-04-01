@@ -6,7 +6,7 @@ _tlp_rdw() {
     local cur prev words cword opts
     _init_completion || return
 
-    opts="enable disable"
+    opts="enable disable --version"
 
     if [ $cword -eq 1 ]; then
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )

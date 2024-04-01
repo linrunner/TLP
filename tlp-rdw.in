@@ -15,10 +15,14 @@ done
 # shellcheck disable=SC2034
 _bgtask=1
 
+carg1="$1"
+if [ "$carg1" = "--version" ]; then
+    echo "$TLPVER"
+    exit 0
+fi
+
 # read configuration: quit on error, trace allowed
 read_config 1 0
-
-carg1=$1
 parse_args4config "$@"
 
 case $carg1 in
