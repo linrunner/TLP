@@ -125,6 +125,12 @@ parse_args () { # parse command-line arguments
                     _cmd2=""
                     ;;
 
+                --version)
+                    # no operation
+                    _cmd="version"
+                    _cmd2=""
+                    ;;
+
                 *)
                     # unknown command
                     echo "Error: unknown command \"$1\"."  1>&2
@@ -178,10 +184,15 @@ parse_args () { # parse command-line arguments
 }
 
 # --- MAIN
+parse_args "$@"
+
+if [ "$_cmd" = "version" ]; then
+    echo "$TLPVER"
+    exit 0
+fi
+
 # read configuration: quit on error, trace allowed
 read_config 1 0
-
-parse_args "$@"
 parse_args4config "$@"
 
 check_tlp_enabled 1 || do_exit 1
