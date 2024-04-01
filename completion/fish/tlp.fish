@@ -1,6 +1,6 @@
 # Fish shell completion for tlp and radio device command: bluetooth nfc wifi wwan
 
-set -l tlp_commands start bat true ac false usb bayoff setcharge fullcharge discharge recalibrate chargeonce
+set -l tlp_commands start bat ac usb bayoff setcharge fullcharge discharge recalibrate chargeonce
 set -l tlp_rf_devices bluetooth nfc wifi wwan
 set -l tlp_rf_devices_commands on off toggle
 
@@ -18,9 +18,7 @@ if test $current_command = "tlp"
     complete -c tlp -f
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a start -d "Start tlp and apply power saving profile for the actual power source"
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a bat -d "Apply battery profile and enter manual mode"
-    complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a true -d "Alias for bat"
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a ac -d "Apply AC profile and enter manual mode"
-    complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a false -d "Alias for ac"
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a usb -d "Enable autosuspend for all USB devices except excluded"
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a bayoff -d "Turn off optical drive in UltraBay/MediaBay"
     complete -c tlp -f -n "not __fish_seen_subcommand_from $tlp_commands" -a setcharge -d "Change charge thresholds temporarily"
