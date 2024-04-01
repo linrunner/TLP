@@ -108,6 +108,10 @@ echo_message () {
     fi
 }
 
+print_version () {
+    echo "TLP version $TLPVER"
+}
+
 # --- Strings
 
 tolower () { # print string in lowercase -- $1: string

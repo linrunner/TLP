@@ -17,7 +17,7 @@ _bgtask=1
 
 carg1="$1"
 if [ "$carg1" = "--version" ]; then
-    echo "$TLPVER"
+    print_version
     exit 0
 fi
 

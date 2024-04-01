@@ -244,7 +244,7 @@ fi
 
 # --- show version
 if [ "$show_version" = "1" ]; then
-    echo "$TLPVER"
+    print_version
 fi # show_version
 
 # --- show configuration
