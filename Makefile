@@ -200,6 +200,8 @@ ifneq ($(TLP_NO_FISHCOMP),1)
 	ln -sf tlp.fish $(_FISHCPL)/nfc.fish
 	ln -sf tlp.fish $(_FISHCPL)/wifi.fish
 	ln -sf tlp.fish $(_FISHCPL)/wwan.fish
+	ln -sf tlp.fish $(_FISHCPL)/run-on-ac.fish
+	ln -sf tlp.fish $(_FISHCPL)/run-on-bat.fish
 endif
 	install -D -m 644 de.linrunner.tlp.metainfo.xml $(_META)/de.linrunner.tlp.metainfo.xml
 	install -d -m 755 $(_VAR)
@@ -271,6 +273,8 @@ uninstall-tlp:
 	rm -f $(_FISHCPL)/nfc.fish
 	rm -f $(_FISHCPL)/wifi.fish
 	rm -f $(_FISHCPL)/wwan.fish
+	rm -f $(_FISHCPL)/run-on-ac.fish
+	rm -f $(_FISHCPL)/run-on-bat.fish
 	rm -f $(_META)/de.linrunner.tlp.metainfo.xml
 	rm -r $(_VAR)
 
