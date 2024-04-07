@@ -1,8 +1,9 @@
-# Fish shell completion for tlp and radio device command: bluetooth nfc wifi wwan
+# Fish shell completion for tlp, radio device command: bluetooth nfc wifi wwan, and run-on command: run-on-ac run-on-bat
 
 set -l tlp_commands start bat ac usb bayoff setcharge fullcharge discharge recalibrate chargeonce diskid
 set -l tlp_rf_devices bluetooth nfc wifi wwan
 set -l tlp_rf_devices_commands on off toggle
+set -l runon_commands run-on-ac run-on-bat
 
 set -l current_command (status basename | path change-extension '')
 
@@ -37,4 +38,8 @@ if contains $current_command $tlp_rf_devices
     complete -c $current_command -n "not __fish_seen_subcommand_from $tlp_rf_devices_commands" -a off -d 'Switch device off'
     complete -c $current_command -n "not __fish_seen_subcommand_from $tlp_rf_devices_commands" -a toggle -d 'Toggle device state'
     complete -c $current_command -n "not __fish_seen_subcommand_from $tlp_rf_devices_commands" -l version -d 'Print TLP version'
+end
+
+if contains $current_command $runon_commands
+    complete -c $current_command -xa "(__fish_complete_subcommand)"
 end
