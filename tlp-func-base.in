@@ -400,7 +400,7 @@ lock_tlp () { # get exclusive lock: blocking with timeout
     # open file for writing and attach fd 9
     # when successful lock fd 9 exclusive and blocking
     # wait $LOCKTIMEOUT secs to obtain the lock
-    if { exec 9> "${LOCKFILE}_${1:-tlp}" ; } 2> /dev/null && $FLOCK -x -w $LOCKTIMEOUT 9 ; then
+    if { exec 9> "${LOCKFILE}_${1:-tlp}" ; } 2> /dev/null && timeout $LOCKTIMEOUT $FLOCK -x 9 ; then
         echo_debug "lock" "lock_tlp($1).success"
         return 0
     else
