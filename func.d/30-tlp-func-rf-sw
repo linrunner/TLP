@@ -115,8 +115,8 @@ test_rfkill_perms () { # test if either root priv or rfkill device writable
     test_root || [ -w $RFKD ]
 }
 
-check_nm () { # test if NetworkManager is running and nmcli is installed
-    cmd_exists $NMCLI
+check_nm () { # test if NetworkManager is installed
+    [ "$X_USE_NMCLI" != "0" ] && cmd_exists $NMCLI
 }
 
 invoke_nmcli () { # call nmcli with radio option according to the program version
@@ -195,7 +195,16 @@ device_switch () { # switch radio type state
         [ -n "$3" ] && [ -n "$4" ] && [ "$1" != "bluetooth" ] && \
             set_timed_lock "$3" "$4"
 
-        if [ "$_rfkdev" = "1" ] && cmd_exists $RFKILL ; then
+        if check_nm && [ "$1" != "bluetooth" ] && [ "$_rfkdev" = "1" ]; then
+            # switch device with NetworkManager
+            case "$newst" in
+                1) invoke_nmcli "$1" on  ;;
+                0) invoke_nmcli "$1" off ;;
+            esac
+            # record device state after nmcli
+            get_devs "$1"
+
+        elif [ "$_rfkdev" = "1" ] && cmd_exists $RFKILL ; then
             # switch device with rfkill
             if test_rfkill_perms ; then
                 # use rfkill
