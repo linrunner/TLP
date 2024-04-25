@@ -195,7 +195,7 @@ device_switch () { # switch radio type state
         [ -n "$3" ] && [ -n "$4" ] && [ "$1" != "bluetooth" ] && \
             set_timed_lock "$3" "$4"
 
-        if check_nm && [ "$1" != "bluetooth" ] && [ "$_rfkdev" = "1" ]; then
+        if check_nm && wordinlist "$1" "wifi wwan" && [ "$_rfkdev" = "1" ]; then
             # switch device with NetworkManager
             case "$newst" in
                 1) invoke_nmcli "$1" on  ;;
