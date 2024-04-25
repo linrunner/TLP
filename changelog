@@ -22,6 +22,7 @@
       -m|--mode: print current power mode
       -q|--quiet: omit version header and show less information in the processor category
     - Add Fish shell command completion
+    - Improve busybox compatibility by using only portable options for flock
     Processor:
     - tlp-stat -t:
       - Show AMD CPU temperatures
@@ -40,6 +41,8 @@
     - tlp diskid: filter duplicates
     General:
     - tlp-stat -s: rework manual mode detection (Issue #702)
+    Radio Devices:
+    - Avoid error popups from NetworkManager when switching wifi/wwan
     USB:
     - Prevent USB devices from being unrecognized or malfunctioning on battery;
       adds xhci_hcd to RUNTIME_PM_DRIVER_DENYLIST defaults (Issues #436, #587)
