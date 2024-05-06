@@ -281,8 +281,8 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     fi
 
     echo "+++ System Info"
-    echo "System         = $(read_dmi sys_vendor) $model"
-    echo "BIOS           = $(read_dmi bios_version)"
+    vendor="$(read_dmi sys_vendor)"        && printf "System         = %s\n" "$vendor $model"
+    bios="$(read_dmi bios_version)"        && printf "BIOS           = %s\n" "$bios"
     ecfw="$(read_dmi ec_firmware_release)" && printf "EC Firmware    = %s\n" "$ecfw"
 
     # --- release & kernel info
