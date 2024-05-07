@@ -186,6 +186,8 @@ ifneq ($(TLP_NO_BASHCOMP),1)
 	ln -sf tlp $(_SHCPL)/nfc
 	ln -sf tlp $(_SHCPL)/wifi
 	ln -sf tlp $(_SHCPL)/wwan
+	ln -sf tlp $(_SHCPL)/run-on-ac
+	ln -sf tlp $(_SHCPL)/run-on-bat
 endif
 ifneq ($(TLP_NO_ZSHCOMP),1)
 	install -D -m 644 completion/zsh/_tlp $(_ZSHCPL)/_tlp
@@ -257,12 +259,14 @@ uninstall-tlp:
 	rm -f $(_SYSD)/tlp.service
 	rm -f $(_SDSL)/tlp-sleep
 	rm -f $(_ELOD)/49-tlp-sleep
+	rm -f $(_SHCPL)/tlp
 	rm -f $(_SHCPL)/tlp-stat
 	rm -f $(_SHCPL)/bluetooth
 	rm -f $(_SHCPL)/nfc
 	rm -f $(_SHCPL)/wifi
 	rm -f $(_SHCPL)/wwan
-	rm -f $(_SHCPL)/tlp
+	rm -f $(_SHCPL)/run-on-ac
+	rm -f $(_SHCPL)/run-on-bat
 	rm -f $(_ZSHCPL)/_tlp
 	rm -f $(_ZSHCPL)/_tlp-radio-device
 	rm -f $(_ZSHCPL)/_tlp-run-on
