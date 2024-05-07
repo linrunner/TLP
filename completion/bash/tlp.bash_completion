@@ -50,7 +50,7 @@ _tlp() {
             ;;
     esac
 } &&
-complete -F _tlp tlp
+    complete -F _tlp tlp
 
 _tlp_rf() {
     local cur prev words cword opts
@@ -63,10 +63,7 @@ _tlp_rf() {
         return 0
     fi
 } &&
-complete -F _tlp_rf bluetooth
-complete -F _tlp_rf nfc
-complete -F _tlp_rf wwan
-complete -F _tlp_rf wifi
+    complete -F _tlp_rf bluetooth nfc wwan wifi
 
 _tlp_stat() {
     local cur prev words cword opts
@@ -81,4 +78,6 @@ _tlp_stat() {
         return 0
     fi
 } &&
-complete -F _tlp_stat tlp-stat
+    complete -F _tlp_stat tlp-stat
+
+complete -F _command run-on-ac run-on-bat
