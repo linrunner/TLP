@@ -156,14 +156,12 @@
 #CPU_BOOST_ON_AC=1
 #CPU_BOOST_ON_BAT=0
 
-# Set Intel/AMD CPU dynamic boost feature:
+# Set CPU dynamic boost feature:
 #   0=disable, 1=enable.
 # Improve performance by increasing minimum P-state limit dynamically
 # whenever a task previously waiting on I/O is selected to run.
-# Requires:
-# * Intel Core i  6th gen. or newer CPU: intel_pstate driver in active mode
-# * AMD Zen 2 or newer CPU: amd-pstate driver in active mode ('amd-pstate-epp')
-#   provided by a yet unreleased kernel 6.x
+# Requires Intel Core i  6th gen. or newer CPU: intel_pstate driver in active mode.
+# Note: AMD CPUs currently have no tunable for this.
 # Default: <none>
 
 #CPU_HWP_DYN_BOOST_ON_AC=1

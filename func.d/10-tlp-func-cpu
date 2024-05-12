@@ -17,7 +17,6 @@ readonly CPU_MIN_PERF_PCT=$INTEL_PSTATED/min_perf_pct
 readonly CPU_MAX_PERF_PCT=$INTEL_PSTATED/max_perf_pct
 readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
 readonly INTEL_DYN_BOOST=$INTEL_PSTATED/hwp_dynamic_boost
-readonly AMD_DYN_BOOST=$AMD_PSTATED/cppc_dynamic_boost
 
 readonly CPU_INFO=/proc/cpuinfo
 readonly ENERGYPERF=x86_energy_perf_policy
@@ -425,9 +424,8 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
 }
 
 set_cpu_dyn_boost () {
-    # set Intel/AMD CPU dynamic boost feature
+    # set CPU dynamic boost feature
     # - intel_state in HWP active mode
-    # - amd_pstate in active mode, same requirements as set_cpu_perf_policy()
     # $1: 0=ac mode, 1=battery mode
     local val
 
@@ -440,18 +438,11 @@ set_cpu_dyn_boost () {
     if [ -z "$val" ]; then
         echo_debug "pm" "set_cpu_dyn_boost($1).not_configured"
     elif check_intel_pstate; then
-        if [ $INTEL_DYN_BOOST ]; then
+        if [ -f "$INTEL_DYN_BOOST" ]; then
             write_sysf "$val" $INTEL_DYN_BOOST
             echo_debug "pm" "set_cpu_dyn_boost($1).intel_pstate: $val; rc=$?"
         else
             echo_debug "pm" "set_cpu_dyn_boost($1).intel_pstate.not_supported"
-        fi
-    elif check_amd_pstate; then
-        if [ $AMD_DYN_BOOST ]; then
-            write_sysf "$val" $AMD_DYN_BOOST
-            echo_debug "pm" "set_cpu_dyn_boost($1).amd_pstate: $val; rc=$?"
-        else
-            echo_debug "pm" "set_cpu_dyn_boost($1).amd_pstate.not_supported"
         fi
     else
         echo_debug "pm" "set_cpu_dyn_boost($1).no_driver"

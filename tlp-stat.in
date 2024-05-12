@@ -492,7 +492,6 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     elif check_amd_pstate; then
         # AMD P-state
         printparm "%-54s = ##%s##" "$AMD_PSTATED/status"
-        printparm "%-54s = ##%s##" "$AMD_DYN_BOOST"
         if [ -f "$CPU_BOOST_ALL_CTRL" ]; then
             printparm "%-54s = ##%d##" "$CPU_BOOST_ALL_CTRL" "not available"
         fi
