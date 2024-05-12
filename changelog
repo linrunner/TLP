@@ -24,6 +24,8 @@
     - Add Fish shell command completion
     - Improve busybox compatibility by using only portable options for flock
     Processor:
+    - CPU_HWP_DYN_BOOST_ON_AC/BAT: withdraw AMD implementation (the corresponding kernel patch was removed
+      during review back in 2022, a reincarnation seems unlikely)
     - tlp-stat -t:
       - Show AMD CPU temperatures
       - Indicate unavailable fan speed
