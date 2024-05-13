@@ -16,6 +16,8 @@ usr/bin/wwan
 usr/sbin/tlp
 usr/share/bash-completion/completions/bluetooth
 usr/share/bash-completion/completions/nfc
+usr/share/bash-completion/completions/run-on-ac
+usr/share/bash-completion/completions/run-on-bat
 usr/share/bash-completion/completions/tlp
 usr/share/bash-completion/completions/tlp-stat
 usr/share/bash-completion/completions/wifi
@@ -24,6 +26,14 @@ usr/share/zsh/vendor-completions/_tlp
 usr/share/zsh/vendor-completions/_tlp-radio-device
 usr/share/zsh/vendor-completions/_tlp-run-on
 usr/share/zsh/vendor-completions/_tlp-stat
+usr/share/fish/vendor_completions.d/bluetooth.fish
+usr/share/fish/vendor_completions.d/nfc.fish
+usr/share/fish/vendor_completions.d/run-on-ac.fish
+usr/share/fish/vendor_completions.d/run-on-bat.fish
+usr/share/fish/vendor_completions.d/tlp.fish
+usr/share/fish/vendor_completions.d/tlp-stat.fish
+usr/share/fish/vendor_completions.d/wifi.fish
+usr/share/fish/vendor_completions.d/wwan.fish
 usr/share/tlp/defaults.conf
 usr/share/tlp/rename.conf
 usr/share/tlp/deprecated.conf

@@ -4,3 +4,4 @@ lib/udev/rules.d/85-tlp-rdw.rules
 lib/udev/tlp-rdw-udev
 usr/share/bash-completion/completions/tlp-rdw
 usr/share/zsh/vendor-completions/_tlp-rdw
+usr/share/fish/vendor_completions.d/tlp-rdw.fish
