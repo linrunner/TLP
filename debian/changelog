@@ -2,7 +2,11 @@ tlp (1.7.0~alpha.0-1) UNRELEASED; urgency=medium
 
   * Resume 1.7 development cycle
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 20 Sep 2023 16:21:21 +0200
+  [ Thomas Koch ]
+  * Add bash completion for run-on-ac, run-on-bat
+  * Add Fish completion
+
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 13 May 2024 12:58:21 +0200
 
 tlp (1.6.1-1) unstable; urgency=medium
 
