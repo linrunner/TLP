@@ -208,3 +208,47 @@ set_amdgpu_profile () {
 
     return 0
 }
+
+set_abm_level () {
+    # set amdgpu adaptive backlight modulation (ABM)
+    # $1: 0=ac mode, 1=battery mode
+
+    local card driver gpu level pps rc
+    local sdone=0 # 1=gpu present
+
+    for gpu in "${BASE_DRMD}"/card?; do
+        driver=$(readlink "${gpu}/device/driver")
+        driver=${driver##*/}
+        case "$driver" in
+            amdgpu)
+                card="${gpu##/*/}"
+                for pps in "$gpu/${card}-eDP"*; do
+                    if [ -f "$pps/amdgpu/panel_power_savings" ]; then
+                        if [ "$1" = "1" ]; then
+                            level=${AMDGPU_ABM_LEVEL_ON_BAT:-}
+                        else
+                            level=${AMDGPU_ABM_LEVEL_ON_AC:-}
+                        fi
+
+                        if [ -z "$level" ]; then
+                            # do nothing if unconfigured
+                            echo_debug "pm" "set_abm_level($1).amdgpu.not_configured: gpu=$gpu"
+                            return 0
+                        else
+                            write_sysf "$level" "$pps/amdgpu/panel_power_savings"; rc=$?
+                            echo_debug "pm" "set_abm_level($1).amdgpu: pps=$pps level=${level}: rc=$rc"
+                        fi
+                        sdone=1
+                    fi
+                done
+                ;;
+
+        esac
+    done
+
+    if [ $sdone -eq 0 ]; then
+        echo_debug "pm" "set_abm_level($1).no_gpu_or_abm"
+    fi
+
+    return 0
+}

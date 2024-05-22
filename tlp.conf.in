@@ -78,7 +78,7 @@
 # Select a CPU scaling driver operation mode.
 # Intel CPU with intel_pstate driver:
 #   active, passive.
-# AMD Zen 2 or newer CPU with amd-pstate_driver as of kernel 6.3/6.4(*):
+# AMD Zen 2 or newer CPU with amd-pstate driver as of kernel 6.3/6.4(*):
 #   active, passive, guided(*).
 # Default: <none>
 #CPU_DRIVER_OPMODE_ON_AC=active
@@ -334,6 +334,17 @@
 
 #RADEON_POWER_PROFILE_ON_AC=default
 #RADEON_POWER_PROFILE_ON_BAT=default
+
+# Display panel adaptive backlight modulation (ABM) level: 0(off), 1..4.
+# Values 1..4 control the maximum brightness reduction allowed by the ABM
+# algorithm, where 1 represents the least and 4 the most power saving.
+# Notes:
+# - Requires AMD Vega or newer GPU with amdgpu driver as of kernel 6.9
+# - Savings are made at the expense of color balance
+# Default: 0 (AC), 1 (BAT)
+
+#AMDGPU_ABM_LEVEL_ON_AC=0
+#AMDGPU_ABM_LEVEL_ON_BAT=3
 
 # Wi-Fi power saving mode: on=enable, off=disable.
 # Default: off (AC), on (BAT)

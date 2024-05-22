@@ -612,7 +612,7 @@ printparm_i915 () {
 
 show_gpu_data () {
     # show GPU data for all drivers
-    local driver gpu sysout
+    local card driver gpu lc pps sysout
     local hdr=
 
     for gpu in "${BASE_DRMD}"/card?; do
@@ -624,7 +624,7 @@ show_gpu_data () {
             i915*) # Intel GPU
                 get_intel_gpu_sysdirs "$gpu" "$driver"
 
-                # power managment data
+                # power management data
                 if [ "$hdr" != "i915" ]; then
                     printf "+++ Intel Graphics\n"
                     hdr="i915"
@@ -664,8 +664,17 @@ show_gpu_data () {
                 fi
                 printf "%-65s = %s\n\n" "$gpu/device/driver" "$driver"
 
+                lc=0
                 if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
                     printparm "%-65s = ##%s##" "$gpu/device/power_dpm_force_performance_level"
+                    lc=1
+                fi
+                card="${gpu##/*/}"
+                for pps in "$gpu/${card}-eDP"*; do
+                    printparm "%-65s = ##%s##" "$pps/amdgpu/panel_power_savings" "not available"
+                    lc=1
+                done
+                if [ "$lc" -eq "1" ]; then
                     printf "\n"
                 fi
                 ;;
