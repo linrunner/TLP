@@ -20,12 +20,18 @@
     - Add option --version to all TLP commands
     - Add tlp-stat output options:
       -m|--mode: print current power mode
-      -q|--quiet: omit version header and show less information in the processor category
+      -q|--quiet: omit version header and show less information in the
+        processor category
     - Add Fish shell command completion
     - Improve busybox compatibility by using only portable options for flock
+    Graphics:
+    - AMDGPU_ABM_LEVEL_ON_AC/BAT: configure display panel power savings via
+      adaptive backlight modulation (ABM) from AMD Vega or newer GPUs;
+      kernel 6.9 required
     Processor:
-    - CPU_HWP_DYN_BOOST_ON_AC/BAT: withdraw AMD implementation (the corresponding kernel patch was removed
-      during review back in 2022, a reincarnation seems unlikely)
+    - CPU_HWP_DYN_BOOST_ON_AC/BAT: withdraw AMD implementation (the
+      corresponding kernel patch was removed during review back in 2022,
+      a reincarnation seems unlikely)
     - tlp-stat -t:
       - Show AMD CPU temperatures
       - Indicate unavailable fan speed
