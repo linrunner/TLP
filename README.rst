@@ -6,7 +6,7 @@ without the need to delve deeper into technical details.
 TLP’s default settings are already optimized for battery life, so you may just
 install and forget it.
 
-Nevertheless TLP is highly customizable to fulfil your specific requirements.
+Nevertheless TLP is highly customizable to meet your specific requirements.
 
 Documentation
 -------------
