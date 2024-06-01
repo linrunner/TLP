@@ -81,7 +81,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
     get_drivebay_device
     if [ -z "$dock" ] || [ ! -d "$dock" ]; then
         echo_debug "pm" "poweroff_drivebay($1).no_bay_device"
-        [ "$2" = "1" ] && echo "Error: cannot locate bay device." 1>&2
+        [ "$2" = "1" ] && cecho "Error: cannot locate bay device." 1>&2
         return 1
     fi
     echo_debug "pm" "poweroff_drivebay($1): dock=$dock"
@@ -95,7 +95,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
         optdrv="$BAY_DEVICE"
         if [ -z "$optdrv" ]; then
             echo_debug "pm" "poweroff_drivebay($1).opt_drive_not_configured"
-            [ "$2" = "1" ] && echo "Error: no optical drive configured (BAY_DEVICE=\"\")." 1>&2
+            [ "$2" = "1" ] && cecho "Error: no optical drive configured (BAY_DEVICE=\"\")." 1>&2
             return 1
         elif [ ! -b "/dev/$optdrv" ]; then
             echo_debug "pm" "poweroff_drivebay($1).no_opt_drive: /dev/$optdrv"

@@ -17,11 +17,11 @@ self=${0##*/}
 
 cmd=$1
 if [ -z "$cmd" ]; then
-    echo "Usage: $self command [arg(s)]" 1>&2
+    cecho "Usage: $self command [arg(s)]" 1>&2
     exit 1
 fi
 if ! cmd_exists "$cmd"; then
-    echo "Error: \"$cmd\" not found." 1>&2
+    cecho "Error: \"$cmd\" not found." 1>&2
     exit 2
 fi
 shift
@@ -40,7 +40,7 @@ case $self in
         ;;
 
     *)
-        echo "Error: unknown mode $self." 1>&2
+        cecho "Error: unknown mode $self." 1>&2
         exit 1
         ;;
 esac

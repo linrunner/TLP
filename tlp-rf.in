@@ -21,6 +21,7 @@ fi
 # read configuration: quit on error, trace allowed
 read_config 1 0
 parse_args4config "$@"
+cprintf_init
 
 add_sbin2path
 self=${0##*/}
@@ -52,7 +53,7 @@ case $self in
         ;;
 
     *)
-        echo "Error: unknown device type \"$self\"." 1>&2
+        cecho "Error: unknown device type \"$self\"." 1>&2
         do_exit 1
         ;;
 esac

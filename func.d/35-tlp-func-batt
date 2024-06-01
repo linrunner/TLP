@@ -75,7 +75,7 @@ setcharge_battery () {
     # shellcheck disable=SC2154
     if [ "$_bm_thresh" = "none" ]; then
         # thresholds not available --> quit
-        printf "Error: battery charge thresholds%s not available.\n" "${4:-}" 1>&2
+        cecho "Error: battery charge thresholds${4:-} not available." 1>&2
         echo_debug "bat" "setcharge_battery.no_method"
         return 255
     fi
@@ -116,7 +116,7 @@ setcharge_battery () {
         fi
     else
         # battery not present
-        printf "Error: battery %s not present.\n" "$bat" 1>&2
+        cecho "Error: battery $bat not present." 1>&2
         echo_debug "bat" "setcharge_battery.not_present($bat)"
         return 1
     fi
@@ -143,7 +143,7 @@ chargeonce_battery () {
     select_batdrv
     if [ "$_bm_thresh" = "none" ]; then
         # thresholds not available --> quit
-        printf "Error: battery charge thresholds not available.\n" 1>&2
+        cecho "Error: battery charge thresholds not available." 1>&2
         echo_debug "bat" "chargeonce_battery.no_method"
         return 255
     fi
@@ -161,7 +161,7 @@ chargeonce_battery () {
     # check bat presence and/or get default(1st) battery
     if ! batdrv_select_battery "$bat"; then
         # battery not present
-        printf "Error: battery %s not present.\n" "$bat" 1>&2
+        cecho "Error: battery $bat not present." 1>&2
         # shellcheck disable=SC2154
         echo_debug "bat" "chargeonce_battery.not_present($_bat_str)"
         return 1
@@ -170,7 +170,7 @@ chargeonce_battery () {
     # apply temporary start threshold
     batdrv_chargeonce; rc=$?
     if [ $rc -eq 255 ]; then
-        printf "Error: chargeonce not available for your hardware.\n" 1>&2
+        cecho "Error: chargeonce not available for your hardware." 1>&2
         echo_debug "bat" "chargeonce_battery.no_supported"
         return 255
     fi
@@ -179,7 +179,7 @@ chargeonce_battery () {
 }
 
 echo_discharge_locked () { # print "locked" message
-    echo "Error: another discharge/recalibrate operation is pending." 1>&2
+    cecho "Error: another discharge/recalibrate operation is pending." 1>&2
     return 0
 }
 
@@ -195,7 +195,7 @@ discharge_battery () {
     # shellcheck disable=SC2154
     if [ "$_bm_dischg" = "none" ]; then
         # no method available --> quit
-        echo "Error: battery discharge/recalibrate not available." 1>&2
+        cecho "Error: battery discharge/recalibrate not available." 1>&2
         echo_debug "bat" "discharge_battery.no_method"
         return 255
     fi
@@ -213,7 +213,7 @@ discharge_battery () {
     # check bat presence and/or get default(1st) battery
     if ! batdrv_select_battery "$bat"; then
         # battery not present
-        echo "Error: battery $bat not present." 1>&2
+        cecho "Error: battery $bat not present." 1>&2
         echo_debug "bat" "discharge_battery.not_present($bat)"
         return 1
     fi

@@ -267,7 +267,7 @@ set_usb_suspend () {
         # set "startup completion" flag for tlp-usb-udev
         set_run_flag $USB_DONE
     else
-        [ "$1" = "1" ] && echo "Error: USB autosuspend is disabled. Set USB_AUTOSUSPEND=1 in ${CONF_USR}." 1>&2
+        [ "$1" = "1" ] && cecho "Error: USB autosuspend is disabled. Set USB_AUTOSUSPEND=1 in ${CONF_USR}." 1>&2
         echo_debug "usb" "set_usb_suspend.not_configured"
     fi
 

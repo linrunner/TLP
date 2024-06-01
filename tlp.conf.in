@@ -43,6 +43,18 @@
 
 #TLP_WARN_LEVEL=3
 
+# Colorize error, warning and notice messages. Colors are specified
+# with ANSI codes:
+#   90=black, 91=red, 92=green, 93=yellow, 94=blue, 95=magenta,
+#   96=cyan, 97=white.
+# Other colors are possible, refer to:
+#   https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
+# Colors must be specified in the order "<error> <warning> <notice>".
+# By default, errors are shown in red, warnings in cyan and notices in blue.
+# Default: "91 95 94"
+
+#TLP_MSG_COLORS="91 95 94"
+
 # Operation mode when no power supply can be detected: AC, BAT.
 # Concerns some desktop and embedded hardware only.
 # Default: <none>

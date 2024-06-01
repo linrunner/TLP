@@ -807,7 +807,7 @@ check_udev_rule_ps () {
         if $UDEVADM test -a change "$_psdev" 2> /dev/null | grep -E '^run: .*tlp auto'; then
             printf "OK.\n\n"
         else
-            printf "Fatal Error: TLP's udev rule for power source changes (85-tlp.rules) is not active -- possible package bug.\n\n"
+            cprintf "err" "Fatal Error: TLP's udev rule for power source changes (85-tlp.rules) is not active -- possible package bug.\n\n"
         fi
     fi
 }
@@ -822,7 +822,7 @@ check_udev_rule_usb () {
         if $UDEVADM test -a add "$ud" 2> /dev/null | grep -E '^run: .*tlp-usb-udev usb'; then
             printf "OK.\n\n"
         else
-            printf "Fatal Error: TLP's udev rule for connecting USB devices (85-tlp.rules) is not active -- possible package bug.\n\n"
+            cprintf "err" "Fatal Error: TLP's udev rule for connecting USB devices (85-tlp.rules) is not active -- possible package bug.\n\n"
         fi
     fi
 }

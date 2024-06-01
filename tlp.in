@@ -116,7 +116,7 @@ parse_args () { # parse command-line arguments
 
                 stat)
                     # unsupported command
-                    echo "Error: 'tlp stat' no longer supported, use 'tlp-stat' instead."  1>&2
+                    cecho "Error: 'tlp stat' no longer supported, use 'tlp-stat' instead."  1>&2
                     do_exit 3
                     ;;
 
@@ -134,7 +134,7 @@ parse_args () { # parse command-line arguments
 
                 *)
                     # unknown command
-                    echo "Error: unknown command \"$1\"."  1>&2
+                    cecho "Error: unknown command \"$1\"."  1>&2
                     show_usage
                     do_exit 3
                     ;;
@@ -195,6 +195,7 @@ fi
 # read configuration: quit on error, trace allowed
 read_config 1 0
 parse_args4config "$@"
+cprintf_init
 
 check_tlp_enabled 1 || do_exit 1
 add_sbin2path
@@ -559,7 +560,15 @@ case "$_cmd" in
         select_batdrv
         batdrv_select_battery "DEF"
         save_runconf
-        echo "Debug: no operation performed."
+        echo_message "Debug: no operation performed."
+        echo_message "Error: message color test."
+        echo_message "Warning: message color test."
+        echo_message "Notice: message color test."
+        _bgtask=1
+        echo_message "Debug: no operation performed."
+        echo_message "Error: message color test."
+        echo_message "Warning: message color test."
+        echo_message "Notice: message color test."
         ;;
 esac
 

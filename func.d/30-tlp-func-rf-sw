@@ -76,7 +76,7 @@ get_devc () { # get control device for radio type
             ;;
 
         *)
-            echo "Error: unknown device type \"$1\"" 1>&2
+            cecho "Error: unknown device type $1" 1>&2
             echo_debug "rf" "get_devc($1).unknown_type"
             return 0
             ;;
@@ -105,7 +105,7 @@ get_devs () { # get radio device state -- $1: rftype; retval $_devs: 0=off/1=on
 }
 
 err_no_root_priv () { # check root privilege
-    echo "Error: missing root privilege." 1>&2
+    cecho "Error: missing root privilege." 1>&2
     echo_debug "rf" "$1.missing_root_privilege"
 
     return 0

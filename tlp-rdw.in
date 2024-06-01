@@ -24,6 +24,7 @@ fi
 # read configuration: quit on error, trace allowed
 read_config 1 0
 parse_args4config "$@"
+cprintf_init
 
 case $carg1 in
     "")

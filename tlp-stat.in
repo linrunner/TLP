@@ -221,6 +221,7 @@ read_config 0 1
 
 parse_args "$@"
 parse_args4config "$@"
+cprintf_init
 
 add_sbin2path
 : ${needs_root_priv:=1}
@@ -889,7 +890,7 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
             $TLPPCI
         fi
     else
-        echo "Error: missing subcommand $TLPPCI." 1>&2
+        cecho "Error: missing subcommand $TLPPCI." 1>&2
     fi
     echo
 fi # show_pcie
@@ -938,7 +939,7 @@ if [ "$show_usb" = "1" ] || [ "$show_all" = "1" ]; then
             $TLPUSB
         fi
     else
-        echo "Error: missing subcommand $TLPUSB." 1>&2
+        cecho "Error: missing subcommand $TLPUSB." 1>&2
     fi
     echo
 fi # show_usb
@@ -1046,7 +1047,7 @@ if [ "$show_trace" = "1" ]; then
         if [ -f $DEBUGLOG ]; then
             grep 'tlp\[' $DEBUGLOG
         else
-            echo "Error: $DEBUGLOG does not exist." 1>&2
+            cecho "Error: $DEBUGLOG does not exist." 1>&2
             echo 1>&2
             echo "Solution: create an rsyslog conffile /etc/rsyslog.d/90-debug.conf with the following contents" 1>&2
             echo " *.=debug;\\" 1>&2
