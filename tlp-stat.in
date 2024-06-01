@@ -357,9 +357,8 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
 
     # -- check for power-profiles-daemon
     if check_ppd_active; then
-        echo_message "Warning: TLP's power saving will not apply on boot because the conflicting $PPD_SERVICE is active "`
-        `"--> Uninstall power-profiles-daemon or invoke 'systemctl mask $PPD_SERVICE to ensure the full functionality of TLP." "err"
-        echo_message "" "err"
+        cprintf "" "Warning: TLP's power saving will not apply on boot because the conflicting $PPD_SERVICE is active.\n" 1>&2
+        echo
     fi
 
     # -- warning if l-m-t detected
@@ -970,21 +969,30 @@ if [ "$show_warn" = "1" ] || [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; th
 fi # show_warn
 
 # -- show recommendations
-if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
+if [ "$show_bat" = "1" ] || [ "$show_system" = "1" ] || [ "$show_all" = "1" ]; then
     # battery plugin specific recommendations
-    reout="$(batdrv_recommendations)"
+    if [ "$show_bat" = "1" ]; then
+        reout="$(batdrv_recommendations)"
+    else
+        reout=""
+    fi
 
+    # other recommendations
+    if [ "$show_system" = "1" ] || [ "$show_all" = "1" ]; then
+        if check_ppd_active; then
+            reout="${reout}Uninstall power-profiles-daemon or invoke 'systemctl mask $PPD_SERVICE' to ensure the full functionality of TLP\n"
+        fi
+    fi
     if [ "$show_all" = "1" ]; then
-        # add other recommendations
         cmd_exists ethtool  || reout="${reout}Install ethtool to disable Wake-on-LAN\n"
         cmd_exists smartctl || reout="${reout}Install smartmontools for disk drive health info\n"
     fi
 
     if [ -n "$reout" ]; then
-        echo "+++ Recommendations"
+        cecho "+++ Recommendations" "notice"
         # shellcheck disable=SC2059
         # don't change to %s, $reout contains blanks and \n!
-        printf "$reout" | sed -r 's/^/\* /'
+        cecho "$(printf "$reout" | sed -r 's/^/\* /')" "notice"
         echo
     fi
 fi # show_all
