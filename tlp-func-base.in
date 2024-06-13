@@ -89,6 +89,7 @@ cprintf_init () {
     # retval: $_cprintf_color_err
     #         $_cprintf_color_warn
     #         $_cprintf_color_note
+    #         $_cprintf_color_succ
     #         $_cprintf_color_dbg
     #         $_cprintf_color_rst
 
@@ -100,7 +101,8 @@ cprintf_init () {
         is_uint "$1" 3 && _cprintf_color_err="\033[1;${1}m"
         is_uint "$2" 3 && _cprintf_color_warn="\033[1;${2}m"
         is_uint "$3" 3 && _cprintf_color_note="\033[1;${3}m"
-        is_uint "$4" 3 && _cprintf_color_dbg="\033[1;${4}m"
+        is_uint "$4" 3 && _cprintf_color_succ="\033[1;${4}m"
+        is_uint "$5" 3 && _cprintf_color_dbg="\033[1;${5}m"
         _cprintf_color_rst="\033[0m"
     fi
 }
@@ -130,6 +132,7 @@ cprintf () {
         err)     color="$_cprintf_color_err" ;;
         warning) color="$_cprintf_color_warn" ;;
         notice)  color="$_cprintf_color_note" ;;
+        success) color="$_cprintf_color_succ" ;;
         debug)   color="$_cprintf_color_dbg" ;;
         *)       color="" ;;
     esac

@@ -564,11 +564,13 @@ case "$_cmd" in
         echo_message "Error: message color test."
         echo_message "Warning: message color test."
         echo_message "Notice: message color test."
+        echo_message "Success: message color test." "success"
         _bgtask=1
         echo_message "Debug: no operation performed."
         echo_message "Error: message color test."
         echo_message "Warning: message color test."
         echo_message "Notice: message color test."
+        echo_message "Success: message color test." "success"
         ;;
 esac
 
