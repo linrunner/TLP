@@ -14,9 +14,11 @@
       - tlp-stat -b improvements for coreboot:
         - Fix charge readings (Issue #657)
         - Indicate when recalibration is not possible
+    - tlp-stat -b: highlight battery care status
     Disks:
     - tlp-stat -d: replace disk serial number with asterisks (for privacy)
     General:
+    - TLP_MSG_COLORS: highlight error, warning, notice and success messages
     - Add option --version to all TLP commands
     - Add tlp-stat output options:
       -m|--mode: print current power mode
