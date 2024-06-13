@@ -134,7 +134,8 @@ batdrv_show_battery_data () { # output battery data
 
     printf "+++ Battery Care\n"
     printf "Plugin: %s\n" "$_batdrv_plugin"
-    printf "Supported features: none available\n\n"
+    cprintf "warning" "Supported features: none available\n"
+    printf "\n"
 
     local bat lf
     local bcnt=0
@@ -144,7 +145,8 @@ batdrv_show_battery_data () { # output battery data
 
     if [ -z "$_batteries" ]; then
         printf "+++ Battery Status\n"
-        printf "No batteries detected.\n\n"
+        cprintf "warning" "No batteries detected.\n"
+        printf "\n"
         return 1
     fi
 

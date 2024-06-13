@@ -238,9 +238,9 @@ batdrv_write_thresholds () {
 
             2)
                 if [ -n "$4" ]; then
-                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": care limiter not specified or invalid (must be 50, 80 or 100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
+                    cprintf "" "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": care limiter not specified or invalid (must be 50, 80 or 100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
                 else
-                    printf "Error: care limiter (%s) not specified or invalid (must be 50, 80 or 100). Aborted.\n" "$new_stop" 1>&2
+                    pcrintf "" "Error: care limiter (%s) not specified or invalid (must be 50, 80 or 100). Aborted.\n" "$new_stop" 1>&2
                 fi
                 ;;
         esac
@@ -258,14 +258,14 @@ batdrv_write_thresholds () {
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
             1) echo_message "Error: could not read current care limiter. Skipped." ;;
-            2) printf "Error: could not read current care limiter. Aborted.\n" 1>&2 ;;
+            2) cprintf "" "Error: could not read current care limiter. Aborted.\n" 1>&2 ;;
         esac
         return 4
     fi
 
     # write new threshold
     if [ "$verb" = "2" ]; then
-        printf "Setting temporary charge threshold for all batteries:\n"
+        printf "Setting temporary charge threshold for all batteries:\n" 1>&2
     fi
 
     local rc=0
@@ -276,9 +276,9 @@ batdrv_write_thresholds () {
         case $verb in
             2)
                 if [ $rc -eq 0 ]; then
-                    printf "  care limiter = %d\n" "$new_stop"
+                    printf "  care limiter = %d\n" "$new_stop" 1>&2
                 else
-                    printf "  care limiter = %d (Error: write failed)\n" "$new_stop" 1>&2
+                    cprintf "err" "  care limiter = %d (Error: write failed)\n" "$new_stop" 1>&2
                 fi
                 ;;
             1)
@@ -290,7 +290,7 @@ batdrv_write_thresholds () {
     else
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).no_change: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_stop; new=$sony_stop"
         if [ "$verb" = "2" ]; then
-                printf "  care limiter = %d (no change)\n" "$new_stop"
+                printf "  care limiter = %d (no change)\n" "$new_stop" 1>&2
         fi
     fi
 
@@ -378,19 +378,19 @@ batdrv_show_battery_data () {
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     if [ "$_bm_thresh" = "natacpi" ]; then
-        printf "Supported features: charge threshold\n"
+        cprintf "success" "Supported features: charge threshold\n"
     else
-        printf "Supported features: none available\n"
+        cprintf "warning" "Supported features: none available\n"
     fi
 
     printf "Driver usage:\n"
     # vendor specific kernel api
     case $_natacpi in
-        0)   printf "* vendor (%s) = active (charge threshold)\n" "$_batdrv_kmod" ;;
-        32)  printf "* vendor (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
-        128) printf "* vendor (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
-        254) printf "* vendor (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
-        *)   printf "* vendor (%s) = unknown status\n" "$_batdrv_kmod" ;;
+        0)   cprintf "success" "* vendor (%s) = active (charge threshold)\n" "$_batdrv_kmod" ;;
+        32)  cprintf "notice"  "* vendor (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
+        128) cprintf "err"     "* vendor (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
+        254) cprintf "warning" "* vendor (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
+        *)   cprintf "err"     "* vendor (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
     if [ "$_bm_thresh" = "natacpi" ]; then

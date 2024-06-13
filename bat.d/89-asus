@@ -272,9 +272,9 @@ batdrv_write_thresholds () {
 
             2)
                 if [ -n "$4" ]; then
-                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (1..100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
+                    cprintf "" "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (1..100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
                 else
-                    printf "Error: stop charge threshold (%s) for %s is not specified, invalid or out of range (1..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
+                    cprintf "" "Error: stop charge threshold (%s) for %s is not specified, invalid or out of range (1..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -294,7 +294,7 @@ batdrv_write_thresholds () {
                 if [ -n "$4" ]; then
                     echo_message "Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if STOP_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_stop}\" works as expected."
                 else
-                    printf "Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if %s works as expected.\n" "$new_stop"
+                    cprintf "" "Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if %s works as expected.\n" "$new_stop" 1>&2
                 fi
                 ;;
         esac
@@ -302,7 +302,7 @@ batdrv_write_thresholds () {
 
     # write new threshold
     if [ "$verb" = "2" ]; then
-        printf "Setting temporary charge threshold for %s:\n" "$_bat_str"
+        printf "Setting temporary charge threshold for %s:\n" "$_bat_str" 1>&2
     fi
 
     local rc=0
@@ -311,9 +311,9 @@ batdrv_write_thresholds () {
     case $verb in
         2)
             if [ $rc -eq 0 ]; then
-                printf "  stop = %3d\n" "$new_stop"
+                printf "  stop = %3d\n" "$new_stop" 1>&2
             else
-                printf "  stop = %3d (Error: write failed)\n" "$new_stop" 1>&2
+                cprintf "err" "  stop = %3d (Error: write failed)\n" "$new_stop" 1>&2
             fi
             ;;
         1)
@@ -411,19 +411,19 @@ batdrv_show_battery_data () {
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     if [ "$_bm_thresh" = "natacpi" ]; then
-        printf "Supported features: charge threshold\n"
+        cprintf "success" "Supported features: charge threshold\n"
     else
-        printf "Supported features: none available\n"
+        cprintf "warning" "Supported features: none available\n"
     fi
 
     printf "Driver usage:\n"
     # native kernel ACPI battery API
     case $_natacpi in
-        0)   printf "* natacpi (%s) = active (charge threshold)\n" "$_batdrv_kmod" ;;
-        32)  printf "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
-        128) printf "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
-        254) printf "* natacpi (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
-        *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
+        0)   cprintf "success" "* natacpi (%s) = active (charge threshold)\n" "$_batdrv_kmod" ;;
+        32)  cprintf "notice"  "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
+        128) cprintf "err"     "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
+        254) cprintf "warning" "* natacpi (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
+        *)   cprintf "err"     "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
     if [ "$_bm_thresh" = "natacpi" ]; then

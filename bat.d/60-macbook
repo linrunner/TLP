@@ -323,9 +323,9 @@ batdrv_write_thresholds () {
 
             2)
                 if [ -n "$4" ]; then
-                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified or invalid (must be 80 or 100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
+                    cprintf "" "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified or invalid (must be 80 or 100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
                 else
-                    printf "Error: stop charge threshold (%s) for %s is not specified or invalid (must be 80 or 100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
+                    cprintf "" "Error: stop charge threshold (%s) for %s is not specified or invalid (must be 80 or 100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
                 fi
                 ;;
          esac
@@ -343,14 +343,14 @@ batdrv_write_thresholds () {
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
             1) echo_message "Error: could not read current stop charge threshold for $_bat_str. Battery skipped." ;;
-            2) printf "Error: could not read current stop charge threshold for %s. Aborted.\n" "$_bat_str" 1>&2 ;;
+            2) cprintf "" "Error: could not read current stop charge threshold for %s. Aborted.\n" "$_bat_str" 1>&2 ;;
         esac
         return 4
     fi
 
     # write new stop threshold
     if [ "$verb" = "2" ]; then
-        printf "Setting temporary charge thresholds for %s:\n" "$_bat_str"
+        printf "Setting temporary charge thresholds for %s:\n" "$_bat_str" 1>&2
     fi
 
     local rc=0
@@ -362,10 +362,10 @@ batdrv_write_thresholds () {
         case $verb in
             2)
                 if [ $rc -eq 0 ]; then
-                    printf "  stop  = %3d\n" "$new_stop"
-                    printf "  start = %3d (due to hardware constraint)\n" "$new_start"
+                    printf "  stop  = %3d\n" "$new_stop" 1>&2
+                    printf "  start = %3d (due to hardware constraint)\n" "$new_start" 1>&2
                 else
-                    printf "  stop  = %3d (Error: write failed)\n" "$new_stop" 1>&2
+                    cprintf "err" "  stop  = %3d (Error: write failed)\n" "$new_stop" 1>&2
                 fi
                 ;;
             1)
@@ -378,8 +378,8 @@ batdrv_write_thresholds () {
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).stop.no_change: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_stop; new=$new_stop"
 
         if [ "$verb" = "2" ]; then
-            printf "  stop  = %3d (no change)\n" "$new_stop"
-            printf "  start = %3d (no change)\n" "$new_start"
+            printf "  stop  = %3d (no change)\n" "$new_stop" 1>&2
+            printf "  start = %3d (no change)\n" "$new_start" 1>&2
         fi
     fi
 
@@ -514,9 +514,9 @@ batdrv_show_battery_data () {
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     if [ "$_bm_thresh" != "none" ]; then
-        printf "Supported features: charge thresholds\n"
+        cprintf "success" "Supported features: charge thresholds\n"
     else
-        printf "Supported features: none available\n"
+        cprintf "warning" "Supported features: none available\n"
     fi
 
     printf "Driver usage:\n"

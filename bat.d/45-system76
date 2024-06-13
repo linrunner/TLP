@@ -299,9 +299,9 @@ batdrv_write_thresholds () {
 
             2)
                 if [ -n "$4" ]; then
-                    printf "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..99). Aborted.\n" "$_bt_cfg_bat" "$new_start" 1>&2
+                    cprintf "" "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..99). Aborted.\n" "$_bt_cfg_bat" "$new_start" 1>&2
                 else
-                    printf "Error: start charge threshold (%s) for %s is not specified, invalid or out of range (0..99). Aborted.\n" "$new_start" "$_bat_str" 1>&2
+                    cprintf "" "Error: start charge threshold (%s) for %s is not specified, invalid or out of range (0..99). Aborted.\n" "$new_start" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -322,9 +322,9 @@ batdrv_write_thresholds () {
 
             2)
                 if [ -n "$4" ]; then
-                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (1..100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
+                    cprintf "" "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (1..100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
                 else
-                    printf "Error: stop charge threshold (%s) for %s is not specified, invalid or out of range (1..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
+                    cprintf "" "Error: stop charge threshold (%s) for %s is not specified, invalid or out of range (1..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -343,9 +343,9 @@ batdrv_write_thresholds () {
 
             2)
                 if [ -n "$4" ]; then
-                    printf "Error in configuration: START_CHARGE_THRESH_%s >= STOP_CHARGE_THRESH_%s. Aborted.\n" "$_bt_cfg_bat" "$_bt_cfg_bat" 1>&2
+                    cprintf "" "Error in configuration: START_CHARGE_THRESH_%s >= STOP_CHARGE_THRESH_%s. Aborted.\n" "$_bt_cfg_bat" "$_bt_cfg_bat" 1>&2
                 else
-                    printf "Error: start threshold >= stop threshold for %s. Aborted.\n" "$_bat_str" 1>&2
+                    cprintf "" "Error: start threshold >= stop threshold for %s. Aborted.\n" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -358,7 +358,7 @@ batdrv_write_thresholds () {
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
             1) echo_message "Error: could not read current charge threshold(s) for $_bat_str. Battery skipped." ;;
-            2) printf "Error: could not read current charge threshold(s) for %s. Aborted.\n" "$_bat_str" 1>&2 ;;
+            2) cprintf "" "Error: could not read current charge threshold(s) for %s. Aborted.\n" "$_bat_str" 1>&2 ;;
         esac
         return 4
     fi
@@ -376,7 +376,7 @@ batdrv_write_thresholds () {
 
     # write new thresholds in determined sequence
     if [ "$verb" = "2" ]; then
-        printf "Setting temporary charge thresholds for %s:\n" "$_bat_str"
+        printf "Setting temporary charge thresholds for %s:\n" "$_bat_str" 1>&2
     fi
 
     for step in $tseq; do
@@ -406,9 +406,9 @@ batdrv_write_thresholds () {
             case $verb in
                 2)
                     if [ $steprc -eq 0 ]; then
-                        printf "  %-5s = %3d\n" "$step" "$new_thresh"
+                        printf "  %-5s = %3d\n" "$step" "$new_thresh" 1>&2
                     else
-                        printf "  %-5s = %3d (Error: write failed)\n" "$step" "$new_thresh" 1>&2
+                        cprintf "err" "  %-5s = %3d (Error: write failed)\n" "$step" "$new_thresh" 1>&2
                     fi
                     ;;
                 1)
@@ -421,7 +421,7 @@ batdrv_write_thresholds () {
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.no_change: bat=$_bat_str; old=$old_thresh; new=$new_thresh"
 
             if [ "$verb" = "2" ]; then
-                printf "  %-5s = %3d (no change)\n" "$step" "$new_thresh"
+                printf "  %-5s = %3d (no change)\n" "$step" "$new_thresh" 1>&2
             fi
         fi
     done # for step
@@ -513,21 +513,21 @@ batdrv_show_battery_data () {
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     if [ "$_bm_thresh" != "none" ]; then
-        printf "Supported features: charge thresholds\n"
+        cprintf "success" "Supported features: charge thresholds\n"
     else
-        printf "Supported features: none available\n"
+        cprintf "warning" "Supported features: none available\n"
     fi
 
     printf "Driver usage:\n"
     # native kernel ACPI battery API
     case $_natacpi in
-        0)   printf "* natacpi (%s) = active (charge thresholds)\n" "$_batdrv_kmod" ;;
-        32)  printf "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
-        128) printf "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
-        254) printf "* natacpi (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
-        *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
+        0)   cprintf "success" "* natacpi (%s) = active (charge thresholds)\n" "$_batdrv_kmod" ;;
+        32)  cprintf "notice"  "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
+        128) cprintf "err"     "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
+        254) cprintf "warning" "* natacpi (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
+        *)   cprintf "err"     "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
-    if [ "$_bm_thresh" != "none" ]; then
+    if [ "$_bm_thresh" = "natacpi" ]; then
         printf "Parameter value ranges:\n"
         printf "* START_CHARGE_THRESH_BAT0:  0(off)..90(default)..99\n"
         printf "* STOP_CHARGE_THRESH_BAT0:   1..100(default)\n"
