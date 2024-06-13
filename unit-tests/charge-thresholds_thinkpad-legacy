@@ -140,7 +140,7 @@ Plugin: thinkpad-legacy
 Supported features: none available
 Driver usage:
 * tp-smapi (tp_smapi) = inactive (kernel module 'tp_smapi' not installed)
-$ sudo tlp-stat -b | grep -A2 '+++ Recommendations'
+$ sudo tlp-stat -b | grep -A1 '+++ Recommendations'
 +++ Recommendations
 * Install tp-smapi kernel modules for ThinkPad battery thresholds and recalibration
 $ sudo ./kmod-helper tp_smapi restore
