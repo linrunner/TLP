@@ -971,7 +971,7 @@ fi # show_warn
 # -- show recommendations
 if [ "$show_bat" = "1" ] || [ "$show_system" = "1" ] || [ "$show_all" = "1" ]; then
     # battery plugin specific recommendations
-    if [ "$show_bat" = "1" ]; then
+    if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         reout="$(batdrv_recommendations)"
     else
         reout=""

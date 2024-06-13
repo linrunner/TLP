@@ -747,7 +747,7 @@ print_methods_per_driver () {
     done
 
     if [ -n "$mlist" ]; then
-        printf "(%s)\n" "$mlist"
+        printf "%s\n" "$mlist"
     else
         printf "(none)\n"
     fi

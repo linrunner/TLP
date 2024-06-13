@@ -588,9 +588,9 @@ batdrv_write_thresholds () {
 
             2)
                 if [ -n "$4" ]; then
-                    printf "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..99). Aborted.\n" "$_bt_cfg_bat" "$new_start" 1>&2
+                    cprintf "" "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..99). Aborted.\n" "$_bt_cfg_bat" "$new_start" 1>&2
                 else
-                    printf "Error: start charge threshold (%s) for %s is not specified, invalid or out of range (0..99). Aborted.\n" "$new_start" "$_bat_str" 1>&2
+                    cprintf "" "Error: start charge threshold (%s) for %s is not specified, invalid or out of range (0..99). Aborted.\n" "$new_start" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -611,9 +611,9 @@ batdrv_write_thresholds () {
 
             2)
                 if [ -n "$4" ]; then
-                    printf "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (1..100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
+                    cprintf "" "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (1..100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
                 else
-                    printf "Error: stop charge threshold (%s) for %s is not specified, invalid or out of range (1..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
+                    cprintf "" "Error: stop charge threshold (%s) for %s is not specified, invalid or out of range (1..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -632,9 +632,9 @@ batdrv_write_thresholds () {
 
             2)
                 if [ -n "$4" ]; then
-                    printf "Error in configuration: START_CHARGE_THRESH_%s >= STOP_CHARGE_THRESH_%s. Aborted.\n" "$_bt_cfg_bat" "$_bt_cfg_bat" 1>&2
+                    cprintf "" "Error in configuration: START_CHARGE_THRESH_%s >= STOP_CHARGE_THRESH_%s. Aborted.\n" "$_bt_cfg_bat" "$_bt_cfg_bat" 1>&2
                 else
-                    printf "Error: start threshold >= stop threshold for %s. Aborted.\n" "$_bat_str" 1>&2
+                    cprintf "" "Error: start threshold >= stop threshold for %s. Aborted.\n" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -647,7 +647,7 @@ batdrv_write_thresholds () {
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
             1) echo_message "Warning: could not read current charge threshold(s) for $_bat_str. Battery skipped." ;;
-            2) printf "Error: could not read current charge threshold(s) for %s. Aborted.\n" "$_bat_str" 1>&2 ;;
+            2) cprintf "" "Error: could not read current charge threshold(s) for %s. Aborted.\n" "$_bat_str" 1>&2 ;;
         esac
         return 4
     fi
@@ -672,7 +672,7 @@ batdrv_write_thresholds () {
 
     # write new thresholds in determined sequence
     if [ "$verb" = "2" ]; then
-        printf "Setting temporary charge thresholds for %s:\n" "$_bat_str"
+        printf "Setting temporary charge thresholds for %s:\n" "$_bat_str" 1>&2
     fi
 
     for step in $tseq; do
@@ -695,8 +695,8 @@ batdrv_write_thresholds () {
             case $_bm_thresh in
                 natacpi)
                     case $step in
-                        start) write_sysf "$new_thresh" "$_bf_start" ;;
-                        stop)  write_sysf "$new_thresh" "$_bf_stop"  ;;
+                        start) [ "$X_THRESH_SIMULATE_WRITEERR" != "1" ] && write_sysf "$new_thresh" "$_bf_start" ;;
+                        stop)  [ "$X_THRESH_SIMULATE_WRITEERR" != "1" ] && write_sysf "$new_thresh" "$_bf_stop"  ;;
                     esac
                     steprc=$?; [ $steprc -ne 0 ] && [ $rc -eq 0 ] && rc=5
                     ;;
@@ -726,12 +726,12 @@ batdrv_write_thresholds () {
                 2)
                     if [ $steprc -eq 0 ]; then
                         if [ "$step" = "start" ] && [ "$new_thresh" -eq 0 ]; then
-                            printf "  %-5s = %3d (disabled)\n" "$step" "$new_thresh"
+                            printf "  %-5s = %3d (disabled)\n" "$step" "$new_thresh" 1>&2
                         else
-                            printf "  %-5s = %3d\n" "$step" "$new_thresh"
+                            printf "  %-5s = %3d\n" "$step" "$new_thresh" 1>&2
                         fi
                     else
-                        printf "  %-5s = %3d (Error: write failed)\n" "$step" "$new_thresh" 1>&2
+                        cprintf "err" "  %-5s = %3d (Error: write failed)\n" "$step" "$new_thresh" 1>&2
                     fi
                     ;;
                 1)
@@ -744,7 +744,7 @@ batdrv_write_thresholds () {
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.no_change: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_thresh; new=$new_thresh"
 
             if [ "$verb" = "2" ]; then
-                printf "  %-5s = %3d (no change)\n" "$step" "$new_thresh"
+                printf "  %-5s = %3d (no change)\n" "$step" "$new_thresh" 1>&2
             fi
         fi
     done # for step
@@ -768,7 +768,7 @@ batdrv_chargeonce () {
     local rc=0
 
     if ! cur_stop=$(batdrv_read_threshold stop 0); then
-        printf "Error: reading stop charge threshold for %s failed. Aborted.\n" "$_bat_str" 1>&2
+        cprintf "" "Error: reading stop charge threshold for %s failed. Aborted.\n" "$_bat_str" 1>&2
         echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).thresh_unknown: stop=$cur_stop; rc=4"
         return 4
     fi
@@ -795,20 +795,20 @@ batdrv_chargeonce () {
     esac
 
     if [ "$ccharge" -eq -1 ]; then
-        printf "Error: cannot determine charge level for %s.\n" "$_bat_str" 1>&2
+        cprintf "" "Error: cannot determine charge level for %s.\n" "$_bat_str" 1>&2
         echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_unknown: enow=$enow; efull=$efull; rc=2"
         return 2
     fi
 
     temp_start=$(( cur_stop - 1 ))
     if [ "$ccharge" -gt "$temp_start" ]; then
-        printf "Error: the %s charge level is %s%%. " "$_bat_str" "$ccharge"  1>&2
-        printf "For this command to work, it must not exceed %s%% (stop threshold - 1).\n" "$temp_start" 1>&2
+        cprintf "" "Error: the %s charge level is %s%%. " "$_bat_str" "$ccharge"  1>&2
+        cprintf "err" "For this command to work, it must not exceed %s%% (stop threshold - 1).\n" "$temp_start" 1>&2
         echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_too_high: soc=$ccharge; stop=$cur_stop; rc=3"
         return 3
     fi
 
-    printf "Setting temporary charge threshold for %s:\n" "$_bat_str"
+    printf "Setting temporary charge threshold for %s:\n" "$_bat_str" 1>&2
     case $_bm_thresh in
         natacpi)
             write_sysf "$temp_start" "$_bf_start" || rc=5
@@ -820,9 +820,9 @@ batdrv_chargeonce () {
     esac
 
     if [ $rc -eq 0 ]; then
-        printf "  start = %3d\n" "$temp_start"
+        printf "  start = %3d\n" "$temp_start" 1>&2
     else
-        printf "  start = %3d (Error: write failed)\n" "$temp_start" 1>&2
+        cprintf "err" "  start = %3d (Error: write failed)\n" "$temp_start" 1>&2
     fi
     echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str): soc=$ccharge; start=$temp_start; stop=$cur_stop; rc=$rc"
 
@@ -1036,7 +1036,7 @@ batdrv_discharge () {
     # start discharge
     if ! batdrv_write_force_discharge 1; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_malfunction($_bat_str)"
-        echo "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
+        cecho "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
         return 1
     fi
 
@@ -1044,57 +1044,57 @@ batdrv_discharge () {
     rc=0; soc=0
 
     # wait for start == while status not "discharging" -- 15.0 sec timeout
-    printf "Initiating discharge of battery %s " "$_bat_str"
+    printf "Initiating discharge of battery %s " "$_bat_str" 1>&2
     wt=15
     while ! batdrv_force_discharge_active && [ $wt -gt 0 ] ; do
         sleep 1
-        printf "."
+        printf "." 1>&2
         wt=$((wt - 1))
     done
-    printf "\n"
+    printf "\n" 1>&2
 
     if batdrv_force_discharge_active; then
         # discharge initiated sucessfully --> wait for completion == while status "discharging"
         while batdrv_force_discharge_active; do
             clear
-            printf "Currently discharging battery %s:\n" "$_bat_str"
+            printf "Currently discharging battery %s:\n" "$_bat_str" 1>&2
 
             # show current battery state
             if [ -n "$_bat_volt" ]; then
-                printf "voltage            = %6s [mV]\n"  "$_bat_volt"
+                printf "voltage            = %6s [mV]\n"  "$_bat_volt" 1>&2
             else
-                printf "voltage            = not available [mV]\n"
+                printf "voltage            = not available [mV]\n" 1>&2
             fi
 
             case $_bm_read in
                 natacpi|tpacpi) # use ACPI sysfiles
-                    perl -e 'printf ("remaining capacity = %6d [mWh]\n", '"$_bat_en"' / 1000.0);'
+                    perl -e 'printf ("remaining capacity = %6d [mWh]\n", '"$_bat_en"' / 1000.0);' 1>&2
                     if [ -n "$_bat_soc" ]; then
-                        perl -e 'printf ("remaining percent  = %6d [%%]\n", '"$_bat_soc"' );'
+                        perl -e 'printf ("remaining percent  = %6d [%%]\n", '"$_bat_soc"' );'  1>&2
                     else
-                        printf "remaining percent  = not available [%%]\n"
+                        printf "remaining percent  = not available [%%]\n" 1>&2
                     fi
 
                     if [ "$_bat_pwr" != "0" ]; then
-                        perl -e 'printf ("remaining time     = %6d [min]\n", 0.06 * '"$_bat_en"' / '"$_bat_pwr"');'
-                        printf "power              = %6s [mW]\n"  "$_bat_pwr"
+                        perl -e 'printf ("remaining time     = %6d [min]\n", 0.06 * '"$_bat_en"' / '"$_bat_pwr"');' 1>&2
+                        printf "power              = %6s [mW]\n"  "$_bat_pwr" 1>&2
                     else
-                        printf "remaining time     = not discharging [min]\n"
+                        printf "remaining time     = not discharging [min]\n" 1>&2
                     fi
                     ;; # natacpi, tpsmapi
 
                 tpsmapi) # use tp-smapi sysfiles
-                    printf "remaining capacity = %6s [mWh]\n" "$(read_sysf "$_bd_read/remaining_capacity")"
-                    printf "remaining percent  = %6s [%%]\n"  "$_bat_soc"
-                    printf "remaining time     = %6s [min]\n" "$(read_sysf "$_bd_read/remaining_running_time_now")"
-                    printf "power              = %6s [mW]\n"  "$_bat_pwr"
+                    printf "remaining capacity = %6s [mWh]\n" "$(read_sysf "$_bd_read/remaining_capacity")" 1>&2
+                    printf "remaining percent  = %6s [%%]\n"  "$_bat_soc" 1>&2
+                    printf "remaining time     = %6s [min]\n" "$(read_sysf "$_bd_read/remaining_running_time_now")" 1>&2
+                    printf "power              = %6s [mW]\n"  "$_bat_pwr" 1>&2
                     ;; # tpsmapi
 
             esac
 
-            printf "state              = %s\n" "$_bat_st"
-            printf "force-discharge    = %s\n" "$_bat_fd"
-            echo "Press Ctrl+C to cancel."
+            printf "state              = %s\n" "$_bat_st" 1>&2
+            printf "force-discharge    = %s\n" "$_bat_fd" 1>&2
+            echo "Press Ctrl+C to cancel." 1>&2
             sleep 5
         done
         unlock_tlp tlp_discharge
@@ -1132,12 +1132,12 @@ batdrv_discharge () {
             if [ "$_syspwr" -eq 1 ]; then
                 # system on battery --> AC power removed
                 echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.ac_removed($_bat_str): bm_read=$_bm_read; fd=$fd; st=$st; soc=$soc; pwr=$pn; voltage=$vn"
-                echo "Warning: battery $_bat_str was not discharged completely -- AC/charger removed." 1>&2
+                cecho "Warning: battery $_bat_str was not discharged completely -- AC/charger removed." 1>&2
                 rc=3
             elif [ "$soc" -gt 1 ]; then
                 # system on AC, SOC > 1% --> discharging terminated by unknown reason
                 echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_emptied($_bat_str): bm_read=$_bm_read; fd=$fd; st=$st; soc=$soc; pwr=$pn; voltage=$vn"
-                echo "Error: battery $_bat_str was not discharged completely i.e. terminated by the firmware -- check your hardware (battery, charger)." 1>&2
+                cecho "Error: battery $_bat_str was not discharged completely i.e. terminated by the firmware -- check your hardware (battery, charger)." 1>&2
                 rc=2
             fi
         fi
@@ -1146,7 +1146,7 @@ batdrv_discharge () {
         batdrv_write_force_discharge 0
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.malfunction($_bat_str): bm_read=$_bm_read; st=$_bat_st; soc=$_bat_soc; pwr=$_bat_pwr; voltage=$_bat_volt; rc=$rc"
 
-        echo "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
+        cecho "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
         rc=1
     fi
 
@@ -1156,8 +1156,8 @@ batdrv_discharge () {
     [ "$(batdrv_read_force_discharge 0)" = "1" ] && batdrv_write_force_discharge 0
 
     if [ $rc -eq 0 ]; then
-        echo
-        echo "Done: battery $_bat_str was completely discharged."
+        echo 1>&2
+        cecho "Done: battery $_bat_str was completely discharged." "success"  1>&2
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.complete($_bat_str)"
     fi
     return $rc
@@ -1180,39 +1180,42 @@ batdrv_show_battery_data () {
         [ -n "$fs" ] && fs="${fs}, "
         fs="${fs}recalibration"
     fi
-    [ -n "$fs" ] || fs="none available"
-    printf "Supported features: %s\n" "$fs"
+    if [ -n "$fs" ]; then
+        cprintf "success" "Supported features: %s\n" "$fs"
+    else
+        cprintf "warning" "Supported features: none available\n"
+    fi
 
     printf "Driver usage:\n"
     # native kernel ACPI battery API
     case $_natacpi in
-        0|1) printf "* natacpi (%s) = active " "$_batdrv_kmod"; print_methods_per_driver "natacpi" ;;
-        32)  printf "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
-        128) printf "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
-        254) printf "* natacpi (%s) = inactive (ThinkPad not supported)\n" "$_batdrv_kmod" ;;
-        *)   printf "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
+        0|1) cprintf "success" "* natacpi (%s) = active (%s)\n" "$_batdrv_kmod" "$(print_methods_per_driver "natacpi")" ;;
+        32)  cprintf "notice"  "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
+        128) cprintf "err"     "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
+        254) cprintf "warning" "* natacpi (%s) = inactive (ThinkPad not supported)\n" "$_batdrv_kmod" ;;
+        *)   cprintf "err"     "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
     # ThinkPad-specific battery APIs
     case $_tpacpi in
-        0)   printf "* tpacpi-bat (acpi_call)  = active "; print_methods_per_driver "tpacpi" ;;
-        1)   printf "* tpacpi-bat (acpi_call)  = inactive (none)\n" ;;
-        32)  printf "* tpacpi-bat (acpi_call)  = inactive (disabled by configuration)\n" ;;
-        64)  printf "* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' load error)\n" ;;
-        127) printf "* tpacpi-bat (acpi_call)  = inactive (program 'tpacpi-bat' not installed)\n" ;;
-        128) printf "* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' not installed)\n" ;;
-        137) printf "* tpacpi-bat (acpi_call)  = inactive (kernel error)\n" ;;
-        253) printf "* tpacpi-bat (acpi_call)  = inactive (tpacpi-bat error)\n" ;;
-        254) printf "* tpacpi-bat (acpi_call)  = inactive (ThinkPad not supported)\n" ;;
-        255) printf "* tpacpi-bat (acpi_call)  = inactive (superseded by natacpi)\n" ;;
+        0)   cprintf "success" "* tpacpi-bat (acpi_call)  = active (%s)\n" "$_batdrv_kmod" "$(print_methods_per_driver "tpacpi")" ;;
+        1)   cprintf "notice"  "* tpacpi-bat (acpi_call)  = inactive (none)\n" ;;
+        32)  cprintf "notice"  "* tpacpi-bat (acpi_call)  = inactive (disabled by configuration)\n" ;;
+        64)  cprintf "err"     "* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' load error)\n" ;;
+        127) cprintf "err"     "* tpacpi-bat (acpi_call)  = inactive (program 'tpacpi-bat' not installed)\n" ;;
+        128) cprintf "err"     "* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' not installed)\n" ;;
+        137) cprintf "err"     "* tpacpi-bat (acpi_call)  = inactive (kernel error)\n" ;;
+        253) cprintf "err"     "* tpacpi-bat (acpi_call)  = inactive (tpacpi-bat error)\n" ;;
+        254) cprintf "warning" "* tpacpi-bat (acpi_call)  = inactive (ThinkPad not supported)\n" ;;
+        255) cprintf "warning" "* tpacpi-bat (acpi_call)  = inactive (superseded by natacpi)\n" ;;
         256) ;; # superseded and kernel module not loaded--> be quiet
-        *)   printf "* tpacpi-bat = unknown status" ;;
+        *)   cprintf "err"     "* tpacpi-bat = unknown status" ;;
     esac
     case $_tpsmapi in
-        1)   printf "* tp-smapi (tp_smapi)     = readonly "; print_methods_per_driver "tpsmapi" ;;
-        32)  printf "* tp-smapi (tp_smapi)     = inactive (disabled by configuration)\n" ;;
-        64)  printf "* tp-smapi (tp_smapi)     = inactive (kernel module 'tp_smapi' load error)\n" ;;
-        128) printf "* tp-smapi (tp_smapi)     = inactive (kernel module 'tp_smapi' not installed)\n" ;;
+        1)   cprintf "success" "* tp-smapi (tp_smapi)     = readonly (%s)\n" "$(print_methods_per_driver "tpsmapi")" ;;
+        32)  cprintf "notice"  "* tp-smapi (tp_smapi)     = inactive (disabled by configuration)\n" ;;
+        64)  cprintf "err"     "* tp-smapi (tp_smapi)     = inactive (kernel module 'tp_smapi' load error)\n" ;;
+        128) cprintf "notice"  "* tp-smapi (tp_smapi)     = inactive (kernel module 'tp_smapi' not installed)\n" ;;
     esac
 
     if [ "$_bm_thresh" != "none" ]; then

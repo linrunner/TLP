@@ -488,7 +488,7 @@ case "$_cmd" in
             setcharge_battery DEF DEF $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
-                echo "Charging starts now, keep AC connected."
+                echo "Charging starts now, keep AC connected." 1>&2
             fi
         else
             exitcode=2
@@ -503,7 +503,7 @@ case "$_cmd" in
             chargeonce_battery $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
-                echo "Charging starts now, keep AC connected."
+                echo "Charging starts now, keep AC connected." 1>&2
             fi
         else
             exitcode=2
@@ -537,10 +537,10 @@ case "$_cmd" in
                     discharge_battery $_carg1
                     exitcode=$?
                     if [ $exitcode -eq 0 ]; then
-                        echo "Charging starts now, for a complete recalibration"
-                        echo "keep AC connected until the battery is fully charged."
+                        echo "Charging starts now, for a complete recalibration" 1>&2
+                        echo "keep AC connected until the battery is fully charged." 1>&2
                     else
-                        echo "Battery recalibration aborted."
+                        echo "Battery recalibration aborted." 1>&2
                     fi
                 fi
             else
