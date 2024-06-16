@@ -186,7 +186,7 @@ batdrv_read_threshold () {
     # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    local out="" rc=0
+    local out rc=0
 
     out="$X_THRESH_SIMULATE_STOP"
     if [ -n "$out" ]; then
@@ -322,6 +322,7 @@ batdrv_write_thresholds () {
 
     return $rc
 }
+
 batdrv_chargeonce () {
     # function not implemented for Toshiba / Dynabook laptops
     # global param: $_batdrv_plugin
