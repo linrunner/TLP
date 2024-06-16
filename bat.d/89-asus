@@ -189,7 +189,7 @@ batdrv_read_threshold () {
     # rc: 0=ok/4=read error/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    local out="" rc=0
+    local out rc=0
 
     out="$X_THRESH_SIMULATE_STOP"
     if [ -n "$out" ]; then
@@ -428,7 +428,7 @@ batdrv_show_battery_data () {
 
     if [ "$_bm_thresh" = "natacpi" ]; then
         printf "Parameter value range:\n"
-        printf "* STOP_CHARGE_THRESH_BAT0/1: 0(off)..100(default)\n"
+        printf "* STOP_CHARGE_THRESH_BAT0/1: 1..100(default)\n"
     fi
     printf "\n"
 
