@@ -11,6 +11,9 @@
     - Lenovo laptops (non-ThinkPad series): tlp-stat -b: figure 60% removed
       as the threshold value varies depending on the model (Issue #717)
     - ThinkPads:
+      - Remove obsolete tpacpi-bat method (current Linux distributions ship
+        with kernel 5.17 or later as a replacement, which provides battery
+        care via thinkpad_acpi)
       - tlp-stat -b improvements for coreboot:
         - Fix charge readings (Issue #657)
         - Indicate when recalibration is not possible
