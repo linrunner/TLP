@@ -43,6 +43,5 @@ usr/share/tlp/tlp-func-base
 usr/share/tlp/tlp-pcilist
 usr/share/tlp/tlp-readconfs
 usr/share/tlp/tlp-usblist
-usr/share/tlp/tpacpi-bat
 usr/share/metainfo/de.linrunner.tlp.metainfo.xml
 var/lib/tlp
