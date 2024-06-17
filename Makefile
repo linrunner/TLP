@@ -28,7 +28,6 @@ TLP_MAN     ?= /usr/share/man
 TLP_META    ?= /usr/share/metainfo
 TLP_RUN     ?= /run/tlp
 TLP_VAR     ?= /var/lib/tlp
-TPACPIBAT   ?= $(TLP_TLIB)/tpacpi-bat
 
 # Catenate DESTDIR to paths
 _SBIN    = $(DESTDIR)$(TLP_SBIN)
@@ -55,7 +54,6 @@ _MAN     = $(DESTDIR)$(TLP_MAN)
 _META    = $(DESTDIR)$(TLP_META)
 _RUN     = $(DESTDIR)$(TLP_RUN)
 _VAR     = $(DESTDIR)$(TLP_VAR)
-_TPACPIBAT = $(DESTDIR)$(TPACPIBAT)
 
 SED = sed \
 	-e "s|@TLPVER@|$(TLPVER)|g" \
@@ -71,8 +69,7 @@ SED = sed \
 	-e "s|@TLP_CONFDPR@|$(TLP_CONFDPR)|g" \
 	-e "s|@TLP_CONF@|$(TLP_CONF)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"   \
-	-e "s|@TLP_VAR@|$(TLP_VAR)|g"   \
-	-e "s|@TPACPIBAT@|$(TPACPIBAT)|g"
+	-e "s|@TLP_VAR@|$(TLP_VAR)|g"
 
 INFILES = \
 	tlp \
@@ -157,9 +154,6 @@ install-tlp: all
 	install -m 755 tlp-pcilist $(_TLIB)/
 	install -m 755 tlp-readconfs $(_TLIB)/
 	install -m 755 tlp-usblist $(_TLIB)/
-ifneq ($(TLP_NO_TPACPI),1)
-	install -D -m 755 tpacpi-bat $(_TPACPIBAT)
-endif
 	install -D -m 755 tlp-usb-udev $(_ULIB)/tlp-usb-udev
 	install -D -m 644 tlp.rules $(_ULIB)/rules.d/85-tlp.rules
 	[ -f $(_CONFUSR) ] || install -D -m 644 tlp.conf $(_CONFUSR)

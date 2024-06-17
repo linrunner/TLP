@@ -1,6 +1,6 @@
 #!/bin/sh
-# 05-thinkpad - Battery Plugin for ThinkPads using natacpi and/or
-# tpacpi-bat/acpi-call for thresholds and forced discharge, i.e. X220/T420 and newer.
+# 05-thinkpad - Battery Plugin for ThinkPads w/ thinkpad_acpi driver
+# providing thresholds and forced discharge, i.e. X220/T420 and newer.
 #
 # Copyright (c) 2024 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
@@ -16,7 +16,6 @@ readonly RE_TP_NONE='^(L[45]20|L512|SL[345]00|X121e)$'
 
 readonly MODINFO=modinfo
 readonly MOD_TPSMAPI="tp_smapi"
-readonly MOD_TPACPI="acpi_call"
 
 supports_tpsmapi_only () {
     # rc: 0=ThinkPad supports tpsmapi only/1=false
@@ -90,7 +89,7 @@ batdrv_init () {
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
     # retval: $_batdrv_plugin, $_batdrv_kmod
     #
-    # 1. check for native kernel acpi (Linux 4.19 or higher required)
+    # 1. check for native kernel acpi (thresholds require Linux 4.19, discharge needs 5.17)
     #    --> retval $_natacpi:
     #       0=thresholds and discharge/
     #       1=thresholds only/
@@ -98,43 +97,29 @@ batdrv_init () {
     #       128=no kernel support/
     #       254=ThinkPad not supported
     #
-    # 2. check for acpi-call external kernel module and test with integrated
-    #    tpacpi-bat [ThinkPads only]
-    #    --> retval $_tpacpi:
-    #       0=thresholds and discharge/
-    #       1=thresholds only/
-    #       32=disabled/
-    #       64=acpi_call module not loaded/
-    #       127=tpacpi-bat not installed/
-    #       128=acpi_call module not installed/
-    #       137=kernel error (oops)/
-    #       253=tpacpi-bat error/
-    #       254=ThinkPad not supported/
-    #       255=superseded by natacpi/
-    #       256=superseded and kernel module not loaded
-    #
-    # 3. check for tp-smapi external kernel module
+    # 2. check for tp-smapi external kernel module
     #    --> retval $_tpsmapi:
     #       1=readonly/
     #       32=disabled/
     #       64=tp_smapi module not loaded/
     #       128=tp_smapi module not installed
     #
-    # 4. determine best method for
+    # 3. determine method for
     #    reading battery data                   --> retval $_bm_read,
+    #       none/natacpi/tpsmapi
     #    reading/writing charging thresholds    --> retval $_bm_thresh,
     #    reading/writing force discharge        --> retval $_bm_dischg:
-    #       none/natacpi/tpacpi/tpsmapi
+    #       none/natacpi
     #
-    # 5. determine sysfile basenames for natacpi
+    # 4. determine sysfile basenames for natacpi
     #    start threshold                        --> retval $_bn_start,
     #    stop threshold                         --> retval $_bn_stop,
     #    force discharge                        --> retval $_bn_dischg;
     #
-    # 6. determine present batteries
+    # 5. determine present batteries
     #    list of batteries (space separated)    --> retval $_batteries;
     #
-    # 7. define charge threshold defaults
+    # 6. define charge threshold defaults
     #    start threshold                        --> retval $_bt_def_start,
     #    stop threshold                         --> retval $_bt_def_stop;
 
@@ -164,19 +149,18 @@ batdrv_init () {
 
     # presume no features at all
     _natacpi=128
-    _tpacpi=255
     _tpsmapi=254
     _bm_read="natacpi"
     _bm_thresh="none"
     _bm_dischg="none"
     _bn_start=""
     _bn_stop=""
-    _bn_dischg=""
+    _bn_dischg="charge_behaviour"
     _batteries=""
     _bt_def_start=96
     _bt_def_stop=100
 
-    # --- 1. iterate batteries and check for native kernel ACPI
+    # --- iterate batteries and check for native kernel ACPI
     local bd bs
     local done=0
     for bd in "$ACPIBATDIR"/BAT[01]; do
@@ -222,13 +206,12 @@ batdrv_init () {
                 _natacpi=1
                 _bm_thresh="natacpi"
 
-                if [ -f "$bd/charge_behaviour" ]; then
-                    if grep -q "force-discharge" "$bd/charge_behaviour"; then
+                if [ -f "$bd/$_bn_dischg" ]; then
+                    if grep -q "force-discharge" "$bd/$_bn_dischg"; then
                         # sysfile exists and flags the force-discharge capability
                         _natacpi=0
                         _bm_dischg="natacpi"
                     fi
-                    _bn_dischg="charge_behaviour"
                 fi
             fi
         fi
@@ -242,77 +225,12 @@ batdrv_init () {
 
     # consider legacy ThinkPads with coreboot/natacpi
     if supports_tpsmapi_only && [ $_natacpi -ge 32 ]; then
-        # no natacpi --> do not probe acpi_call/tpacpi-bat but quit i.e. try 10-thinkpad-legacy next
-        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_natacpi: batteries=$_batteries; natacpi=$_natacpi; tpacpi=$_tpacpi; tpsmapi=$_tpsmapi"
+        # no natacpi --> try 10-thinkpad-legacy next
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_natacpi: batteries=$_batteries; natacpi=$_natacpi; tpsmapi=$_tpsmapi"
         return 1
     fi
 
-    # --- 2. probe acpi_call external kernel module and test with integrated tpacpi-bat
-    # do not probe if coreboot/natacpi without force-discharge capability was detected before
-    if [ $_natacpi -gt 0 ] && [ -z "$_bn_dischg" ]; then
-        load_modules $MOD_TPACPI
-
-        if [ ! -e /proc/acpi/call ]; then
-        # call API not present
-            if $MODINFO $MOD_TPACPI > /dev/null 2>&1; then
-                # module installed but not loaded
-                _tpacpi=64
-            else
-                # module neither installed nor builtin
-                _tpacpi=128
-            fi
-        else
-            # call API present --> try tpacpi-bat
-            if $TPACPIBAT -g ST 1 > /dev/null 2>&1; then
-                # thresholds capable
-                _tpacpi=1
-                if $TPACPIBAT -g FD 1 > /dev/null 2>&1; then
-                    # force_discharge capable
-                    _tpacpi=0
-                fi
-            else
-                # tpacpi-bat failed
-                case $? in
-                    255) # acpi call non-existent (AE_NOT_FOUND)
-                        _tpacpi=254
-                        ;;
-
-                    137) # kernel error (oops)
-                        _tpacpi=137
-                        ;;
-
-                    * ) # tpacpi-bat error
-                        _tpacpi=253
-                        ;;
-                esac
-            fi
-
-            if [ $_tpacpi -le 1 ]; then
-                # tpacpi capable
-                if [ "$TPACPI_ENABLE" = "0" ]; then
-                    # disabled by configuration
-                    _tpacpi=32
-                else
-                    # not disabled
-                    case $_natacpi in
-                        1) # use for discharge only
-                            [ $_tpacpi -eq 0 ] && _bm_dischg="tpacpi"
-                            ;;
-
-                        *) # use for thresholds and discharge
-                            _bm_thresh="tpacpi"
-                            [ $_tpacpi -eq 0 ] && _bm_dischg="tpacpi"
-                            ;;
-                    esac
-                fi
-            fi
-        fi
-    elif [ ! -e /proc/acpi/call ]; then
-         # superseded and kernel module not loaded
-        _tpacpi=256
-    fi
-
-    # --- 3. probe tp-smapi external kernel module (relevant models only)
+    # probe tp-smapi external kernel module (relevant models only)
     if supports_tpsmapi_and_tpacpi; then
         load_modules $MOD_TPSMAPI
 
@@ -338,7 +256,7 @@ batdrv_init () {
 
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; tpacpi=$_tpacpi; tpsmapi=$_tpsmapi"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; tpsmapi=$_tpsmapi"
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: read=$_bm_read; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop; dischg=$_bm_dischg; bn_dischg=$_bn_dischg"
     return 0
 }
@@ -389,7 +307,7 @@ batdrv_select_battery () {
             ;;
     esac
 
-    # determine battery name and index for tpacpi and main/aux distinction
+    # determine battery name and index for main/aux distinction in tlp-stat -b
     case $bs in
         BAT0)
             _bat_str="$bs"
@@ -399,16 +317,12 @@ batdrv_select_battery () {
 
         BAT1)
             _bat_str="$bs"
-            if [ "$_tpacpi" -le 1 ]; then
-                # tpacpi: try to read start threshold for index 2
-                if $TPACPIBAT -g ST 2 2> /dev/null 1>&2 ; then
-                    _bat_idx=2 # BAT1 is aux
-                else
-                    _bat_idx=1 # BAT1 is main
-                fi
-            else
-                # without tpacpi: BAT1 is aux
+            if [ -d "$ACPIBATDIR/BAT0" ]; then
+                # BAT0 exists, so BAT1 is aux
                 _bat_idx=2
+            else
+                # BAT0 does not exist, so BAT1 is main
+                _bat_idx=1
             fi
             ;;
     esac
@@ -479,40 +393,6 @@ batdrv_read_threshold () {
             # (refer to issue #369 and FAQ)
             if ! out=$(read_sysf "$bf"); then
                 # not readable/non-existent
-                if [ "$2" != "1" ]; then
-                    out=""
-                else
-                    out="(not available)"
-                fi
-                rc=4
-            fi
-            ;;
-
-        tpacpi)
-            case $1 in
-                start)
-                    out=$($TPACPIBAT -g ST "$_bat_idx" 2> /dev/null | cut -f1 -d' ')
-                    # workaround: read threshold a second time (see above)
-                    out=$($TPACPIBAT -g ST "$_bat_idx" 2> /dev/null | cut -f1 -d' ')
-                    ;;
-
-                stop)
-                    out=$($TPACPIBAT -g SP "$_bat_idx" 2> /dev/null | cut -f1 -d' ')
-                    # workaround: read threshold a second time (see above)
-                    out=$($TPACPIBAT -g SP "$_bat_idx" 2> /dev/null | cut -f1 -d' ')
-                    ;;
-            esac
-            # shellcheck disable=SC2181
-            if [ $? -eq 0 ] && is_uint "$out"; then
-                if [ "$out" -ge 128 ]; then
-                    # remove offset of 128 for Edge S430 et al.
-                    out=$((out - 128))
-                fi
-                if [ "$1" = "stop" ] && [ "$out" -eq 0 ]; then
-                    # stop: 0 (hardware default) means 100
-                    out=100
-                fi
-            else
                 if [ "$2" != "1" ]; then
                     out=""
                 else
@@ -692,35 +572,11 @@ batdrv_write_thresholds () {
 
         if [ "$old_thresh" != "$new_thresh" ]; then
             # new threshold differs from effective one --> write it
-            case $_bm_thresh in
-                natacpi)
-                    case $step in
-                        start) [ "$X_THRESH_SIMULATE_WRITEERR" != "1" ] && write_sysf "$new_thresh" "$_bf_start" ;;
-                        stop)  [ "$X_THRESH_SIMULATE_WRITEERR" != "1" ] && write_sysf "$new_thresh" "$_bf_stop"  ;;
-                    esac
-                    steprc=$?; [ $steprc -ne 0 ] && [ $rc -eq 0 ] && rc=5
-                    ;;
-
-                tpacpi)
-                    case $step in
-                        start) $TPACPIBAT -s ST "$_bat_idx" "$new_thresh" > /dev/null 2>&1 ;;
-                        stop)
-                            if [ "$new_thresh" -eq 100 ]; then
-                                # tpacpi-bat won't accept 100
-                                $TPACPIBAT -s SP "$_bat_idx" 0 > /dev/null 2>&1
-                            else
-                                $TPACPIBAT -s SP "$_bat_idx" "$new_thresh" > /dev/null 2>&1
-                            fi
-                            ;;
-                    esac
-                    steprc=$?; [ $steprc -ne 0 ] && rc=5
-                    ;;
-
-                *) # no threshold api
-                    steprc=255
-                    rc=5
-                    ;;
+            case $step in
+                start) [ "$X_THRESH_SIMULATE_WRITEERR" != "1" ] && write_sysf "$new_thresh" "$_bf_start" ;;
+                stop)  [ "$X_THRESH_SIMULATE_WRITEERR" != "1" ] && write_sysf "$new_thresh" "$_bf_stop"  ;;
             esac
+            steprc=$?; [ $steprc -ne 0 ] && [ $rc -eq 0 ] && rc=5
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.write: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_thresh; new=$new_thresh; steprc=$steprc"
             case $verb in
                 2)
@@ -809,16 +665,7 @@ batdrv_chargeonce () {
     fi
 
     printf "Setting temporary charge threshold for %s:\n" "$_bat_str" 1>&2
-    case $_bm_thresh in
-        natacpi)
-            write_sysf "$temp_start" "$_bf_start" || rc=5
-            ;;
-
-        tpacpi)
-            $TPACPIBAT -s ST "$_bat_idx" "$temp_start" > /dev/null 2>&1 || rc=5
-            ;;
-    esac
-
+    write_sysf "$temp_start" "$_bf_start" || rc=5
     if [ $rc -eq 0 ]; then
         printf "  start = %3d\n" "$temp_start" 1>&2
     else
@@ -882,21 +729,6 @@ batdrv_read_force_discharge () {
             fi
             ;;
 
-        tpacpi) # read via tpacpi-bat
-            case "$($TPACPIBAT -g FD "$_bat_idx" 2> /dev/null)" in
-                yes) out=1 ;;
-                no)  out=0 ;;
-                *)
-                    if [ "$1" != "1" ]; then
-                        out=""
-                    else
-                        out="(not available)"
-                    fi
-                    rc=4
-                    ;;
-            esac
-            ;;
-
         *) # no discharge api
             if [ "$1" = "1" ]; then
                 out="(not available)"
@@ -930,10 +762,6 @@ batdrv_write_force_discharge () {
                 1) write_sysf "force-discharge" "$_bf_dischg" || rc=5 ;;
             esac
             ;; # natacpi
-
-        tpacpi) # use tpacpi-bat
-            $TPACPIBAT -s FD "$_bat_idx" "$1" > /dev/null 2>&1 || rc=5
-            ;; # tpcpaci
 
         *) # no discharge api
             rc=255
@@ -1067,7 +895,7 @@ batdrv_discharge () {
             fi
 
             case $_bm_read in
-                natacpi|tpacpi) # use ACPI sysfiles
+                natacpi) # use ACPI sysfiles
                     perl -e 'printf ("remaining capacity = %6d [mWh]\n", '"$_bat_en"' / 1000.0);' 1>&2
                     if [ -n "$_bat_soc" ]; then
                         perl -e 'printf ("remaining percent  = %6d [%%]\n", '"$_bat_soc"' );'  1>&2
@@ -1102,7 +930,7 @@ batdrv_discharge () {
         # read SOC and more one last time
         fd="$(batdrv_read_force_discharge 0)"
         case $_bm_read in
-            natacpi|tpacpi) # use ACPI sysfiles
+            natacpi) # use ACPI sysfiles
                 en=$(read_sysval "$_bd_read/energy_now")
                 ef=$(read_sysval "$_bd_read/energy_full")
                 if [ "$ef" != "0" ]; then
@@ -1166,7 +994,7 @@ batdrv_discharge () {
 batdrv_show_battery_data () {
     # output battery status
     # $1: 1=verbose
-    # global params: $_batdrv_plugin, $_batteries, $_batdrv_kmod, $_natacpi, $_tpacpi, $_tpsmapi,
+    # global params: $_batdrv_plugin, $_batteries, $_batdrv_kmod, $_natacpi, $_tpsmapi,
     #                $_bm_thresh, $_bm_dischg, $_bd_read, $_bf_start, $_bf_stop, $_bf_dischg
     # prerequisite: batdrv_init()
     local verbose=${1:-0}
@@ -1196,21 +1024,7 @@ batdrv_show_battery_data () {
         *)   cprintf "err"     "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
-    # ThinkPad-specific battery APIs
-    case $_tpacpi in
-        0)   cprintf "success" "* tpacpi-bat (acpi_call)  = active (%s)\n" "$_batdrv_kmod" "$(print_methods_per_driver "tpacpi")" ;;
-        1)   cprintf "notice"  "* tpacpi-bat (acpi_call)  = inactive (none)\n" ;;
-        32)  cprintf "notice"  "* tpacpi-bat (acpi_call)  = inactive (disabled by configuration)\n" ;;
-        64)  cprintf "err"     "* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' load error)\n" ;;
-        127) cprintf "err"     "* tpacpi-bat (acpi_call)  = inactive (program 'tpacpi-bat' not installed)\n" ;;
-        128) cprintf "err"     "* tpacpi-bat (acpi_call)  = inactive (kernel module 'acpi_call' not installed)\n" ;;
-        137) cprintf "err"     "* tpacpi-bat (acpi_call)  = inactive (kernel error)\n" ;;
-        253) cprintf "err"     "* tpacpi-bat (acpi_call)  = inactive (tpacpi-bat error)\n" ;;
-        254) cprintf "warning" "* tpacpi-bat (acpi_call)  = inactive (ThinkPad not supported)\n" ;;
-        255) cprintf "warning" "* tpacpi-bat (acpi_call)  = inactive (superseded by natacpi)\n" ;;
-        256) ;; # superseded and kernel module not loaded--> be quiet
-        *)   cprintf "err"     "* tpacpi-bat = unknown status" ;;
-    esac
+    # Legacy-ThinkPad battery API
     case $_tpsmapi in
         1)   cprintf "success" "* tp-smapi (tp_smapi)     = readonly (%s)\n" "$(print_methods_per_driver "tpsmapi")" ;;
         32)  cprintf "notice"  "* tp-smapi (tp_smapi)     = inactive (disabled by configuration)\n" ;;
@@ -1218,7 +1032,7 @@ batdrv_show_battery_data () {
         128) cprintf "notice"  "* tp-smapi (tp_smapi)     = inactive (kernel module 'tp_smapi' not installed)\n" ;;
     esac
 
-    if [ "$_bm_thresh" != "none" ]; then
+    if [ "$_bm_thresh" = "nactacpi" ]; then
         printf "Parameter value ranges:\n"
         printf "* START_CHARGE_THRESH_BAT0/1:  0(off)..96(default)..99\n"
         printf "* STOP_CHARGE_THRESH_BAT0/1:   1..100(default)\n"
@@ -1341,40 +1155,16 @@ batdrv_show_battery_data () {
         esac # $_bm_read
 
         # --- show battery features: thresholds, force_discharge
-        local lf=0
-        case $_bm_thresh in
-            natacpi)
-                printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
-                printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
-                lf=1
-                ;;
-
-            tpacpi)
-                printf "%-59s = %6s [%%]\n" "tpacpi-bat.${_bat_str}.startThreshold" "$(batdrv_read_threshold start 1)"
-                printf "%-59s = %6s [%%]\n" "tpacpi-bat.${_bat_str}.stopThreshold"  "$(batdrv_read_threshold stop 1)"
-                lf=1
-                ;;
-        esac
+        printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
+        printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
         case $_bm_dischg in
-            natacpi)
-                printf "%-59s = %6s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
-                lf=1
-                ;;
-
-            tpacpi)
-                printf "%-59s = %6s\n" "tpacpi-bat.${_bat_str}.forceDischarge" "$(batdrv_read_force_discharge 1)"
-                lf=1
-                ;;
-
-            none)
-                printparm "%-59s = ##%s##" "$_bd_read/$_bn_dischg"
-                lf=1
-                ;;
+            natacpi) printf "%-59s = %s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)" ;;
+            none)    printparm "%-59s = ##%s##" "$_bd_read/$_bn_dischg" ;;
         esac
-        [ $lf -gt 0 ] && printf "\n"
+        printf "\n"
 
         # --- show charge level (SOC) and capacity
-        lf=0
+        local lf=0
         if [ "$ef" -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
             lf=1
@@ -1406,23 +1196,11 @@ batdrv_recommendations () {
     # output ThinkPad specific recommendations
     # prerequisite: batdrv_init()
 
-    local missing
-
-    case "$_tpacpi" in
-        127) missing="tpacpi-bat program" ;;
-        128) missing="acpi_call kernel module" ;;
-        *)   missing="" ;;
-    esac
-    if [ -n "$missing" ]; then
-        case "$_natacpi" in
-            "") ;;  # undefined
-            0) ;; # natacpi covers it all
-            1) printf "Install %s for ThinkPad battery recalibration\n" "$missing" ;;
-            *) printf "Install %s for ThinkPad battery thresholds and recalibration\n" "$missing";;
-        esac
+    if [ "$_natacpi" = "1" ]; then
+        printf "Install kernel 5.17 (or later) for battery recalibration support\n"
     fi
     if [ "$_tpsmapi" = "128" ]; then
-      printf "Install tp-smapi kernel modules for extended battery status (e.g. the cycle count)\n"
+        printf "Install tp-smapi kernel modules for extended battery status (e.g. the cycle count)\n"
     fi
 
     return 0
