@@ -6,13 +6,6 @@
 # Override Makefile defaults
 export TLP_ZSHCPL=/usr/share/zsh/vendor-completions
 
-# Debian and Ubuntu provide x86_energy_perf_policy in different packages
-ifeq ($(shell dpkg-vendor --derives-from Ubuntu && echo yes),yes)
-	SUBSTVARS = -Vdist:Suggests="linux-tools-generic | linux-tools"
-else
-	SUBSTVARS = -Vdist:Suggests="linux-cpupower"
-endif
-
 %:
 	dh $@
 
