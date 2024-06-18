@@ -4,7 +4,7 @@ Upstream-Contact: Thomas Koch <linrunner at gmx.net>
 Source: https://github.com/linrunner/TLP/
 
 Files: *
-Copyright: 2022 Thomas Koch, André Erdmann, Pali Rohár
+Copyright: 2024 Thomas Koch, André Erdmann, Pali Rohár
 License: GPL-2+
 Comment:
   Some code and descriptions were adapted from:
@@ -14,15 +14,11 @@ Comment:
  - http://thinkwiki.org
 
 Files: de.linrunner.tlp.metainfo.xml
-Copyright: 2022 Raphaël Halimi, Thomas Koch
+Copyright: 2024 Raphaël Halimi, Thomas Koch
 License: MIT
 
-Files: tpacpi-bat
-Copyright: 2011-2016 Elliot Wolk
-License: GPL-3+
-
 Files: debian/*
-Copyright: 2022 Thomas Koch, Raphaël Halimi
+Copyright: 2024 Thomas Koch, Raphaël Halimi
 License: GPL-2+
 
 License: GPL-2+
