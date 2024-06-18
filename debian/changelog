@@ -6,6 +6,8 @@ tlp (1.7.0~alpha.0-1) UNRELEASED; urgency=medium
   * Add bash completion for run-on-ac, run-on-bat
   * Add Fish completion
   * Remove tpacpi-bat
+  * Remove Suggests providing x86_energy_perf_policy
+  * Update debian/copyright
 
  -- Thomas Koch <linrunner@gmx.net>  Wed, 13 May 2024 12:58:21 +0200
 
