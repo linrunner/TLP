@@ -1,3 +1,4 @@
+debian
 *.geany
 .idea
 *.log
@@ -5,4 +6,5 @@ PKGBUILD
 pkg
 src
 tlp.install
+worktree
 *.zst
