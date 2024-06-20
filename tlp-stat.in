@@ -427,6 +427,11 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                         printparm "%s = ##%s##" "$cpuf/energy_performance_available_preferences"
                     fi
 
+                    if { supports_intel_cpu_epb && [ "$epp" -eq 0 ]; } || [ "$X_SHOW_EPB" = "1" ] ; then
+                        # CPU supports EPB: use native kernel API (5.2 and later)
+                        printparm_epb "${CPUD}/cpu${cn}/power/energy_perf_bias"
+                    fi
+
                     if [ $show_verbose -eq 1 ]; then
                         if [ -f "$cpuf/amd_pstate_highest_perf" ]; then
                             printf "%-70s = %8d [%%]\n" "$cpuf/amd_pstate_highest_perf" "$(read_sysf "$cpuf/amd_pstate_highest_perf")"
@@ -509,64 +514,6 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
     else
         printparm "%-54s = (not available)" "$CPU_BOOST_ALL_CTRL"
-    fi
-
-    # --- Intel energy and performance bias hint (EPB)
-    if check_intel_pstate; then
-        if [ "$epp" -eq 0 ] || [ "$X_FORCE_EPB" = "1" ]; then
-            # show only when HWP.EPP not present (or forced)
-            if supports_intel_cpu_epb; then
-                # CPU supports EPB: try native kernel API first (5.2 and later)
-                cnt=0
-                for cn in $(glob_dirs '/cpu[0-9]*' "$CPUD" | sed 's/.*\/cpu//' | sort -n); do
-                    cpuf="${CPUD}/cpu${cn}/power/energy_perf_bias"
-                    if [ -f "$cpuf" ]; then
-                        # show only cpu0, unless verbose mode is enabled
-                        if [ $cnt -eq 0 ] || [ "$show_verbose" = "1" ]; then
-                            printparm_epb "$cpuf"
-                        fi
-                        cnt=$((cnt + 1))
-                    fi
-                done
-                if [ $cnt -gt 0 ]; then
-                    # native kernel API actually detected
-                    printf "\n"
-                else
-                    # no native kernel API --> parse x86_energy_perf_policy output
-                    if cmd_exists "$ENERGYPERF"; then
-                        # check CPU support
-                        eperf=$($ENERGYPERF -r 2> /dev/null)
-                        case $? in
-                            0)  if [ -n "$eperf" ]; then
-                                # parse x86_energy_perf_policy output:
-                                # - replace numbers with descriptive strings
-                                # - remove ":"
-                                # - indent and align
-                                $ENERGYPERF -r 2>/dev/null | grep -v 'HWP_' | \
-                                    sed -r 's/://;
-                                                                    s/(0x0000000000000000|EPB 0)/0 \(performance\)/;
-                                                                    s/(0x0000000000000004|EPB 4)/4 \(balance_performance\)/;
-                                                                    s/(0x0000000000000006|EPB 6)/6 \(default\)/;
-                                                                    s/(0x0000000000000008|EPB 8)/8 \(balance_power\)/;
-                                                                    s/(0x000000000000000f|EPB 15)/15 \(power\)/' | \
-                                                                        awk '{ printf "x86_energy_perf_policy.%-31s = %s %s [EPB]\n", $1, $2, $3; }'
-                                                                                                                                            printf "\n"
-                            fi
-                            ;;
-
-                        2) printf "x86_energy_perf_policy: program for your kernel not installed.\n\n" ;;
-                        *) printf "x86_energy_perf_policy: not available.\n\n" ;;
-                    esac
-                else
-                    echo "x86_energy_perf_policy: program not installed."
-                    echo
-                    fi
-                fi
-            else
-                # CPU does not support EPB
-                printf "Intel EPB: unsupported CPU.\n\n"
-            fi
-        fi
     fi
 
     # --- workqueue power efficient status

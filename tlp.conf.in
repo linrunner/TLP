@@ -137,8 +137,6 @@
 # * Intel CPU
 #   EPP: Intel Core i 6th gen. or newer CPU with intel_pstate driver
 #   EPB: Intel Core i 2nd gen. or newer CPU with intel_pstate driver
-#     as of kernel 5.2; alternatively module msr and
-#     x86_energy_perf_policy from linux-tools
 #   EPP and EPB are mutually exclusive: when EPP is available, Intel CPUs
 #   will not honor EPB. Only the matching feature will be applied by TLP.
 # * AMD Zen 2 or newer CPU

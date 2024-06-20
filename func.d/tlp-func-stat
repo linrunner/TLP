@@ -90,7 +90,7 @@ printparm_epb () {
 
     if val=$(read_sysf "$1"); then
         # sysfile exists and is actually readable, output content
-        printf "%-54s = %2d " "$1" "$val"
+        printf "%-54s =  %2d " "$1" "$val"
         # Convert distinct values to strings
         strval=$(echo "$val" | sed -r 's/^0/performance/;
                                      s/^4/balance_performance/;

@@ -19,7 +19,6 @@ readonly CPU_TURBO_PSTATE=$INTEL_PSTATED/no_turbo
 readonly INTEL_DYN_BOOST=$INTEL_PSTATED/hwp_dynamic_boost
 
 readonly CPU_INFO=/proc/cpuinfo
-readonly ENERGYPERF=x86_energy_perf_policy
 
 readonly FWACPID=/sys/firmware/acpi
 
@@ -196,7 +195,6 @@ set_cpu_perf_policy () {
     # Intel CPUs will not honor EPB
     # --- amd_pstate
     # CPPC firmware via the Energy Performance Preference register
-    # Note: needs a patchset not yet merged as of Linux 6.1, see [5]
     #
     # References:
     # [1] https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html#energy-vs-performance-hints
@@ -271,8 +269,8 @@ set_cpu_perf_policy () {
     fi
 
     if supports_intel_cpu_epb; then
-        # translate Intel HWP.EPP alphanumeric to EPB numeric values for native kernel support
-        # and x86_energy_perf_policy backwards compatibility; validate numeric values
+        # translate Intel HWP.EPP alphanumeric to EPB numeric values for native kernel support;
+        # validate numeric values
         case "$perf" in
             performance)         pnum=0 ;;
             balance_performance) pnum=4 ;;
@@ -288,41 +286,24 @@ set_cpu_perf_policy () {
                 ;;
         esac
 
-        # apply EPB setting
-        # try native kernel API first (5.2 and later)
+        # apply EPB setting using native kernel API (5.2 and later required)
         cnt=0
         ec=0
         for cpuf in "${CPUD}"/cpu*/power/energy_perf_bias; do
             if [ -f "$cpuf" ]; then
                 cnt=$((cnt + 1))
                 if  ! write_sysf "$pnum" "$cpuf"; then
-                    echo_debug "pm" "set_cpu_perf_policy($1).epb_kernel.write_error: $perf($pnum) $cpuf; rc=$?"
+                    echo_debug "pm" "set_cpu_perf_policy($1).epb.write_error: $perf($pnum) $cpuf; rc=$?"
                     ec=$((ec+1))
                 fi
             fi
         done
         if [ $cnt -gt 0 ]; then
             # native kernel API actually detected
-            echo_debug "pm" "set_cpu_perf_policy($1).epb_kernel: $perf($pnum); ec=$ec"
-            return 0
-        fi
-
-        # no native kernel support, try x86_energy_perf_policy
-        if ! cmd_exists $ENERGYPERF; then
-            # x86_energy_perf_policy not installed
-            echo_debug "pm" "set_cpu_perf_policy($1).epb_x: $perf($pnum); x86_energy_perf_policy not installed"
+            echo_debug "pm" "set_cpu_perf_policy($1).epb: $perf($pnum); ec=$ec"
         else
-            # x86_energy_perf_policy needs kernel module 'msr'
-            load_modules "$MOD_MSR"
-            $ENERGYPERF "$pnum" > /dev/null 2>&1
-            rc=$?
-            case $rc in
-                0) echo_debug "pm" "set_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$?" ;;
-                1) echo_debug "pm" "set_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? (unsupported cpu)" ;;
-                2) echo_debug "pm" "set_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? (kernel specific x86_energy_perf_policy missing)" ;;
-                *) echo_debug "pm" "set_cpu_perf_policy($1).epb_x: $perf($pnum); rc=$? (unknown)" ;;
-            esac
-            return $rc
+            # no native kernel support
+            echo_debug "pm" "set_cpu_perf_policy($1).epb.not_available"
         fi
     else
         echo_debug "pm" "set_cpu_perf_policy($1).epb.unsupported_cpu"
