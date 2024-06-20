@@ -34,6 +34,8 @@
       adaptive backlight modulation (ABM) from AMD Vega or newer GPUs;
       kernel 6.9 required
     Processor:
+    - CPU_ENERGY_PERF_POLICY_ON_AC/BAT: abandon backward compatibility for
+      EPB with kernels < 5.2 (no more dependency on x86_energy_perf_policy)
     - CPU_HWP_DYN_BOOST_ON_AC/BAT: withdraw AMD implementation (the
       corresponding kernel patch was removed during review back in 2022,
       a reincarnation seems unlikely)
