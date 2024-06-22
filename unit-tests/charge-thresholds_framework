@@ -1,0 +1,102 @@
+#!/usr/bin/env clitest
+# Test charge thresholds for Framework laptops
+# Requirements:
+# * Hardware: Framework Laptop 13/16 Intel or AMD (1st battery is BAT1)
+# * Software: out-of-tree kernel module framework_laptop
+# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net>.
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+$ # +++ Framework laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+TLP started in AC mode (auto).
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="60" STOP_CHARGE_THRESH_BAT1="100" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+TLP started in AC mode (auto).
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="na" STOP_CHARGE_THRESH_BAT1="0" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+Error in configuration at STOP_CHARGE_THRESH_BAT1="0": not specified, invalid or out of range (1..100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="101" START_CHARGE_THRESH_BAT$
+Error in configuration at STOP_CHARGE_THRESH_BAT1="101": not specified, invalid or out of range (1..100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="na" STOP_CHARGE_THRESH_BAT1="86" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+TLP started in AC mode (auto).
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+TLP started in AC mode (auto).
+$ sudo tlp start -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp setcharge w/o arguments
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="60" STOP_CHARGE_THRESH_BAT1="100"
+Setting temporary charge threshold for BAT1:
+  stop = 100
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="na" STOP_CHARGE_THRESH_BAT1="0"
+Error in configuration at STOP_CHARGE_THRESH_BAT1="0": not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="101"
+Error in configuration at STOP_CHARGE_THRESH_BAT1="101": not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="ABCDE" STOP_CHARGE_THRESH_BAT1="XYZZY"
+Error in configuration at STOP_CHARGE_THRESH_BAT1="XYZZY": not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="na" STOP_CHARGE_THRESH_BAT1="100"
+Setting temporary charge threshold for BAT1:
+  stop = 100
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="na" STOP_CHARGE_THRESH_BAT1="86"
+Setting temporary charge threshold for BAT1:
+  stop =  86
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="na" STOP_CHARGE_THRESH_BAT1="80"
+Setting temporary charge threshold for BAT1:
+  stop =  80
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="na" STOP_CHARGE_THRESH_BAT1="80"
+Setting temporary charge threshold for BAT1:
+  stop =  80
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
+Setting temporary charge threshold for BAT1:
+  stop = 100
+$ sudo tlp setcharge -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
+Error: battery charge thresholds not available.
+$ #
+$ # --- tlp setcharge w/ arguments
+$ sudo tlp setcharge 60 100 BAT1
+Setting temporary charge threshold for BAT1:
+  stop = 100
+$ sudo tlp setcharge 0 0 BAT1
+Error: stop charge threshold (0) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge 0 101
+Error: stop charge threshold (101) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge ABCDE 0
+Error: stop charge threshold (0) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge 0 XYZZY
+Error: stop charge threshold (XYZZY) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
+$ sudo tlp setcharge 97 100
+Setting temporary charge threshold for BAT1:
+  stop = 100
+$ sudo tlp setcharge 0 66
+Setting temporary charge threshold for BAT1:
+  stop =  66
+$ sudo tlp setcharge 0 60
+Setting temporary charge threshold for BAT1:
+  stop =  60
+$ sudo tlp setcharge 0 60 -- X_THRESH_SIMULATE_START="35" X_THRESH_SIMULATE_STOP="100"
+Setting temporary charge threshold for BAT1:
+  stop =  60
+$ sudo tlp setcharge 0 60
+Setting temporary charge threshold for BAT1:
+  stop =  60
+$ sudo tlp setcharge DEF DEF
+Setting temporary charge threshold for BAT1:
+  stop = 100
+$ sudo tlp setcharge BAT0
+Error: battery BAT0 not present.
+$ sudo tlp setcharge 0 3 BAT0
+Error: battery BAT0 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT0
+Error: battery BAT0 not present.
+$ #
+$ # --- tlp-stat
+$ sudo tlp-stat -b -- | grep "charge_control_end_threshold"
+/sys/class/power_supply/BAT1/charge_control_end_threshold   =    100 [%]
+$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep "charge_control_end_threshold"
+/sys/class/power_supply/BAT1/charge_control_end_threshold   = (not available) [%]
+$ #
+$ # --- Reset test machine to configured thresholds
+$ sudo tlp setcharge BAT1  > /dev/null 2>&1
+$ #
