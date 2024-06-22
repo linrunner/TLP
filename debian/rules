@@ -4,6 +4,10 @@
 #export DH_VERBOSE = 1
 
 # Override Makefile defaults
+export TLP_ELOD=/lib/elogind/system-sleep
+export TLP_SDSL=/lib/systemd/system-sleep
+export TLP_SYSD=/lib/systemd/system
+export TLP_ULIB=/lib/udev
 export TLP_ZSHCPL=/usr/share/zsh/vendor-completions
 
 %:
