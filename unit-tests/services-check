@@ -1,7 +1,7 @@
 #!/usr/bin/env clitest
 # Test services check
 # Requirements:
-# * installed: systemd, power-profile-daemon
+# * installed: systemd, power-profiles-daemon
 # * RESTORE_DEVICE_STATE_ON_STARTUP, DEVICES_TO_DISABLE_ON_STARTUP, DEVICES_TO_ENABLE_ON_STARTUP not configured
 # Copyright (c) 2024 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
@@ -55,11 +55,11 @@ $ sudo systemctl -q start power-profiles-daemon.service
 $ # test -- note: may fail partially depending on hardware
 $ sudo tlp start > /dev/null
 Warning: PLATFORM_PROFILE_ON_AC/BAT is not set because power-profiles-daemon is running.
-Warning: CPU_ENERGY_PERF_POLICY_ON_AC/BAT is not set because power-profiles-daemon is running.
 Warning: CPU_BOOST_ON_BAT/BAT is not set because power-profiles-daemon is running.
+Warning: CPU_ENERGY_PERF_POLICY_ON_AC/BAT is not set because power-profiles-daemon is running.
+Warning: AMDGPU_ABM_LEVEL_ON_AC/BAT is not set because power-profiles-daemon is running.
 $ sudo tlp-stat -s > /dev/null
-Warning: TLP's power saving will not apply on boot because the conflicting power-profiles-daemon.service is active --> Uninstall power-profiles-daemon or invoke 'systemctl mask power-profiles-daemon.service to ensure the full functionality of TLP.
-
+Warning: TLP's power saving will not apply on boot because the conflicting power-profiles-daemon.service is active.
 $ # restore
 $ sudo systemctl -q mask --now power-profiles-daemon.service
 $ #
