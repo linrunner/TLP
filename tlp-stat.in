@@ -233,8 +233,6 @@ add_sbin2path
 # check prerequisites
 if [ "$needs_root_priv" = "1" ]; then
     check_root
-    # shellcheck disable=SC2086
-    load_modules $MOD_MSR $MOD_TEMP
 fi
 get_sys_power_supply
 
