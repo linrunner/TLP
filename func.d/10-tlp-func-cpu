@@ -238,7 +238,7 @@ set_cpu_perf_policy () {
                 ;;
         esac
 
-        # don't apply intel_pstate HWP.EPP when power-profile-daemon is running
+        # don't apply intel_pstate HWP.EPP when power-profiles-daemon is running
         if check_intel_pstate && check_ppd_active ; then
             echo_message "Warning: CPU_ENERGY_PERF_POLICY_ON_AC/BAT is not set because power-profiles-daemon is running."
             echo_debug "pm" "set_cpu_perf_policy($1).epp.nop_ppd_active"
