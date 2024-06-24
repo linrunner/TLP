@@ -223,3 +223,36 @@ discharge_battery () {
 
     return $rc
 }
+
+soc_gt_stop_notice () {
+    # output notice to discharge on battery power if SOC is above stop threshold
+    # global params: $_batteries, $_bm_thresh, $_bd_read, $_bat_str
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    # shellcheck disable=SC2154
+    if batdrv_check_soc_gt_stop; then
+        echo_message "Notice: $_bat_str charge level is above the stop threshold. Use your laptop"`
+            `" on battery power until the battery is discharged to the stop threshold."
+    fi
+
+    return 0
+}
+
+soc_gt_stop_recommendation () {
+    # output recommendation to discharge on battery power if SOC is above stop threshold
+    # global params: $_batteries, $_bm_thresh, $_bd_read
+    # prerequisite: batdrv_init()
+
+    local bat
+
+    # shellcheck disable=SC2154
+    for bat in $_batteries; do # iterate detected batteries
+        batdrv_select_battery "$bat"
+        if batdrv_check_soc_gt_stop; then
+            printf "%s charge level is above the stop threshold. Use your laptop on battery power"`
+                `" until the battery is discharged to the stop threshold.\n" "$bat"
+        fi
+    done
+
+    return 0
+}
