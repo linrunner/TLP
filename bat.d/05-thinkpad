@@ -1208,7 +1208,7 @@ batdrv_check_soc_gt_stop () {
 
     if [ "$_bm_thresh" = "natacpi" ] && soc=$(read_sysval "$ACPIBATDIR/$_bat_str/capacity"); then
         stop="$(batdrv_read_threshold stop 0)"
-        if [ "$soc" -gt "$stop" ]; then
+        if [ -n "$stop" ] && [ "$soc" -gt "$stop" ]; then
             return 0
         fi
     fi
