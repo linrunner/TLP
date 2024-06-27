@@ -37,7 +37,7 @@ $ sudo tlp start -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge BAT1 -- START_CHARGE_THRESH_BAT1="60" STOP_CHARGE_THRESH_BAT1="100"
+$ sudo tlp setcharge BAT1 -- START_CHARGE_THRESH_BAT1="60" STOP_CHARGE_THRESH_BAT1="100" X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT1:
   start =  60
   stop  = 100 (no change)
@@ -65,7 +65,7 @@ $ sudo tlp setcharge BAT1 -- NATACPI_ENABLE=0 TPACPI_ENABLE=0 START_CHARGE_THRES
 Error: battery charge thresholds not available.
 $ #
 $ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 60 100 BAT1
+$ sudo tlp setcharge 60 100 BAT1 -- X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT1:
   start =  60
   stop  = 100 (no change)
@@ -99,17 +99,17 @@ $ sudo tlp setcharge DEF DEF BAT1
 Setting temporary charge thresholds for BAT1:
   stop  = 100
   start =  96
-$ #
-$ # --- tlp-stat
-$ # steps require a kernel >= 5.17 -- with 'charge_behaviour'
-$ sudo tlp setcharge 61 91 BAT1
+$ sudo tlp setcharge 61 91 BAT1 -- X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT1:
   start =  61
   stop  =  91
-$ sudo tlp setcharge 60 90 BAT0
+$ sudo tlp setcharge 60 90 BAT0 -- X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  =  90
+$ #
+$ # --- tlp-stat
+$ # steps require a kernel >= 5.17 -- with 'charge_behaviour'
 $ sudo tlp-stat -b | grep -E 'charge_(control|behaviour)'
 /sys/class/power_supply/BAT0/charge_control_start_threshold =     60 [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =     90 [%]

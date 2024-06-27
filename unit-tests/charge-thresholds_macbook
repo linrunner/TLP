@@ -25,11 +25,11 @@ $ sudo tlp start -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="77" STOP_CHARGE_THRESH_BAT0="80"
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="77" STOP_CHARGE_THRESH_BAT0="80" X_SOC_CHECK=0
 Setting temporary charge thresholds for macsmc-battery:
   stop  =  80
   start =  75 (due to hardware constraint)
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="66" STOP_CHARGE_THRESH_BAT0="80"
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="66" STOP_CHARGE_THRESH_BAT0="80" X_SOC_CHECK=0
 Setting temporary charge thresholds for macsmc-battery:
   stop  =  80 (no change)
   start =  75 (no change)
@@ -47,11 +47,11 @@ $ sudo tlp setcharge -- NATACPI_ENABLE=0 TPACPI_ENABLE=0 START_CHARGE_THRESH_BAT
 Error: battery charge thresholds not available.
 $ #
 $ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 77 80
+$ sudo tlp setcharge 77 80 -- X_SOC_CHECK=0
 Setting temporary charge thresholds for macsmc-battery:
   stop  =  80
   start =  75 (due to hardware constraint)
-$ sudo tlp setcharge 66 80
+$ sudo tlp setcharge 66 80 -- X_SOC_CHECK=0
 Setting temporary charge thresholds for macsmc-battery:
   stop  =  80 (no change)
   start =  75 (no change)

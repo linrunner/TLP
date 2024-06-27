@@ -35,7 +35,7 @@ Error: stop charge threshold (24) for BAT1 is not specified or invalid (must be 
 $ sudo tlp setcharge 42 100 BAT1
 Setting temporary charge threshold for BAT1:
   stop = 100 (no change)
-$ sudo tlp setcharge 42 80 BAT1
+$ sudo tlp setcharge 42 80 BAT1 -- X_SOC_CHECK=0
 Setting temporary charge threshold for BAT1:
   stop =  80
 $ sudo tlp setcharge 42 80

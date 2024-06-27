@@ -30,7 +30,7 @@ $ sudo tlp start -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)
@@ -58,7 +58,7 @@ $ sudo tlp setcharge -- TPSMAPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHA
 Error: battery charge thresholds not available.
 $ #
 $ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 60 100
+$ sudo tlp setcharge 60 100 -- X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)

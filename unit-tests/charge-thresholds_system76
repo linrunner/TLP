@@ -31,7 +31,7 @@ $ sudo tlp start -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge --  START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
+$ sudo tlp setcharge --  START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)
@@ -63,23 +63,23 @@ $ sudo tlp setcharge -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHA
 Error: battery charge thresholds not available.
 $ #
 $ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 60 100 -- X_BAT_PLUGIN_SIMULATE=system76
+$ sudo tlp setcharge 60 100 -- X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)
-$ sudo tlp setcharge 100 100 -- X_BAT_PLUGIN_SIMULATE=system76
+$ sudo tlp setcharge 100 100
 Error: start charge threshold (100) for BAT0 is not specified, invalid or out of range (0..99). Aborted.
-$ sudo tlp setcharge 0 0 -- X_BAT_PLUGIN_SIMULATE=system76
+$ sudo tlp setcharge 0 0
 Error: stop charge threshold (0) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge 0 101 -- X_BAT_PLUGIN_SIMULATE=system76
+$ sudo tlp setcharge 0 101
 Error: stop charge threshold (101) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge ABCDE 0 -- X_BAT_PLUGIN_SIMULATE=system76
+$ sudo tlp setcharge ABCDE 0
 Error: start charge threshold (ABCDE) for BAT0 is not specified, invalid or out of range (0..99). Aborted.
-$ sudo tlp setcharge 0 XYZZY -- X_BAT_PLUGIN_SIMULATE=system76
+$ sudo tlp setcharge 0 XYZZY
 Error: stop charge threshold (XYZZY) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge 97 97 -- X_BAT_PLUGIN_SIMULATE=system76
+$ sudo tlp setcharge 97 97
 Error: start threshold >= stop threshold for BAT0. Aborted.
-$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=system76
+$ sudo tlp setcharge 95 96
 Setting temporary charge thresholds for BAT0:
   start =  95
   stop  =  96
@@ -93,11 +93,11 @@ $ sudo tlp setcharge 95 96
 Setting temporary charge thresholds for BAT0:
   start =  95 (no change)
   stop  =  96 (no change)
-$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
+$ sudo tlp setcharge BAT1
 Error: battery BAT1 not present.
-$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
+$ sudo tlp setcharge 0 3 BAT1
 Error: battery BAT1 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
+$ sudo tlp setcharge XYZZY ABCDE BAT1
 Error: battery BAT1 not present.
 $ #
 $ # --- Reset to hardware defaults
