@@ -229,7 +229,14 @@ batdrv_show_battery_data () { # output battery data
     return 0
 }
 
+batdrv_check_soc_gt_stop () {
+    # function not implemented for generic hardware
+
+    return 1
+}
+
 batdrv_recommendations () {
     # no recommendations for generic hardware
+
     return 0
 }

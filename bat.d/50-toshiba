@@ -301,9 +301,9 @@ batdrv_write_thresholds () {
         case $verb in
             2)
                 if [ $rc -eq 0 ]; then
-                    printf "  stop = %3d\n" "$new_stop" 1>&2
+                    printf        "  %-5s = %3d\n" "stop" "$new_stop" 1>&2
                 else
-                    cprintf "err" "  stop = %3d (Error: write failed)\n" "$new_stop" 1>&2
+                    cprintf "err" "  %-5s = %3d (Error: write failed)\n" "stop" "$new_stop" 1>&2
                 fi
                 ;;
             1)
@@ -316,8 +316,12 @@ batdrv_write_thresholds () {
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).no_change: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_stop; new=$new_stop"
 
         if [ "$verb" = "2" ]; then
-            printf "  stop = %3d (no change)\n" "$new_stop" 1>&2
+            printf "  %-5s = %3d (no change)\n" "stop" "$new_stop" 1>&2
         fi
+    fi
+
+    if [ "$rc" -eq 0 ] && [ "$verb" = "2" ]; then
+        soc_gt_stop_notice
     fi
 
     return $rc
@@ -519,8 +523,29 @@ batdrv_show_battery_data () {
     return 0
 }
 
+batdrv_check_soc_gt_stop () {
+    # check if battery charge level (SOC) is greater than the stop threshold
+    # rc: 0=greater/¹=less or equal (or thresholds not supported)
+    # global params: $_bm_thresh, $_bat_str
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local soc stop
+
+    if [ "$_bm_thresh" = "natacpi" ] && soc=$(read_sysval "$ACPIBATDIR/$_bat_str/capacity"); then
+        stop="$(batdrv_read_threshold 0)"
+        if [ -n "$stop" ] && [ "$soc" -gt "$stop" ]; then
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
 batdrv_recommendations () {
-     # no recommendations for Toshiba / Dynabook laptops
+    # output Toshiba / Dynabook laptop specific recommendations
+    # prerequisite: batdrv_init()
+
+    soc_gt_stop_recommendation
 
     return 0
 }

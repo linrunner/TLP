@@ -488,6 +488,13 @@ batdrv_show_battery_data () {
     return 0
 }
 
+batdrv_check_soc_gt_stop () {
+    # function not implemented for Lenovo laptops
+    # note: the actual discrete threshold value varies depending on the model and cannot be read in userspace
+
+    return 1
+}
+
 batdrv_recommendations () {
      # no recommendations for Lenovo laptops
 
