@@ -161,6 +161,8 @@ batdrv_select_battery () {
 
 batdrv_read_threshold () {
     # read and print charge threshold (stop only)
+    # $1: start/stop - unused dummy for plugin api compatibility
+    # $2: 0=api/1=tlp-stat output - unused dummy for plugin api compatibility
     # global params: $_batdrv_plugin, $_bm_thresh, $_bf_stop
     # out: threshold 50/80/100/"" on error
     # rc: 0=ok/4=read error/255=no api
@@ -254,7 +256,7 @@ batdrv_write_thresholds () {
     fi
 
     # read active stop threshold value
-    if ! old_stop=$(batdrv_read_threshold); then
+    if ! old_stop=$(batdrv_read_threshold stop 0); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
             1) echo_message "Error: could not read current care limiter. Skipped." ;;
@@ -402,7 +404,7 @@ batdrv_show_battery_data () {
         local sp
         printf "Parameter value range:\n"
         printf "* STOP_CHARGE_THRESH_BAT0: 50, 80, 100(off) -- battery care limiter\n\n"
-        if sp=$(batdrv_read_threshold); then
+        if sp=$(batdrv_read_threshold stop 1); then
             if [ "$sp" = "0" ]; then
                 printf "%-59s = %6d (100) [%%]\n" "$_bf_stop" "$sp"
             else

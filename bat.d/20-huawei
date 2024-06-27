@@ -165,6 +165,8 @@ batdrv_select_battery () {
 
 batdrv_read_threshold () {
     # read and print both charge thresholds
+    # $1: start/stop - unused dummy for plugin api compatibility
+    # $2: 0=api/1=tlp-stat output - unused dummy for plugin api compatibility
     # global params: $_batdrv_plugin, $_bm_thresh, $_bf_start_stop
     # out: both thresholds 0..100 separated with a blank/"" on error
     # rc: 0=ok/4=read error/255=no api
@@ -428,7 +430,7 @@ batdrv_show_battery_data () {
         printf "Parameter value ranges:\n"
         printf "* START_CHARGE_THRESH_BAT0:  0(default)..99\n"
         printf "* STOP_CHARGE_THRESH_BAT0:   1..100(default)\n\n"
-        if threshs=$(batdrv_read_threshold); then
+        if threshs=$(batdrv_read_threshold startstop 1); then
             case "$threshs" in
                 "0 0"|"0 100")
                     printf "%-59s = %s [%%] (disabled)\n" "$_bf_start_stop" "$threshs"
