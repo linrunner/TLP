@@ -329,7 +329,7 @@ batdrv_write_thresholds () {
 
     # write new thresholds
     if [ "$verb" = "2" ]; then
-        cprintf "Setting temporary charge thresholds for %s:\n" "$_bat_str" 1>&2
+        printf "Setting temporary charge thresholds for %s:\n" "$_bat_str" 1>&2
     fi
 
     local rc=0 steprc
