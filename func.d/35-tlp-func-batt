@@ -229,6 +229,9 @@ soc_gt_stop_notice () {
     # global params: $_batteries, $_bm_thresh, $_bd_read, $_bat_str
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
+    # disable SOC check in unit-tests
+    [ "$X_SOC_CHECK" = "0" ] && return 0
+
     # shellcheck disable=SC2154
     if batdrv_check_soc_gt_stop; then
         echo_message "Notice: $_bat_str charge level is above the stop threshold. Use your laptop"`
@@ -244,6 +247,9 @@ soc_gt_stop_recommendation () {
     # prerequisite: batdrv_init()
 
     local bat
+
+    # disable SOC check in unit-tests
+    [ "$X_SOC_CHECK" = "0" ] && return 0
 
     # shellcheck disable=SC2154
     for bat in $_batteries; do # iterate detected batteries
