@@ -1167,7 +1167,7 @@ batdrv_show_battery_data () {
         fi
         if [ "$_bm_dischg" = "natacpi" ]; then
             printf "%-59s = %s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
-        lf=1
+            lf=1
         fi
         [ "$lf" -gt 0 ] && printf "\n"
 
