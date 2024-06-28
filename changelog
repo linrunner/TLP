@@ -17,7 +17,9 @@
       - tlp-stat -b improvements for coreboot:
         - Fix charge readings (Issue #657)
         - Indicate when recalibration is not possible
-    - tlp-stat -b: highlight battery care status
+    - tlp-stat -b: Highlight battery care status
+    - tlp setcharge, tlp-stat -b: display a recommendation to use the laptop
+      on battery power until the battery is discharged to the stop threshold
     Disks:
     - tlp-stat -d: replace disk serial number with asterisks (for privacy)
     General:
