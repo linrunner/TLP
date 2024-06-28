@@ -588,13 +588,11 @@ batdrv_write_thresholds () {
                         fi
                     else
                         cprintf "err" "  %-5s = %3d (Error: write failed)\n" "$step" "$new_thresh" 1>&2
-                        rc=5
                     fi
                     ;;
                 1)
                     if [ $steprc -gt 0 ]; then
                         echo_message "Error: writing $step charge threshold for $_bat_str failed."
-                        rc=5
                     fi
                     ;;
             esac
@@ -1009,8 +1007,8 @@ batdrv_show_battery_data () {
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     local fs=""
-    [ "$_bm_thresh" != "none" ] && fs="charge thresholds"
-    if [ "$_bm_dischg" != "none" ]; then
+    [ "$_bm_thresh" = "natacpi" ] && fs="charge thresholds"
+    if [ "$_bm_dischg" = "natacpi" ]; then
         [ -n "$fs" ] && fs="${fs}, "
         fs="${fs}recalibration"
     fi
@@ -1038,7 +1036,7 @@ batdrv_show_battery_data () {
         128) cprintf "notice"  "* tp-smapi (tp_smapi)     = inactive (kernel module 'tp_smapi' not installed)\n" ;;
     esac
 
-    if [ "$_bm_thresh" = "nactacpi" ]; then
+    if [ "$_bm_thresh" = "natacpi" ]; then
         printf "Parameter value ranges:\n"
         printf "* START_CHARGE_THRESH_BAT0/1:  0(off)..96(default)..99\n"
         printf "* STOP_CHARGE_THRESH_BAT0/1:   1..100(default)\n"
@@ -1058,7 +1056,7 @@ batdrv_show_battery_data () {
 
         case $_bat_idx in
             1) printf "+++ ThinkPad Battery Status: %s (Main / Internal)\n" "$bat" ;;
-            2) printf "+++ ThinkPad Battery Status: %s (Ultrabay / Slice / Replaceable)\n" "$bat" ;;
+            2) printf "+++ ThinkPad Battery Status: %s (Removable / Ultrabay / Slice)\n" "$bat" ;;
             0) printf "+++ ThinkPad Battery Status: %s\n" "$bat" ;;
         esac
 
@@ -1161,16 +1159,20 @@ batdrv_show_battery_data () {
         esac # $_bm_read
 
         # --- show battery features: thresholds, force_discharge
-        printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
-        printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
-        case $_bm_dischg in
-            natacpi) printf "%-59s = %s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)" ;;
-            none)    printparm "%-59s = ##%s##" "$_bd_read/$_bn_dischg" ;;
-        esac
-        printf "\n"
+        local lf=0
+        if [ "$_bm_thresh" = "natacpi" ]; then
+            printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
+            printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
+            lf=1
+        fi
+        if [ "$_bm_dischg" = "natacpi" ]; then
+            printf "%-59s = %s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
+        lf=1
+        fi
+        [ "$lf" -gt 0 ] && printf "\n"
 
         # --- show charge level (SOC) and capacity
-        local lf=0
+        lf=0
         if [ "$ef" -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
             lf=1
