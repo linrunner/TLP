@@ -772,8 +772,8 @@ batdrv_show_battery_data () {
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     local fs=""
-    [ "$_bm_thresh" != "none" ] && fs="charge thresholds"
-    if [ "$_bm_dischg" != "none" ]; then
+    [ "$_bm_thresh" = "tpsmapi" ] && fs="charge thresholds"
+    if [ "$_bm_dischg" = "tpsmapi" ]; then
         [ -n "$fs" ] && fs="${fs}, "
         fs="${fs}recalibration"
     fi
@@ -794,7 +794,7 @@ batdrv_show_battery_data () {
         *)   cprintf "err"     "* tp-smapi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
-    if [ "$_bm_thresh" != "none" ]; then
+    if [ "$_bm_thresh" = "tpsmapi" ]; then
         printf "Parameter value ranges:\n"
         printf "* START_CHARGE_THRESH_BAT0/1:  2..96(default)\n"
         printf "* STOP_CHARGE_THRESH_BAT0/1:   6..100(default)\n"
