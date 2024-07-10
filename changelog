@@ -10,6 +10,7 @@
       start and stop threshold (Issue #707)
     - Lenovo laptops (non-ThinkPad series): tlp-stat -b: figure 60% removed
       as the threshold value varies depending on the model (Issue #717)
+    - LG Gram laptops: forward to lg-legacy for kernel <= 5.17 only
     - ThinkPads:
       - Remove obsolete tpacpi-bat method (current Linux distributions ship
         with kernel 5.17 or later as a replacement, which provides battery
