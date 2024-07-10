@@ -91,34 +91,35 @@ batdrv_init () {
             # skip natacpi detection for 2nd and subsequent batteries
             [ $done -eq 1 ] && continue
 
+            done=1
             if [ "$NATACPI_ENABLE" = "0" ]; then
                 # natacpi disabled in configuration --> skip actual detection
                 _natacpi=32
-            elif sp="$(read_sysf "$bd/charge_control_end_threshold")"; then
-                # sysfile for stop threshold exists and is actually readable
-                if [ "$sp" != "0" ]; then
-                    # threshold is non-zero
-                    _natacpi=0
-                    _bm_thresh="natacpi"
-                    _bn_stop="charge_control_end_threshold"
-                else
-                    # zero means laptop not supported via the kernel driver
-                    _natacpi=254
+            elif [ -f "$bd/charge_control_end_threshold" ]; then
+                # sysfile for threshold exists (kernel 5.18 and newer)
+                if sp="$(read_sysf "$bd/charge_control_end_threshold")"; then
+                    # sysfile is actually readable
+                    if [ "$sp" != "0" ]; then
+                        # threshold is non-zero
+                        _natacpi=0
+                        _bm_thresh="natacpi"
+                        _bn_stop="charge_control_end_threshold"
+                    else
+                        # zero means laptop not supported via the kernel driver
+                        _natacpi=254
+                    fi
                 fi
             elif [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
                 # simulate api
                 _natacpi=0
                 _bm_thresh="natacpi"
                 _bn_stop="charge_control_end_threshold"
-            else
-                # nothing detected
-                _natacpi=254
             fi
         fi
     done
 
-    if  [ $_natacpi -ge 32 ]; then
-        # let's probe lg-legacy next (kernel 5.17 and older)
+    if  [ $_natacpi -eq 128 ]; then
+        # charge_control_end_threshold does not exist -> probe lg-legacy next (kernel 5.17 and older)
         echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_natacpi: batteries=$_batteries; natacpi=$_natacpi"
         return 1
     fi
