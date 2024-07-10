@@ -516,7 +516,7 @@ batdrv_check_soc_gt_stop () {
     fi
 
     return 1
- }
+}
 
 batdrv_recommendations () {
     # output Sony laptop specific recommendations
@@ -525,4 +525,4 @@ batdrv_recommendations () {
     soc_gt_stop_recommendation
 
     return 0
- }
+}

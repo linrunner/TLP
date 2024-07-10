@@ -547,13 +547,13 @@ batdrv_check_soc_gt_stop () {
     fi
 
     return 1
- }
+}
 
- batdrv_recommendations () {
-     # output LG laptop specific recommendations
-     # prerequisite: batdrv_init()
+batdrv_recommendations () {
+    # output LG laptop specific recommendations
+    # prerequisite: batdrv_init()
 
-     soc_gt_stop_recommendation
+    soc_gt_stop_recommendation
 
-     return 0
- }
+    return 0
+}

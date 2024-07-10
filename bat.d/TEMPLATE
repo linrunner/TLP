@@ -658,7 +658,7 @@ batdrv_check_soc_gt_stop () {
     fi
 
     return 1
- }
+}
 
 batdrv_recommendations () {
     # output TEMPLATE laptop specific recommendations

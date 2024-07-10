@@ -511,14 +511,13 @@ batdrv_check_soc_gt_stop () {
         fi
     fi
 
-return 1
- }
+    return 1
+}
 
- batdrv_recommendations () {
-     # output Samsung laptop specific recommendations
-     # prerequisite: batdrv_init()
+batdrv_recommendations () {
+    # output Samsung laptop specific recommendations
+    # prerequisite: batdrv_init()
 
-     soc_gt_stop_recommendation
-
-     return 0
- }
+    soc_gt_stop_recommendation
+    return 0
+}
