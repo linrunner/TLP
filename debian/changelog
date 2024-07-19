@@ -10,8 +10,9 @@ tlp (1.7.0~alpha.1-1) UNRELEASED; urgency=medium
   * Update debian/copyright
   * Compensate for change to /usr/lib in the upstream Makefile
   * Add Conflicts: tuned
+  * Update lintian overrides
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 19 Jul 2024 11:21:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 19 Jul 2024 11:21:42 +0200
 
 tlp (1.6.1-1) unstable; urgency=medium
 
