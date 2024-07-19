@@ -25,10 +25,6 @@ License: GPL-2+
  On Debian/Ubuntu systems, the full text of the GPL v2 can be found in
  `/usr/share/common-licenses/GPL-2'.
 
-License: GPL-3+
- On Debian/Ubuntu systems, the full text of the GPL v3 can be found in
- `/usr/share/common-licenses/GPL-3'.
-
 License: MIT
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
