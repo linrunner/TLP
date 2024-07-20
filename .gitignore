@@ -6,5 +6,5 @@ PKGBUILD
 pkg
 src
 tlp.install
-worktree
+worktree*
 *.zst
