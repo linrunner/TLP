@@ -56,9 +56,11 @@
       - Fix Edge 11 battery enumeration (Issue #714)
       - Support ThinkPad W510
     Disks:
+    - Ensure power saving for all USB disks when plugged in
     - tlp diskid: filter duplicates
     General:
     - tlp-stat -s: rework manual mode detection (Issue #702)
+    - tlp-stat --psup/udev: fix udev rule check
     Radio Devices:
     - Avoid error popups from NetworkManager when switching wifi/wwan
     USB:
