@@ -816,7 +816,7 @@ check_udev_rule_usb () {
     # check if udev rule for connecting USB device draws
     local ud
 
-    ud="$(glob_dirs '/*' /sys/bus/usb/devices 2> /dev/null | grep -v ':' | head -1)"
+    ud="$(glob_dirs '/usb[1-9]' /sys/bus/usb/devices/ 2> /dev/null | head -1)"
     if [ -n "$ud" ]; then
         $UDEVADM -d test -a add "$ud" 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
         if $UDEVADM test -a add "$ud" 2> /dev/null |  grep -E '(^run:|RUN{program} :) .*tlp-usb-udev usb'; then
