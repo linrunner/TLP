@@ -118,6 +118,8 @@ SHFILES = \
 	tlp-sleep.elogind \
 	tlp-stat.in \
 	tlp-usb-udev.in \
+
+UTSHFILES = \
 	unit-tests/test-func \
 	unit-tests/test-cpufreq.sh
 
@@ -307,7 +309,7 @@ checkbashisms:
 
 shellcheck:
 	@echo "*** shellcheck ******************************************************************************"
-	@shellcheck -s dash $(SHFILES) || true
+	@shellcheck -s dash $(SHFILES) $(UTSHFILES) || true
 
 perlcritic:
 	@echo "*** perlcritic ******************************************************************************"
@@ -319,7 +321,7 @@ checkdupconst:
 
 checkwip:
 	@echo "*** checkwip ********************************************************************************"
-	@grep -E -n "### (DEBUG|DEVEL|TODO|WIP)" $(SHFILES) $(PLFILES) || true
+	@grep -E -n "### (DEBUG|DEVEL|TODO|WIP)" $(SHFILES) $(UTSHFILES) $(PLFILES) || true
 
 bat.d/TEMPLATE~: bat.d/TEMPLATE
 	@awk '/^batdrv_[a-z_]+ ()/ { print $$1; }' $< | grep -v 'batdrv_is' | sort > $@
