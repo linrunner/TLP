@@ -9,7 +9,7 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly DOCKGLOB="/sys/devices/platform/dock.?"
+readonly DOCK_GLOB="/sys/devices/platform/dock.?"
 
 readonly BAYSTATEFILE=$RUNDIR/bay_saved
 
@@ -20,7 +20,9 @@ readonly BAYSTATEFILE=$RUNDIR/bay_saved
 
 get_drivebay_device () { # Find generic dock interface for drive bay
                          # rc: 0; retval: $dock
-    dock=$(grep -l 'ata_bay' "$DOCKGLOB/type" 2> /dev/null)
+
+    # shellcheck disable=SC2086
+    dock=$(grep -l 'ata_bay' $DOCK_GLOB/type 2> /dev/null)
     dock=${dock%%/type}
     if [ ! -d "$dock" ]; then
         dock=""
