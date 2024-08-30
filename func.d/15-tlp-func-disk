@@ -9,8 +9,8 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly AHCID=$PCID'/*/ata*'
-readonly ALPMD=$AHCID'/host*/scsi_host/host*'
+readonly AHCI_GLOB=$PCID'/*/ata*'
+readonly ALPM_GLOB=$AHCI_GLOB'/host*/scsi_host/host*'
 
 readonly DISK_NOP_WORDS="_ keep"
 
@@ -449,7 +449,7 @@ set_sata_link_power () { # set ahci link power management
     # shellcheck disable=SC2086
     set -- $pwrlist
     # iterate SATA hosts
-    for host in $ALPMD ; do
+    for host in $ALPM_GLOB ; do
         linkpol="$host/link_power_management_policy"
         if [ -f "$linkpol" ]; then
             hostid=${host##*/}
@@ -589,7 +589,7 @@ set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
     fi
 
     # iterate ahci ports
-    for device in $AHCID; do
+    for device in $AHCI_GLOB; do
         if write_sysf "$control" "${device}/power/control"; then
             echo_debug "disk" "set_ahci_port_runtime_pm($1).$control: port=$device; rc=0"
         else

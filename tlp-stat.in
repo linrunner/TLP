@@ -633,9 +633,9 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- sata alpm mode
     # shellcheck disable=SC2086
-    if stat -t ${ALPMD}/link_power_management_policy > /dev/null 2>&1; then
+    if stat -t ${ALPM_GLOB}/link_power_management_policy > /dev/null 2>&1; then
         echo "+++ AHCI Link Power Management (ALPM) :: SATA Links"
-        for i in ${ALPMD} ; do
+        for i in ${ALPM_GLOB} ; do
             printparm_ahci "$i/link_power_management_policy"
         done
         echo
@@ -643,9 +643,9 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- ahci runtime pm
     # shellcheck disable=SC2086
-    if stat -t ${AHCID}/power > /dev/null 2>&1; then
+    if stat -t ${AHCI_GLOB}/power > /dev/null 2>&1; then
         echo "+++ AHCI Port Runtime Power Management :: SATA/ATA Ports"
-        for dev in ${AHCID}/power ; do
+        for dev in ${AHCI_GLOB}/power ; do
             printparm_ahci "$dev/control"
         done
         echo
@@ -653,7 +653,7 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
 
     # -- docks
     cnt=0
-    for dock in $DOCKGLOB; do
+    for dock in $DOCK_GLOB; do
         [ ! -d "$dock" ] && break # no dock/bay detected
 
         # dock/bay detected, print header
