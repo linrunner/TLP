@@ -632,7 +632,8 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     echo
 
     # --- sata alpm mode
-    if stat -t "${ALPMD}/link_power_management_policy" > /dev/null 2>&1; then
+    # shellcheck disable=SC2086
+    if stat -t ${ALPMD}/link_power_management_policy > /dev/null 2>&1; then
         echo "+++ AHCI Link Power Management (ALPM) :: SATA Links"
         for i in ${ALPMD} ; do
             printparm_ahci "$i/link_power_management_policy"
@@ -641,7 +642,8 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     fi
 
     # --- ahci runtime pm
-    if stat -t "${AHCID}/power" > /dev/null 2>&1; then
+    # shellcheck disable=SC2086
+    if stat -t ${AHCID}/power > /dev/null 2>&1; then
         echo "+++ AHCI Port Runtime Power Management :: SATA/ATA Ports"
         for dev in ${AHCID}/power ; do
             printparm_ahci "$dev/control"
