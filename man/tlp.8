@@ -1,7 +1,7 @@
 .TH tlp 8 2024-04-01 "TLP 1.7.0" "Power Management"
 .
 .SH NAME
-tlp \- apply laptop power saving settings
+tlp - apply laptop power saving settings
 .
 .SH SYNOPSIS
 .B tlp \fIcommand\fR \fR[\fIparameters\fR] [\fB--\fR \fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."]
@@ -45,7 +45,7 @@ via configuration.
 .TP
 .B bayoff
 Turn off optical drive in UltraBay/MediaBay.
-The drive may be re\-enabled by pulling the eject lever or pushing the media
+The drive may be re-enabled by pulling the eject lever or pushing the media
 eject button on newer models.
 .
 .PP
@@ -94,7 +94,7 @@ Print disk ids for configured drives.
 Print TLP version.
 .
 .TP
-.B \-- \fR\fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
+.B -- \fR\fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
 Append configuration parameters to a command. These temporarily override
 the system configuration during execution of that command only and are not
 kept afterwards.
@@ -105,9 +105,9 @@ whatsoever.
 .SH NOTES
 For laptops with more than one battery the selection works as follows:
 .IP
-BAT0 \- Main or internal battery
+BAT0 - Main or internal battery
 .IP
-BAT1 \- Secondary or replaceable battery
+BAT1 - Secondary or replaceable battery
 .
 .SH EXAMPLES
 Change thresholds of the main battery to 70 / 90% temporarily:
@@ -155,7 +155,7 @@ evaluated only when /etc/tlp.conf is non-existent.
 On success, 0 is returned, a non-zero failure code otherwise.
 .
 .SH SEE ALSO
-.BR tlp\-stat (8),
+.BR tlp-stat (8),
 .BR bluetooth (1),
 .BR nfc (1),
 .BR wifi (1),

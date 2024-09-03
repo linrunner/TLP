@@ -1,10 +1,10 @@
-.TH tlp\-stat 8 2024-04-01 "TLP 1.7.0" "Power Management"
+.TH tlp-stat 8 2024-04-01 "TLP 1.7.0" "Power Management"
 .
 .SH NAME
-tlp\-stat \- view power saving status
+tlp-stat - view power saving status
 .
 .SH SYNOPSIS
-.B tlp\-stat \fB[\fIoptions\fR] [\fB--\fR \fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."]
+.B tlp-stat \fB[\fIoptions\fR] [\fB--\fR \fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."]
 .
 .SH DESCRIPTION
 View configuration, system information, kernel power saving settings and battery
@@ -13,93 +13,93 @@ data. Invocation without options shows all information categories.
 .SH OPTIONS
 .
 .TP
-.B \-b, \-\-battery
+.B -b, --battery
 View battery data. Add \fB-v\fR to see battery voltages (if available).
 .
 .TP
-.B \-c, \-\-config
+.B -c, --config
 View active configuration.
 .
 .TP
-.B \-\-cdiff
+.B --cdiff
 View the difference between defaults and user configuration.
 .
 .TP
-.B \-d, \-\-disk
+.B -d, --disk
 View disk device information.
 .
 .TP
-.B \-e, \-\-pcie
+.B -e, --pcie
 View PCIe device information. Add \fB-v\fR to see device runtime status.
 .
 .TP
-.B \-g, \-\-graphics
+.B -g, --graphics
 View graphics card information.
 .
 .TP
-.B \-m, \-\-mode
+.B -m, --mode
 Print current power mode.
 .
 .TP
-.B \-p, \-\-processor
+.B -p, --processor
 View processor information. For clarity the standard output shows only cpu0.
 Add \fB-v\fR to see all cpus.
 Add \fB-q\fR to see cpu driver state only.
 .
 .TP
-.B \-q, \-\-quiet
+.B -q, --quiet
 Omit version header and show less information in the processor category.
 .
 .TP
-.B \-r, \-\-rfkill
+.B -r, --rfkill
 View radio device states.
 .
 .TP
-.B \-s, \-\-system
+.B -s, --system
 View system information and TLP status.
 .
 .TP
-.B \-t, \-\-temp
+.B -t, --temp
 View temperatures and fan speed.
 .
 .TP
-.B \-u, \-\-usb
+.B -u, --usb
 View USB device information. Add \fB-v\fR to see device runtime status.
 .
 .TP
-.B \-v, \-\-verbose
+.B -v, --verbose
 Show more information in the battery, PCIe, processor and USB categories.
 .
 .TP
-.B \-\-version
+.B --version
 Print TLP version.
 .
 .PP
 Diagnostics and debugging:
 .
 .TP
-.B \-P, \-\-pev
+.B -P, --pev
 Monitor power supply udev events.
 .
 .TP
-.B \-\-psup
+.B --psup
 View power supply diagnostics.
 .
 .TP
-.B \-T, \-\-trace
+.B -T, --trace
 View trace output.
 .
 .TP
-.B \-\-udev
+.B --udev
 Check if udev rules for power source changes and connecting USB devices
 are active.
 .
 .TP
-.B \-w, \-\-warn
+.B -w, --warn
 View warnings about SATA disks.
 .
 .TP
-.B \-- \fR\fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
+.B -- \fR\fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
 Append configuration parameters to a command. These temporarily override
 the system configuration during execution of that command only and are not
 kept afterwards.
