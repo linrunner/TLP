@@ -1,20 +1,18 @@
-+++ 1.7.0-alpha.1 --- <unreleased> +++
-
-  * Development version
++++ 1.7.0-beta.1 --- 04.09.2024 +++
 
   * Features
-    Battery:
+    Battery Care:
     - Apple Silicon Macbooks (M*) with MacOS 13.0 (or later) firmware and
       Asahi Linux kernel 6.6 (or later): start and stop threshold
     - MSI laptops supported by the msi_ec driver in kernel 6.3 (or later):
       start and stop threshold (Issue #707)
-    - Lenovo laptops (non-ThinkPad series): tlp-stat -b: figure 60% removed
-      as the threshold value varies depending on the model (Issue #717)
+    - Lenovo laptops (non-ThinkPad series): tlp-stat -b: number 60% removed
+      because the threshold varies by model (Issue #717)
     - LG Gram laptops: forward to lg-legacy for kernel <= 5.17 only
     - ThinkPads:
-      - Remove obsolete tpacpi-bat method (current Linux distributions ship
-        with kernel 5.17 or later as a replacement, which provides battery
-        care via thinkpad_acpi)
+      - The obsolete tpacpi-bat driver along with the acpi_call dependency
+        were removed. Current Linux distributions ship with kernel 5.17 or
+        later, which enables battery care via the built-in thinkpad_acpi.
       - tlp-stat -b improvements for coreboot:
         - Fix charge readings (Issue #657)
         - Indicate when recalibration is not possible
@@ -25,6 +23,7 @@
     - tlp-stat -d: replace disk serial number with asterisks (for privacy)
     General:
     - TLP_MSG_COLORS: highlight error, warning, notice and success messages
+      in color.
     - Add option --version to all TLP commands
     - Add tlp-stat output options:
       -m|--mode: print current power mode
@@ -34,14 +33,14 @@
     - Improve busybox compatibility by using only portable options for flock
     Graphics:
     - AMDGPU_ABM_LEVEL_ON_AC/BAT: configure display panel power savings via
-      adaptive backlight modulation (ABM) from AMD Vega or newer GPUs;
+      Adaptive Backlight Modulation (ABM) from AMD Vega or newer GPUs;
       kernel 6.9 required
     Processor:
-    - CPU_ENERGY_PERF_POLICY_ON_AC/BAT: backward compatibility for EPB with
-      kernels < 5.2 abandoned (no more dependency on x86_energy_perf_policy)
-    - CPU_HWP_DYN_BOOST_ON_AC/BAT: AMD implementation withdrawn (the
-      corresponding kernel patch was removed during review back in 2022,
-      a reincarnation seems unlikely)
+    - CPU_ENERGY_PERF_POLICY_ON_AC/BAT: drop backwards compatibility for
+      EPB with kernels < 5.2; x86_energy_perf_policy is no longer required
+    - CPU_HWP_DYN_BOOST_ON_AC/BAT: drop the AMD implementation; the
+      corresponding kernel patch was discarded during the 2022 review,
+      reincarnation seems unlikely
     - tlp-stat -t:
       - Show AMD CPU temperatures
       - Indicate unavailable fan speed
