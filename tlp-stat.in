@@ -920,6 +920,9 @@ if [ "$show_bat" = "1" ] || [ "$show_system" = "1" ] || [ "$show_all" = "1" ]; t
     # battery plugin specific recommendations
     if [ "$show_bat" = "1" ] || [ "$show_all" = "1" ]; then
         reout="$(batdrv_recommendations)"
+        if [ -n "$reout" ]; then
+            reout="$reout\n"
+        fi
     else
         reout=""
     fi
