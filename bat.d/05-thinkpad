@@ -809,7 +809,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
     _bat_fd="$(batdrv_read_force_discharge 0)"
     if [ "$_bat_fd" = "0" ]; then
         # force_discharge is off --> quit
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active($_bat_str): rc=1"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.reset($_bat_str): fd=$_bat_fd; rc=1"
         return 1
     fi
 
@@ -819,6 +819,13 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
     else
         # force_discharge is still on, but quirky firmware (e.g. ThinkPad E-series)
         # may keep force_discharge on --> check battery status too
+        _bat_st=$(read_sysf "$_bf_status")
+        case "$_bat_st" in
+            [Dd]ischarging) rc=0 ;;
+            *) rc=1 ;;
+        esac
+
+        # battery readings
         case $_bm_read in
             natacpi)
                 # determine soc for log entry
@@ -846,16 +853,13 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
                 rc=255
                 ;;
         esac
-
-        # evaluate battery state
-        _bat_st=$(read_sysf "$_bf_status")
-        case "$_bat_st" in
-            [Dd]ischarging) rc=0 ;;
-            *) rc=1 ;;
-        esac
     fi
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active($_bat_str): bm_read=$_bm_read; st=$_bat_st; soc=$_bat_soc; pwr=$_bat_pwr; voltage=$_bat_volt; rc=$rc"
+    if [ "$rc" -gt "0" ]; then
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.not_discharging($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; pwr=$_bat_pwr; voltage=$_bat_volt; rc=$rc"
+    else
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.running($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; pwr=$_bat_pwr; voltage=$_bat_volt; rc=$rc"
+    fi
     return $rc
 }
 
@@ -869,7 +873,7 @@ batdrv_discharge () {
 
     # start discharge
     if ! batdrv_write_force_discharge 1; then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_malfunction($_bat_str)"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_write_error($_bat_str)"
         cecho "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
         return 1
     fi
@@ -964,12 +968,12 @@ batdrv_discharge () {
             # shellcheck disable=SC2154
             if [ "$_syspwr" -eq 1 ]; then
                 # system on battery --> AC power removed
-                echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.ac_removed($_bat_str): bm_read=$_bm_read; fd=$fd; st=$st; soc=$soc; pwr=$pn; voltage=$vn"
+                echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.ac_removed($_bat_str): fd=$fd; st=$st; soc=$soc; pwr=$pn; voltage=$vn"
                 cecho "Warning: battery $_bat_str was not discharged completely -- AC/charger removed." 1>&2
                 rc=3
             elif [ "$soc" -gt 1 ]; then
                 # system on AC, SOC > 1% --> discharging terminated by unknown reason
-                echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_emptied($_bat_str): bm_read=$_bm_read; fd=$fd; st=$st; soc=$soc; pwr=$pn; voltage=$vn"
+                echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_emptied($_bat_str): fd=$fd; st=$st; soc=$soc; pwr=$pn; voltage=$vn"
                 cecho "Error: battery $_bat_str was not discharged completely i.e. terminated by the firmware -- check your hardware (battery, charger)." 1>&2
                 rc=2
             fi
@@ -977,7 +981,7 @@ batdrv_discharge () {
     else
         # discharge malfunction --> cancel discharge and abort
         batdrv_write_force_discharge 0
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.malfunction($_bat_str): bm_read=$_bm_read; st=$_bat_st; soc=$_bat_soc; pwr=$_bat_pwr; voltage=$_bat_volt; rc=$rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.init_error($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; pwr=$_bat_pwr; voltage=$_bat_volt; rc=$rc"
 
         cecho "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
         rc=1
