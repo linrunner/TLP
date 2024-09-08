@@ -272,7 +272,8 @@ batdrv_select_battery () {
     #         $_bd_read:    directory with battery data sysfiles;
     #         $_bf_start:   sysfile for start threshold;
     #         $_bf_stop:    sysfile for stop threshold;
-    #         $_bf_dischg:  sysfile for force discharge
+    #         $_bf_dischg:  sysfile for force discharge;
+    #         $_bf_status:  sysfile for status read
     # prerequisite: batdrv_init()
 
     # defaults
@@ -282,6 +283,7 @@ batdrv_select_battery () {
     _bf_start=""
     _bf_stop=""
     _bf_dischg=""
+    _bf_status=""
     _bt_cfg_bat=""
 
     local bat="$1"
@@ -338,6 +340,7 @@ batdrv_select_battery () {
 
     if [ "$_bm_dischg" = "natacpi" ]; then
         _bf_dischg="$ACPIBATDIR/$bs/$_bn_dischg"
+        _bf_status="$ACPIBATDIR/$bs/status"
     fi
 
     case "$_bm_read" in
@@ -818,7 +821,6 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
         # may keep force_discharge on --> check battery status too
         case $_bm_read in
             natacpi)
-                _bat_st=$(read_sysf "$_bd_read/status")
                 # determine soc for log entry
                 _bat_en=$(read_sysval "$_bd_read/energy_now")
                 _bat_ef=$(read_sysval "$_bd_read/energy_full")
@@ -834,7 +836,6 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
                 ;;
 
             tpsmapi)
-                _bat_st=$(read_sysf "$_bd_read/state")
                 # determine soc for log entry
                 _bat_soc=$(read_sysf "$_bd_read/remaining_percent")
                 _bat_pwr=$(read_sysval "$_bd_read/power_avg")
@@ -847,6 +848,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
         esac
 
         # evaluate battery state
+        _bat_st=$(read_sysf "$_bf_status")
         case "$_bat_st" in
             [Dd]ischarging) rc=0 ;;
             *) rc=1 ;;
@@ -924,7 +926,7 @@ batdrv_discharge () {
 
             esac
 
-            printf "state              = %s\n" "$_bat_st" 1>&2
+            printf "status             = %s\n" "$_bat_st" 1>&2
             printf "force-discharge    = %s\n" "$_bat_fd" 1>&2
             echo "Press Ctrl+C to cancel." 1>&2
             sleep 5
@@ -945,17 +947,16 @@ batdrv_discharge () {
 
                 pn=$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/power_avg")"' / 1000.0 );')
                 vn=$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/voltage_now")"' / 1000.0 );')
-                st="$(read_sysf "$_bd_read/status")"
-                ;; # natacpi, tpsmapi
+                ;; # natacpi
 
             tpsmapi) # use tp-smapi sysfiles
                 soc=$(read_sysf "$_bd_read/remaining_percent")
 
                 pn=$(read_sysval "$_bd_read/power_now")
                 vn=$(read_sysval "$_bd_read/voltage")
-                st=$(read_sysf "$_bd_read/state")
                 ;;
         esac
+        st=$(read_sysf "$_bf_status")
 
         if [ "$soc" -gt 0 ]; then
             # SOC > 0% = battery not emptied --> determine cause
