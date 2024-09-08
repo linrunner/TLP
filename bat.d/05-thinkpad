@@ -1225,7 +1225,8 @@ batdrv_recommendations () {
 
     soc_gt_stop_recommendation
 
-    if [ "$_natacpi" = "1" ]; then
+    if [ "$_natacpi" = "1" ] && [ -f "$_bd_read/energy_full" ]; then
+        # natacpi degraded and no coreboot
         printf "Install kernel 5.17 (or later) for battery recalibration support\n"
     fi
     if [ "$_tpsmapi" = "128" ]; then
