@@ -1,3 +1,13 @@
++++ 1.7.0-beta.2 --- <unreleased> +++
+
+  * Bugfixes since 1.7.0-beta.1
+    Battery:
+    - Thinkpads:
+      - Fix premature abort of discharge/recalibrate for *20 models
+        (Issue #759)
+      - tlp-stat -b: do not recommend kernel 5.17 for coreboot,
+        as coreboot does not support discharge/recalibrate anyway.
+
 +++ 1.7.0-beta.1 --- 04.09.2024 +++
 
   * Features
