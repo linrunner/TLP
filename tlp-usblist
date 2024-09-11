@@ -108,11 +108,13 @@ foreach my $udev (grep { ! /:/ } glob USBD . "/*") {
 # Output device list with attributes and drivers
 foreach (`lsusb 2> /dev/null`) {
     my ($bus, $dev, $usbid, $desc) = /Bus (\S+) Device (\S+): ID (\S+)[ ]+(.*)/;
-    my $usbk = $bus . "_" . $dev;
-    $desc =~ s/\s+$//;
-    $desc ||= "<unknown>";
-    print "Bus $bus Device $dev ID $usbid $usbdevices{$usbk}[1] -- $desc ("
-        . usbdriverlist ($usbdevices{$usbk}[0]) . ")\n";
+    if (length ($bus) and length ($dev) and length ($usbid) ) {
+        my $usbk = $bus . "_" . $dev;
+        $desc =~ s/\s+$//;
+        $desc ||= "<unknown>";
+        print "Bus $bus Device $dev ID $usbid $usbdevices{$usbk}[1] -- $desc ("
+            . usbdriverlist($usbdevices{$usbk}[0]) . ")\n";
+    }
 }
 
 exit 0;
