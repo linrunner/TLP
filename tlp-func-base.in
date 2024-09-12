@@ -45,8 +45,8 @@ readonly TPACPID=/sys/devices/platform/thinkpad_acpi
 
 readonly RE_PARAM='^[A-Z_]+[0-9]*=[-0-9a-zA-Z _.:]*$'
 
-# power supplies: ignore MacBook Pro 2017 sbs-charger and hid devices
-readonly RE_PS_IGNORE='sbs-charger|hidpp_battery|hid-'
+# power supplies: ignore MacBook Pro 2017 sbs-charger, hid devices, ThinkPad X13s ARM qcom-battmgr-ac
+readonly RE_PS_IGNORE='sbs-charger|hidpp_battery|hid-|qcom-battmgr-ac'
 
 readonly DEBUG_TAGS_ALL="arg bat cfg disk lock nm path pm ps rf run sysfs udev usb"
 
