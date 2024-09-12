@@ -7,6 +7,8 @@
         (Issue #759)
       - tlp-stat -b: do not recommend kernel 5.17 for coreboot,
         as coreboot does not support discharge/recalibrate anyway.
+    USB:
+    - tlp-stat -u: filter out error messages
 
 +++ 1.7.0-beta.1 --- 04.09.2024 +++
 
