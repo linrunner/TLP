@@ -5,6 +5,7 @@
     - Thinkpads:
       - Fix premature abort of discharge/recalibrate for *20 models
         (Issue #759)
+      - Fix ThinkPad X13s ARM power source detection (Issue #758)
       - tlp-stat -b: do not recommend kernel 5.17 for coreboot,
         as coreboot does not support discharge/recalibrate anyway.
     USB:
