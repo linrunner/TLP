@@ -1,5 +1,9 @@
 +++ 1.7.0-beta.2 --- <unreleased> +++
 
+  * Features since 1.7.0-beta.1
+    Processor:
+    - tlp-stat -p: identify CPU model on ARM systems
+
   * Bugfixes since 1.7.0-beta.1
     Battery:
     - Thinkpads:
