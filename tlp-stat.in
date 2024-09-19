@@ -118,7 +118,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
             "-p"|"--processor")
                 show_all=0
                 show_proc=1
-                needs_root_priv=1
+                : ${needs_root_priv:=0}
                 ;;
 
             "-q"|"--quiet")
@@ -377,7 +377,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
     if [ "$quiet" = "0" ]; then
         cpu_mod="$(sed -rn 's/model name[ \t]+: (.+)/\1/p' /proc/cpuinfo | head -1)"
-        if [ -z "$cpu_mod" ] && cmd_exists $DMIDECODE ; then
+        if [ -z "$cpu_mod" ] && test_root && cmd_exists $DMIDECODE ; then
             cpu_mod="$(dmidecode -t 4 2> /dev/null | sed -rn 's/\s*Version:\s+(.+)/\1/p')"
         fi
         if [ -n "$cpu_mod" ]; then
