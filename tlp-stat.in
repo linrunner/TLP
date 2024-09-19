@@ -16,6 +16,7 @@ done
 readonly TLPUSB=@TLP_TLIB@/tlp-usblist
 readonly TLPPCI=@TLP_TLIB@/tlp-pcilist
 
+readonly DMIDECODE=dmidecode
 readonly JOURNALCTL=journalctl
 
 readonly ASPM=/sys/module/pcie_aspm/parameters/policy
@@ -375,8 +376,13 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     fi
 
     if [ "$quiet" = "0" ]; then
-        sed -rn 's/model name[ \t]+: (.+)/CPU model      = \1/p' /proc/cpuinfo | head -1
-        echo
+        cpu_mod="$(sed -rn 's/model name[ \t]+: (.+)/\1/p' /proc/cpuinfo | head -1)"
+        if [ -z "$cpu_mod" ] && cmd_exists $DMIDECODE ; then
+            cpu_mod="$(dmidecode -t 4 2> /dev/null | sed -rn 's/\s*Version:\s+(.+)/\1/p')"
+        fi
+        if [ -n "$cpu_mod" ]; then
+            printf "CPU model = %s\n\n" "$cpu_mod"
+        fi
 
         # -- scaling gov and freq info
         cnt=0
