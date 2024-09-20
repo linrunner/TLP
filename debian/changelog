@@ -1,6 +1,6 @@
-tlp (1.7.0~beta.1-1) unstable; urgency=medium
+tlp (1.7.0~beta.2-1) unstable; urgency=medium
 
-  * New upstream version 1.7.0-beta.1
+  * New upstream version 1.7.0-beta.2
 
   [ Thomas Koch ]
   * Add bash completion for run-on-ac, run-on-bat
@@ -12,7 +12,7 @@ tlp (1.7.0~beta.1-1) unstable; urgency=medium
   * Update lintian overrides
   * Collect remaining files from usr/lib (DEP-17)
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 04 Sep 2024 08:21:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 20 Sep 2024 07:21:21 +0200
 
 tlp (1.6.1-1) unstable; urgency=medium
 
