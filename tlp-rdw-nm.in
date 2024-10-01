@@ -58,6 +58,16 @@ echo_env () {
     fi
 }
 
+nm_is_asleep () {
+    # check if NetworkManager is in "asleep" state
+    if $NMCLI general status 2> /dev/null | grep -q "^asleep"; then
+        echo_debug "nm" "+++ tlp_rdw_nm(${iface}).${action}: nm_is_asleep"
+        return 0
+    else
+        return 1
+    fi
+}
+
 # --- MAIN
 # shellcheck disable=SC2034
 _bgtask=1
@@ -75,17 +85,23 @@ add_sbin2path
 # get args
 iface="$1"
 action="$2"
+repeat="$3"
 itype=""
 
 case "$action" in
     up|down) # interface up/down
+        if nm_is_asleep && [ "$repeat" != "1" ]; then
+            # NetworkManger is "asleep" -> repeat: open a detached subshell, wait 2 secs and respawn ourselves
+            # repeat only once
+            ( sleep 2; $0 "$1" "$2" "1" < /dev/null > /dev/null ) &
+            do_exit 0
+        fi
         # quit for invalid interfaces
         if [ -z "$iface" ] || [ "$iface" = "none" ]; then
             echo_debug "nm" "tlp_rdw_nm($iface).${action}.no_interface"
             echo_env
             do_exit 0
         fi
-
         #  quit for virtual interfaces (up action)
         if [ "$action" = "up" ] && readlink "$NETD/${iface}" | grep -q '/virtual/'; then
             # save type for down action where $NETD/$iface won't be there anymore
