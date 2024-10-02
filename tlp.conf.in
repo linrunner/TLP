@@ -157,7 +157,7 @@
 #CPU_MIN_PERF_ON_BAT=0
 #CPU_MAX_PERF_ON_BAT=30
 
-# Set the CPU "turbo boost" (Intel) or "turbo core" (AMD) feature:
+# Set the CPU "turbo boost" (Intel) or "core performance boost" (AMD) feature:
 #   0=disable, 1=allow.
 # Allows to raise the maximum frequency/P-state of some cores if the
 # CPU chip is not fully utilized and below it's intended thermal budget.
