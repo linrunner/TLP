@@ -427,6 +427,9 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                     if [ -f "$cpuf/bios_limit" ]; then
                         printf "%-54s = %8d [kHz]\n" "$cpuf/bios_limit" "$(read_sysf "$cpuf/bios_limit")"
                     fi
+                    if [ -f "$cpuf/boost" ]; then
+                        printf "%-54s = %d\n" "$cpuf/boost" "$(read_sysf "$cpuf/boost")"
+                    fi
 
                     if [ -f "$cpuf/energy_performance_preference" ]; then
                         printparm "%s = ##%s## [EPP]" "$cpuf/energy_performance_preference"
