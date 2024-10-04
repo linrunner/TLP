@@ -469,12 +469,71 @@ batdrv_write_thresholds () {
 }
 
 batdrv_chargeonce () {
-    # function not (yet) implemented for Framework laptops
-    # global param: $_batdrv_plugin
-    # prerequisite: batdrv_init()
+    # charge battery to stop threshold once
+    # use pre-determined method and sysfiles from global parms
+    # global params: $_batdrv_plugin, $_bm_thresh, $_bat_str, $_bf_start, $_bf_stop
+    # rc: 0=ok/
+    #     2=charge level read error
+    #     3=charge level too high/
+    #     4=threshold read error/
+    #     5=threshold write error/
+    # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.charge_once.not_implemented"
-    return 255
+    local cur_stop efull enow soc temp_start
+    local rc=0
+
+    if ! cur_stop=$(batdrv_read_threshold stop 0); then
+        cprintf "" "Error: reading stop charge threshold for %s failed. Aborted.\n" "$_bat_str" 1>&2
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).thresh_unknown: stop=$cur_stop; rc=4"
+        return 4
+     fi
+
+    # get current charge level (in %)
+    if [ "$_batdrv_sim" = "1" ]; then
+        # simulation on ThinkPad only
+        if [ -f "$_bd_read/energy_full" ]; then
+            efull=$(read_sysval "$_bd_read/energy_full")
+            enow=$(read_sysval "$_bd_read/energy_now")
+        fi
+    else
+        # real Framework hardware
+        if [ -f "$_bd_read/charge_full" ]; then
+            efull=$(read_sysval "$_bd_read/charge_full")
+            enow=$(read_sysval "$_bd_read/charge_now")
+        fi
+    fi
+
+    if is_uint "$enow" && is_uint "$efull" && [ "$efull" -ne 0 ]; then
+        # calculate charge level rounded to integer
+        soc=$(perl -e 'printf("%.0f\n", 100.0 * '"$enow"' / '"$efull"')')
+    else
+        soc=-1
+    fi
+
+    if [ "$soc" -eq -1 ]; then
+        cprintf "" "Error: cannot determine charge level for %s.\n" "$_bat_str" 1>&2
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_unknown: enow=$enow; efull=$efull; rc=2"
+        return 2
+    fi
+
+    temp_start=$(( cur_stop - 1 ))
+    if [ "$soc" -gt "$temp_start" ]; then
+        cprintf "" "Error: the %s charge level is %s%%. " "$_bat_str" "$soc"  1>&2
+        cprintf "err" "For this command to work, it must not exceed %s%% (stop threshold - 1).\n" "$temp_start" 1>&2
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_too_high: soc=$soc; stop=$cur_stop; rc=3"
+        return 3
+    fi
+
+    printf "Setting temporary charge threshold for %s:\n" "$_bat_str" 1>&2
+    write_sysf "$temp_start" "$_bf_start" || rc=5
+    if [ $rc -eq 0 ]; then
+        printf "  start = %3d\n" "$temp_start" 1>&2
+    else
+        cprintf "err" "  start = %3d (Error: write failed)\n" "$temp_start" 1>&2
+    fi
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str): soc=$soc; start=$temp_start; stop=$cur_stop; rc=$rc"
+
+    return $rc
 }
 
 batdrv_apply_configured_thresholds () {
