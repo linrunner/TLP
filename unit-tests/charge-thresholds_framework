@@ -9,106 +9,102 @@
 $ # +++ Framework laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="60" STOP_CHARGE_THRESH_BAT1="100" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="60" STOP_CHARGE_THRESH_BAT1="100" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="100" STOP_CHARGE_THRESH_BAT1="100" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="100" STOP_CHARGE_THRESH_BAT1="100" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
 Error in configuration at START_CHARGE_THRESH_BAT1="100": not specified, invalid or out of range (0..99). Battery skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="0" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="0" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
 Error in configuration at STOP_CHARGE_THRESH_BAT1="0": not specified, invalid or out of range (1..100). Battery skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="101" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="101" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
 Error in configuration at STOP_CHARGE_THRESH_BAT1="101": not specified, invalid or out of range (1..100). Battery skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="97" STOP_CHARGE_THRESH_BAT1="97" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="97" STOP_CHARGE_THRESH_BAT1="97" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
 Error in configuration: START_CHARGE_THRESH_BAT1 >= STOP_CHARGE_THRESH_BAT1. Battery skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
+$ sudo tlp start -- START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=framework NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
+$ sudo tlp start -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
 TLP started in AC mode (auto).
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="60" STOP_CHARGE_THRESH_BAT1="100" X_SOC_CHECK=0
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="60" STOP_CHARGE_THRESH_BAT1="100" X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT1:
   start =  60
   stop  = 100 (no change)
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="100" STOP_CHARGE_THRESH_BAT1="100"
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="100" STOP_CHARGE_THRESH_BAT1="100"
 Error in configuration at START_CHARGE_THRESH_BAT1="100": not specified, invalid or out of range (0..99). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="0"
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="0"
 Error in configuration at STOP_CHARGE_THRESH_BAT1="0": not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="101"
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="101"
 Error in configuration at STOP_CHARGE_THRESH_BAT1="101": not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="97" STOP_CHARGE_THRESH_BAT1="97"
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="97" STOP_CHARGE_THRESH_BAT1="97"
 Error in configuration: START_CHARGE_THRESH_BAT1 >= STOP_CHARGE_THRESH_BAT1. Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96"
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96"
 Setting temporary charge thresholds for BAT1:
   start =  95
   stop  =  96
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96"
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96"
 Setting temporary charge thresholds for BAT1:
   start =  95 (no change)
   stop  =  96 (no change)
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=framework START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
+$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
 Setting temporary charge thresholds for BAT1:
   stop  = 100
   start =   0
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=framework NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
+$ sudo tlp setcharge -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
 Error: battery charge thresholds not available.
 $ #
 $ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 60 100 -- X_BAT_PLUGIN_SIMULATE=framework X_SOC_CHECK=0
+$ sudo tlp setcharge 60 100 -- X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT1:
   start =  60
   stop  = 100 (no change)
-$ sudo tlp setcharge 100 100 -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge 100 100
 Error: start charge threshold (100) for BAT1 is not specified, invalid or out of range (0..99). Aborted.
-$ sudo tlp setcharge 0 0 -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge 0 0
 Error: stop charge threshold (0) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge 0 101 -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge 0 101
 Error: stop charge threshold (101) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge XYZZY 0 -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge XYZZY 0
 Error: start charge threshold (XYZZY) for BAT1 is not specified, invalid or out of range (0..99). Aborted.
-$ sudo tlp setcharge 0 XYZZY -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge 0 XYZZY
 Error: stop charge threshold (XYZZY) for BAT1 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge 97 97 -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge 97 97
 Error: start threshold >= stop threshold for BAT1. Aborted.
-$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge 95 96
 Setting temporary charge thresholds for BAT1:
   start =  95
   stop  =  96
-$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=framework X_THRESH_SIMULATE_READERR="1"
+$ sudo tlp setcharge 95 96 -- X_THRESH_SIMULATE_READERR="1"
 Error: could not read current charge threshold(s) for BAT1. Aborted.
-$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=framework X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
-Setting temporary charge thresholds for BAT1:
-  start =  95
-  stop  =  96
-$ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge 95 96
 Setting temporary charge thresholds for BAT1:
   start =  95 (no change)
   stop  =  96 (no change)
-$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge DEF DEF
 Setting temporary charge thresholds for BAT1:
   stop  = 100
   start =   0
-$ sudo tlp setcharge BAT0 -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge BAT0
 Error: battery BAT0 not present.
-$ sudo tlp setcharge 0 3 BAT0 -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge 0 3 BAT0
 Error: battery BAT0 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT0 -- X_BAT_PLUGIN_SIMULATE=framework
+$ sudo tlp setcharge XYZZY ABCDE BAT0
 Error: battery BAT0 not present.
 $ #
 $ # --- tlp-stat
 $ # steps require a kernel >= 5.17 -- with 'charge_behaviour'
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=framework | grep -E 'charge_(control|behaviour)'
+$ sudo tlp-stat -b | grep -E 'charge_(control|behaviour)'
 /sys/class/power_supply/BAT1/charge_control_start_threshold =      0 [%]
 /sys/class/power_supply/BAT1/charge_control_end_threshold   =    100 [%]
 /sys/class/power_supply/BAT1/charge_behaviour               = [auto] inhibit-charge force-discharge
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=framework X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|behaviour)'
+$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|behaviour)'
 /sys/class/power_supply/BAT1/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT1/charge_control_end_threshold   = (not available) [%]
 /sys/class/power_supply/BAT1/charge_behaviour               = [auto] inhibit-charge force-discharge
