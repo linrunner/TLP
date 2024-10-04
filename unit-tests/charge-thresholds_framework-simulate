@@ -82,7 +82,6 @@ Setting temporary charge thresholds for BAT0:
   stop  =  96
 $ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=framework X_THRESH_SIMULATE_READERR="1"
 Error: could not read current charge threshold(s) for BAT0. Aborted.
-$ exit
 $ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=framework X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
 Setting temporary charge thresholds for BAT0:
   start =  95
