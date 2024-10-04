@@ -1,0 +1,114 @@
+#!/usr/bin/env clitest
+# Test charge thresholds for Dell Laptop (simulated)
+# Requirements:
+# * Hardware: non-legacy ThinkPad
+# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net>.
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+$ # +++ Dell laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at START_CHARGE_THRESH_BAT0="100": not specified, invalid or out of range (50..95). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (55..100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (55..100). Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="91" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error in configuration: START_CHARGE_THRESH_BAT0 > STOP_CHARGE_THRESH_BAT0 - 5. Battery skipped.
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started in AC mode (auto).
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=dell NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+TLP started in AC mode (auto).
+$ #
+$ # --- tlp setcharge w/o arguments
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SOC_CHECK=0
+Setting temporary charge thresholds for BAT0:
+  start =  60
+  stop  = 100 (no change)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100"
+Error in configuration at START_CHARGE_THRESH_BAT0="100": not specified, invalid or out of range (50..95). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="0"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (55..100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="101"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (55..100). Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="91"
+Error in configuration: START_CHARGE_THRESH_BAT0 > STOP_CHARGE_THRESH_BAT0 - 5. Aborted.
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95"
+Setting temporary charge thresholds for BAT0:
+  start =  90
+  stop  =  95
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95"
+Setting temporary charge thresholds for BAT0:
+  start =  90 (no change)
+  stop  =  95 (no change)
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=dell START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Setting temporary charge thresholds for BAT0:
+  stop  = 100
+  start =  95
+$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=dell NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: battery charge thresholds not available.
+$ #
+$ # --- tlp setcharge w/ arguments
+$ sudo tlp setcharge 60 100 -- X_BAT_PLUGIN_SIMULATE=dell X_SOC_CHECK=0
+Setting temporary charge thresholds for BAT0:
+  start =  60
+  stop  = 100 (no change)
+$ sudo tlp setcharge 100 100 -- X_BAT_PLUGIN_SIMULATE=dell
+Error: start charge threshold (100) for BAT0 is not specified, invalid or out of range (50..95). Aborted.
+$ sudo tlp setcharge 50 0 -- X_BAT_PLUGIN_SIMULATE=dell
+Error: stop charge threshold (0) for BAT0 is not specified, invalid or out of range (55..100). Aborted.
+$ sudo tlp setcharge 50 101 -- X_BAT_PLUGIN_SIMULATE=dell
+Error: stop charge threshold (101) for BAT0 is not specified, invalid or out of range (55..100). Aborted.
+$ sudo tlp setcharge XYZZY 0 -- X_BAT_PLUGIN_SIMULATE=dell
+Error: start charge threshold (XYZZY) for BAT0 is not specified, invalid or out of range (50..95). Aborted.
+$ sudo tlp setcharge 50 XYZZY -- X_BAT_PLUGIN_SIMULATE=dell
+Error: stop charge threshold (XYZZY) for BAT0 is not specified, invalid or out of range (55..100). Aborted.
+$ sudo tlp setcharge 90 91 -- X_BAT_PLUGIN_SIMULATE=dell
+Error: start threshold > stop threshold - 5 for BAT0. Aborted.
+$ sudo tlp setcharge 90 95 -- X_BAT_PLUGIN_SIMULATE=dell
+Setting temporary charge thresholds for BAT0:
+  start =  90
+  stop  =  95
+$ sudo tlp setcharge 90 95 -- X_BAT_PLUGIN_SIMULATE=dell X_THRESH_SIMULATE_READERR="1"
+Error: could not read current charge threshold(s) for BAT0. Aborted.
+$ sudo tlp setcharge 90 95 -- X_BAT_PLUGIN_SIMULATE=dell X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+Setting temporary charge thresholds for BAT0:
+  start =  90
+  stop  =  95
+$ sudo tlp setcharge 90 95 -- X_BAT_PLUGIN_SIMULATE=dell
+Setting temporary charge thresholds for BAT0:
+  start =  90 (no change)
+  stop  =  95 (no change)
+$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=dell
+Setting temporary charge thresholds for BAT0:
+  stop  = 100
+  start =  95
+$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=dell
+Error: battery BAT1 not present.
+$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=dell
+Error: battery BAT1 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=dell
+Error: battery BAT1 not present.
+$ #
+$ # --- tlp-stat
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=dell | grep -E 'charge_(control|behaviour)'
+/sys/class/power_supply/BAT0/charge_control_start_threshold =     95 [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=dell X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|behaviour)'
+/sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
+$ #
+$ # --- Reset test machine to configured thresholds
+$ sudo tlp setcharge BAT0  > /dev/null 2>&1
+$ #
