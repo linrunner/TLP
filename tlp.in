@@ -456,7 +456,7 @@ case "$_cmd" in
             compare_and_save_power_state "$pwrmode"
             apply_common_settings "$pwrmode"
             resume_drivebay "$pwrmode"
-            init_batteries_thresholds "asus huawei lg lg-legacy"
+            init_batteries_thresholds "asus framework huawei lg lg-legacy"
             save_runconf
             unlock_tlp
         fi
