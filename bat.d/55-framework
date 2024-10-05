@@ -23,9 +23,9 @@
 readonly BATDRV_FRAMEWORK_CROSCC=/sys/module/cros_charge_control
 
 batdrv_is_framework () {
-    # check if kernel module is loaded
+    # check if kernel module is loaded and dmi sys_vendor matches
     # rc: 0=Framework, 1=other hardware
-    [ -d $BATDRV_FRAMEWORK_CROSCC ]
+    [ -d $BATDRV_FRAMEWORK_CROSCC ] && [ "$(read_dmi sys_vendor)" = "Framework " ]
 }
 
 # --- Plugin API functions
@@ -77,7 +77,7 @@ batdrv_init () {
         echo_debug "bat" "batdrv_init.${_batdrv_plugin}.denylist"
         return 1
     else
-        # check if driver loaded
+        # check if driver loaded and vendor matches
         if ! batdrv_is_framework; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match.driver"
             return 1
@@ -101,20 +101,6 @@ batdrv_init () {
     local done=0
     for bd in "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf "$bd/present")" = "1" ]; then
-            # match the battery model for specifity
-            case "$(read_sysf "$bd/model_name")" in
-                Framew*) ;; # vendor matches
-
-                *)
-                    # note: skip vendor match in simulation
-                    if [ "$_batdrv_sim" != "1" ]; then
-                        # vendor not matching -> continue with next plugin
-                        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match.vendor"
-                        return 1
-                    fi
-                    ;;
-            esac
-
             # record detected batteries
             bs=${bd##/*/}
             if [ -n "$_batteries" ]; then
@@ -709,11 +695,10 @@ batdrv_show_battery_data () {
             ensum=$((ensum + en))
 
         elif [ -f "$_bd_read/charge_full" ]; then
-            # workaround: coreboot provides ACPI mW(h) values using sysfiles for mA(h)
-            printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_full_design" "" 000
-            printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_full" "" 000
-            printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_now" "" 000
-            printparm "%-59s = ##%6d## [mW] *" "$_bd_read/current_now" "" 000
+            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full_design" "" 000
+            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full" "" 000
+            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_now" "" 000
+            printparm "%-59s = ##%6d## [mA]" "$_bd_read/current_now" "" 000
 
             # store values for charge / capacity calculation below
             ed=$(read_sysval "$_bd_read/charge_full_design")
