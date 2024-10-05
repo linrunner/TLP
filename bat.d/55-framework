@@ -25,7 +25,7 @@ readonly BATDRV_FRAMEWORK_CROSCC=/sys/module/cros_charge_control
 batdrv_is_framework () {
     # check if kernel module is loaded and dmi sys_vendor matches
     # rc: 0=Framework, 1=other hardware
-    [ -d $BATDRV_FRAMEWORK_CROSCC ] && [ "$(read_dmi sys_vendor)" = "Framework " ]
+    [ -d $BATDRV_FRAMEWORK_CROSCC ] && [ "$(read_dmi sys_vendor)" = "Framework" ]
 }
 
 # --- Plugin API functions
