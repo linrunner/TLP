@@ -92,8 +92,8 @@ Setting temporary charge thresholds for BAT0:
   stop  =  96 (no change)
 $ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=framework
 Setting temporary charge thresholds for BAT0:
-  stop  = 100
   start =   0
+  stop  = 100
 $ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=framework
 Error: battery BAT1 not present.
 $ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=framework
@@ -103,11 +103,12 @@ Error: battery BAT1 not present.
 $ #
 $ # --- tlp-stat
 $ # steps require a kernel >= 5.17 -- with 'charge_behaviour'
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=framework | grep -E 'charge_(control|behaviour)'
-/sys/class/power_supply/BAT0/charge_control_start_threshold =      0 [%]
+$ # note: ThinkPad EC converts start=0(DEF) to 95
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=framework | grep -E 'BAT0/charge_(control|behaviour)'
+/sys/class/power_supply/BAT0/charge_control_start_threshold =     95 [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
 /sys/class/power_supply/BAT0/charge_behaviour               = [auto] inhibit-charge force-discharge
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=framework X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|behaviour)'
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=framework X_THRESH_SIMULATE_READERR=1 | grep -E 'BAT0/charge_(control|behaviour)'
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
 /sys/class/power_supply/BAT0/charge_behaviour               = [auto] inhibit-charge force-discharge

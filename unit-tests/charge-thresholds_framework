@@ -55,8 +55,8 @@ Setting temporary charge thresholds for BAT1:
   stop  =  96 (no change)
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
 Setting temporary charge thresholds for BAT1:
-  stop  = 100
   start =   0
+  stop  = 100
 $ sudo tlp setcharge -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
 Error: battery charge thresholds not available.
 $ #
@@ -89,8 +89,8 @@ Setting temporary charge thresholds for BAT1:
   stop  =  96 (no change)
 $ sudo tlp setcharge DEF DEF
 Setting temporary charge thresholds for BAT1:
-  stop  = 100
   start =   0
+  stop  = 100
 $ sudo tlp setcharge BAT0
 Error: battery BAT0 not present.
 $ sudo tlp setcharge 0 3 BAT0
@@ -100,11 +100,11 @@ Error: battery BAT0 not present.
 $ #
 $ # --- tlp-stat
 $ # steps require a kernel >= 5.17 -- with 'charge_behaviour'
-$ sudo tlp-stat -b | grep -E 'charge_(control|behaviour)'
+$ sudo tlp-stat -b | grep -E 'BAT1/charge_(control|behaviour)'
 /sys/class/power_supply/BAT1/charge_control_start_threshold =      0 [%]
 /sys/class/power_supply/BAT1/charge_control_end_threshold   =    100 [%]
 /sys/class/power_supply/BAT1/charge_behaviour               = [auto] inhibit-charge force-discharge
-$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|behaviour)'
+$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'BAT1/charge_(control|behaviour)'
 /sys/class/power_supply/BAT1/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT1/charge_control_end_threshold   = (not available) [%]
 /sys/class/power_supply/BAT1/charge_behaviour               = [auto] inhibit-charge force-discharge
