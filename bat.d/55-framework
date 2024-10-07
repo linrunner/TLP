@@ -1,7 +1,7 @@
 #!/bin/sh
 # 55-framework - Battery Plugin for Framework laptops
 #
-# Requires the cros_charge-control module (Linux 6.10+) providing the following sysfs nodes:
+# Requires the cros_charge-control module as of Linux 6.11 providing the following sysfs nodes:
 # * /sys/class/power_supply/BAT[01]/charge_control_start_threshold: 0..100
 # * /sys/class/power_supply/BAT[01]/charge_control_end_threshold: 0..100
 # * /sys/class/power_supply/BAT[01]/charge_behaviour: auto|inhibit-charge|force-discharge
@@ -35,7 +35,7 @@ batdrv_init () {
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
     # retval: $_batdrv_plugin, $_batdrv_kmod, $_batdrv_sim
     #
-    # 1. check for native kernel acpi (Linux 6.10 or higher required)
+    # 1. check for native kernel acpi (Linux 6.11 or higher required)
     #    --> retval $_natacpi:
     #       0=thresholds/
     #       32=disabled/
