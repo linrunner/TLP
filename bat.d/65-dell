@@ -597,6 +597,7 @@ batdrv_show_battery_data () {
         if [ "$_bm_thresh" = "natacpi" ]; then
             printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
             printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
+            printparm "%-59s = ##%s## [%%]" "$_bd_read/charge_types" "not available"
             printf "\n"
         fi
 
