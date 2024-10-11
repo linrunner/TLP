@@ -894,7 +894,7 @@ batdrv_show_battery_data () {
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     if [ "$_bm_thresh" != "none" ]; then
-        cprintf "success" "Supported features: charge thresholds\n"
+        cprintf "success" "Supported features: charge thresholds, recalibration\n"
     else
         cprintf "warning" "Supported features: none available\n"
     fi
@@ -902,7 +902,7 @@ batdrv_show_battery_data () {
     printf "Driver usage:\n"
     # native kernel ACPI battery API
     case $_natacpi in
-        0)   cprintf "success" "* natacpi (%s) = active (charge thresholds)\n" "$_batdrv_kmod" ;;
+        0)   cprintf "success" "* natacpi (%s) = active (charge thresholds, recalibration)\n" "$_batdrv_kmod" ;;
         32)  cprintf "notice"  "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
         128) cprintf "err"     "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
         254) cprintf "warning" "* natacpi (%s) = inactive (laptop not supported, incompatible firmware)\n" "$_batdrv_kmod" ;;
