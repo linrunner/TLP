@@ -746,10 +746,24 @@ batdrv_force_discharge_active () {
 batdrv_discharge () {
     # discharge battery
     # global params: $_batdrv_plugin, $_bm_dischg, $_bat_str, $_bat_idx, $_bd_read, $_bf_dischg
-    # rc: 0=done/1=malfunction/2=ac removed/3=not emptied/4=already empty/255=no api
+    # rc: 0=done/1=malfunction/2=ac removed/3=not emptied/4=already empty/8=blocked/255=no api
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
     local rc=0 rtime wt
+
+    # check safety lock
+    if [ "$FRAMEWORK_UNBLOCK_DISCHARGE" != "1" ]; then
+        cecho "Caution: discharge/recalibrate operation is blocked for safety reasons." "err" 1>&2
+        echo 1>&2
+        cecho "The Framework EC firmware will not stop until the battery is completely discharged." "err" 1>&2
+        cecho "This will cause the laptop to suddenly power off, which can lead to data loss and data corruption." "err" 1>&2
+        cecho "TLP will stop discharging *before* this happens, but it can't respond to unforeseen battery behavior." "err" 1>&2
+        echo 1>&2
+        cecho "Add FRAMEWORK_UNBLOCK_DISCHARGE=1 to your configuration to accept the risk and unblock" 1>&2
+        cecho "discharge/recalibrate. Make sure all data is saved and backups are in place." 1>&2
+        echo 1>&2
+        return 8
+    fi
 
     # start discharge
     if ! batdrv_write_force_discharge 1; then
@@ -823,6 +837,7 @@ batdrv_discharge () {
 
             printf "status             = %s\n" "$_bat_st" 1>&2
             printf "force-discharge    = %s\n" "$_bat_fd" 1>&2
+            cecho "Caution: make sure all data is saved and backups are in place." "err" 1>&2
             echo "Press Ctrl+C to cancel." 1>&2
             sleep 5
         done
