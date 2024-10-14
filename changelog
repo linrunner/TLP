@@ -3,9 +3,13 @@
   * Development version
 
   * Features
+    Processor:
+    - tlp-stat -p: show amd-pstate boost per core with kernel 6.11 or later
 
   * Bugfixes
-
+    Radio Devices:
+    - RDW: if LAN gets disconnected in suspend, ensure wifi activation
+      upon resume
 
 +++ 1.7.0 --- 27.09.2024 +++
 
