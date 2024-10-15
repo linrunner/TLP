@@ -1,17 +1,12 @@
 #!/bin/sh
-# 55-framework - Battery Plugin for Framework laptops
+# 55-chromeos-ec - Battery Plugin for laptops with ChromeOS EC:
+# 1. Framework 13/16 AMD or Intel
+# 2. Chromebooks modded with chrultrabook/coreboot custom UEFI firmware
 #
 # Requires the cros_charge-control module as of Linux 6.11 providing the following sysfs nodes:
 # * /sys/class/power_supply/BAT[01]/charge_control_start_threshold: 0..100
 # * /sys/class/power_supply/BAT[01]/charge_control_end_threshold: 0..100
 # * /sys/class/power_supply/BAT[01]/charge_behaviour: auto|inhibit-charge|force-discharge
-#
-# Since cros_charge-control is a generic driver and also supports other vendors,
-# the battery model must be matched  for specifity:
-# * /sys/class/power_supply/BAT[01]/model_name == "Framew*"
-#
-# Note: although there is evidence that the Framework battery is always called BAT1,
-# this plugin also scans BAT0 as a precautionary measure.
 #
 # Copyright (c) 2024 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
@@ -20,12 +15,18 @@
 
 # --- Hardware Detection
 
-readonly BATDRV_FRAMEWORK_CROSCC=/sys/module/cros_charge_control
+readonly BATDRV_CROSCC_MD=/sys/module/cros_charge_control
+
+batdrv_has_chromeos_ec () {
+    # check if kernel module is loaded
+    # rc: 0=laptop w/ ChromeOS EC, 1=other hardware
+    [ -d $BATDRV_CROSCC_MD ]
+}
 
 batdrv_is_framework () {
-    # check if kernel module is loaded and dmi sys_vendor matches
+    # check if dmi sys_vendor matches Framework
     # rc: 0=Framework, 1=other hardware
-    [ -d $BATDRV_FRAMEWORK_CROSCC ] && [ "$(read_dmi sys_vendor)" = "Framework" ]
+    [ "$(read_dmi sys_vendor)" = "Framework" ]
 }
 
 # --- Plugin API functions
@@ -60,7 +61,7 @@ batdrv_init () {
     #    start threshold                        --> retval $_bt_def_start,
     #    stop threshold                         --> retval $_bt_def_stop;
 
-    _batdrv_plugin="framework"
+    _batdrv_plugin="chromeos-ec"
     _batdrv_kmod="cros_charge_control" # kernel module for natacpi
     _batdrv_sim=0
 
@@ -77,8 +78,8 @@ batdrv_init () {
         echo_debug "bat" "batdrv_init.${_batdrv_plugin}.denylist"
         return 1
     else
-        # check if driver loaded and vendor matches
-        if ! batdrv_is_framework; then
+        # check if driver loaded
+        if ! batdrv_has_chromeos_ec; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match.driver"
             return 1
         fi
@@ -482,7 +483,7 @@ batdrv_chargeonce () {
             enow=$(read_sysval "$_bd_read/energy_now")
         fi
     else
-        # real Framework hardware
+        # real hardware
         if [ -f "$_bd_read/charge_full" ]; then
             efull=$(read_sysval "$_bd_read/charge_full")
             enow=$(read_sysval "$_bd_read/charge_now")
@@ -663,7 +664,7 @@ batdrv_force_discharge_active () {
     else
         # battery readings
         case "$_batdrv_sim" in
-            0) # runs on native Framework hardware - determine soc for log entry
+            0) # runs on native hardware - determine soc for log entry
                 _bat_chn=$(read_sysval "$_bd_read/charge_now")
                 _bat_chn=$(perl -e 'printf ("%d", '"$_bat_chn"' / 1000.0 );')
 
@@ -752,14 +753,14 @@ batdrv_discharge () {
     local rc=0 rtime wt
 
     # check safety lock
-    if [ "$FRAMEWORK_UNBLOCK_DISCHARGE" != "1" ]; then
+    if [ "$CHROMEOS_EC_UNBLOCK_DISCHARGE" != "1" ]; then
         cecho "Caution: discharge/recalibrate operation is blocked for safety reasons." "err" 1>&2
         echo 1>&2
-        cecho "The Framework EC firmware will not stop until the battery is completely discharged." "err" 1>&2
+        cecho "Your laptop's EC firmware will not stop until the battery is completely discharged." "err" 1>&2
         cecho "This will cause the laptop to suddenly power off, which can lead to data loss and data corruption." "err" 1>&2
         cecho "TLP will stop discharging *before* this happens, but it can't respond to unforeseen battery behavior." "err" 1>&2
         echo 1>&2
-        cecho "Add FRAMEWORK_UNBLOCK_DISCHARGE=1 to your configuration to accept the risk and unblock" 1>&2
+        cecho "Add CHROMEOS_EC_UNBLOCK_DISCHARGE=1 to your configuration to accept the risk and unblock" 1>&2
         cecho "discharge/recalibrate. Make sure all data is saved and backups are in place." 1>&2
         echo 1>&2
         return 8
@@ -800,7 +801,7 @@ batdrv_discharge () {
 
             # show current battery state
             case "$_batdrv_sim" in
-                0) # runs on native Framework hardware
+                0) # runs on native hardware
                     printf "remaining charge   = %6d [mAh]\n" "$_bat_chn" 1>&2
                     printf "discharge limit    = %6d [mAh]\n" "$_bat_limit" 1>&2
                     ;;
@@ -1030,7 +1031,7 @@ batdrv_check_soc_gt_stop () {
 }
 
 batdrv_recommendations () {
-    # output Framework laptop specific recommendations
+    # output specific recommendations
     # prerequisite: batdrv_init()
 
     soc_gt_stop_recommendation
