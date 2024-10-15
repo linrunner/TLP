@@ -1,12 +1,14 @@
 #!/usr/bin/env clitest
-# Test charge thresholds for Framework laptops
+# Test charge thresholds for laptops w/ ChromeOS EC
 # Requirements:
-# * Hardware: Framework Laptop 13/16 Intel or AMD (1st battery is BAT1)
-# * Software: kernel module cros_charge-control (Linux 6.10+)
+# * Hardware:
+#   1. Framework Laptop 13/16 AMD or Intel
+#   2. Chromebooks modded with chrultrabook/coreboot custom UEFI firmware
+# * Software: kernel module cros_charge-control (Linux 6.11+)
 # Copyright (c) 2024 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-$ # +++ Framework laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ # +++ ChromeOS EC laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
 $ sudo tlp start -- START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0=
@@ -99,7 +101,6 @@ $ sudo tlp setcharge XYZZY ABCDE BAT0
 Error: battery BAT0 not present.
 $ #
 $ # --- tlp-stat
-$ # steps require a kernel >= 5.17 -- with 'charge_behaviour'
 $ sudo tlp-stat -b | grep -E 'BAT1/charge_(control|behaviour)'
 /sys/class/power_supply/BAT1/charge_control_start_threshold =      0 [%]
 /sys/class/power_supply/BAT1/charge_control_end_threshold   =    100 [%]
