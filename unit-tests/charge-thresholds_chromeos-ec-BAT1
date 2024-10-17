@@ -1,9 +1,7 @@
 #!/usr/bin/env clitest
-# Test charge thresholds for laptops w/ ChromeOS EC
+# Test charge thresholds for laptops w/ ChromeOS EC - BAT1 variant
 # Requirements:
-# * Hardware:
-#   1. Framework Laptop 13/16 AMD or Intel
-#   2. Chromebooks modded with chrultrabook/coreboot custom UEFI firmware
+# * Hardware: Framework Laptop 13/16 AMD or Intel
 # * Software: kernel module cros_charge-control (Linux 6.11+)
 # Copyright (c) 2024 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
