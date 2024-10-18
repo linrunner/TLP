@@ -820,7 +820,10 @@ batdrv_discharge () {
                 else
                     printf "remaining time     = %6d [sec]\n" "$rtime" 1>&2
                 fi
-                printf "current            = %6s [mW]\n"  "$_bat_cur" 1>&2
+                case "$_batdrv_sim" in
+                    0) printf "current            = %6s [mA]\n"  "$_bat_cur" 1>&2 ;;
+                    1) printf "current            = %6s [mW]\n"  "$_bat_cur" 1>&2 ;;
+                esac
                 if [ -n "$_bat_volt" ]; then
                     printf "voltage            = %6s [mV]\n"  "$_bat_volt" 1>&2
                 else
