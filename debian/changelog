@@ -1,3 +1,9 @@
+tlp (1.8.0-alpha.0-1~bookworm) bookworm; urgency=medium
+
+  * New upstream version 1.8.0-alpha.0
+
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 18 Oct 2024 19:20:42 +0200
+
 tlp (1.7.0-1~preusr) unstable; urgency=medium
 
   * New upstream version 1.7.0
