@@ -19,7 +19,7 @@ check_switch_lock() { # switch listed radio devices
     # $1: device type where the event originated -- do nothing if its time-locked
     # $2: list of device types to switch
     # $3: on/off
-    local type
+    local sw_rc type
 
     # quit if the originating *radio* device is time-locked (not LAN)
     [ "$1" != "LAN" ] && check_timed_lock "${RDW_NM_LOCK}_$1" && return 1
@@ -28,7 +28,23 @@ check_switch_lock() { # switch listed radio devices
         if [ -n "$type" ] && [ "$type" != "$1" ]; then
             # device type is valid and not the originating one
             # --> do switch with state change lock
-            device_switch "$type" "$3" "${RDW_NM_LOCK}_${type}" "$RDW_NM_LOCKTIME"
+            device_switch "$type" "$3" "${RDW_NM_LOCK}_${type}" "$RDW_NM_LOCKTIME"; sw_rc=$?
+
+            if [ "$sw_rc" = "4" ]; then
+                # switch failed, NetworkManager may be "asleep" -> schedule repeat:
+                # open a detached subshell, wait 2 secs and respawn ourselves,
+                # no more than two repetitions.
+                case "$repeats" in
+                    "") repeats="2" ;;
+                    2)  repeats="1" ;;
+                    *)  repeats=""  ;;
+                esac
+                if [ -n "$repeats" ]; then
+                    echo_debug "nm" "+++ tlp_rdw_nm(${iface}).${action}.nm_seems_asleep: repeats=$repeats"
+                    ( sleep 2; $0 "$iface" "$action" "$repeats" < /dev/null > /dev/null ) &
+                    do_exit 0
+                fi
+            fi
         fi
     done
 
@@ -58,15 +74,6 @@ echo_env () {
     fi
 }
 
-nm_is_asleep () {
-    # check if NetworkManager is in "asleep" state
-    if $NMCLI general status 2> /dev/null | grep -q "^asleep"; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 # --- MAIN
 # shellcheck disable=SC2034
 _bgtask=1
@@ -89,23 +96,6 @@ itype=""
 
 case "$action" in
     up|down) # interface up/down
-        if nm_is_asleep; then
-            # NetworkManger is "asleep" -> repeat: open a detached subshell, wait 2 secs and respawn ourselves
-            # repeat only twice
-            if [ -z "$repeats" ]; then
-                repeats=2
-            elif [ "$repeats" = "2" ]; then
-                repeats=1
-            else
-                repeats=""
-            fi
-            if [ -n "$repeats" ]; then
-                echo_debug "nm" "+++ tlp_rdw_nm(${iface}).${action}.nm_is_asleep: repeats=$repeats"
-                ( sleep 2; $0 "$iface" "$action" "$repeats" < /dev/null > /dev/null ) &
-                do_exit 0
-            fi
-        fi
-
         # quit for invalid interfaces
         if [ -z "$iface" ] || [ "$iface" = "none" ]; then
             echo_debug "nm" "tlp_rdw_nm($iface).${action}.no_interface"
@@ -132,7 +122,7 @@ case "$action" in
             fi
         fi
 
-        echo_debug "nm" "+++ tlp_rdw_nm($iface).$action"
+        echo_debug "nm" "+++ tlp_rdw_nm($iface).$action: repeats=$repeats"
         echo_env
         # shellcheck disable=SC2154
         if [ -n "$_addpath" ]; then
