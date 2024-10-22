@@ -4,7 +4,7 @@
 
   * Features
     Processor:
-    - tlp-stat -p: show amd-pstate boost per core with kernel 6.11 or later
+    - tlp-stat -p -v: show boost per core (amd-pstate needs kernel 6.11 or later)
 
   * Bugfixes
     Radio Devices:

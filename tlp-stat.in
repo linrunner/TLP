@@ -427,7 +427,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                     if [ -f "$cpuf/bios_limit" ]; then
                         printf "%-54s = %8d [kHz]\n" "$cpuf/bios_limit" "$(read_sysf "$cpuf/bios_limit")"
                     fi
-                    if [ -f "$cpuf/boost" ]; then
+                    if [ -f "$cpuf/boost" ] && [ $show_verbose -eq 1 ]; then
                         printf "%-54s = %d\n" "$cpuf/boost" "$(read_sysf "$cpuf/boost")"
                     fi
 
