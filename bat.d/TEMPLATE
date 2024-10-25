@@ -94,7 +94,7 @@ batdrv_init () {
     # TEMPLATE: customize battery names if necessary
     for bd in "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf "$bd/present")" = "1" ]; then
-            # record detected batteries and directories
+            # record detected batteries
             bs=${bd##/*/}
             if [ -n "$_batteries" ]; then
                 _batteries="$_batteries $bs"
@@ -154,6 +154,7 @@ batdrv_select_battery () {
     #         $_bd_read:    directory with battery data sysfiles;
     #         $_bf_start:   sysfile for start threshold;
     #         $_bf_stop:    sysfile for stop threshold;
+
     # prerequisite: batdrv_init()
 
     # defaults
