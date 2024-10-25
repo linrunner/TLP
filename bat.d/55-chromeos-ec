@@ -129,11 +129,8 @@ batdrv_init () {
                 _bn_dischg="charge_behaviour"
                 _bm_dischg="natacpi"
                 _natacpi=0
-            elif [ -f "$bd/charge_control_start_threshold" ] \
-                && [ ! -f "$bd/charge_control_end_threshold" ] \
-                && [ ! -f "$bd/charge_behaviour" ]; then
-                # stop threshold sysfile only, framework_laptop driver may be active
-                # -> continue with next plugin i.e. framework-legacy
+            elif batdrv_is_framework; then
+                # dmi vendor is framework -> continue with next plugin i.e. framework
                 echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match.sysfs"
                 return 1
             else
