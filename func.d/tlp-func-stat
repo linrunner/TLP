@@ -42,7 +42,10 @@ check_ac_quirk () { # check for hardware known not to expose AC device
 
 printparm () {
     # formatted output of sysfile - general
-    # $1: format, $2: sysfile, $3: n/a message, $4: cutoff
+    # $1: format
+    # $2: sysfile
+    # $3: n/a message, "_"=no output
+    # $4: cutoff
     local format="$1"
     local sysf="$2"
     local namsg="$3"
@@ -113,7 +116,9 @@ printparm_epb () {
 
 printparm_ml () {
     # indented output of a multiline sysfile
-    # $1: indent str, $2: sysfile, $3: n/a message
+    # $1: indent str
+    # $2: sysfile
+    # $3: n/a message, ""=no output
     local ind="$1"
     local sysf="$2"
     local namsg="$3"
