@@ -3,6 +3,8 @@
   * Development version
 
   * Features
+    Battery Care:
+    - Dell laptops with kernel 6.12 (or later): start and stop threshold (Issue #379)
     Processor:
     - tlp-stat -p -v: show boost per core (amd-pstate needs kernel 6.11 or later)
 
