@@ -731,11 +731,11 @@ batdrv_force_discharge_active () {
     fi
 
     case "$_bat_dischg_rc" in
-        0) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.running($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; chn=$_bat_chn; lim=$_bat_limit; cur=$_bat_cur; volt=$_bat_volt; rc=$rc" ;;
-        1) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.not_discharging($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; chn=$_bat_chn; lim=$_bat_limit; cur=$_bat_cur; volt=$_bat_volt; rc=$rc" ;;
-        2) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.ac_detached($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; chn=$_bat_chn; lim=$_bat_limit; cur=$_bat_cur; volt=$_bat_volt; rc=$rc" ;;
-        4) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.terminated($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; chn=$_bat_chn; lim=$_bat_limit; cur=$_bat_cur; volt=$_bat_volt; rc=$rc" ;;
-        *) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.unknown($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; chn=$_bat_chn; lim=$_bat_limit; cur=$_bat_cur; volt=$_bat_volt; rc=$rc" ;;
+        0) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.running($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; chn=$_bat_chn; lim=$_bat_limit; cur=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
+        1) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.not_discharging($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; chn=$_bat_chn; lim=$_bat_limit; cur=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
+        2) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.ac_detached($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; chn=$_bat_chn; lim=$_bat_limit; cur=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
+        4) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.terminated($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; chn=$_bat_chn; lim=$_bat_limit; cur=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
+        *) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.unknown($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; chn=$_bat_chn; lim=$_bat_limit; cur=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
     esac
 
     return $_bat_dischg_rc
