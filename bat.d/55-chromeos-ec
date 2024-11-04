@@ -771,6 +771,7 @@ batdrv_discharge () {
         if [ "$_bat_dischg_rc" = "4" ]; then
             # limit already undercut - do not continue
             batdrv_write_force_discharge 0
+            unlock_tlp tlp_discharge
             echo 1>&2
             cecho "Error: battery $_bat_str is already empty." 1>&2
             echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.empty($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; chn=$_bat_chn; lim=$_bat_limit; volt=$_bat_volt"
