@@ -94,7 +94,7 @@ batdrv_init () {
     # TEMPLATE: customize battery names if necessary
     for bd in "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf "$bd/present")" = "1" ]; then
-            # record detected batteries
+            # record detected batteries and directories
             bs=${bd##/*/}
             if [ -n "$_batteries" ]; then
                 _batteries="$_batteries $bs"
@@ -154,7 +154,6 @@ batdrv_select_battery () {
     #         $_bd_read:    directory with battery data sysfiles;
     #         $_bf_start:   sysfile for start threshold;
     #         $_bf_stop:    sysfile for stop threshold;
-
     # prerequisite: batdrv_init()
 
     # defaults
@@ -615,6 +614,7 @@ batdrv_show_battery_data () {
         if [ "$_bm_thresh" = "natacpi" ]; then
             printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
             printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
+            printparm "%-59s = ##%6s## [mV]" "$_bd_read/charge_behaviour" "not available"
             printf "\n"
         fi
 

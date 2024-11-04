@@ -203,6 +203,7 @@ batdrv_show_battery_data () { # output battery data
 
         printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_start_threshold" "not available"
         printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_end_threshold" "not available"
+        printparm "%-59s = ##%6s## [mV]" "$_bd_read/charge_behaviour" "not available"
         printf "\n"
 
         # charge + capacity
