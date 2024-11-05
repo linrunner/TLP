@@ -639,47 +639,61 @@ batdrv_cancel_force_discharge () {
     echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.cancelled($_bat_str)"
     printf " Cancelled.\n"
 
-    do_exit 0
+    do_exit 5
 }
 
 batdrv_force_discharge_active () { # check if battery is in 'force_discharge' state
     # global params: $_batdrv_plugin, $_bat_str, $_bm_read, $_bd_read
-    # rc: 0=discharging/1=not discharging or read error
+    # rc: 0=discharging/2=ac detached/4=terminated
+    # retval: $_bat_en, $_bat_fd, $_bat_pwr, $_bat_soc, $_bat_st, $_bat_volt, $_bat_dischg_rc
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    local rc=1 soc
-
     # check if force_discharge is on
-    [ "$(batdrv_read_force_discharge 0)" = "1" ] && rc=0
-
-    if [ $rc -eq 0 ] && ! get_sys_power_supply; then
-        # AC unplugged --> cancel discharge
-        batdrv_write_force_discharge 0
-        rc=1
+    _bat_fd="$(batdrv_read_force_discharge 0)"
+    if [ "$_bat_fd" = "1" ]; then
+        _bat_dischg_rc=0
+    else
+        _bat_dischg_rc=4
     fi
 
-    soc=$(read_sysf "$_bd_read/remaining_percent")
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active($_bat_str): bm_read=$_bm_read; soc=$soc; rc=$rc"
-    return $rc
+    if ! get_sys_power_supply; then
+        # AC unplugged --> cancel discharge
+        batdrv_write_force_discharge 0
+        _bat_dischg_rc=2
+    fi
+
+    _bat_en="$(read_sysf "$_bd_read/remaining_capacity")"
+    _bat_pwr="$(read_sysf "$_bd_read/power_avg")"
+    _bat_soc=$(read_sysf "$_bd_read/remaining_percent")
+    _bat_st="$(read_sysf "$_bd_read/state")"
+    _bat_volt="$(read_sysf "$_bd_read/voltage")"
+
+    case "$_bat_dischg_rc" in
+        0) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.running($_bat_str): bm_read=$_bm_read; fd=$_bat_fd; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
+        2) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.ac_detached($_bat_str): bm_read=$_bm_read; fd=$_bat_fd; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
+        4) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.terminated($_bat_str): bm_read=$_bm_read; fd=$_bat_fd; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
+    esac
+
+    return $_bat_dischg_rc
 }
 
 batdrv_discharge () {
     # discharge battery
     # global params: $_batdrv_plugin, $_bm_dischg, $_bat_str, $_bd_read, $_bf_dischg
     # rc: 0=done/1=malfunction/2=not emptied/3=ac removed/255=no api
+    # rc: 0=done/1=malfunction/2=AC detached/3=not emptied/5=cancelled by ^C/8=force-discharge malfunction
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    local rc rp wt
+    local wt
 
     # start discharge
     if ! batdrv_write_force_discharge 1; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_malfunction($_bat_str)"
         cecho "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
-        return 1
+        return 8
     fi
 
     trap batdrv_cancel_force_discharge INT # enable ^C hook
-    rc=0; rp=0
 
     # wait for start == while status not "discharging" -- 15.0 sec timeout
     printf "Initiating discharge of battery %s " "$_bat_str" 1>&2
@@ -692,73 +706,59 @@ batdrv_discharge () {
     printf "\n" 1>&2
 
     if batdrv_force_discharge_active; then
-        # discharge initiated sucessfully --> wait for completion == while status "discharging"
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.running($_bat_str)"
-
+        # discharge initiated successfully --> wait for force-discharge reset by ec
         while batdrv_force_discharge_active; do
             clear
             printf "Currently discharging battery %s:\n" "$_bat_str"  1>&2
 
             # show current battery state
-            case $_bm_read in
-                tpsmapi) # use tp-smapi sysfiles
-                    printf "voltage            = %6s [mV]\n"  "$(read_sysf "$_bd_read/voltage")" 1>&2
-                    printf "remaining capacity = %6s [mWh]\n" "$(read_sysf "$_bd_read/remaining_capacity")" 1>&2
-                    rp=$(read_sysf "$_bd_read/remaining_percent")
-                    printf "remaining percent  = %6s [%%]\n"  "$rp" 1>&2
-                    printf "remaining time     = %6s [min]\n" "$(read_sysf "$_bd_read/remaining_running_time_now")" 1>&2
-                    printf "power              = %6s [mW]\n"  "$(read_sysf "$_bd_read/power_avg")" 1>&2
-                    printf "state              = %s\n"  "$(read_sysf "$_bd_read/state")" 1>&2
-                    ;;
-
-            esac
-            printf "force discharge    = %s\n"  "$(batdrv_read_force_discharge 0)" 1>&2
+            printf "voltage            = %6s [mV]\n"  "$_bat_volt" 1>&2
+            printf "remaining capacity = %6s [mWh]\n" "$_bat_en" 1>&2
+            printf "remaining percent  = %6s [%%]\n"  "$_bat_soc" 1>&2
+            printf "remaining time     = %6s [min]\n" "$(read_sysf "$_bd_read/remaining_running_time_now")" 1>&2
+            printf "power              = %6s [mW]\n"  "$(read_sysf "$_bat_pwr")" 1>&2
+            printf "state              = %s\n"  "$_bat_st" 1>&2
+            printf "force discharge    = %s\n"  "$_bat_fd" 1>&2
 
             printf "Press Ctrl+C to cancel.\n" 1>&2
             sleep 5
         done
         unlock_tlp tlp_discharge
 
-        # read charge level one last time
-        case $_bm_read in
-            tpsmapi) # use tp-smapi sysfiles
-                rp=$(read_sysf "$_bd_read/remaining_percent")
+        # cancel force-discharge in case the EC has not already done so
+        [ "$(batdrv_read_force_discharge 0)" = "1" ] && batdrv_write_force_discharge 0
+
+        # check exit cause
+        case "$_bat_dischg_rc" in
+            2) # system on battery, AC power removed
+                echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.ac_detached($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; rc=$_bat_dischg_rc"
+                cecho "Warning: battery $_bat_str was not discharged completely -- AC/charger removed." 1>&2
                 ;;
 
-        esac
+            4)
+                if [ "$_bat_soc" -gt 1 ]; then
+                    # system on AC, SOC > 1%, force-discharge ended prematurely
+                    _bat_dischg_rc=3
+                    echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_emptied($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; rc=$_bat_dischg_rc"
+                    cecho "Error: battery $_bat_str was not discharged completely i.e. terminated by the firmware -- check your hardware (battery, charger)." 1>&2
+                else
+                    _bat_dischg_rc=0
+                    echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.complete($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; rc=$_bat_dischg_rc"
+                    cecho "Done: battery $_bat_str was completely discharged." "success"  1>&2
+                fi
+                ;;
+         esac
 
-        if [ "$rp" -gt 0 ]; then
-            # battery not emptied --> determine cause
-            get_sys_power_supply
-            # shellcheck disable=SC2154
-            if [ "$_syspwr" -eq 1 ]; then
-                # system on battery --> AC power removed
-                echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.ac_removed($_bat_str)"
-                cecho "Warning: battery $_bat_str was not discharged completely -- AC/charger removed." 1>&2
-                rc=3
-            else
-                # discharging terminated by unknown reason
-                echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_emptied($_bat_str)"
-                cecho "Error: battery $_bat_str was not discharged completely i.e. terminated by the firmware -- check your hardware (battery, charger)" 1>&2
-                rc=2
-            fi
-        fi
     else
-        # discharge malfunction --> cancel discharge and abort
-        batdrv_write_force_discharge 0
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.malfunction($_bat_str)"
+        # force-discharge init malfunction
+        _bat_dischg_rc=8
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.init_error($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; pwr=$_bat_pwr; voltage=$_bat_volt; rc=$_bat_dischg_rc"
         cecho "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)" 1>&2
-        rc=1
     fi
 
     trap - INT # remove ^C hook
 
-    if [ $rc -eq 0 ]; then
-        echo 1>&2
-        cecho "Done: battery $_bat_str was completely discharged." "success" 1>&2
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.complete($_bat_str)"
-    fi
-    return $rc
+    return $_bat_dischg_rc
 }
 
 batdrv_show_battery_data () {
