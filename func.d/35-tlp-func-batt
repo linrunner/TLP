@@ -135,7 +135,7 @@ setcharge_battery () {
 chargeonce_battery () {
     # charge battery to upper threshold once
     # $1: battery
-    # rc: 0=ok/1=battery no present/255=no api
+    # rc: 0=ok/1=battery not present/255=no api
 
     local bat rc
 
@@ -171,43 +171,49 @@ chargeonce_battery () {
     batdrv_chargeonce; rc=$?
     if [ $rc -eq 255 ]; then
         cecho "Error: chargeonce not available for your hardware." 1>&2
-        echo_debug "bat" "chargeonce_battery.no_supported"
+        echo_debug "bat" "chargeonce_battery.not_supported"
         return 255
     fi
 
     return $rc
 }
 
-echo_discharge_locked () { # print "locked" message
-    cecho "Error: another discharge/recalibrate operation is pending." 1>&2
-    return 0
-}
-
 discharge_battery () {
     # discharge battery
-    # $1: battery
-    # rc: 0=ok/1=battery no present/255=no api
+    # $1: discharge/recalibrate
+    # $2: battery
+    # rc: 0=ok/9=battery not present/11=fullcharge malfunction/12=no ac power/15=concurrent op running/16=safety lock/255=no api
 
-    local bat rc
+    local bat mode rc
 
-    # select battery feature driver
+    # get params
+    mode="${1:-discharge}"
+    bat="${2:-DEF}"
+    bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
+
+    if ! check_ac_power "$mode"; then
+        return 12
+    fi
+    check_root
+
+    # select battery care plugin
     select_batdrv
     # shellcheck disable=SC2154
     if [ "$_bm_dischg" = "none" ]; then
         # no method available --> quit
-        cecho "Error: battery discharge/recalibrate not available." 1>&2
+        cecho "Error: battery $mode not available." 1>&2
         echo_debug "bat" "discharge_battery.no_method"
         return 255
     fi
 
-    # check params
-    if [ $# -gt 0 ]; then
-        # parameter(s) given, check $1
-        bat=${1:-DEF}
-        bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
-    else
-        # no parameters given, use default(1st) battery
-        bat=DEF
+    if cmd_exists "batdrv_discharge_safetylock" && batdrv_discharge_safetylock "$mode"; then
+        return 16
+    fi
+
+    if ! lock_tlp_nb tlp_discharge; then
+        cecho "Error: another $mode operation is pending." 1>&2
+        echo_debug "bat" "discharge_battery.concurrent_op_running"
+        return 15
     fi
 
     # check bat presence and/or get default(1st) battery
@@ -215,11 +221,26 @@ discharge_battery () {
         # battery not present
         cecho "Error: battery $bat not present." 1>&2
         echo_debug "bat" "discharge_battery.not_present($bat)"
-        return 1
+        unlock_tlp tlp_discharge
+        return 9
     fi
+
+    # enable fullcharge
+    if [ "$mode" = "recalibrate" ] && ! batdrv_write_thresholds DEF DEF 2 ""; then
+        echo_debug "bat" "discharge_battery.fullcharge_malfunction"
+        unlock_tlp tlp_discharge
+        return 11
+    fi
+    sleep 1
 
     # execute discharge
     batdrv_discharge; rc=$?
+    if [ "$mode" = "recalibrate" ] && [ $rc -eq 0 ]; then
+        cecho "Charging starts now, for a complete recalibration" "notice" 1>&2
+        cecho "keep AC connected until the battery is fully charged." "notice" 1>&2
+    fi
+
+    unlock_tlp tlp_discharge
 
     return $rc
 }

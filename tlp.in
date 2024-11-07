@@ -488,7 +488,7 @@ case "$_cmd" in
             setcharge_battery DEF DEF $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
-                echo "Charging starts now, keep AC connected." 1>&2
+                cecho "Charging starts now, keep AC connected." "notice" 1>&2
             fi
         else
             exitcode=2
@@ -503,7 +503,7 @@ case "$_cmd" in
             chargeonce_battery $_carg1
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
-                echo "Charging starts now, keep AC connected." 1>&2
+                cecho "Charging starts now, keep AC connected." "notice" 1>&2
             fi
         else
             exitcode=2
@@ -511,44 +511,13 @@ case "$_cmd" in
         ;;
 
     discharge) # discharge battery completely (to recalibrate)
-        if check_ac_power discharge; then
-            check_root
-            if lock_tlp_nb tlp_discharge; then
-                # quoting args will break $# in discharge_battery()
-                # shellcheck disable=SC2086
-                discharge_battery $_carg1
-                exitcode=$?
-            else
-                echo_discharge_locked
-            fi
-        else
-            exitcode=2
-        fi
+        discharge_battery discharge "$_carg1"
+        exitcode=$?
         ;;
 
     recalibrate) # recalibrate battery, i.e. discharge and charge to 100%
-        if check_ac_power recalibrate; then
-            check_root
-            if lock_tlp_nb tlp_discharge; then
-                if setcharge_battery DEF DEF "$_carg1" "/discharge/recalibrate"; then
-                    sleep 1
-                    # quoting args will break $# in discharge_battery()
-                    # shellcheck disable=SC2086
-                    discharge_battery $_carg1
-                    exitcode=$?
-                    if [ $exitcode -eq 0 ]; then
-                        echo "Charging starts now, for a complete recalibration" 1>&2
-                        echo "keep AC connected until the battery is fully charged." 1>&2
-                    else
-                        echo "Battery recalibration aborted." 1>&2
-                    fi
-                fi
-            else
-                echo_discharge_locked
-            fi
-        else
-            exitcode=2
-        fi
+        discharge_battery recalibrate "$_carg1"
+        exitcode=$?
         ;;
 
     diskid) # show disk id's
