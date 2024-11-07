@@ -729,6 +729,33 @@ batdrv_force_discharge_active () {
     return $_bat_dischg_rc
 }
 
+batdrv_discharge_safetylock () {
+    # check safety lock
+    # $1: discharge/recalibrate
+    # rc: 0=engaged/1=disengaged
+
+    local mode
+    mode="${1:-discharge}"
+
+    if [ "$CHROMEOS_EC_UNBLOCK_DISCHARGE" != "1" ]; then
+        # safety lock engaged
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.safetylock"
+        cecho "Caution: ${mode} operation is blocked for safety reasons." "err" 1>&2
+        echo 1>&2
+        cecho "Your laptop's EC firmware will not stop until the battery is completely discharged." "err" 1>&2
+        cecho "This will cause the laptop to suddenly power off, which can lead to data loss and data corruption." "err" 1>&2
+        cecho "TLP will stop discharging *before* this happens, but it can't respond to unforeseen battery behavior." "err" 1>&2
+        echo 1>&2
+        cecho "Add CHROMEOS_EC_UNBLOCK_DISCHARGE=1 to your configuration to accept the risk and unblock ${mode}." "notice" 1>&2
+        cecho "Make sure all data is saved and backups are in place." "notice" 1>&2
+        echo 1>&2
+        return 0
+    else
+        # safety lock disengaged by user configuration
+        return 1
+    fi
+}
+
 batdrv_discharge () {
     # discharge battery
     # global params: $_batdrv_plugin, $_bm_dischg, $_bat_str, $_bat_idx, $_bd_read, $_bf_dischg
@@ -737,22 +764,6 @@ batdrv_discharge () {
 
     local rtime wt
     _bat_dischg_rc=255
-
-    # check safety lock
-    if [ "$CHROMEOS_EC_UNBLOCK_DISCHARGE" != "1" ]; then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.blocked($_bat_str)"
-        cecho "Caution: discharge/recalibrate operation is blocked for safety reasons." "err" 1>&2
-        echo 1>&2
-        cecho "Your laptop's EC firmware will not stop until the battery is completely discharged." "err" 1>&2
-        cecho "This will cause the laptop to suddenly power off, which can lead to data loss and data corruption." "err" 1>&2
-        cecho "TLP will stop discharging *before* this happens, but it can't respond to unforeseen battery behavior." "err" 1>&2
-        echo 1>&2
-        cecho "Add CHROMEOS_EC_UNBLOCK_DISCHARGE=1 to your configuration to accept the risk and unblock" 1>&2
-        cecho "discharge/recalibrate. Make sure all data is saved and backups are in place." 1>&2
-        echo 1>&2
-        unlock_tlp tlp_discharge
-        return 16
-    fi
 
     # start discharge
     if ! batdrv_write_force_discharge 1; then
