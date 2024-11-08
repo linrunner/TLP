@@ -677,10 +677,18 @@ batdrv_force_discharge_active () { # check if battery is in 'force_discharge' st
     return $_bat_dischg_rc
 }
 
+batdrv_discharge_safetylock () {
+    # check safety lock
+    # $1: discharge/recalibrate
+    # rc: 0=engaged/1=disengaged
+
+    # ThinkPads implement force-discharge sanely and do not need a safety lock
+    return 1
+}
+
 batdrv_discharge () {
     # discharge battery
     # global params: $_batdrv_plugin, $_bm_dischg, $_bat_str, $_bd_read, $_bf_dischg
-    # rc: 0=done/1=malfunction/2=not emptied/3=ac removed/255=no api
     # rc: 0=done/1=malfunction/2=AC detached/3=not emptied/5=cancelled by ^C/8=force-discharge malfunction
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
@@ -723,7 +731,6 @@ batdrv_discharge () {
             printf "Press Ctrl+C to cancel.\n" 1>&2
             sleep 5
         done
-        unlock_tlp tlp_discharge
 
         # cancel force-discharge in case the EC has not already done so
         [ "$(batdrv_read_force_discharge 0)" = "1" ] && batdrv_write_force_discharge 0

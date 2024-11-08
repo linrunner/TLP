@@ -116,6 +116,14 @@ batdrv_force_discharge_active () {
     return 255
 }
 
+batdrv_discharge_safetylock () {
+    # check safety lock - force-discharge not implemented for generic hardware
+    # $1: discharge/recalibrate
+    # rc: 0=engaged/1=disengaged
+
+    return 1
+}
+
 batdrv_discharge () {
     # function not implemented for generic hardware
 

@@ -206,7 +206,7 @@ discharge_battery () {
         return 255
     fi
 
-    if cmd_exists "batdrv_discharge_safetylock" && batdrv_discharge_safetylock "$mode"; then
+    if batdrv_discharge_safetylock "$mode"; then
         return 16
     fi
 
