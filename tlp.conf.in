@@ -12,7 +12,7 @@
 # 3. /etc/tlp.conf     - User configuration (this file)
 #
 # Notes:
-# - In case of identical parameters, the last occurence has precedence
+# - In case of identical parameters, the last occurrence has precedence
 # - This also means, parameters enabled here will override anything else
 # - However you may append values to a parameter already defined as intrinsic
 #   default or in a previously read file: use PARAMETER+="add values"

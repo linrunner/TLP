@@ -512,7 +512,7 @@
           1. Intrinsic defaults
           2. /etc/tlp.d/*.conf - Drop-in customization snippets
           3. /etc/tlp.conf     - User configuration
-        In case of identical parameters, the last occurence has precedence
+        In case of identical parameters, the last occurrence has precedence
       - Parse config files instead of sourcing --> no more shell expansion
     Battery Features, tlp-stat -b:
       - Charge thresholds: better checks for command line and configuration;
