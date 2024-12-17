@@ -5,6 +5,9 @@
   * Features
     Battery Care:
     - Dell laptops with kernel 6.12 (or later): start and stop threshold (Issue #379)
+    - ThinkPads:
+      - tlp discharge to a target percentage
+        (discharge code refactored, messages improved)
     Diagnostic:
     - tlp-stat --psup: add readings
     Processor:
@@ -29,7 +32,7 @@
 
   * Bugfixes since 1.7.0-beta.1
     Battery:
-    - Thinkpads:
+    - ThinkPads:
       - Fix premature abort of discharge/recalibrate for *20 models
         (Issue #759)
       - Fix ThinkPad X13s ARM power source detection (Issue #758)
