@@ -54,7 +54,7 @@ init_batteries_thresholds () {
 setcharge_battery () {
     # apply charge thresholds for a single battery
     # - called from cmdline tlp setcharge/fullcharge/recalibrate
-    # $1: start charge threshold,
+    # $1: start charge threshold || battery
     # $2: stop charge threshold
     # $3: battery
     # $4: error msg addenum
@@ -149,7 +149,7 @@ chargeonce_battery () {
     fi
 
     # check params
-    if [ $# -gt 0 ]; then
+    if [ -n "$1" ]; then
         # parameter(s) given, check $1
         bat=${1:-DEF}
         bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
@@ -181,15 +181,15 @@ chargeonce_battery () {
 discharge_battery () {
     # discharge battery
     # $1: discharge/recalibrate
-    # $2: battery
-    # rc: 0=ok/9=battery not present/11=fullcharge malfunction/12=no ac power/15=concurrent op running/16=safety lock/255=no api
+    # $2: target soc 0(default)..99
+    # $3 or $2: battery
+    # rc: 0=ok/6=target soc out of bounds/7=target > actual soc/8=target soc reached/10=battery not present/11=fullcharge malfunction/12=no ac power/15=concurrent op running/16=safety lock/255=no api
 
-    local bat mode rc
+    local bat mode rc target_soc
 
     # get params
     mode="${1:-discharge}"
-    bat="${2:-DEF}"
-    bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
+    shift
 
     if ! check_ac_power "$mode"; then
         return 12
@@ -201,7 +201,7 @@ discharge_battery () {
     # shellcheck disable=SC2154
     if [ "$_bm_dischg" = "none" ]; then
         # no method available --> quit
-        cecho "Error: battery $mode not available." 1>&2
+        cecho "Error: battery $mode is not available for your hardware." 1>&2
         echo_debug "bat" "discharge_battery.no_method"
         return 255
     fi
@@ -216,13 +216,43 @@ discharge_battery () {
         return 15
     fi
 
+    # check params $1, $2 (after shift)
+    case "$mode" in
+        recalibrate)
+            # $1 is battery (if existent)
+            bat="${1:-DEF}"
+            target_soc=0
+            ;;
+
+        discharge)
+            if [ -z "$1" ] && [ -z "$2" ]; then
+                bat=DEF
+                target_soc=0
+            elif [ -n "$1" ] && [ -z "$2" ]; then
+                # $1 is target soc value or battery
+                if is_uint "$1"; then
+                    bat=DEF
+                    target_soc="$1"
+                else
+                    bat="$1"
+                    target_soc=0
+                fi
+            else
+                # $1 is battery, $2 is target soc value
+                bat="$1"
+                target_soc="$2"
+            fi
+            ;;
+    esac
+    bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
+
     # check bat presence and/or get default(1st) battery
     if ! batdrv_select_battery "$bat"; then
         # battery not present
         cecho "Error: battery $bat not present." 1>&2
         echo_debug "bat" "discharge_battery.not_present($bat)"
         unlock_tlp tlp_discharge
-        return 9
+        return 10
     fi
 
     # enable fullcharge
@@ -231,11 +261,10 @@ discharge_battery () {
         unlock_tlp tlp_discharge
         return 11
     fi
-    sleep 1
 
     # execute discharge
-    batdrv_discharge; rc=$?
-    if [ "$mode" = "recalibrate" ] && [ $rc -eq 0 ]; then
+    batdrv_discharge "$target_soc"; rc=$?
+    if [ $rc -eq 0 ] && [ "$mode" = "recalibrate" ]; then
         cecho "Charging starts now, for a complete recalibration" "notice" 1>&2
         cecho "keep AC connected until the battery is fully charged." "notice" 1>&2
     fi

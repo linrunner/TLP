@@ -92,11 +92,18 @@ parse_args () { # parse command-line arguments
                     _carg3=""
                     ;;
 
-                chargeonce|discharge|fullcharge|recalibrate)
+                chargeonce|fullcharge|recalibrate)
                     # commands with one or no arguments
                     _cmd="$1"
                     _cmd2=""
                     _carg2=""
+                    _carg3=""
+                    ;;
+
+                discharge)
+                    # command with up to two arguments
+                    _cmd="$1"
+                    _cmd2=""
                     _carg3=""
                     ;;
 
@@ -498,9 +505,8 @@ case "$_cmd" in
     chargeonce) # charge battery to stop threshold once
         if check_ac_power chargeonce; then
             check_root
-            # quoting args will break $# in chargeonce_battery()
             # shellcheck disable=SC2086
-            chargeonce_battery $_carg1
+            chargeonce_battery "$_carg1"
             exitcode=$?
             if [ $exitcode -eq 0 ]; then
                 cecho "Charging starts now, keep AC connected." "notice" 1>&2
@@ -510,12 +516,12 @@ case "$_cmd" in
         fi
         ;;
 
-    discharge) # discharge battery completely (to recalibrate)
-        discharge_battery discharge "$_carg1"
+    discharge) # discharge battery to target soc or completely
+        discharge_battery discharge "$_carg1" "$_carg2"
         exitcode=$?
         ;;
 
-    recalibrate) # recalibrate battery, i.e. discharge and charge to 100%
+    recalibrate) # recalibrate battery, i.e. discharge completely and charge to 100%
         discharge_battery recalibrate "$_carg1"
         exitcode=$?
         ;;
