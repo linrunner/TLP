@@ -209,6 +209,7 @@ batdrv_init () {
                 if [ -f "$bd/$_bn_dischg" ]; then
                     if grep -q "force-discharge" "$bd/$_bn_dischg"; then
                         # sysfile exists and flags the force-discharge capability
+                        # note: coreboot does not support force-discharge i.e. charge_behaviour = "[auto]"
                         _natacpi=0
                         _bm_dischg="natacpi"
                     fi
@@ -1129,7 +1130,9 @@ batdrv_show_battery_data () {
                 printparm "%-59s = ##%6d## [mWh]" "$_bd_read/design_capacity"
                 printparm "%-59s = ##%6d## [mWh]" "$_bd_read/last_full_capacity"
                 printparm "%-59s = ##%6d## [mWh]" "$_bd_read/remaining_capacity"
-                printparm "%-59s = ##%6d## [%%]" "$_bd_read/remaining_percent"
+                if [ "$verbose" -eq 1 ]; then
+                     printparm "%-59s = ##%6d## [%%]" "$_bd_read/remaining_percent"
+                fi
                 printparm "%-59s = ##%6s## [min]" "$_bd_read/remaining_running_time_now"
                 printparm "%-59s = ##%6s## [min]" "$_bd_read/remaining_charging_time"
                 printparm "%-59s = ##%6d## [mW]" "$_bd_read/power_now"
@@ -1157,20 +1160,13 @@ batdrv_show_battery_data () {
         esac # $_bm_read
 
         # --- show battery features: thresholds, force-discharge
-        local lf=0
-        if [ "$_bm_thresh" = "natacpi" ]; then
-            printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
-            printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
-            lf=1
-        fi
-        if [ "$_bm_dischg" = "natacpi" ]; then
-            printf "%-59s = %s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
-            lf=1
-        fi
-        [ "$lf" -gt 0 ] && printf "\n"
+        printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
+        printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
+        printf "%-59s = %6s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
+        printf "\n"
 
         # --- show charge level (SOC) and capacity
-        lf=0
+        local lf=0
         if [ "$ef" -ne 0 ]; then
             perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
             lf=1

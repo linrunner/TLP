@@ -953,7 +953,9 @@ batdrv_show_battery_data () {
                 printparm "%-59s = ##%6d## [mWh]" "$_bd_read/design_capacity"
                 printparm "%-59s = ##%6d## [mWh]" "$_bd_read/last_full_capacity"
                 printparm "%-59s = ##%6d## [mWh]" "$_bd_read/remaining_capacity"
-                printparm "%-59s = ##%6d## [%%]" "$_bd_read/remaining_percent"
+                if [ "$verbose" -eq 1 ]; then
+                     printparm "%-59s = ##%6d## [%%]" "$_bd_read/remaining_percent"
+                fi
                 printparm "%-59s = ##%6s## [min]" "$_bd_read/remaining_running_time_now"
                 printparm "%-59s = ##%6s## [min]" "$_bd_read/remaining_charging_time"
                 printparm "%-59s = ##%6d## [mW]" "$_bd_read/power_now"
@@ -980,7 +982,7 @@ batdrv_show_battery_data () {
 
         esac # $_bm_read
 
-        # --- show battery features: thresholds, force_discharge
+        # --- show battery features: thresholds, force-discharge
         local lf=0
         if [ "$_bm_thresh" = "tpsmapi" ]; then
             printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
@@ -1026,7 +1028,7 @@ batdrv_check_soc_gt_stop () {
 
     local soc stop
 
-    if [ "$_bm_thresh" = "tpsmapi" ] && soc=$(read_sysval "$_bd_read/remaining_percent"); then
+    if [ "$_bm_thresh" = "tpsmapi" ] && soc="$(batdrv_calc_soc)"; then
         stop="$(batdrv_read_threshold stop 0)"
         if [ -n "$stop" ] && [ "$soc" -gt "$stop" ]; then
             return 0
