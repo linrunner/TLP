@@ -1,4 +1,4 @@
-.TH tlp 8 2024-04-01 "TLP 1.7.0" "Power Management"
+.TH tlp 8 2024-12-18 "TLP 1.7.0" "Power Management"
 .
 .SH NAME
 tlp - apply laptop power saving settings
@@ -54,7 +54,7 @@ specific laptop vendors and models only. Check the actual support status and
 the value ranges with \fBtlp-stat -b\fR. For details on charge thresholds
 also refer to the link at the bottom.
 .TP
-.B setcharge \fR[\fISTART_CHARGE_THRESH STOP_CHARGE_THRESH\fR] [\fBBAT0\fR|\fBBAT1\fR|\fBBAT\fR\fIx\fR|\fBCMB0\fR]
+.B setcharge \fR[\fIstart_charge_thresh stop_charge_thresh\fR] [\fBBAT0\fR|\fBBAT1\fR|\fBBAT\fR\fIx\fR|\fBCMB0\fR]
 Change battery charge thresholds temporarily.
 If your hardware supports only a stop threshold, set the start value to 0.
 Configured charge thresholds will be restored at the next boot or by using
@@ -75,8 +75,8 @@ The configured start charge threshold will be restored at the next boot or by
 using \fBtlp setcharge\fR without the threshold arguments.
 .
 .TP
-.B discharge \fR[\fBBAT0\fR|\fBBAT1\fR] \fR(ThinkPads only)
-Force a complete discharge of the battery while on AC power.
+.B discharge \fR[\fBBAT0\fR|\fBBAT1\fR] \fR[\fItarget_charge_level\fR]  \fR(ThinkPads only)
+Force a complete or partial discharge of the battery while on AC power.
 .
 .TP
 .B recalibrate \fR[\fBBAT0\fR|\fBBAT1\fR] \fR(ThinkPads only)
