@@ -4,14 +4,16 @@
 
   * Features
     Battery Care:
-    - Dell laptops with kernel 6.12 (or later): start and stop threshold (Issue #379)
+    - Dell laptops with kernel 6.12 (or later): start and stop threshold
+      (Issue #379)
     - ThinkPads:
       - tlp discharge to a target percentage
-        (discharge code refactored, messages improved)
+      - Discharge code refactored, messages improved
+      - tlp-stat -b: list thresholds and force-discharge even if not available
     Diagnostic:
     - tlp-stat --psup: add readings
     Processor:
-    - tlp-stat -p -v: show boost per core (amd-pstate needs kernel 6.11 or later)
+    - tlp-stat -p -v: show boost per core (amd-pstate needs kernel >= 6.11)
 
   * Bugfixes
     Radio Devices:
