@@ -35,11 +35,23 @@ _tlp() {
 
         2)
             case "${prev}" in
-                fullcharge|chargeonce|discharge|recalibrate)
+                fullcharge|chargeonce|recalibrate)
                     _batteries
                     return 0
                     ;;
+
+                discharge)
+                    COMPREPLY=( $(compgen -W "0" -- ${cur}) )
+                    return 0
+                    ;;
             esac
+            ;;
+
+        3)
+            if [ "${COMP_WORDS[1]}" = "discharge" ]; then
+                _batteries
+                return 0
+            fi
             ;;
 
         4)
