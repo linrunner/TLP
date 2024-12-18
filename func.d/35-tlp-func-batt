@@ -181,8 +181,8 @@ chargeonce_battery () {
 discharge_battery () {
     # discharge battery
     # $1: discharge/recalibrate
-    # $2: target soc 0(default)..99
-    # $3 or $2: battery
+    # $2: battery
+    # $2 or $3: target soc 0(default)..99
     # rc: 0=ok/6=target soc out of bounds/7=target > actual soc/8=target soc reached/10=battery not present/11=fullcharge malfunction/12=no ac power/15=concurrent op running/16=safety lock/255=no api
 
     local bat mode rc target_soc
