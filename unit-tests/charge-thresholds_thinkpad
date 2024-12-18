@@ -104,6 +104,16 @@ Error: battery BAT1 not present.
 $ sudo tlp setcharge XYZZY ABCDE BAT1
 Error: battery BAT1 not present.
 $ #
+$ # --- tlp discharge
+$ sudo tlp discharge 100
+Error: target charge level (100) for battery BAT0 is out of range (0..99).
+$ sudo tlp discharge BAT0 100
+Error: target charge level (100) for battery BAT0 is out of range (0..99).
+$ sudo tlp discharge BAT1
+Error: battery BAT1 not present.
+$ sudo tlp discharge BAT1 100
+Error: battery BAT1 not present.
+$ #
 $ # --- tlp-stat
 $ # steps require a kernel >= 5.17 -- with 'charge_behaviour'
 $ sudo tlp-stat -b | grep -E 'charge_(control|behaviour)'
