@@ -41,7 +41,7 @@ _tlp() {
                     ;;
 
                 discharge)
-                    COMPREPLY=( $(compgen -W "0" -- ${cur}) )
+                    _batteries
                     return 0
                     ;;
             esac
@@ -49,7 +49,7 @@ _tlp() {
 
         3)
             if [ "${COMP_WORDS[1]}" = "discharge" ]; then
-                _batteries
+                COMPREPLY=( $(compgen -W "0" -- ${cur}) )
                 return 0
             fi
             ;;
