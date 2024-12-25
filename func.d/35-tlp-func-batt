@@ -57,7 +57,6 @@ setcharge_battery () {
     # $1: start charge threshold || battery
     # $2: stop charge threshold
     # $3: battery
-    # $4: error msg addenum
     # rc: 0=ok/
     #     1=battery not present/
     #     2=threshold(s) out of range or non-numeric/
@@ -75,7 +74,7 @@ setcharge_battery () {
     # shellcheck disable=SC2154
     if [ "$_bm_thresh" = "none" ]; then
         # thresholds not available --> quit
-        cecho "Error: battery charge thresholds${4:-} not available." 1>&2
+        cecho "Error: there is no hardware driver support for charge thresholds." 1>&2
         echo_debug "bat" "setcharge_battery.no_method"
         return 255
     fi
@@ -143,7 +142,7 @@ chargeonce_battery () {
     select_batdrv
     if [ "$_bm_thresh" = "none" ]; then
         # thresholds not available --> quit
-        cecho "Error: battery charge thresholds not available." 1>&2
+        cecho "Error: there is no hardware driver support for charge thresholds." 1>&2
         echo_debug "bat" "chargeonce_battery.no_method"
         return 255
     fi
@@ -151,8 +150,8 @@ chargeonce_battery () {
     # check params
     if [ -n "$1" ]; then
         # parameter(s) given, check $1
-        bat=${1:-DEF}
-        bat=$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")
+        bat="${1:-DEF}"
+        bat="$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")"
     else
         # no parameters given, use default(1st) battery
         bat=DEF
@@ -201,7 +200,7 @@ discharge_battery () {
     # shellcheck disable=SC2154
     if [ "$_bm_dischg" = "none" ]; then
         # no method available --> quit
-        cecho "Error: battery $mode is not available for your hardware." 1>&2
+        cecho "Error: there is no hardware driver support for battery $mode." 1>&2
         echo_debug "bat" "discharge_battery.no_method"
         return 255
     fi
@@ -265,7 +264,7 @@ discharge_battery () {
     # execute discharge
     batdrv_discharge "$target_soc"; rc=$?
     if [ $rc -eq 0 ] && [ "$mode" = "recalibrate" ]; then
-        cecho "Charging starts now, for a complete recalibration" "notice" 1>&2
+        cecho "Charging starts now. For a complete recalibration" "notice" 1>&2
         cecho "keep AC connected until the battery is fully charged." "notice" 1>&2
     fi
 
