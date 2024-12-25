@@ -213,7 +213,7 @@ batdrv_read_threshold () {
 
     local bf out="" rc=0
 
-    case $1 in
+    case "$1" in
         start) out="$X_THRESH_SIMULATE_START" ;;
         stop)  out="$X_THRESH_SIMULATE_STOP"  ;;
     esac
@@ -225,7 +225,7 @@ batdrv_read_threshold () {
 
     if [ "$_bm_thresh" = "natacpi" ]; then
         # read threshold from sysfile
-        case $1 in
+        case "$1" in
             start) bf=$_bf_start ;;
             stop)  bf=$_bf_stop  ;;
         esac
@@ -275,9 +275,9 @@ batdrv_write_thresholds () {
     #     4=threshold read error/
     #     5=threshold write error
     # prerequisite: batdrv_init(), batdrv_select_battery()
-    local new_start=${1:-}
-    local new_stop=${2:-}
-    local verb=${3:-0}
+    local new_start="${1:-}"
+    local new_stop="${2:-}"
+    local verb="${3:-0}"
     local old_start old_stop
 
     # insert defaults
@@ -442,6 +442,40 @@ batdrv_write_thresholds () {
     return $rc
 }
 
+batdrv_calc_soc () {
+    # calc and print battery charge level (rounded)
+    # $1: format (optional)
+    # global params: $_bd_read,
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+    # rc: 0=ok/1=charge level read error
+    local cf cn
+
+    if [ -f "$_bd_read/charge_full" ]; then
+        # real hardware
+        cf=$(read_sysval "$_bd_read/charge_full")
+        cn=$(read_sysval "$_bd_read/charge_now")
+    elif [ -f "$_bd_read/energy_full" ]; then
+        # simulation - on ThinkPad only
+        cf=$(read_sysval "$_bd_read/energy_full")
+        cn=$(read_sysval "$_bd_read/energy_now")
+    else
+        cf=0
+        cn=0
+    fi
+
+    if [ "$ef" != "0" ]; then
+        if [ -n "$1" ]; then
+            perl -e 'printf ("'"$1"'", 100.0 * '"$cn"' / '"$cf"')'
+        else
+            perl -e 'printf ("%d", int(100.0 * '"$cn"' / '"$cf"' + 0.5))'
+        fi
+        return 0
+    else
+        printf "255"
+        return 1
+    fi
+}
+
 batdrv_chargeonce () {
     # function not implemented
     # global param: $_batdrv_plugin
@@ -532,7 +566,7 @@ batdrv_show_battery_data () {
     # global params: $_batdrv_plugin, $_batteries, $_batdrv_kmod, $_bd_read, $_bf_start, $_bf_stop, $_bf_dischg
     # prerequisite: batdrv_init()
 
-    local verbose=${1:-0}
+    local verbose="${1:-0}"
 
     printf "+++ Battery Care\n"
     printf "Plugin: %s\n" "$_batdrv_plugin"
@@ -659,7 +693,7 @@ batdrv_check_soc_gt_stop () {
 
     local soc stop
 
-    if [ "$_bm_thresh" = "natacpi" ] && soc=$(read_sysval "$ACPIBATDIR/$_bat_str/capacity"); then
+    if [ "$_bm_thresh" = "natacpi" ] && soc="$(batdrv_cal_soc)"; then
         stop="$(batdrv_read_threshold stop 0)"
         if [ -n "$stop" ] && [ "$soc" -gt "$stop" ]; then
              return 0
