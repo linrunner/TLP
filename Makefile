@@ -328,7 +328,7 @@ bat.d/TEMPLATE~: bat.d/TEMPLATE
 
 bat.d/%~: bat.d/%
 	@printf "*** checkbatdrv %-25s ***********************************************\n" "$<"
-	@awk '/^batdrv_[a-z_]+ ()/ { print $$1; }' $< | grep -v 'batdrv_is' | sort > $@
+	@awk '/^batdrv_[a-z_]+ ()/ { print $$1; }' $< | grep -v -E 'batdrv_(is|has)' | sort > $@
 	@diff -U 1 -s bat.d/TEMPLATE~  $@ || true
 
 checkbatdrv: bat.d/TEMPLATE~ $(BATDRVFILES)
