@@ -121,7 +121,7 @@ SHFILES = \
 
 UTSHFILES = \
 	unit-tests/test-func \
-	unit-tests/test-cpufreq.sh
+	unit-tests/test-*.sh
 
 PLFILES = \
 	tlp-pcilist \
