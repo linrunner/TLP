@@ -9,103 +9,107 @@
 $ # +++ Dell laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Error in configuration at START_CHARGE_THRESH_BAT0="100": not specified, invalid or out of range (50..95). Battery skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (55..100). Battery skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (55..100). Battery skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="91" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="91" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Error in configuration: START_CHARGE_THRESH_BAT0 > STOP_CHARGE_THRESH_BAT0 - 5. Battery skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
-$ sudo tlp start -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+$ sudo tlp start -- ${xinc} NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SOC_CHECK=0
+$ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100"
+$ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100"
 Error in configuration at START_CHARGE_THRESH_BAT0="100": not specified, invalid or out of range (50..95). Aborted.
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="0"
+$ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="0"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (55..100). Aborted.
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="101"
+$ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="101"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (55..100). Aborted.
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="91"
+$ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="91"
 Error in configuration: START_CHARGE_THRESH_BAT0 > STOP_CHARGE_THRESH_BAT0 - 5. Aborted.
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95"
+$ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95"
 Setting temporary charge thresholds for BAT0:
   start =  90
   stop  =  95
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95"
+$ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95"
 Setting temporary charge thresholds for BAT0:
   start =  90 (no change)
   stop  =  95 (no change)
-$ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+$ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Setting temporary charge thresholds for BAT0:
   stop  = 100
   start =  95
-$ sudo tlp setcharge -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-Error: battery charge thresholds not available.
+$ sudo tlp setcharge -- ${xinc} NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: there is no hardware driver support for charge thresholds.
 $ #
 $ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 60 100 -- X_SOC_CHECK=0
+$ sudo tlp setcharge 60 100 -- ${xinc} X_SOC_CHECK=0
 Setting temporary charge thresholds for BAT0:
   start =  60
   stop  = 100 (no change)
-$ sudo tlp setcharge 100 100 -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge 100 100 -- ${xinc}
 Error: start charge threshold (100) for BAT0 is not specified, invalid or out of range (50..95). Aborted.
-$ sudo tlp setcharge 50 0 -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge 50 0 -- ${xinc}
 Error: stop charge threshold (0) for BAT0 is not specified, invalid or out of range (55..100). Aborted.
-$ sudo tlp setcharge 50 101 -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge 50 101 -- ${xinc}
 Error: stop charge threshold (101) for BAT0 is not specified, invalid or out of range (55..100). Aborted.
-$ sudo tlp setcharge XYZZY 0 -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge XYZZY 0 -- ${xinc}
 Error: start charge threshold (XYZZY) for BAT0 is not specified, invalid or out of range (50..95). Aborted.
-$ sudo tlp setcharge 50 XYZZY -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge 50 XYZZY -- ${xinc}
 Error: stop charge threshold (XYZZY) for BAT0 is not specified, invalid or out of range (55..100). Aborted.
-$ sudo tlp setcharge 90 91 -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge 90 91 -- ${xinc}
 Error: start threshold > stop threshold - 5 for BAT0. Aborted.
-$ sudo tlp setcharge 90 95 -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge 90 95 -- ${xinc}
 Setting temporary charge thresholds for BAT0:
   start =  90
   stop  =  95
-$ sudo tlp setcharge 90 95 -- X_THRESH_SIMULATE_READERR="1"
+$ sudo tlp setcharge 90 95 -- ${xinc} X_THRESH_SIMULATE_READERR="1"
 Error: could not read current charge threshold(s) for BAT0. Aborted.
-$ sudo tlp setcharge 90 95 -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge 90 95 -- ${xinc} X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+Setting temporary charge thresholds for BAT0:
+  start =  90
+  stop  =  95
+$ sudo tlp setcharge 90 95 -- ${xinc}
 Setting temporary charge thresholds for BAT0:
   start =  90 (no change)
   stop  =  95 (no change)
-$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge DEF DEF -- ${xinc}
 Setting temporary charge thresholds for BAT0:
   stop  = 100
   start =  95
-$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge BAT1 -- ${xinc}
 Error: battery BAT1 not present.
-$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge 0 3 BAT1 -- ${xinc}
 Error: battery BAT1 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=dell
+$ sudo tlp setcharge XYZZY ABCDE BAT1 -- ${xinc}
 Error: battery BAT1 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b | grep -E 'charge_(control|behaviour)'
+$ sudo tlp-stat -b -- ${xinc} | grep -E 'charge_(control|behaviour)'
 /sys/class/power_supply/BAT0/charge_control_start_threshold =     95 [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
-$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|behaviour)'
+$ sudo tlp-stat -b -- ${xinc} X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|behaviour)'
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
 $ #
 $ # --- Reset test machine to configured thresholds
-$ sudo tlp setcharge BAT0  > /dev/null 2>&1
+$ sudo tlp setcharge BAT0 - ${xinc} > /dev/null 2>&1
 $ #
