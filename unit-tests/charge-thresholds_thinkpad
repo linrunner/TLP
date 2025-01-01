@@ -8,7 +8,7 @@
 # Copyright (c) 2024 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-$ # +++ ThinkPad +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ # +++ ThinkPad (BAT0) +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
 $ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
@@ -36,7 +36,7 @@ TLP started in AC mode (auto).
 $ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SOC_CHECK=0
-Setting temporary charge thresholds for BAT0:
+Setting temporary charge thresholds for battery BAT0:
   start =  60
   stop  = 100 (no change)
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100"
@@ -48,71 +48,71 @@ Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid 
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="97" STOP_CHARGE_THRESH_BAT0="97"
 Error in configuration: START_CHARGE_THRESH_BAT0 >= STOP_CHARGE_THRESH_BAT0. Aborted.
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="96"
-Setting temporary charge thresholds for BAT0:
+Setting temporary charge thresholds for battery BAT0:
   start =  95
   stop  =  96
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="96"
-Setting temporary charge thresholds for BAT0:
+Setting temporary charge thresholds for battery BAT0:
   start =  95 (no change)
   stop  =  96 (no change)
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-Setting temporary charge thresholds for BAT0:
+Setting temporary charge thresholds for battery BAT0:
   stop  = 100
   start =  96
 $ sudo tlp setcharge -- NATACPI_ENABLE=0 TPACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-Error: battery charge thresholds not available.
+Error: there is no hardware driver support for charge thresholds.
 $ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100 -- X_SOC_CHECK=0
-Setting temporary charge thresholds for BAT0:
+Setting temporary charge thresholds for battery BAT0:
   start =  60
   stop  = 100 (no change)
 $ sudo tlp setcharge 100 100
-Error: start charge threshold (100) for BAT0 is not specified, invalid or out of range (0..99). Aborted.
+Error: start charge threshold (100) for battery BAT0 is not specified, invalid or out of range (0..99). Aborted.
 $ sudo tlp setcharge 0 0
-Error: stop charge threshold (0) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
+Error: stop charge threshold (0) for battery BAT0 is not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge 0 101
-Error: stop charge threshold (101) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
+Error: stop charge threshold (101) for battery BAT0 is not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge XYZZY 0
-Error: start charge threshold (XYZZY) for BAT0 is not specified, invalid or out of range (0..99). Aborted.
+Error: start charge threshold (XYZZY) for battery BAT0 is not specified, invalid or out of range (0..99). Aborted.
 $ sudo tlp setcharge 0 XYZZY
-Error: stop charge threshold (XYZZY) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
+Error: stop charge threshold (XYZZY) for battery BAT0 is not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge 97 97
-Error: start threshold >= stop threshold for BAT0. Aborted.
+Error: start threshold >= stop threshold for battery BAT0. Aborted.
 $ sudo tlp setcharge 95 96
-Setting temporary charge thresholds for BAT0:
+Setting temporary charge thresholds for battery BAT0:
   start =  95
   stop  =  96
 $ sudo tlp setcharge 95 96 -- X_THRESH_SIMULATE_READERR="1"
-Error: could not read current charge threshold(s) for BAT0. Aborted.
+Error: could not read current charge threshold(s) for battery BAT0. Aborted.
 $ sudo tlp setcharge 95 96 -- X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
-Setting temporary charge thresholds for BAT0:
+Setting temporary charge thresholds for battery BAT0:
   start =  95
   stop  =  96
 $ sudo tlp setcharge 95 96
-Setting temporary charge thresholds for BAT0:
+Setting temporary charge thresholds for battery BAT0:
   start =  95 (no change)
   stop  =  96 (no change)
 $ sudo tlp setcharge DEF DEF
-Setting temporary charge thresholds for BAT0:
+Setting temporary charge thresholds for battery BAT0:
   stop  = 100
   start =  96
-$ sudo tlp setcharge BAT1
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 0 3 BAT1
-Error: battery BAT1 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT1
-Error: battery BAT1 not present.
+$ sudo tlp setcharge BAT2
+Error: battery BAT2 not present.
+$ sudo tlp setcharge 0 3 BAT2
+Error: battery BAT2 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT2
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp discharge
 $ sudo tlp discharge 100
 Error: target charge level (100) for battery BAT0 is out of range (0..99).
 $ sudo tlp discharge BAT0 100
 Error: target charge level (100) for battery BAT0 is out of range (0..99).
-$ sudo tlp discharge BAT1
-Error: battery BAT1 not present.
-$ sudo tlp discharge BAT1 100
-Error: battery BAT1 not present.
+$ sudo tlp discharge BAT2
+Error: battery BAT2 not present.
+$ sudo tlp discharge BAT2 100
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
 $ # steps require a kernel >= 5.17 -- with 'charge_behaviour'
