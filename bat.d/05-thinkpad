@@ -1163,10 +1163,17 @@ batdrv_show_battery_data () {
         esac # $_bm_read
 
         # --- show battery features: thresholds, force-discharge
-        printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
-        printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
-        printf "%-59s = %6s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
-        printf "\n"
+        local lf=0
+        if [ "$_bm_thresh" = "natacpi" ]; then
+            printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
+            printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
+            lf=1
+        fi
+        if [ "$_bm_dischg" = "natacpi" ]; then
+            printf "%-59s = %s\n" "$_bf_dischg" "$(batdrv_read_force_discharge 1)"
+            lf=1
+        fi
+        [ "$lf" -gt 0 ] && printf "\n"
 
         # --- show charge level (SOC) and capacity
         lf=0
