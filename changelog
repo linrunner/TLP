@@ -15,7 +15,6 @@
     - ThinkPads:
       - tlp discharge to a target percentage
       - Discharge code refactored, messages improved
-      - tlp-stat -b: list thresholds and force-discharge even if deactivated
     Diagnostic:
     - tlp-stat --psup: add readings
     Processor:
