@@ -55,7 +55,7 @@ check_cpu_driver_opmode () {
         case "$_cpu_driver" in
             amd?pstate?epp|amd?pstate)
                 if [ $sc -eq 1 ]; then
-                    # power source matches parameter suffix
+                    # --- test settings profile for active power source
 
                     # save initial policy
                     opm_save="$(read_sysf "${AMDPSD}/status")"
@@ -87,7 +87,7 @@ check_cpu_driver_opmode () {
                         fi
                     done # opm
                 else
-                    # power source does not match parameter suffix
+                    # --- test settings profile for inactive power source
                     printf_msg "\n %s(inactive):" "$psfx"
 
                     # save current policy
@@ -121,7 +121,7 @@ check_cpu_driver_opmode () {
 
             intel_pstate)
                 if [ $sc -eq 1 ]; then
-                    # power source matches parameter suffix
+                    # --- test settings profile for active power source
 
                     # save initial policy
                     opm_save="$(read_sysf "${INTELPSD}/status")"
@@ -152,7 +152,7 @@ check_cpu_driver_opmode () {
                         fi
                     done # opm
                 else
-                    # power source does not match parameter suffix
+                    # --- test settings profile for inactive power source
                     printf_msg "\n %s(inactive):" "$psfx"
 
                     # save current policy
@@ -219,7 +219,7 @@ check_cpu_scaling_governor () {
         case "$_cpu_driver" in
             amd?pstate|amd?pstate?epp|intel_pstate)
                 if [ $sc -eq 1 ]; then
-                    # power source matches parameter suffix
+                    # --- test settings profile for active power source
 
                     # save initial governor
                     gov_save="$(read_sysf "${CPU0}/cpufreq/scaling_governor")"
@@ -249,7 +249,7 @@ check_cpu_scaling_governor () {
                         fi
                     done
                 else
-                    # power source does not match parameter suffix
+                    # --- test settings profile for inactive power source
                     printf_msg "\n %s(inactive):" "$psfx"
 
                     # save current governor
@@ -282,7 +282,7 @@ check_cpu_scaling_governor () {
 
             acpi-cpufreq|apple-cpufreq|intel_cpufreq)
                 if [ $sc -eq 1 ]; then
-                    # power source matches parameter suffix
+                    # --- test settings profile for active power source
 
                     # save initial governor
                     gov_save="$(read_sysf "${CPU0}/cpufreq/scaling_governor")"
@@ -315,7 +315,7 @@ check_cpu_scaling_governor () {
                         fi
                     done
                 else
-                    # power source does not match parameter suffix
+                    # --- test settings profile for inactive power source
                     printf_msg "\n %s(inactive):" "$psfx"
 
                     # save current governor
@@ -383,7 +383,7 @@ check_cpu_scaling_freq () {
         case "$_cpu_driver" in
             amd?pstate|amd?pstate?epp|intel_pstate|acpi-cpufreq|apple-cpufreq|intel_cpufreq)
                 if [ $sc -eq 1 ]; then
-                    # power source matches parameter suffix
+                    # --- test settings profile for active power source
 
                     # save initial frequencies
                     min_save="$(read_sysf "${CPU0}/cpufreq/scaling_min_freq")"
@@ -451,7 +451,7 @@ check_cpu_scaling_freq () {
                         errcnt=$((errcnt + 1))
                     fi
                 else
-                    # power source does not match parameter suffix
+                    # --- test settings profile for inactive power source
                     printf_msg "\n %s(inactive):" "$psfx"
 
                     # try increased min, decreased max frequency again (from above)
@@ -522,7 +522,7 @@ check_cpu_epp () {
         case "$_cpu_driver" in
             amd?pstate?epp|intel_pstate|intel_cpufreq)
                 if [ $sc -eq 1 ]; then
-                    # power source matches parameter suffix
+                    # --- test settings profile for active power source
 
                     # save initial policy
                     pol_save="$(read_sysf "${CPU0}/cpufreq/energy_performance_preference")"
@@ -555,7 +555,7 @@ check_cpu_epp () {
                         fi
                     done # pol
                 else
-                    # power source does not match parameter suffix
+                    # --- test settings profile for inactive power source
                     printf_msg "\n %s(inactive):" "$psfx"
 
                     # save current policy
@@ -624,7 +624,7 @@ check_cpu_perf_pct () {
         case "$_cpu_driver" in
             intel_pstate|intel_cpufreq)
                 if [ $sc -eq 1 ]; then
-                    # power source matches parameter suffix
+                    # --- test settings profile for active power source
 
                     # save initial performance
                     min_save="$(read_sysf "$INTELPSD/min_perf_pct")"
@@ -687,7 +687,7 @@ check_cpu_perf_pct () {
                         errcnt=$((errcnt + 1))
                     fi
                 else
-                    # power source does not match parameter suffix
+                    # --- test settings profile for inactive power source
                     printf_msg "\n %s(inactive):" "$psfx"
 
                     # try increased min, decreased max performance again (from above)
@@ -759,7 +759,7 @@ check_cpu_boost () {
         case "$_cpu_driver" in
             intel_pstate|intel_cpufreq)
                 if [ $sc -eq 1 ]; then
-                    # power source matches parameter suffix
+                    # --- test settings profile for active power source
 
                     # save initial states
                     no_turbo_save="$(read_sysf "$INTELPSD/no_turbo")"
@@ -845,7 +845,7 @@ check_cpu_boost () {
                         printf_msg " dyn_boost/not-available"
                     fi
                 else
-                    # power source does not match parameter suffix
+                    # --- test settings profile for inactive power source
                     printf_msg "\n %s(inactive):" "$psfx"
 
                     # try to invert turbo state
@@ -895,7 +895,7 @@ check_cpu_boost () {
 
             acpi-cpufreq)
                 if [ $sc -eq 1 ]; then
-                    # power source matches parameter suffix
+                    # --- test settings profile for active power source
 
                     # save initial boost state
                     boost_save="$(read_sysf "${CPUD}/cpufreq/boost")"
@@ -931,7 +931,7 @@ check_cpu_boost () {
                         errcnt=$((errcnt + 1))
                     fi
                 else
-                    # power source does not match parameter suffix
+                    # --- test settings profile for inactive power source
                     printf_msg "\n %s(inactive):" "$psfx"
 
                     # try to invert boost state
@@ -994,7 +994,7 @@ check_platform_profile () {
             sc=$((sc + 1))
 
             if [ $sc -eq 1 ]; then
-                # power source matches parameter suffix
+                # --- test settings profile for active power source
                 printf_msg " %s(active):" "$psfx"
 
                 # iterate policies supported by the driver
@@ -1017,7 +1017,7 @@ check_platform_profile () {
                     fi
                 done # prof
             else
-                # power source does not match parameter suffix
+                # --- test settings profile for inactive power source
                 printf_msg "\n %s(inactive):" "$psfx"
 
                 # try different platform profile
