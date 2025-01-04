@@ -4,12 +4,18 @@
 
   * Features
     Battery Care:
+    - Chromebooks modded with chrultrabook/coreboot custom UEFI firmware
+      running kernel 6.12.8 (or later): stop threshold, recalibration;
+      latest Chromebooks with EC firmware v3 also support a start threshold
+      (Issue #765)
     - Dell laptops with kernel 6.12 (or later): start and stop threshold
       (Issue #379)
+    - Framework laptops with kernel 6.12.8 (or later): stop threshold,
+      recalibration (Issue #765)
     - ThinkPads:
       - tlp discharge to a target percentage
       - Discharge code refactored, messages improved
-      - tlp-stat -b: list thresholds and force-discharge even if not available
+      - tlp-stat -b: list thresholds and force-discharge even if deactivated
     Diagnostic:
     - tlp-stat --psup: add readings
     Processor:
