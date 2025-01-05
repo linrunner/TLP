@@ -3,7 +3,7 @@
 # Requirements:
 # * Hardware: Dell Laptop
 # * Software: kernel module dell_laptop (Linux 6.12+)
-# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net>.
+# Copyright (c) 2025 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ Dell laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

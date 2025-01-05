@@ -2,7 +2,7 @@
 # 05-thinkpad - Battery Plugin for ThinkPads w/ thinkpad_acpi driver
 # providing thresholds and forced discharge, i.e. X220/T420 and newer.
 #
-# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2025 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat

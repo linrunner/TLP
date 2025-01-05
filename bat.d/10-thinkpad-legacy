@@ -3,7 +3,7 @@
 # for thresholds and forced discharge,
 # i.e. X201/T410 and older.
 #
-# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2025 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat, 05-thinkpad

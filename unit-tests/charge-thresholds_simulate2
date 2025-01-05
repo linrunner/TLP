@@ -2,7 +2,7 @@
 # Test charge thresholds for non-ThinkPads (simulated) - Part 2: Macbook..Toshiba
 # Requirements:
 # * Hardware: non-legacy ThinkPad
-# Copyright (c) 2024 Thomas Koch <linrunner at gmx.net>.
+# Copyright (c) 2025 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ Apple Silicon Macbooks ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
