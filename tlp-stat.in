@@ -359,9 +359,6 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         cprintf "" "Warning: TLP's power saving will not apply on boot because the conflicting $PPD_SERVICE is active.\n" 1>&2
         echo
     fi
-
-    # -- warning if l-m-t detected
-    check_laptop_mode_tools
 fi # show_system
 
 # --- show cpu info

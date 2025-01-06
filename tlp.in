@@ -207,8 +207,6 @@ cprintf_init
 check_tlp_enabled 1 || do_exit 1
 add_sbin2path
 
-check_laptop_mode_tools
-
 if [ -z "$_cmd2" ]; then
     echo_debug "run" "+++ $_cmd ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
 else

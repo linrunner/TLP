@@ -1126,18 +1126,3 @@ get_manual_mode () { # get manual operation mode
     fi
     return $rc
 }
-
-# --- Misc Checks
-
-check_laptop_mode_tools () { # check if lmt installed -- rc: 0=not installed, 1=installed
-    if cmd_exists $LAPMODE; then
-        echo 1>&2
-        cecho "Warning: laptop-mode-tools detected, this may cause conflicts with TLP." 1>&2
-        echo  "Please uninstall laptop-mode-tools." 1>&2
-        echo 1>&2
-        echo_debug "pm" "check_laptop_mode_tools: yes"
-        return 1
-    else
-        return 0
-    fi
-}
