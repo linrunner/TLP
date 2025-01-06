@@ -11,21 +11,24 @@
 # 2. /etc/tlp.d/*.conf - Drop-in customization snippets
 # 3. /etc/tlp.conf     - User configuration (this file)
 #
-# Notes:
-# - In case of identical parameters, the last occurrence has precedence
-# - This also means, parameters enabled here will override anything else
-# - However you may append values to a parameter already defined as intrinsic
-#   default or in a previously read file: use PARAMETER+="add values"
-# - IMPORTANT: all parameters here are disabled; remove the leading '#' if you
-#   like to enable a feature without default or have a value different from the
-#   default
-# - Default *: intrinsic default that is effective when the parameter is missing
-#   or disabled by a leading '#'; use PARAM="" to disable an intrinsic default
-# - Default <none>: do nothing or use kernel/hardware defaults
-# - IMPORTANT: parameters must always be specified pairwise i.e. for
-#   both AC and BAT. Omitting one of the two makes the set value effective for
-#   both power sources, since a change only occurs when different values are
-#   defined.
+# Please note:
+# - If parameters are specified more than once, the last occurrence takes
+#   precedence. This also means that any parameters defined here will take
+#   precedence over any drop-ins.
+# - You can however, append values to a parameter already defined as intrinsic
+#   default or in a previously read file: use PARAMETER+="add values".
+# - Important: all parameters are disabled here. Remove the leading '#' if you
+#   want to enable a feature without a default or if you want to set a value
+#   other than the default.
+# - Parameters must always be specified in pairs, i.e. for AC and BAT.
+#   If you omit one of them, the value you set will apply to both power
+#   sources, since a change will only occur if different values are defined.
+# - To completely disable a parameter, use PARAMETER="".
+# Legend for defaults:
+# - Default *: intrinsic default that is effective when the parameter is
+#   missing or the line has a leading #'.
+# - Default <none>: do nothing or use kernel/hardware defaults.
+#
 # ------------------------------------------------------------------------------
 # tlp - Parameters for power saving
 
