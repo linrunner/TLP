@@ -961,13 +961,22 @@ get_persist_mode () { # get persistent operation mode
     return $rc
 }
 
+is_laptop () { # check if machine is a laptop
+    # rc: 0=laptop/1=other/desktop
+    case "$(read_dmi "chassis_type")" in
+        8|9|10|11) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 get_power_mode () {
     # get current operation mode
     # $1: command
     # rc: 0=AC/1=battery
-    # similar to get_sys_power_supply(),
-    # but maps unknown power source to TLP_DEFAULT_MODE or returns
-    # persistent mode when enabled
+    # similar to get_sys_power_supply(), but maps unknown power source to TLP_DEFAULT_MODE
+    # or returns persistent mode when enabled.
+    # if TLP_DEFAULT_MODE is unconfigured and power source is unknown, returns
+    # 1=BAT for laptop/0=AC for desktop/other.
 
     get_sys_power_supply "$1"
     local rc=$?
@@ -982,7 +991,13 @@ get_power_mode () {
             case $(toupper "$TLP_DEFAULT_MODE") in
                 AC)  rc=0 ;;
                 BAT) rc=1 ;;
-                *)   rc=0 ;; # use AC if none or invalid mode
+                *) # unconfigured or invalid default mode -> check machine type
+                    if is_laptop; then
+                        rc=1 # laptop: assume BAT
+                    else
+                        rc=0 # desktop/other: assume AC
+                    fi
+                    ;;
             esac
         fi
     fi
