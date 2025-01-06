@@ -341,14 +341,6 @@
 #RADEON_DPM_STATE_ON_AC=performance
 #RADEON_DPM_STATE_ON_BAT=battery
 
-# Graphics clock speed (profile method): low, mid, high, auto, default;
-# auto = mid on BAT, high on AC.
-# Note: radeon driver on legacy ATI hardware only (where DPM is not available).
-# Default: default
-
-#RADEON_POWER_PROFILE_ON_AC=default
-#RADEON_POWER_PROFILE_ON_BAT=default
-
 # Display panel adaptive backlight modulation (ABM) level: 0(off), 1..4.
 # Values 1..4 control the maximum brightness reduction allowed by the ABM
 # algorithm, where 1 represents the least and 4 the most power saving.
