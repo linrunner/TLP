@@ -626,13 +626,23 @@ batdrv_write_thresholds () {
 batdrv_calc_soc () {
     # calc and print battery charge level (rounded)
     # $1: format (optional)
-    # global params: $_bd_read
+    # global param: $_bd_read
     # prerequisite: batdrv_init(), batdrv_select_battery()
     # rc: 0=ok/1=charge level read error
     local ef en
 
-    ef=$(read_sysval "$_bd_reada/energy_full")
-    en=$(read_sysval "$_bd_reada/energy_now")
+    if [ -f "$_bd_read/energy_full" ]; then
+        # vendor BIOS
+        ef=$(read_sysval "$_bd_read/energy_full")
+        en=$(read_sysval "$_bd_read/energy_now")
+    elif [ -f "$_bd_read/charge_full" ]; then
+        # coreboot
+        ef=$(read_sysval "$_bd_read/charge_full")
+        en=$(read_sysval "$_bd_read/charge_now")
+    else
+        ef=0
+        en=0
+    fi
 
     if [ "$ef" != "0" ]; then
         if [ -n "$1" ]; then
@@ -1071,6 +1081,7 @@ batdrv_show_battery_data () {
                 print_battery_cycle_count "$_bd_read/cycle_count" "$(read_sysf "$_bd_read/cycle_count")"
 
                 if [ -f "$_bd_read/energy_full" ]; then
+                    # vendor BIOS
                     printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full_design" "" 000
                     printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full" "" 000
                     printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_now" "" 000
@@ -1206,7 +1217,7 @@ batdrv_show_battery_data () {
 
 batdrv_check_soc_gt_stop () {
     # check if battery charge level (SOC) is greater than the stop threshold
-    # rc: 0=greater/¹=less or equal (or thresholds not supported)
+    # rc: 0=greater/1=less or equal (or thresholds not supported)
     # global params: $_bm_thresh, $_bat_str
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
