@@ -325,7 +325,7 @@ batdrv_write_thresholds () {
                 if [ -n "$4" ]; then
                     cprintf "" "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified or invalid (must be 80 or 100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
                 else
-                    cprintf "" "Error: stop charge threshold (%s) for %s is not specified or invalid (must be 80 or 100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
+                    cprintf "" "Error: stop charge threshold (%s) for battery %s is not specified or invalid (must be 80 or 100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
                 fi
                 ;;
          esac
@@ -342,15 +342,15 @@ batdrv_write_thresholds () {
     if ! old_stop=$(batdrv_read_threshold stop 0); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
-            1) echo_message "Error: could not read current stop charge threshold for $_bat_str. Battery skipped." ;;
-            2) cprintf "" "Error: could not read current stop charge threshold for %s. Aborted.\n" "$_bat_str" 1>&2 ;;
+            1) echo_message "Error: could not read current stop charge threshold for battery $_bat_str. Battery skipped." ;;
+            2) cprintf "" "Error: could not read current stop charge threshold for battery %s. Aborted.\n" "$_bat_str" 1>&2 ;;
         esac
         return 4
     fi
 
     # write new stop threshold
     if [ "$verb" = "2" ]; then
-        printf "Setting temporary charge thresholds for %s:\n" "$_bat_str" 1>&2
+        printf "Setting temporary charge thresholds for battery %s:\n" "$_bat_str" 1>&2
     fi
 
     local rc=0
@@ -370,7 +370,7 @@ batdrv_write_thresholds () {
                 ;;
             1)
                 if [ $rc -gt 0 ]; then
-                    echo_message "Error: writing stop charge threshold for $_bat_str failed."
+                    echo_message "Error: writing stop charge threshold for battery $_bat_str failed."
                 fi
                 ;;
         esac

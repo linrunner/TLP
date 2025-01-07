@@ -252,7 +252,7 @@ batdrv_read_threshold () {
 batdrv_write_thresholds () {
     # write both charge thresholds for a battery
     # use pre-determined method and sysfiles from global parms
-    # $1: new start threshold 50..958(default)/DEF
+    # $1: new start threshold 50..95(default)/DEF
     # $2: new stop threshold 55..100(default)/DEF
     # $3: 0=quiet/1=output parameter errors/2=output progress and errors
     # $4: non-empty string indicates thresholds stem from configuration
@@ -298,7 +298,7 @@ batdrv_write_thresholds () {
                 if [ -n "$4" ]; then
                     cprintf "" "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (50..95). Aborted.\n" "$_bt_cfg_bat" "$new_start" 1>&2
                 else
-                    cprintf "" "Error: start charge threshold (%s) for %s is not specified, invalid or out of range (50..95). Aborted.\n" "$new_start" "$_bat_str" 1>&2
+                    cprintf "" "Error: start charge threshold (%s) for battery %s is not specified, invalid or out of range (50..95). Aborted.\n" "$new_start" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -321,7 +321,7 @@ batdrv_write_thresholds () {
                 if [ -n "$4" ]; then
                     cprintf "" "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (55..100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
                 else
-                    cprintf "" "Error: stop charge threshold (%s) for %s is not specified, invalid or out of range (55..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
+                    cprintf "" "Error: stop charge threshold (%s) for battery %s is not specified, invalid or out of range (55..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -342,7 +342,7 @@ batdrv_write_thresholds () {
                 if [ -n "$4" ]; then
                     cprintf "" "Error in configuration: START_CHARGE_THRESH_%s > STOP_CHARGE_THRESH_%s - 5. Aborted.\n" "$_bt_cfg_bat" "$_bt_cfg_bat" 1>&2
                 else
-                    cprintf "" "Error: start threshold > stop threshold - 5 for %s. Aborted.\n" "$_bat_str" 1>&2
+                    cprintf "" "Error: start threshold > stop threshold - 5 for battery %s. Aborted.\n" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
@@ -354,8 +354,8 @@ batdrv_write_thresholds () {
        ! old_stop=$(batdrv_read_threshold stop 0); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
-            1) echo_message "Error: could not read current charge threshold(s) for $_bat_str. Battery skipped." ;;
-            2) cprintf "" "Error: could not read current charge threshold(s) for %s. Aborted.\n" "$_bat_str" 1>&2 ;;
+            1) echo_message "Error: could not read current charge threshold(s) for battery $_bat_str. Battery skipped." ;;
+            2) cprintf "" "Error: could not read current charge threshold(s) for battery %s. Aborted.\n" "$_bat_str" 1>&2 ;;
         esac
         return 4
     fi
@@ -372,7 +372,7 @@ batdrv_write_thresholds () {
 
     # write new thresholds in determined sequence
     if [ "$verb" = "2" ]; then
-        printf "Setting temporary charge thresholds for %s:\n" "$_bat_str" 1>&2
+        printf "Setting temporary charge thresholds for battery %s:\n" "$_bat_str" 1>&2
     fi
 
     for step in $tseq; do
@@ -409,7 +409,7 @@ batdrv_write_thresholds () {
                     ;;
                 1)
                     if [ $steprc -gt 0 ]; then
-                        echo_message "Error: writing $step charge threshold for $_bat_str failed."
+                        echo_message "Error: writing $step charge threshold for battery $_bat_str failed."
                     fi
                     ;;
             esac
