@@ -340,7 +340,7 @@ batdrv_write_thresholds () {
 batdrv_calc_soc () {
     # calc and print battery charge level (rounded)
     # $1: format (optional)
-    # global params: $_bd_read,
+    # global param: $_bd_read
     # prerequisite: batdrv_init(), batdrv_select_battery()
     # rc: 0=ok/1=charge level read error
     local cf cn
@@ -358,7 +358,7 @@ batdrv_calc_soc () {
         cn=0
     fi
 
-    if [ "$ef" != "0" ]; then
+    if [ "$cf" != "0" ]; then
         if [ -n "$1" ]; then
             perl -e 'printf ("'"$1"'", 100.0 * '"$cn"' / '"$cf"')'
         else
