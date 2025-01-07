@@ -28,11 +28,11 @@ TLP started in AC mode (auto).
 $ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="70" STOP_CHARGE_THRESH_BAT1="90" X_SOC_CHECK=0
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  =  90
   start =  80 (due to hardware constraint)
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="70" STOP_CHARGE_THRESH_BAT1="90" X_SOC_CHECK=0
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  =  90 (no change)
   start =  80 (no change)
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="XYZZY"
@@ -42,19 +42,19 @@ Error in configuration at STOP_CHARGE_THRESH_BAT1="9": not specified, invalid or
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="101"
 Error in configuration at STOP_CHARGE_THRESH_BAT1="101": not specified, invalid or out of range (10..100). Aborted.
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="97" STOP_CHARGE_THRESH_BAT1="97"
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  =  97
   start =  87 (due to hardware constraint)
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96"
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  =  96
   start =  86 (due to hardware constraint)
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96"
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  =  96 (no change)
   start =  86 (no change)
 $ sudo tlp setcharge -- START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  = 100
   start =  90 (due to hardware constraint)
 $ sudo tlp setcharge -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
@@ -62,29 +62,29 @@ Error: battery charge thresholds not available.
 $ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 70 90 BAT1 -- X_SOC_CHECK=0
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  =  90
   start =  80 (due to hardware constraint)
 $ sudo tlp setcharge 70 90 -- X_SOC_CHECK=0
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  =  90 (no change)
   start =  80 (no change)
 $ sudo tlp setcharge 0 XYZZY
-Error: stop charge threshold (XYZZY) for BAT1 is not specified, invalid or out of range (10..100). Aborted.
+Error: stop charge threshold (XYZZY) for battery BAT1 is not specified, invalid or out of range (10..100). Aborted.
 $ sudo tlp setcharge 0 9
-Error: stop charge threshold (9) for BAT1 is not specified, invalid or out of range (10..100). Aborted.
+Error: stop charge threshold (9) for battery BAT1 is not specified, invalid or out of range (10..100). Aborted.
 $ sudo tlp setcharge 0 101
-Error: stop charge threshold (101) for BAT1 is not specified, invalid or out of range (10..100). Aborted.
+Error: stop charge threshold (101) for battery BAT1 is not specified, invalid or out of range (10..100). Aborted.
 $ sudo tlp setcharge 97 97
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  =  97
   start =  87 (due to hardware constraint)
 $ sudo tlp setcharge 95 96
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  =  96
   start =  86 (due to hardware constraint)
 $ sudo tlp setcharge 95 96
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  =  96 (no change)
   start =  86 (no change)
 $ sudo tlp setcharge BAT0
@@ -96,7 +96,7 @@ Error: battery BAT0 not present.
 $ #
 $ # --- Reset to hardware defaults
 $ sudo tlp setcharge DEF DEF
-Setting temporary charge thresholds for BAT1:
+Setting temporary charge thresholds for battery BAT1:
   stop  = 100
   start =  90 (due to hardware constraint)
 $ # --- tlp-stat
