@@ -330,6 +330,39 @@ batdrv_write_thresholds () {
     return $rc
 }
 
+# shellcheck disable=SC2120
+batdrv_calc_soc () {
+    # calc and print battery charge level (rounded)
+    # $1: format (optional)
+    # global param: $_bd_read
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+    # rc: 0=ok/1=charge level read error
+    local ef en
+
+    if [ -f "$_bd_read/energy_full" ]; then
+        ef=$(read_sysval "$_bd_read/energy_full")
+        en=$(read_sysval "$_bd_read/energy_now")
+    elif [ -f "$_bd_read/charge_full" ]; then
+        ef=$(read_sysval "$_bd_read/charge_full")
+        en=$(read_sysval "$_bd_read/charge_now")
+    else
+        ef=0
+        en=0
+    fi
+
+    if [ "$ef" != "0" ]; then
+        if [ -n "$1" ]; then
+            perl -e 'printf ("'"$1"'", 100.0 * '"$en"' / '"$ef"')'
+        else
+            perl -e 'printf ("%d", int(100.0 * '"$en"' / '"$ef"' + 0.5))'
+        fi
+        return 0
+    else
+        printf "255"
+        return 1
+    fi
+}
+
 batdrv_chargeonce () {
     # function not implemented for ASUS laptops
 
@@ -535,13 +568,13 @@ batdrv_show_battery_data () {
 
 batdrv_check_soc_gt_stop () {
     # check if battery charge level (SOC) is greater than the stop threshold
-    # rc: 0=greater/¹=less or equal (or thresholds not supported)
+    # rc: 0=greater/1=less or equal (or thresholds not supported)
     # global params: $_bm_thresh, $_bat_str
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
     local soc stop
 
-    if [ "$_bm_thresh" = "natacpi" ] && soc=$(read_sysval "$ACPIBATDIR/$_bat_str/capacity"); then
+    if [ "$_bm_thresh" = "natacpi" ] && soc="$(batdrv_calc_soc)"; then
         stop="$(batdrv_read_threshold stop 0)"
         if [ -n "$stop" ] && [ "$soc" -gt "$stop" ]; then
             return 0

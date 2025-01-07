@@ -325,6 +325,39 @@ batdrv_write_thresholds () {
     return $rc
 }
 
+# shellcheck disable=SC2120
+batdrv_calc_soc () {
+    # calc and print battery charge level (rounded)
+    # $1: format (optional)
+    # global param: $_bd_read
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+    # rc: 0=ok/1=charge level read error
+    local ef en
+
+    if [ -f "$_bd_read/energy_full" ]; then
+        ef=$(read_sysval "$_bd_read/energy_full")
+        en=$(read_sysval "$_bd_read/energy_now")
+    elif [ -f "$_bd_read/charge_full" ]; then
+        ef=$(read_sysval "$_bd_read/charge_full")
+        en=$(read_sysval "$_bd_read/charge_now")
+    else
+        ef=0
+        en=0
+    fi
+
+    if [ "$ef" != "0" ]; then
+        if [ -n "$1" ]; then
+            perl -e 'printf ("'"$1"'", 100.0 * '"$en"' / '"$ef"')'
+        else
+            perl -e 'printf ("%d", int(100.0 * '"$en"' / '"$ef"' + 0.5))'
+        fi
+        return 0
+    else
+        printf "255"
+        return 1
+    fi
+}
+
 batdrv_chargeonce () {
     # function not implemented for Huawei MateBooks
     # global param: $_batdrv_plugin
@@ -438,7 +471,7 @@ batdrv_show_battery_data () {
         printf "Parameter value ranges:\n"
         printf "* START_CHARGE_THRESH_BAT0:  0(default)..99\n"
         printf "* STOP_CHARGE_THRESH_BAT0:   1..100(default)\n\n"
-        if threshs=$(batdrv_read_threshold startstop 1); then
+        if threshs=$(batdrv_read_threshold); then
             case "$threshs" in
                 "0 0"|"0 100")
                     printf "%-59s = %s [%%] (disabled)\n" "$_bf_start_stop" "$threshs"
@@ -543,7 +576,7 @@ batdrv_check_soc_gt_stop () {
     # prerequisite: batdrv_init(), batdrv_select_battery()
     local soc stop
 
-    if [ "$_bm_thresh" = "natacpi" ] && soc=$(read_sysval "$ACPIBATDIR/$_bat_str/capacity"); then
+    if [ "$_bm_thresh" = "natacpi" ] && soc="$(batdrv_calc_soc)"; then
         stop="$(batdrv_read_threshold | awk '{print $2; }')"
         if is_uint "$stop" 3 && [ "$soc" -gt "$stop" ]; then
             return 0

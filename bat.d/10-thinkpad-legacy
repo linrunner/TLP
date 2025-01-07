@@ -494,7 +494,7 @@ batdrv_write_thresholds () {
 batdrv_calc_soc () {
     # calc and print battery charge level (rounded)
     # $1: format (optional)
-    # global params: $_bd_read
+    # global param: $_bd_read
     # prerequisite: batdrv_init(), batdrv_select_battery()
     # rc: 0=ok/1=charge level read error
     local ef en
@@ -1025,7 +1025,7 @@ batdrv_show_battery_data () {
 
 batdrv_check_soc_gt_stop () {
     # check if battery charge level (SOC) is greater than the stop threshold
-    # rc: 0=greater/¹=less or equal (or thresholds not supported)
+    # rc: 0=greater/1=less or equal (or thresholds not supported)
     # global params: $_bm_thresh, $_bat_str
     # prerequisite: batdrv_init(), batdrv_select_battery()
 

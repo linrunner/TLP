@@ -292,6 +292,11 @@ batdrv_write_thresholds () {
     return $rc
 }
 
+batdrv_calc_soc () {
+    # function not implemented as not required
+    return 255
+}
+
 batdrv_chargeonce () {
     # function not implemented for Lenovo laptops
     # global param: $_batdrv_plugin

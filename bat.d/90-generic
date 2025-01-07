@@ -80,6 +80,11 @@ batdrv_write_thresholds () {
     return 255
 }
 
+batdrv_calc_soc () {
+    # function not implemented as not required
+    return 255
+}
+
 batdrv_chargeonce () {
     # function not implemented for generic hardware
     echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce.not_implemented"
