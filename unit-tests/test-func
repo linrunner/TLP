@@ -132,5 +132,55 @@ on_ac () {
     upower -i /org/freedesktop/UPower/devices/line_power_AC 2> /dev/null | grep -qE 'online:\s+yes'
 }
 
-# ----------------------------------------------------------------------------
-# Variables
+run_clitest () {
+    # Run clitest script and record result line to file
+    # $1: script filepath
+    # $2: suffix
+    # global param: $_report_file
+
+    if [ -f "$_report_file" ]; then
+        printf "%-50s --> " "${1##*/} $2" >> "$_report_file"
+        clitest --color always "$1" | tee /dev/fd/2 | grep -E '(OK|FAIL):' >> "$_report_file"
+    else
+        clitest --color always "$1" 1>&2
+    fi
+    printf "\n" 1>&2
+}
+
+is_uint () { # check for unsigned integer -- $1: string
+    printf "%s" "$1" | grep -E -q "^[0-9]+$" 2> /dev/null
+}
+
+start_report () {
+    # Create report file
+    # retval: $_report_file, $_nest_level
+
+    if [ -z "$_report_file" ]; then
+        # first call -> create report temp file
+        if ! _report_file="$(mktemp --tmpdir "tlp-test-report.XXX")"; then
+            printf "Error: failed to create report file.\n" 1>&2
+        fi
+        export _report_file
+        export _nest_level=0
+    else
+        # increment level
+        if is_uint "$_nest_level"; then
+            export _nest_level="$((_nest_level + 1))"
+        else
+            export _nest_level=1
+        fi
+    fi
+}
+
+print_report () {
+    [ "$_nest_level" -gt 0 ] && return
+
+    if [ -f "$_report_file" ]; then
+        printf "+++ Test Summary ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
+        cat "$_report_file"
+        printf "\n"
+        rm -f "$_report_file"
+    else
+        printf "Error: missing report file ''%s''.\n" "$_report_file" 1>&2
+    fi
+}

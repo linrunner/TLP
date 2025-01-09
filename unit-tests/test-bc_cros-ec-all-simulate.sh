@@ -1,4 +1,13 @@
 #!/bin/sh
+readonly TESTLIB="./test-func"
+# shellcheck disable=SC1090
+. $TESTLIB || {
+    printf "Error: missing library %s\n" "${TESTLIB}" 1>&2
+    exit 70
+}
+
+start_report
+
 if [ -d /sys/class/power_supply/BAT0/ ]; then
     export bata=BAT0
     export batb=BAT1
@@ -10,18 +19,17 @@ else
     exit 1
 fi
 
-sudo tlp setcharge ${bata} 35 100 > /dev/null 2>&1 # preset start threshold for simulation
 export xinc="X_BAT_PLUGIN_SIMULATE=cros-ec X_BAT_CROSCC_SIMULATE_ECVER=2"
-echo "******  bata=${bata} batb=${batb} xinc=${xinc}"
-./charge-thresholds_cros-ec-v2
-echo
-sudo tlp setcharge ${bata} 35 100 > /dev/null 2>&1 # # preset start threshold for simulation
+sudo tlp setcharge ${bata} 35 100 > /dev/null 2>&1 # preset start threshold for simulation
+./test-bc_cros-ec-v2.sh "(cros_charge-control)"
+
 export xinc="X_BAT_PLUGIN_SIMULATE=framework"
-echo "******  bata=${bata} batb=${batb} xinc=${xinc}"
-./charge-thresholds_cros-ec-v2
-echo
+sudo tlp setcharge ${bata} 35 100 > /dev/null 2>&1 # preset start threshold for simulation
+./test-bc_cros-ec-v2.sh "(framework)"
+
 export xinc="X_BAT_PLUGIN_SIMULATE=cros-ec"
-echo "******  bata=${bata} batb=${batb} xinc=${xinc}"
-./charge-thresholds_cros-ec-v3
-echo
+./test-bc_cros-ec-v3.sh
+
 sudo tlp setcharge ${bata}  > /dev/null 2>&1 # reset test machine to configured thresholds
+
+print_report
