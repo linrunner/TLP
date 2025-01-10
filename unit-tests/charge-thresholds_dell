@@ -95,18 +95,18 @@ $ sudo tlp setcharge DEF DEF -- ${xinc}
 Setting temporary charge thresholds for battery BAT0:
   stop  = 100
   start =  95
-$ sudo tlp setcharge BAT1 -- ${xinc}
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 0 3 BAT1 -- ${xinc}
-Error: battery BAT1 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT1 -- ${xinc}
-Error: battery BAT1 not present.
+$ sudo tlp setcharge BAT2 -- ${xinc}
+Error: battery BAT2 not present.
+$ sudo tlp setcharge 0 3 BAT2 -- ${xinc}
+Error: battery BAT2 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT2 -- ${xinc}
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- ${xinc} | grep -E 'charge_(control|behaviour)'
+$ sudo tlp-stat -b -- ${xinc} | grep -E 'BAT0/charge_(control|behaviour)'
 /sys/class/power_supply/BAT0/charge_control_start_threshold =     95 [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
-$ sudo tlp-stat -b -- ${xinc} X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_(control|behaviour)'
+$ sudo tlp-stat -b -- ${xinc} X_THRESH_SIMULATE_READERR=1 | grep -E 'BAT0/charge_(control|behaviour)'
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
 $ #

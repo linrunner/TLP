@@ -172,6 +172,21 @@ start_report () {
     fi
 }
 
+report_test () {
+    # Write test name to report
+    if [ -f "$_report_file" ]; then
+        printf "%-50s --> " "$1" >> "$_report_file"
+    fi
+}
+
+report_line () {
+    # Write text line to report
+    # $1: text
+    if [ -f "$_report_file" ]; then
+        printf "%s\n" "$1" >> "$_report_file"
+    fi
+}
+
 print_report () {
     [ "$_nest_level" -gt 0 ] && return
 
