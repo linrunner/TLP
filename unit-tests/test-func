@@ -7,6 +7,10 @@
 # ----------------------------------------------------------------------------
 # Constants
 
+readonly ANSI_RED="\033[31m"
+readonly ANSI_GREEN="\033[32m"
+readonly ANSI_BLACK="\033[m"
+
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -25,12 +29,9 @@ test_root () {
     [ "$(id -u)" = "0" ]
 }
 
-check_root () {
-    # show error message and quit when root privilege missing
-    if ! test_root; then
-        echo "Error: missing root privilege." 1>&2
-        exit 42
-    fi
+cache_root_cred () {
+    # cache user credentials before actual testing
+    sudo true
 }
 
 cmd_exists () {
@@ -183,7 +184,22 @@ report_line () {
     # Write text line to report
     # $1: text
     if [ -f "$_report_file" ]; then
-        printf "%s\n" "$1" >> "$_report_file"
+        # note: use output string in format for proper ansi esc sequence interpolation
+        # shellcheck disable=SC2059 ###
+        printf "$1\n"  >> "$_report_file"
+    fi
+}
+
+report_result () {
+    # Write test result to terminal and report
+    # $1: # of tests
+    # $2: # of errors
+    if [ "$2" -eq 0 ]; then
+        printf_msg "${ANSI_GREEN}OK:${ANSI_BLACK} %s of %s tests passed\n\n" "$1" "$1"
+        report_line "${ANSI_GREEN}OK:${ANSI_BLACK} $1 of $1 tests passed"
+    else
+        printf_msg "${ANSI_RED}FAIL:${ANSI_BLACK} %s of %s tests failed\n\n" "$2" "$1"
+        report_line "${ANSI_RED}FAIL:${ANSI_BLACK} $2 of $1 tests failed"
     fi
 }
 

@@ -18,6 +18,7 @@
 # --- Constants
 readonly TESTLIB="./test-func"
 readonly TLP="tlp"
+readonly SUDO="sudo"
 
 readonly GPUGLOB='/sys/class/drm/card[0-9]'
 
@@ -66,10 +67,10 @@ check_intel_gpu_freq () {
             max=$((max_save - 200))
             boost=$((boost_save - 100))
             case "$psfx" in
-                AC)  ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
+                AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
                                      INTEL_GPU_MAX_FREQ_ON_AC="$max"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
                                      INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                BAT) ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
+                BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
                                      INTEL_GPU_MAX_FREQ_ON_BAT="$max"    INTEL_GPU_MAX_FREQ_ON_AC="" \
                                      INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
             esac
@@ -102,10 +103,10 @@ check_intel_gpu_freq () {
 
             # revert to initial frequencies
             case "$psfx" in
-                AC)  ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min_save"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
+                AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min_save"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
                                      INTEL_GPU_MAX_FREQ_ON_AC="$max_save"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
                                      INTEL_GPU_BOOST_FREQ_ON_AC="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                BAT) ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min_save"    INTEL_GPU_MIN_FREQ_ON_AC="" \
+                BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min_save"    INTEL_GPU_MIN_FREQ_ON_AC="" \
                                      INTEL_GPU_MAX_FREQ_ON_BAT="$max_save"    INTEL_GPU_MAX_FREQ_ON_AC="" \
                                      INTEL_GPU_BOOST_FREQ_ON_AC="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
             esac
@@ -141,10 +142,10 @@ check_intel_gpu_freq () {
 
             # try increased min, decreased max frequency again (from above)
             case "$psfx" in
-                AC)  ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
+                AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
                                      INTEL_GPU_MAX_FREQ_ON_AC="$max"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
                                      INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                BAT) ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
+                BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
                                      INTEL_GPU_MAX_FREQ_ON_BAT="$max"    INTEL_GPU_MAX_FREQ_ON_AC="" \
                                      INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
             esac
@@ -229,8 +230,8 @@ check_amd_gpu_dpm_level () {
 
             for dpm in $dpm_seq; do
                 case "$psfx" in
-                    AC)  ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_AC="$dpm" RADEON_DPM_PERF_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
-                    BAT) ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_BAT="$dpm" RADEON_DPM_PERF_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
+                    AC)  ${SUDO} ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_AC="$dpm" RADEON_DPM_PERF_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
+                    BAT) ${SUDO} ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_BAT="$dpm" RADEON_DPM_PERF_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
                 esac
 
                 # expect change
@@ -258,8 +259,8 @@ check_amd_gpu_dpm_level () {
             esac
 
             case "$psfx" in
-                AC)  ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_AC="$dpm" RADEON_DPM_PERF_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
-                BAT) ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_BAT="$dpm" RADEON_DPM_PERF_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
+                AC)  ${SUDO} ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_AC="$dpm" RADEON_DPM_PERF_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
+                BAT) ${SUDO} ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_BAT="$dpm" RADEON_DPM_PERF_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
             esac
 
             # do not expect change
@@ -333,8 +334,8 @@ check_amd_gpu_abm_level () {
 
             for abm in $abm_seq; do
                 case "$psfx" in
-                    AC)  ${TLP} start -- AMDGPU_ABM_LEVEL_ON_AC="$abm" AMDGPU_ABM_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
-                    BAT) ${TLP} start -- AMDGPU_ABM_LEVEL_ON_BAT="$abm" AMDGPU_ABM_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
+                    AC)  ${SUDO} ${TLP} start -- AMDGPU_ABM_LEVEL_ON_AC="$abm" AMDGPU_ABM_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
+                    BAT) ${SUDO} ${TLP} start -- AMDGPU_ABM_LEVEL_ON_BAT="$abm" AMDGPU_ABM_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
                 esac
 
                 # expect change
@@ -363,8 +364,8 @@ check_amd_gpu_abm_level () {
             esac
 
             case "$psfx" in
-                AC)  ${TLP} start -- AMDGPU_ABM_LEVEL_ON_AC="$abm" AMDGPU_ABM_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
-                BAT) ${TLP} start -- AMDGPU_ABM_LEVEL_ON_BAT="$abm" AMDGPU_ABM_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
+                AC)  ${SUDO} ${TLP} start -- AMDGPU_ABM_LEVEL_ON_AC="$abm" AMDGPU_ABM_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
+                BAT) ${SUDO} ${TLP} start -- AMDGPU_ABM_LEVEL_ON_BAT="$abm" AMDGPU_ABM_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
             esac
 
             # do not expect change
@@ -400,11 +401,13 @@ check_amd_gpu_abm_level () {
 }
 
 # check prerequisites and initialize
-check_root
 cmd_exists "$TLP" || {
     printf_msg "Error: %s not installed." "$TLP"
     exit 254
 }
+cache_root_cred
+
+start_report
 
 # shellcheck disable=SC2034
 _basename="${0##*/}"
@@ -412,6 +415,8 @@ _basename="${0##*/}"
 _logfile="$(date -Iseconds)_${_basename%.*}.log"
 _testcnt=0
 _failcnt=0
+
+report_test "$_basename"
 
 # --- Iterate GPUs
 
@@ -442,7 +447,9 @@ for _gpu_base in $GPUGLOB; do
 
 done # gpud
 
-printf_msg "+++ Test results: %d run, %d failed.\n\n" "$_testcnt" "$_failcnt"
+report_result "$_testcnt" "$_failcnt"
+
+print_report
 
 # --- Exit
 exit $_failcnt
