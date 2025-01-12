@@ -96,9 +96,9 @@ $ sudo tlp setcharge XYZZY ABCDE ${batb} -- ${xinc} 2>&1 | sed -r "s/${batb}/BAT
 Error: battery BATB not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- ${xinc} | grep "charge_control_end_threshold" | sed -r "s/${bata}/BATA/"
+$ sudo tlp-stat -b -- ${xinc} | grep "${bata}/charge_control_end_threshold" | sed -r "s/${bata}/BATA/"
 /sys/class/power_supply/BATA/charge_control_end_threshold   =    100 [%]
-$ sudo tlp-stat -b -- ${xinc} X_THRESH_SIMULATE_READERR=1 | grep "charge_control_end_threshold" | sed -r "s/${bata}/BATA/"
+$ sudo tlp-stat -b -- ${xinc} X_THRESH_SIMULATE_READERR=1 | grep "${bata}/charge_control_end_threshold" | sed -r "s/${bata}/BATA/"
 /sys/class/power_supply/BATA/charge_control_end_threshold   = (not available) [%]
 $ #
 $ # --- Reset test machine to configured thresholds

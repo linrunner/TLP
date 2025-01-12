@@ -6,16 +6,21 @@ readonly TESTLIB="./test-func"
     exit 70
 }
 
+cache_root_cred
 start_report
 
-if [ -d /sys/class/power_supply/BAT0/ ]; then
+if bat_present BAT0; then
     export bata=BAT0
-    export batb=BAT1
-elif [ -d /sys/class/power_supply/BAT1/ ]; then
+    export batb=BAT2
+elif bat_present BAT1; then
     export bata=BAT1
-    export batb=BAT0
+    export batb=BAT2
 else
-    echo "Error: neither BAT0 nor BAT1 exists." 1>&2
+   # shellcheck disable=SC2059
+    printf "${ANSI_RED}Error:${ANSI_BLACK} neither BAT0 nor BAT1 exists.\n\n"
+    report_test "${0##*/}"
+    report_line "${ANSI_RED}FAIL:${ANSI_BLACK} not run - neither BAT0 nor BAT1 exists"
+    print_report
     exit 1
 fi
 

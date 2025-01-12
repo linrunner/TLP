@@ -6,6 +6,7 @@ readonly TESTLIB="./test-func"
     exit 70
 }
 
+cache_root_cred
 start_report
 
 ./test-cpufreq.sh

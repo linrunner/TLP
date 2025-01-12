@@ -133,6 +133,14 @@ on_ac () {
     upower -i /org/freedesktop/UPower/devices/line_power_AC 2> /dev/null | grep -qE 'online:\s+yes'
 }
 
+bat_present () {
+    # Check for battery
+    # $1: battery name
+    # rc: 0=present/1=absent
+
+    [ "$(read_sysf "/sys/class/power_supply/$1/present")" = "1" ]
+}
+
 run_clitest () {
     # Run clitest script and record result line to file
     # $1: script filepath
@@ -185,7 +193,7 @@ report_line () {
     # $1: text
     if [ -f "$_report_file" ]; then
         # note: use output string in format for proper ansi esc sequence interpolation
-        # shellcheck disable=SC2059 ###
+        # shellcheck disable=SC2059
         printf "$1\n"  >> "$_report_file"
     fi
 }

@@ -70,18 +70,18 @@ Setting temporary charge thresholds for battery BAT0:
   start = 100 (due to hardware constraint)
 $ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=macbook X_THRESH_SIMULATE_READERR="1"
 Error: could not read current stop charge threshold for battery BAT0. Aborted.
-$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=macbook
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=macbook
-Error: battery BAT1 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=macbook
-Error: battery BAT1 not present.
+$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=macbook
+Error: battery BAT2 not present.
+$ sudo tlp setcharge 0 3 BAT2 -- X_BAT_PLUGIN_SIMULATE=macbook
+Error: battery BAT2 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT2 -- X_BAT_PLUGIN_SIMULATE=macbook
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=macbook X_THRESH_SIMULATE_START=100 | grep -E 'charge_control'
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=macbook X_THRESH_SIMULATE_START=100 | grep -E 'BAT0/charge_control'
 /sys/class/power_supply/BAT0/charge_control_start_threshold           =    100 [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold             =    100 [%]
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=macbook X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=macbook X_THRESH_SIMULATE_READERR=1 | grep -E 'BAT0/charge_control'
 /sys/class/power_supply/BAT0/charge_control_start_threshold           = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold             = (not available) [%]
 $ #
@@ -182,18 +182,18 @@ $ sudo tlp setcharge 95 96 -- X_BAT_PLUGIN_SIMULATE=msi X_SOC_CHECK=0
 Setting temporary charge thresholds for battery BAT0:
   stop  =  96 (no change)
   start =  86 (no change)
-$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=msi
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=msi
-Error: battery BAT1 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=msi
-Error: battery BAT1 not present.
+$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=msi
+Error: battery BAT2 not present.
+$ sudo tlp setcharge 0 3 BAT2 -- X_BAT_PLUGIN_SIMULATE=msi
+Error: battery BAT2 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT2 -- X_BAT_PLUGIN_SIMULATE=msi
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=msi | grep -E 'charge_control'
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=msi | grep -E 'BAT0/charge_control'
 /sys/class/power_supply/BAT0/charge_control_start_threshold =     86 [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =     96 [%]
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=msi X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=msi X_THRESH_SIMULATE_READERR=1 | grep -E 'BAT0/charge_control'
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
 $ #
@@ -236,10 +236,10 @@ Setting temporary charge threshold for all batteries:
 $ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=samsung X_THRESH_SIMULATE_STOP="0"
 Setting temporary charge threshold for all batteries:
   life extender = 0 (no change)
-$ sudo tlp setcharge 42 24 BAT1 -- X_BAT_PLUGIN_SIMULATE=samsung
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=samsung
-Error: battery 2 not present.
+$ sudo tlp setcharge 42 24 BAT2 -- X_BAT_PLUGIN_SIMULATE=samsung
+Error: battery BAT2 not present.
+$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=samsung
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=samsung | grep "battery_life_extender"
@@ -305,8 +305,8 @@ Setting temporary charge threshold for all batteries:
 $ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=sony X_THRESH_SIMULATE_STOP="0" X_SOC_CHECK=0
 Setting temporary charge threshold for all batteries:
   care limiter = 100 (no change)
-$ sudo tlp setcharge 42 24 BAT1 -- X_BAT_PLUGIN_SIMULATE=sony
-Error: battery BAT1 not present.
+$ sudo tlp setcharge 42 24 BAT2 -- X_BAT_PLUGIN_SIMULATE=sony
+Error: battery BAT2 not present.
 $ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=sony
 Error: battery 2 not present.
 $ #
@@ -405,18 +405,18 @@ $ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=system76
 Setting temporary charge thresholds for battery BAT0:
   start =  90
   stop  = 100
-$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
-Error: battery BAT1 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=system76
-Error: battery BAT1 not present.
+$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=system76
+Error: battery BAT2 not present.
+$ sudo tlp setcharge 0 3 BAT2 -- X_BAT_PLUGIN_SIMULATE=system76
+Error: battery BAT2 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT2 -- X_BAT_PLUGIN_SIMULATE=system76
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=system76 | grep -E 'charge_control'
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=system76 | grep -E 'BAT0/charge_control'
 /sys/class/power_supply/BAT0/charge_control_start_threshold =     90 [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=system76 X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=system76 X_THRESH_SIMULATE_READERR=1 | grep -E 'BAT0/charge_control'
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
 $ #
@@ -462,13 +462,13 @@ Setting temporary charge threshold for battery BAT0:
 $ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=toshiba
 Setting temporary charge threshold for battery BAT0:
   stop  = 100
-$ sudo tlp setcharge 42 80 BAT1 -- X_BAT_PLUGIN_SIMULATE=toshiba
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=toshiba
-Error: battery 2 not present.
+$ sudo tlp setcharge 42 80 BAT2 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Error: battery BAT2 not present.
+$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=toshiba
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=toshiba | grep -E 'charge_control'
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=toshiba | grep -E 'BAT0/charge_control'
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
 $ #
 $ # --- Reset test machine to configured thresholds

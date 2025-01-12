@@ -19,7 +19,7 @@ TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (1..100). Battery skipped.
 TLP started in AC mode (auto).
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT$
+$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT= STOP_CHARGE_THRESH_BAT1=
 Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (1..100). Battery skipped.
 TLP started in AC mode (auto).
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="86" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
@@ -90,17 +90,17 @@ Setting temporary charge threshold for BAT0:
 $ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=asus
 Setting temporary charge threshold for BAT0:
   stop  = 100
-$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=asus
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=asus
-Error: battery BAT1 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=asus
-Error: battery BAT1 not present.
+$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=asus
+Error: battery BAT2 not present.
+$ sudo tlp setcharge 0 3 BAT2 -- X_BAT_PLUGIN_SIMULATE=asus
+Error: battery BAT2 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT2 -- X_BAT_PLUGIN_SIMULATE=asus
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=asus | grep "charge_control_end_threshold"
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=asus | grep "BAT0/charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=asus X_THRESH_SIMULATE_READERR=1 | grep "charge_control_end_threshold"
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=asus X_THRESH_SIMULATE_READERR=1 | grep "BAT0/charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
 $ #
 $ # +++ Huawei ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -197,12 +197,12 @@ Setting temporary charge thresholds:
 $ sudo tlp setcharge 95 95 -- -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="95" X_THRESH_SIMULATE_STOP="95"
 Setting temporary charge thresholds:
   start = 95, stop = 95 (Error: write failed)
-$ sudo tlp setcharge BAT1 -- X_BAT_PLUGIN_SIMULATE=huawei
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 0 3 BAT1 -- X_BAT_PLUGIN_SIMULATE=huawei
-Error: battery BAT1 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT1 -- X_BAT_PLUGIN_SIMULATE=huawei
-Error: battery BAT1 not present.
+$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=huawei
+Error: battery BAT2 not present.
+$ sudo tlp setcharge 0 3 BAT2 -- X_BAT_PLUGIN_SIMULATE=huawei
+Error: battery BAT2 not present.
+$ sudo tlp setcharge XYZZY ABCDE BAT2 -- X_BAT_PLUGIN_SIMULATE=huawei
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="0" X_THRESH_SIMULATE_STOP="0" | grep "charge_control_thresholds"
@@ -255,10 +255,10 @@ Setting temporary charge threshold for all batteries:
 $ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=lenovo  X_THRESH_SIMULATE_STOP="0"
 Setting temporary charge threshold for all batteries:
   conservation mode = 0 (no change)
-$ sudo tlp setcharge 42 24 BAT1 -- X_BAT_PLUGIN_SIMULATE=lenovo
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=lenovo
-Error: battery 2 not present.
+$ sudo tlp setcharge 42 24 BAT2 -- X_BAT_PLUGIN_SIMULATE=lenovo
+Error: battery BAT2 not present.
+$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=lenovo
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lenovo | grep "conservation_mode"
@@ -305,15 +305,15 @@ $ sudo tlp setcharge ABCDE XYZZY -- X_BAT_PLUGIN_SIMULATE=lg
 Error: stop charge threshold (XYZZY) for battery BAT0 not specified or invalid (must be 80 or 100). Aborted.
 $ sudo tlp setcharge DEF DEF -- X_THRESH_SIMULATE_READERR="1"
 Error: could not read current charge threshold(s) for battery BAT0. Aborted.
-$ sudo tlp setcharge 42 80 BAT1 -- X_BAT_PLUGIN_SIMULATE=lg X_SOC_CHECK=0
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=lg
-Error: battery 2 not present.
+$ sudo tlp setcharge 42 80 BAT2 -- X_BAT_PLUGIN_SIMULATE=lg X_SOC_CHECK=0
+Error: battery BAT2 not present.
+$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=lg
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lg | grep "charge_control_end_threshold"
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lg | grep "BAT0/charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lg X_THRESH_SIMULATE_READERR=1 | grep "charge_control_end_threshold"
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lg X_THRESH_SIMULATE_READERR=1 | grep "BAT0/charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
 $ #
 $ # ---
@@ -356,10 +356,10 @@ $ sudo tlp setcharge ABCDE XYZZY -- X_BAT_PLUGIN_SIMULATE=lg-legacy
 Error: care limit (XYZZY) not specified or invalid (must be 80 or 100). Aborted.
 $ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=lg-legacy X_THRESH_SIMULATE_READERR="1"
 Error: could not read current care limit. Aborted.
-$ sudo tlp setcharge 42 80 BAT1 -- X_BAT_PLUGIN_SIMULATE=lg-legacy
-Error: battery BAT1 not present.
-$ sudo tlp setcharge 2 -- X_BAT_PLUGIN_SIMULATE=lg-legacy
-Error: battery 2 not present.
+$ sudo tlp setcharge 42 80 BAT2 -- X_BAT_PLUGIN_SIMULATE=lg-legacy
+Error: battery BAT2 not present.
+$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=lg-legacy
+Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lg-legacy | grep "battery_care_limit"
