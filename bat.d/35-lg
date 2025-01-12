@@ -389,6 +389,7 @@ batdrv_apply_configured_thresholds () {
         if batdrv_select_battery "$bat"; then
             eval stop_thresh="\$STOP_CHARGE_THRESH_${_bt_cfg_bat}"
             batdrv_write_thresholds "DEF" "$stop_thresh" 1 1; rc=$?
+            break # one battery only
         fi
     done
 
