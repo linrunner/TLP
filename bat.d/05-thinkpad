@@ -692,10 +692,13 @@ batdrv_chargeonce () {
         return 3
     fi
 
+    printf "Current charge level of battery %s is %s%%, we are about to charge to %s%%.\n" "$_bat_str" "$soc" "$cur_stop" 1>&2
     printf "Setting temporary charge threshold for battery %s:\n" "$_bat_str" 1>&2
     write_sysf "$temp_start" "$_bf_start" || rc=5
     if [ $rc -eq 0 ]; then
         printf "  start = %3d\n" "$temp_start" 1>&2
+        cprintf "notice" "Charging start now, keep the charger connected.\n"  1>&2
+        printf "If charging does not start immediately, unplug the charger for a moment and reconnect it.\n" 1>&2
     else
         cprintf "err" "  start = %3d (Error: write failed)\n" "$temp_start" 1>&2
     fi

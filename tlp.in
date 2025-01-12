@@ -506,9 +506,6 @@ case "$_cmd" in
             # shellcheck disable=SC2086
             chargeonce_battery "$_carg1"
             exitcode=$?
-            if [ $exitcode -eq 0 ]; then
-                cecho "Charging starts now, keep AC connected." "notice" 1>&2
-            fi
         else
             exitcode=2
         fi
