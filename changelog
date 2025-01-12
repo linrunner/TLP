@@ -15,6 +15,7 @@
     - ThinkPads:
       - tlp discharge to a target percentage
       - Discharge code refactored, messages improved
+    - tlp chargeonce: better explain the process in the output
     Diagnostic:
     - tlp-stat --psup: add readings
     Graphics:
