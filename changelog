@@ -19,6 +19,8 @@
     Diagnostic:
     - tlp-stat --psup: add readings
     Graphics:
+    - AMDGPU_ABM_LEVEL_ON_AC/BAT: write only when a change is made
+      to avoid unnecessary screen flickering
     - RADEON_POWER_PROFILE_ON_AC/BAT: *DEPRECATED* feature will be
       removed in TLP 1.9
     Processor:
