@@ -213,7 +213,7 @@ set_abm_level () {
     # set amdgpu adaptive backlight modulation (ABM)
     # $1: 0=ac mode, 1=battery mode
 
-    local card driver gpu level pps rc
+    local card driver gpu level old_level pps rc
     local sdone=0 # 1=gpu present
 
     for gpu in "${BASE_DRMD}"/card?; do
@@ -233,6 +233,12 @@ set_abm_level () {
                         if [ -z "$level" ]; then
                             # do nothing if unconfigured
                             echo_debug "pm" "set_abm_level($1).amdgpu.not_configured: gpu=$gpu"
+                            return 0
+                        fi
+                        old_level="$(read_sysf "$pps/amdgpu/panel_power_savings")"
+                        if [ "$level" = "$old_level" ]; then
+                            # level does not change -> do not apply to prevent screen flicker
+                            echo_debug "pm" "set_abm_level($1).amdgpu.no_change: pps=$pps level=${level} old_level=${old_level}"
                             return 0
                         elif check_ppd_active ; then
                             # don't apply ABM when power-profiles-daemon is running
