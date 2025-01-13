@@ -26,7 +26,7 @@ batdrv_is_dell () {
 batdrv_init () {
     # detect hardware and initialize driver
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
-    # retval: $_batdrv_plugin, $_batdrv_kmod
+    # retval: $_batdrv_plugin, $_batdrv_kmod, $_batdrv_sim
     #
     # 1. check for native kernel acpi (Linux 6.12 or higher required)
     #    --> retval $_natacpi:
@@ -45,6 +45,7 @@ batdrv_init () {
     #    start threshold                        --> retval $_bn_start,
     #    stop threshold                         --> retval $_bn_stop,
     #    discharge                              --> retval $_bn_discharge
+    #    charge type (Dell specific)            --> retval $_bn_chtype
     #
     # 4. determine present batteries
     #    list of batteries (space separated)    --> retval $_batteries;
@@ -55,11 +56,13 @@ batdrv_init () {
 
     _batdrv_plugin="dell"
     _batdrv_kmod="dell_laptop" # kernel module for natacpi
+    _batdrv_sim=0
 
     # check plugin simulation override and denylist
     if [ -n "$X_BAT_PLUGIN_SIMULATE" ]; then
         if [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.simulate"
+            _batdrv_sim=1
         else
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.simulate_skip"
             return 1
@@ -83,6 +86,7 @@ batdrv_init () {
     _bn_start=""
     _bn_stop=""
     _bn_dischg=""
+    _bn_chtype=""
     _batteries=""
     _bt_def_start=95
     _bt_def_stop=100
@@ -114,6 +118,7 @@ batdrv_init () {
                # threshold sysfiles exist and are actually readable
                 _bn_start="charge_control_start_threshold"
                 _bn_stop="charge_control_end_threshold"
+                _bn_chtype="charge_types"
                 _bm_thresh="natacpi"
                 _natacpi=0
             else
@@ -131,7 +136,7 @@ batdrv_init () {
 
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop; dischg=$_bm_dischg; bn_dischg=$_bn_dischg"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop; bn_chtype=$_bn_chtype; dischg=$_bm_dischg; bn_dischg=$_bn_dischg"
     return 0
 }
 
@@ -145,6 +150,7 @@ batdrv_select_battery () {
     #         $_bd_read:    directory with battery data sysfiles;
     #         $_bf_start:   sysfile for start threshold;
     #         $_bf_stop:    sysfile for stop threshold;
+    #         $_bf_chtype:  sysfile for charge type;
     # prerequisite: batdrv_init()
 
     # defaults
@@ -153,6 +159,7 @@ batdrv_select_battery () {
     _bd_read=""    # no directory
     _bf_start=""
     _bf_stop=""
+    _bf_chtype=""
 
     local bat="$1"
 
@@ -183,9 +190,10 @@ batdrv_select_battery () {
     if [ "$_bm_thresh" = "natacpi" ]; then
         _bf_start="$ACPIBATDIR/$_bat_str/$_bn_start"
         _bf_stop="$ACPIBATDIR/$_bat_str/$_bn_stop"
+        _bf_chtype="$ACPIBATDIR/$_bat_str/$_bn_chtype"
     fi
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; cfg=$_bt_cfg_bat; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; cfg=$_bt_cfg_bat; bd_read=$_bd_read; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_chtype=$_bf_chtype"
     return 0
 }
 
@@ -262,12 +270,13 @@ batdrv_write_thresholds () {
     #     2=threshold(s) out of range or non-numeric/
     #     3=minimum start stop diff violated/
     #     4=threshold read error/
-    #     5=threshold write error
+    #     5=threshold write error/
+    #     6=charge type write error
     # prerequisite: batdrv_init(), batdrv_select_battery()
     local new_start=${1:-}
     local new_stop=${2:-}
     local verb=${3:-0}
-    local old_start old_stop
+    local old_start old_stop old_chtype
 
     # insert defaults
     [ "$new_start" = "DEF" ] && new_start=$_bt_def_start
@@ -373,6 +382,20 @@ batdrv_write_thresholds () {
     # write new thresholds in determined sequence
     if [ "$verb" = "2" ]; then
         printf "Setting temporary charge thresholds for battery %s:\n" "$_bat_str" 1>&2
+    fi
+
+    # prerequisite: check charge type and change to 'Custom' if necessary, skip for simulation
+    if [ "$_batdrv_sim" = "0" ]; then
+        old_chtype="$(read_sysf "$_bf_chtype" | sed -r 's/.*\[([A-Z][a-z]+)\].*/\1/')"
+        if [ "$old_chtype" != "Custom" ] && ! write_sysf "Custom" "$_bf_chtype"; then
+            # changing to 'Custom' failed
+            case $verb in
+                1) echo_message "Error: failed to set 'Custom' charge type for battery $_bat_str. Battery skipped." ;;
+                2) cprintf "" "Error: failed to set 'Custom' charge type for battery %s. Aborted.\n" "$_bat_str" 1>&2 ;;
+            esac
+            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).chtype_error: bat=$_bat_str; cfg=$_bt_cfg_bat; old_chtype=$old_chtype; rc=6"
+            return 6
+        fi
     fi
 
     for step in $tseq; do
@@ -638,7 +661,7 @@ batdrv_show_battery_data () {
         if [ "$_bm_thresh" = "natacpi" ]; then
             printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
             printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
-            printparm "%-59s = ##%s## [%%]" "$_bd_read/charge_types" "not available"
+            printparm "%-59s = ##%s##" "$_bd_read/charge_types" "not available"
             printf "\n"
         fi
 
