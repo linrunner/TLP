@@ -556,7 +556,7 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         cmax=0
         # find max value of all CPU packages (just in case there are several)
         # temp1_input is "package"
-        for sens in $(glob_files '/temp1_input' "$CORETEMP_GLOB"); do
+        for sens in $(glob_files '/temp?_input' "$CORETEMP_GLOB"); do
             ctemp=$(read_sysval "$sens")
             [ "$ctemp" -gt "$cmax" ] && cmax=$ctemp
         done
