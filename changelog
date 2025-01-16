@@ -30,6 +30,8 @@
     Operation:
     - Use AC mode for desktop PCs if no power source can be detected
       (Issue #768)
+    Processor:
+    - tlp-stat -t: discover all coretemp sensors
     Radio Devices:
     - RDW: if LAN gets disconnected in suspend, ensure wifi activation
       upon resume
