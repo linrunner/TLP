@@ -34,9 +34,12 @@ cache_root_cred () {
     sudo true
 }
 
-cmd_exists () {
-    # test if command exists -- $1: command
-    command -v "$1" > /dev/null 2>&1
+check_tlp () {
+    # test if tlp installed
+    if [ ! -f /usr/sbin/tlp ]; then
+        printf_msg "Error: %s not installed." "$TLP" 1>&2
+        exit 254
+    fi
 }
 
 read_sysf () {

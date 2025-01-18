@@ -401,12 +401,7 @@ check_amd_gpu_abm_level () {
 }
 
 # check prerequisites and initialize
-cmd_exists "$TLP" || {
-    printf_msg "Error: %s not installed." "$TLP"
-    exit 254
-}
-cache_root_cred
-
+check_tlp
 start_report
 
 # shellcheck disable=SC2034

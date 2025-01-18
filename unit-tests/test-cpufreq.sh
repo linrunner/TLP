@@ -1066,10 +1066,7 @@ check_platform_profile () {
 }
 
 # check prerequisites and initialize
-cmd_exists "$TLP" || {
-    printf_msg "Error: %s not installed." "$TLP"
-    exit 254
-}
+check_tlp
 _cpu_driver=$(read_sysf "${CPU0}/cpufreq/scaling_driver") || {
     printf_msg "Error: could not determine cpu scaling driver."
     exit 128
