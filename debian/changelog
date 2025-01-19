@@ -1,11 +1,11 @@
-tlp (1.8.0-alpha.0-1~bookworm) bookworm; urgency=medium
+tlp (1.8.0~beta.1-1~bookworm) bookworm; urgency=medium
 
-  * New upstream version 1.8.0-alpha.0
+  * New upstream version 1.8.0-beta.1
 
   [ Thomas Koch ]
   * Update debian/copyright
 
- -- Thomas Koch <linrunner@gmx.net>  Sat, 11 Jan 2025 17:25:42 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Sun, 19 Jan 2025 13:26:42 +0100
 
 tlp (1.7.0-1~preusr) unstable; urgency=medium
 
