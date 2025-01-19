@@ -4,6 +4,8 @@ tlp (1.8.0~beta.1-1) unstable; urgency=medium
 
   [ Thomas Koch ]
   * Update debian/copyright
+  * Update lintian overrides
+  * Bump Standards-Version to 4.7.0
 
  -- Thomas Koch <linrunner@gmx.net>  Sun, 19 Jan 2025 13:26:42 +0100
 
