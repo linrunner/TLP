@@ -3,7 +3,7 @@ Maintainer: Raphaël Halimi <raphael.halimi@gmail.com>
 Section: utils
 Priority: optional
 Build-Depends: debhelper-compat (= 13)
-Standards-Version: 4.6.2
+Standards-Version: 4.7.0
 Vcs-Browser: https://salsa.debian.org/moonsweep/tlp
 Vcs-Git: https://salsa.debian.org/moonsweep/tlp.git
 Homepage: https://linrunner.de/tlp
