@@ -507,23 +507,23 @@
 # Charging starts when the charger is connected and the charge level
 # is below the start threshold. Charging stops when the charge level
 # is above the stop threshold.
-# Required hardware: Lenovo ThinkPads and select other laptop brands
-# are driven via specific plugins
-# - Active plugin and support status are shown by tlp-stat -b
-# - Vendor specific threshold levels are shown by tlp-stat -b, some
-#   laptops support only 1 (on)/ 0 (off) instead of a percentage level
-# - When your hardware supports a start *and* a stop threshold, you must
-#   specify both, otherwise TLP will refuse to apply the single threshold
-# - When your hardware supports only a stop threshold, set the start
-#   value to 0
-# - Older ThinkPads may require an external kernel module, refer to the
-#   output of tlp-stat -b
-# For further explanation and vendor specific details refer to
-# - https://linrunner.de/tlp/settings/battery.html
-# - https://linrunner.de/tlp/settings/bc-vendors.html
+# Required hardware: Lenovo ThinkPads and other laptop brands are driven
+#   via specific plugins:
+# - Use the tlp-stat -b command to see if a plugin for your hardware is
+#   active and to look up vendor-specific threshold values. Some
+#   laptops support only 1 (on)/0 (off) instead of a percentage level.
+# - If your hardware supports a start *and* a stop threshold, you must
+#   specify both, otherwise TLP will refuse to apply the single threshold.
+# - If your hardware supports only a stop threshold, set the start
+#   value to 0.
+# - The names of the batteries shown by tlp-stat -b don't have to match
+#   the _BAT0 or _BAT1 parameter qualifiers. Please refer to [2]
+#   to see which qualifier applies to which battery.
+# For further explanation and all vendor specific details refer to
+# [1] https://linrunner.de/tlp/settings/battery.html
+# [2] https://linrunner.de/tlp/settings/bc-vendors.html
 
-# BAT0: Primary / Main / Internal battery
-# Note: also use for batteries BATC, BATT and CMB0
+# BAT0: Main battery
 # Default: <none>
 
 # Battery charge level below which charging will begin.
@@ -531,8 +531,7 @@
 # Battery charge level above which charging will stop.
 #STOP_CHARGE_THRESH_BAT0=80
 
-# BAT1: Secondary / Ultrabay / Slice / Replaceable battery
-# Note: primary on some laptops
+# BAT1: Secondary battery (primary on some laptops)
 # Default: <none>
 
 # Battery charge level below which charging will begin.
