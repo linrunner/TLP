@@ -13,6 +13,10 @@ $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= S
 TLP started in AC mode (auto).
 $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 TLP started in AC mode (auto).
+$ sudo tlp start -- ${xinc} X_THRESH_SIMULATE_LOCKEDBIOS=1 START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+Error: failed to set 'Custom' charge type for battery BAT0. Battery skipped.
+Remove the BIOS Admin password to allow the thresholds to be set.
+TLP started in AC mode (auto).
 $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
 Error in configuration at START_CHARGE_THRESH_BAT0="100": not specified, invalid or out of range (50..95). Battery skipped.
 TLP started in AC mode (auto).
@@ -37,6 +41,10 @@ $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH
 Setting temporary charge thresholds for battery BAT0:
   start =  60
   stop  = 100 (no change)
+$ sudo tlp setcharge -- ${xinc} X_THRESH_SIMULATE_LOCKEDBIOS=1 START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SOC_CHECK=0
+Setting temporary charge thresholds for battery BAT0:
+Error: failed to set 'Custom' charge type for battery BAT0. Aborted.
+Remove the BIOS Admin password to allow the thresholds to be set.
 $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100"
 Error in configuration at START_CHARGE_THRESH_BAT0="100": not specified, invalid or out of range (50..95). Aborted.
 $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="0"
@@ -65,6 +73,11 @@ $ sudo tlp setcharge 60 100 -- ${xinc} X_SOC_CHECK=0
 Setting temporary charge thresholds for battery BAT0:
   start =  60
   stop  = 100 (no change)
+$ sudo tlp setcharge 61 99 -- ${xinc} X_THRESH_SIMULATE_WRITEERR=1 X_SOC_CHECK=0
+Setting temporary charge thresholds for battery BAT0:
+  start =  61 (Error: write failed)
+  stop  =  99 (Error: write failed)
+Remove the BIOS Admin password to allow the thresholds to be set.
 $ sudo tlp setcharge 100 100 -- ${xinc}
 Error: start charge threshold (100) for battery BAT0 is not specified, invalid or out of range (50..95). Aborted.
 $ sudo tlp setcharge 50 0 -- ${xinc}
