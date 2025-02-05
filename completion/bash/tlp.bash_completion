@@ -20,6 +20,15 @@ _batteries() {
     fi
 }
 
+_target_level() {
+    local threshf
+
+    threshf="/sys/class/power_supply/${COMP_WORDS[2]}/charge_control_end_threshold"
+    if [ -f "$threshf" ]; then
+        COMPREPLY=( $(compgen -W "$(cat "$threshf")" -- ${cur}) )
+    fi
+}
+
 _tlp() {
     local cur prev words cword opts bats
     _init_completion || return
@@ -49,7 +58,7 @@ _tlp() {
 
         3)
             if [ "${COMP_WORDS[1]}" = "discharge" ]; then
-                COMPREPLY=( $(compgen -W "0" -- ${cur}) )
+                _target_level
                 return 0
             fi
             ;;
