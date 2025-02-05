@@ -384,14 +384,21 @@ batdrv_write_thresholds () {
         printf "Setting temporary charge thresholds for battery %s:\n" "$_bat_str" 1>&2
     fi
 
-    # prerequisite: check charge type and change to 'Custom' if necessary, skip for simulation
-    if [ "$_batdrv_sim" = "0" ]; then
+    # prerequisite: check charge type and change to 'Custom' if necessary
+    if [ "$X_THRESH_SIMULATE_LOCKEDBIOS" = "1" ] || [ "$_batdrv_sim" = "0" ]; then
         old_chtype="$(read_sysf "$_bf_chtype" | sed -r 's/.*\[([A-Z][a-z]+)\].*/\1/')"
-        if [ "$old_chtype" != "Custom" ] && ! write_sysf "Custom" "$_bf_chtype"; then
+        if [ "$X_THRESH_SIMULATE_LOCKEDBIOS" = "1" ] || [ "$old_chtype" != "Custom" ] && ! write_sysf "Custom" "$_bf_chtype" ; then
             # changing to 'Custom' failed
             case $verb in
-                1) echo_message "Error: failed to set 'Custom' charge type for battery $_bat_str. Battery skipped." ;;
-                2) cprintf "" "Error: failed to set 'Custom' charge type for battery %s. Aborted.\n" "$_bat_str" 1>&2 ;;
+                1)
+                    echo_message "Error: failed to set 'Custom' charge type for battery $_bat_str. Battery skipped."
+                    cecho "Remove the BIOS Admin password to allow the thresholds to be set." "notice" 1>&2
+                    ;;
+
+                2)
+                    cprintf "" "Error: failed to set 'Custom' charge type for battery %s. Aborted.\n" "$_bat_str" 1>&2
+                    cecho "Remove the BIOS Admin password to allow the thresholds to be set." "notice" 1>&2
+                    ;;
             esac
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).chtype_error: bat=$_bat_str; cfg=$_bt_cfg_bat; old_chtype=$old_chtype; rc=6"
             return 6
@@ -419,7 +426,9 @@ batdrv_write_thresholds () {
                 start) write_sysf "$new_thresh" "$_bf_start" ;;
                 stop)  write_sysf "$new_thresh" "$_bf_stop"  ;;
             esac
-            steprc=$?; [ $steprc -ne 0 ] && rc=5
+            steprc=$?
+            [ "$X_THRESH_SIMULATE_WRITEERR" = "1" ] && steprc=1
+            [ $steprc -ne 0 ] && rc=5
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.write: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_thresh; new=$new_thresh; steprc=$steprc"
 
             case $verb in
@@ -444,6 +453,10 @@ batdrv_write_thresholds () {
             fi
         fi
     done # for step
+
+    if [ $rc -eq 5 ] && [ "$verb" -gt 0 ]; then
+        cecho "Remove the BIOS Admin password to allow the thresholds to be set." "notice" 1>&2
+    fi
 
     echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).complete: bat=$_bat_str; cfg=$_bt_cfg_bat; rc=$rc"
     return $rc
