@@ -1,3 +1,18 @@
++++ 1.8.0 --- <unreleased> +++
+
+  * Features since 1.8.0-beta.1
+    General:
+    - tlp.8 manpage: explain battery name command parameters
+    - tlp.conf: explain that parameter qualifiers don't have to match
+      battery names
+    Battery Care:
+    - bash completion: suggest stop threshold as target level for tlp dicharge
+
+  * Bugfixes since 1.8.0-beta.1
+    Battery Care:
+    - Dell: point to BIOS Admin password as cause of a threshold write error
+      (Issue #785)
+
 +++ 1.8.0-beta.1 --- 19.01.2025 +++
 
   * Beta Release
