@@ -203,7 +203,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 echo "                  -t | --temp      | -u | --usb       |"
                 echo "                  -w | --warn      | -v | --verbose   |"
                 echo "                     | --version   |    | --cdiff     |"
-                echo "                     | --pev       | -P | --psup      |"
+                echo "                  -P | --pev       |    | --psup      |"
                 echo "                  -T | --trace     |    | --udev      |"
                 echo "                ]"
                 do_exit 3
