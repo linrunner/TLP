@@ -1,12 +1,11 @@
-+++ 1.8.0 --- <unreleased> +++
++++ 1.8.0 --- 13.02.2025 +++
 
   * Features since 1.8.0-beta.1
     General:
     - tlp.8 manpage: explain battery name command parameters
-    - tlp.conf: explain that parameter qualifiers don't have to match
-      battery names
+    - tlp.conf: parameter qualifiers don't have to match battery names
     Battery Care:
-    - bash completion: suggest stop threshold as target level for tlp dicharge
+    - bash completion: suggest stop threshold as target level for tlp discharge
 
   * Bugfixes since 1.8.0-beta.1
     Battery Care:
