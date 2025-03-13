@@ -37,7 +37,7 @@ $ sudo tlp start -- START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 TLP started in AC mode (auto).
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge BAT1 -- START_CHARGE_THRESH_BAT1="60" STOP_CHARGE_THRESH_BAT1="100" X_SOC_CHECK=0
+$ sudo tlp setcharge BAT1 -- X_SOC_CHECK=0 START_CHARGE_THRESH_BAT1="60" STOP_CHARGE_THRESH_BAT1="100" X_SOC_CHECK=0
 Setting temporary charge thresholds for battery BAT1:
   start =  60
   stop  = 100 (no change)
@@ -49,15 +49,15 @@ $ sudo tlp setcharge BAT1 -- START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT
 Error in configuration at STOP_CHARGE_THRESH_BAT1="101": not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge BAT1 -- START_CHARGE_THRESH_BAT1="97" STOP_CHARGE_THRESH_BAT1="97"
 Error in configuration: START_CHARGE_THRESH_BAT1 >= STOP_CHARGE_THRESH_BAT1. Aborted.
-$ sudo tlp setcharge BAT1 -- START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96"
+$ sudo tlp setcharge BAT1 -- X_SOC_CHECK=0 START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96"
 Setting temporary charge thresholds for battery BAT1:
   start =  95
   stop  =  96
-$ sudo tlp setcharge BAT1 -- START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96"
+$ sudo tlp setcharge BAT1 -- X_SOC_CHECK=0 START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96"
 Setting temporary charge thresholds for battery BAT1:
   start =  95 (no change)
   stop  =  96 (no change)
-$ sudo tlp setcharge BAT1 -- START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
+$ sudo tlp setcharge BAT1 -- X_SOC_CHECK=0 START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
 Setting temporary charge thresholds for battery BAT1:
   stop  = 100
   start =  96
@@ -81,17 +81,17 @@ $ sudo tlp setcharge 0 XYZZY BAT1
 Error: stop charge threshold (XYZZY) for battery BAT1 is not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge 97 97 BAT1
 Error: start threshold >= stop threshold for battery BAT1. Aborted.
-$ sudo tlp setcharge 95 96 BAT1
+$ sudo tlp setcharge 95 96 BAT1 -- X_SOC_CHECK=0
 Setting temporary charge thresholds for battery BAT1:
   start =  95
   stop  =  96
 $ sudo tlp setcharge 95 96 BAT1 -- X_THRESH_SIMULATE_READERR="1"
 Error: could not read current charge threshold(s) for battery BAT1. Aborted.
-$ sudo tlp setcharge 95 96 BAT1 -- X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge 95 96 BAT1 -- X_SOC_CHECK=0 X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
 Setting temporary charge thresholds for battery BAT1:
   start =  95
   stop  =  96
-$ sudo tlp setcharge 95 96 BAT1
+$ sudo tlp setcharge 95 96 BAT1 -- X_SOC_CHECK=0
 Setting temporary charge thresholds for battery BAT1:
   start =  95 (no change)
   stop  =  96 (no change)
