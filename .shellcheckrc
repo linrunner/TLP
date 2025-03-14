@@ -1,0 +1,3 @@
+# shellcheck config for TLP
+shell=dash
+disable=SC3043
