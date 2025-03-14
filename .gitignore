@@ -7,4 +7,5 @@ pkg
 src
 tlp.install
 worktree*
+.zed
 *.zst
