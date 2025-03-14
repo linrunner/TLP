@@ -1,3 +1,9 @@
+tlp (1.9.0~alpha.0-1) unstable; urgency=medium
+
+  * New upstream version 1.9.0-alpha.0
+
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 14 Mar 2025 19:24:42 +0200
+
 tlp (1.8.0-1) unstable; urgency=medium
 
   * New upstream version 1.8.0
