@@ -178,25 +178,6 @@ set_amdgpu_profile () {
                         echo_debug "pm" "set_amdgpu_profile($1).radeon: gpu=$gpu perf=${level}: rc=$rc1; state=${pwr}: rc=$rc2"
                     fi
                     sdone=1
-
-                elif [ -f "$gpu/device/power_method" ] && [ -f "$gpu/device/power_profile" ]; then
-                    # Use legacy radeon power profile method
-                    if [ "$1" = "1" ]; then
-                        pwr=${RADEON_POWER_PROFILE_ON_BAT:-}
-                    else
-                        pwr=${RADEON_POWER_PROFILE_ON_AC:-}
-                    fi
-
-                    if [ -z "$pwr" ]; then
-                        # do nothing if unconfigured
-                        echo_debug "pm" "set_amdgpu_profile($1).radeon_legacy.not_configured: gpu=$gpu"
-                        return 0
-                    else
-                        write_sysf "profile" "$gpu/device/power_method"; rc1=$?
-                        write_sysf "$pwr" "$gpu/power_profile"; rc2=$?
-                        echo_debug "pm" "set_amdgpu_profile($1).radeon_legacy: gpu=$gpu method=profile: rc=$rc1; profile=${pwr}: rc=$rc2"
-                    fi
-                    sdone=1
                 fi
                 ;;
         esac
