@@ -795,9 +795,9 @@ batdrv_discharge () {
                 printf "power              = %6s [mW]\n"  "$_bat_pwr" 1>&2
             else
                 printf "remaining time     = not discharging [min]\n" 1>&2
+                printf "power              = %6s [mW]\n"  "$_bat_pwr" 1>&2
             fi
 
-            printf "power              = %6s [mW]\n"  "$_bat_pwr" 1>&2
             printf "state              = %s\n"  "$_bat_st" 1>&2
             printf "force discharge    = %s\n"  "$_bat_fd" 1>&2
 
