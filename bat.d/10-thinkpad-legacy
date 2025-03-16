@@ -173,8 +173,8 @@ batdrv_select_battery () {
     # rc: 0=bat exists/1=bat non-existent
     # retval: $_bat_str:   BAT0/BAT1;
     #         $_bat_idx:   1/2;
-    #         $_bd_read:    directory with battery data sysfiles (for tlp-stat);
-    #         $_bd_reada:   directory with battery data sysfiles (ACPI);
+    #         $_bd_read:    directory with battery data sysfiles;
+    #         $_bd_readsm:  directory with battery data sysfiles (tp-smapi);
     #         $_bf_start:  sysfile for start threshold;
     #         $_bf_stop:   sysfile for stop threshold;
     #         $_bf_dischg: sysfile for force discharge
@@ -184,7 +184,7 @@ batdrv_select_battery () {
     _bat_idx=0    # no index
     _bat_str=""   # no bat
     _bd_read=""   # no directories
-    _bd_reada=""
+    _bd_readsm=""
     _bf_start=""
     _bf_stop=""
     _bf_dischg=""
@@ -235,16 +235,16 @@ batdrv_select_battery () {
     case "$_bm_read" in
         natacpi)
             _bd_read="$ACPIBATDIR/$bs"
-            _bd_reada="$ACPIBATDIR/$bs"
+            _bd_readsm=""
             ;;
 
         tpsmapi)
-           _bd_read="$SMAPIBATDIR/$bs"
-           _bd_reada="$ACPIBATDIR/$bs"
-            ;;
+           _bd_read="$ACPIBATDIR/$bs"
+           _bd_readsm="$SMAPIBATDIR/$bs"
+           ;;
     esac
 
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; cfg=$_bt_cfg_bat; bat_idx=$_bat_idx; bd_read=$_bd_read; bd_reada=$_bd_reada; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; cfg=$_bt_cfg_bat; bat_idx=$_bat_idx; bd_read=$_bd_read; bd_readsm=$_bd_readsm; bf_start=$_bf_start; bf_stop=$_bf_stop; bf_dischg=$_bf_dischg"
     return 0
 }
 
@@ -499,8 +499,8 @@ batdrv_calc_soc () {
     # rc: 0=ok/1=charge level read error
     local ef en
 
-    ef=$(read_sysval "$_bd_reada/energy_full")
-    en=$(read_sysval "$_bd_reada/energy_now")
+    ef=$(read_sysval "$_bd_read/energy_full")
+    en=$(read_sysval "$_bd_read/energy_now")
 
     if [ "$ef" != "0" ]; then
         if [ -n "$1" ]; then
@@ -674,17 +674,17 @@ batdrv_cancel_force_discharge () {
 }
 
 batdrv_force_discharge_active () { # check if battery is in 'force_discharge' state
-    # global params: $_batdrv_plugin, $_bat_str, $_bm_read, $_bd_read,  $_bat_target_en
+    # global params: $_batdrv_plugin, $_bat_str, $_bm_read, $_bd_read, $_bd_readsm, $_bat_target_en
     # rc: 0=discharging/2=ac detached/4=terminated/6=target soc reached/
     # retval: $_bat_en, $_bat_fd, $_bat_pwr, $_bat_soc, $_bat_st, $_bat_volt, $_bat_dischg_rc
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
     # battery readings to be returned to caller as retvals (and for trace output)
-    _bat_en="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_reada/energy_now")"' / 1000.0 );')"
+    _bat_en="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/energy_now")"' / 1000.0 );')"
     _bat_soc="$(batdrv_calc_soc)"
-    _bat_pwr="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_reada/power_now")"' / 1000.0 );')"
-    _bat_volt="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_reada/voltage_now")"' / 1000.0 );')"
-    _bat_st="$(read_sysf "$_bd_read/state")"
+    _bat_pwr="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/power_now")"' / 1000.0 );')"
+    _bat_volt="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/voltage_now")"' / 1000.0 );')"
+    _bat_st="$(read_sysf "$_bd_readsm/state")"
 
     # check if force_discharge is on
     _bat_fd="$(batdrv_read_force_discharge 0)"
@@ -744,9 +744,9 @@ batdrv_discharge () {
             return $_bat_dischg_rc
         fi
     fi
-    ef="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_reada/energy_full")"' / 1000.0 );')"
+    ef="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/energy_full")"' / 1000.0 );')"
     _bat_target_en="$(perl -e 'printf ("%d", '"$ef"' * '"$target_soc"' / 100.0)')"
-    en="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_reada/energy_now")"' / 1000.0 );')"
+    en="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/energy_now")"' / 1000.0 );')"
     if [ "$_bat_target_en" -ge "$en" ]; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.target_below_soc($_bat_str): target=$target_soc; soc=$soc"
         cprintf "" "Error: target level (%s%%) is too high compared to the actual charge level (%s%%) of battery %s.\n" "$target_soc" "$soc" "$_bat_str" 1>&2
@@ -855,7 +855,7 @@ batdrv_discharge () {
 batdrv_show_battery_data () {
     # output battery data
     # $1: 1=verbose
-    # global params: $_batdrv_plugin, $_batteries, $_batdrv_kmod, $_tpsmapi, $_bm_thresh, $_bd_read, $_bf_start, $_bf_stop, $_bf_dischg
+    # global params: $_batdrv_plugin, $_batteries, $_batdrv_kmod, $_tpsmapi, $_bm_thresh, $_bd_read, $_bd_readsm, $_bf_start, $_bf_stop, $_bf_dischg
     # prerequisite: batdrv_init()
     local verbose="${1:-0}"
 
@@ -944,43 +944,43 @@ batdrv_show_battery_data () {
                 ;; # natacpi
 
             tpsmapi) # tp-smapi active
-                printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
-                printparm "%-59s = ##%s##" "$_bd_read/model"
-                printparm "%-59s = ##%s##" "$_bd_read/manufacture_date"
-                printparm "%-59s = ##%s##" "$_bd_read/first_use_date"
-                printparm "%-59s = ##%6d##" "$_bd_read/cycle_count"
+                printparm "%-59s = ##%s##" "$_bd_readsm/manufacturer"
+                printparm "%-59s = ##%s##" "$_bd_readsm/model"
+                printparm "%-59s = ##%s##" "$_bd_readsm/manufacture_date"
+                printparm "%-59s = ##%s##" "$_bd_readsm/first_use_date"
+                printparm "%-59s = ##%6d##" "$_bd_readsm/cycle_count"
 
                 if [ -f "$_bd_read/temperature" ]; then
                     # shellcheck disable=SC2046
-                    perl -e 'printf ("%-59s = %6d [°C]\n", "'"$_bd_read/temperature"'", '$(read_sysval "$_bd_read/temperature")' / 1000.0);'
+                    perl -e 'printf ("%-59s = %6d [°C]\n", "'"$_bd_readsm/temperature"'", '$(read_sysval "$_bd_readsm/temperature")' / 1000.0);'
                 fi
 
-                printparm "%-59s = ##%6d## [mWh]" "$_bd_read/design_capacity"
-                printparm "%-59s = ##%6d## [mWh]" "$_bd_read/last_full_capacity"
-                printparm "%-59s = ##%6d## [mWh]" "$_bd_read/remaining_capacity"
+                printparm "%-59s = ##%6d## [mWh]" "$_bd_readsm/design_capacity"
+                printparm "%-59s = ##%6d## [mWh]" "$_bd_readsm/last_full_capacity"
+                printparm "%-59s = ##%6d## [mWh]" "$_bd_readsm/remaining_capacity"
                 if [ "$verbose" -eq 1 ]; then
-                     printparm "%-59s = ##%6d## [%%]" "$_bd_read/remaining_percent"
+                     printparm "%-59s = ##%6d## [%%]" "$_bd_readsm/remaining_percent"
                 fi
-                printparm "%-59s = ##%6s## [min]" "$_bd_read/remaining_running_time_now"
-                printparm "%-59s = ##%6s## [min]" "$_bd_read/remaining_charging_time"
-                printparm "%-59s = ##%6d## [mW]" "$_bd_read/power_now"
-                printparm "%-59s = ##%6d## [mW]" "$_bd_read/power_avg"
-                print_batstate "$_bd_read/state"
+                printparm "%-59s = ##%6s## [min]" "$_bd_readsm/remaining_running_time_now"
+                printparm "%-59s = ##%6s## [min]" "$_bd_readsm/remaining_charging_time"
+                printparm "%-59s = ##%6d## [mW]" "$_bd_readsm/power_now"
+                printparm "%-59s = ##%6d## [mW]" "$_bd_readsm/power_avg"
+                print_batstate "$_bd_readsm/state"
                 printf "\n"
                 if [ "$verbose" -eq 1 ]; then
-                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/design_voltage"
-                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage"
-                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/group0_voltage"
-                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/group1_voltage"
-                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/group2_voltage"
-                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/group3_voltage"
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_readsm/design_voltage"
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_readsm/voltage"
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_readsm/group0_voltage"
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_readsm/group1_voltage"
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_readsm/group2_voltage"
+                    printparm "%-59s = ##%6s## [mV]" "$_bd_readsm/group3_voltage"
                     printf "\n"
                 fi
 
                 # store values for charge / capacity calculation below
-                ed=$(read_sysval "$_bd_read/design_capacity")
-                ef=$(read_sysval "$_bd_read/last_full_capacity")
-                en=$(read_sysval "$_bd_read/remaining_capacity")
+                ed=$(read_sysval "$_bd_readsm/design_capacity")
+                ef=$(read_sysval "$_bd_readsm/last_full_capacity")
+                en=$(read_sysval "$_bd_readsm/remaining_capacity")
                 efsum=$((efsum + ef))
                 ensum=$((ensum + en))
                 ;; # tp-smapi
