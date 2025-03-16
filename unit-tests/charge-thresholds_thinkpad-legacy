@@ -110,11 +110,11 @@ $ sudo tlp discharge BAT1 100
 Error: battery BAT1 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b | grep -E 'charge_thresh|discharge'
+$ sudo tlp-stat -b | grep -E 'charge_thresh|force_discharge'
 /sys/devices/platform/smapi/BAT0/start_charge_thresh        =     96 [%]
 /sys/devices/platform/smapi/BAT0/stop_charge_thresh         =    100 [%]
 /sys/devices/platform/smapi/BAT0/force_discharge            =      0
-$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_thresh|discharge'
+$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_thresh|force_discharge'
 /sys/devices/platform/smapi/BAT0/start_charge_thresh        = (not available) [%]
 /sys/devices/platform/smapi/BAT0/stop_charge_thresh         = (not available) [%]
 /sys/devices/platform/smapi/BAT0/force_discharge            =      0
@@ -124,19 +124,19 @@ $ sudo ./kmod-helper tp_smapi restore
 $ sudo ./kmod-helper tp_smapi enable
 $ sudo tlp-stat -b | head -7 | tail -4
 Plugin: thinkpad-legacy
-Supported features: charge thresholds, recalibration
+Supported features: charge thresholds, chargeonce, discharge, recalibrate
 Driver usage:
-* tp-smapi (tp_smapi) = active (status, charge thresholds, recalibration)
+* tp-smapi (tp_smapi) = active (status, charge thresholds, force-discharge)
 $ sudo tlp-stat -b -- NATACPI_ENABLE=0 | head -7 | tail -4
 Plugin: thinkpad-legacy
-Supported features: charge thresholds, recalibration
+Supported features: charge thresholds, chargeonce, discharge, recalibrate
 Driver usage:
-* tp-smapi (tp_smapi) = active (status, charge thresholds, recalibration)
+* tp-smapi (tp_smapi) = active (status, charge thresholds, force-discharge)
 $ sudo tlp-stat -b -- NATACPI_ENABLE=0 TPACPI_ENABLE=0 | head -7 | tail -4
 Plugin: thinkpad-legacy
-Supported features: charge thresholds, recalibration
+Supported features: charge thresholds, chargeonce, discharge, recalibrate
 Driver usage:
-* tp-smapi (tp_smapi) = active (status, charge thresholds, recalibration)
+* tp-smapi (tp_smapi) = active (status, charge thresholds, force-discharge)
 $ sudo ./kmod-helper tp_smapi disable
 $ sudo tlp-stat -b | head -7 | tail -4
 Plugin: thinkpad-legacy
