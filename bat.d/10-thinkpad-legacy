@@ -494,13 +494,28 @@ batdrv_write_thresholds () {
 batdrv_calc_soc () {
     # calc and print battery charge level (rounded)
     # $1: format (optional)
-    # global param: $_bd_read
+    # global param: $_bd_read, $_bd_readsm
     # prerequisite: batdrv_init(), batdrv_select_battery()
     # rc: 0=ok/1=charge level read error
     local ef en
 
-    ef=$(read_sysval "$_bd_read/energy_full")
-    en=$(read_sysval "$_bd_read/energy_now")
+    if [ -f "$_bd_read/energy_full" ]; then
+        # vendor BIOS
+        ef=$(read_sysval "$_bd_read/energy_full")
+        en=$(read_sysval "$_bd_read/energy_now")
+    elif [ -f "$_bd_readsm/last_full_capacity" ]; then
+        # tp-smapi
+        ef=$(read_sysval "$_bd_readsm/last_full_capacity")
+        en=$(read_sysval "$_bd_readsm/remaining_capacity")
+    elif [ -f "$_bd_read/charge_full" ]; then
+        # coreboot(?)
+        # refer to https://github.com/linrunner/TLP/issues/793#issuecomment-2727452395
+        ef=$(read_sysval "$_bd_read/charge_full")
+        en=$(read_sysval "$_bd_read/charge_now")
+    else
+        ef=0
+        en=0
+    fi
 
     if [ "$ef" != "0" ]; then
         if [ -n "$1" ]; then
@@ -927,6 +942,22 @@ batdrv_show_battery_data () {
                     en=$(read_sysval "$_bd_read/energy_now")
                     efsum=$((efsum + ef))
                     ensum=$((ensum + en))
+
+                elif [ -f "$_bd_read/charge_full" ]; then
+                    # special case, observed with X201. the values are actually in mA(h)
+                    # refer to https://github.com/linrunner/TLP/issues/793#issuecomment-2727452395
+                    printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full_design" "" 000
+                    printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full" "" 000
+                    printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_now" "" 000
+                    printparm "%-59s = ##%6d## [mA]" "$_bd_read/current_now" "" 000
+
+                    # store values for charge / capacity calculation below
+                    ed=$(read_sysval "$_bd_read/charge_full_design")
+                    ef=$(read_sysval "$_bd_read/charge_full")
+                    en=$(read_sysval "$_bd_read/charge_now")
+                    efsum=$((efsum + ef))
+                    ensum=$((ensum + en))
+
                 else
                     ed=0
                     ef=0
