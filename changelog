@@ -3,8 +3,13 @@
   * Development version
 
   * Features
+    Graphics:
+    - RADEON_POWER_PROFILE_ON_AC/BAT removed
 
   * Bugfixes
+    Battery Care:
+    - ThinkPads:
+      - Fix X220 discharge (Issue #793)
 
 +++ 1.8.0 --- 13.02.2025 +++
 
