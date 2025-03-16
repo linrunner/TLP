@@ -20,7 +20,10 @@ fi
 
 kernel=$(uname -r)
 module=$1
-modfile="/lib/modules/${kernel}/updates/dkms/${module}.ko"
+if ! modfile="$(modinfo -F filename "$module" 2> /dev/null)"; then
+    echo "Error: could not locate kernel module \"$module\"." 1>&2
+    exit 1
+fi
 modsave="${modfile}-save"
 
 case "$2" in
