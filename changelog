@@ -3,6 +3,8 @@
   * Development version
 
   * Features
+    Battery Care:
+    - tlp-stat -b: advertise chargeonce, discharge, recalibrate features individually
     Graphics:
     - RADEON_POWER_PROFILE_ON_AC/BAT removed
 
