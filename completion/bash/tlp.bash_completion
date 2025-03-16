@@ -21,11 +21,11 @@ _batteries() {
 }
 
 _target_level() {
-    local threshf
+    local thresh
 
-    threshf="/sys/class/power_supply/${COMP_WORDS[2]}/charge_control_end_threshold"
-    if [ -f "$threshf" ]; then
-        COMPREPLY=( $(compgen -W "$(cat "$threshf")" -- ${cur}) )
+    if thresh="$(cat /sys/class/power_supply/${COMP_WORDS[2]}/charge_control_end_threshold 2> /dev/null)" \
+        || thresh="$(cat /sys/devices/platform/smapi/${COMP_WORDS[2]}/stop_charge_thresh 2> /dev/null)"; then
+        COMPREPLY=( $(compgen -W "$thresh" -- ${cur}) )
     fi
 }
 
