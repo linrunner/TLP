@@ -10,6 +10,7 @@
     Battery Care:
     - ThinkPads:
       - Fix X220 discharge (Issue #793)
+      - Fix bash completion for tlp discharge on tp-smapi models
 
 +++ 1.8.0 --- 13.02.2025 +++
 
