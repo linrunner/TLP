@@ -962,8 +962,8 @@ batdrv_show_battery_data () {
 
     if [ "$_bm_thresh" != "none" ]; then
         case $_natacpi in
-            0) cecho "Supported features: charge thresholds, recalibration" "success" ;;
-            1) cecho "Supported features: charge threshold, recalibration" "success" ;;
+            0) cecho "Supported features: charge thresholds, chargeonce, discharge, recalibrate" "success" ;;
+            1) cecho "Supported features: charge threshold, chargeonce, discharge, recalibrate" "success" ;;
         esac
     else
         cprintf "warning" "Supported features: none available\n"
@@ -972,8 +972,8 @@ batdrv_show_battery_data () {
     printf "Driver usage:\n"
     # native kernel ACPI battery API
     case $_natacpi in
-        0)   cprintf "success" "* natacpi (%s) = active (charge thresholds, recalibration) - EC cmd v3\n" "$_batdrv_kmod" ;;
-        1)   cprintf "success" "* natacpi (%s) = active (charge threshold, recalibration) - EC cmd v2\n" "$_batdrv_kmod" ;;
+        0)   cprintf "success" "* natacpi (%s) = active (charge thresholds, force-discharge) - EC cmd v3\n" "$_batdrv_kmod" ;;
+        1)   cprintf "success" "* natacpi (%s) = active (charge threshold, force-discharge) - EC cmd v2\n" "$_batdrv_kmod" ;;
         32)  cprintf "notice"  "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
         128) cprintf "warning" "* natacpi (%s) = inactive (insufficient kernel support)\n" "$_batdrv_kmod" ;;
         254) cprintf "warning" "* natacpi (%s) = inactive (laptop not supported) - EC cmd v1\n" "$_batdrv_kmod" ;;

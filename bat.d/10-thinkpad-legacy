@@ -881,7 +881,7 @@ batdrv_show_battery_data () {
     [ "$_bm_thresh" = "tpsmapi" ] && fs="charge thresholds"
     if [ "$_bm_dischg" = "tpsmapi" ]; then
         [ -n "$fs" ] && fs="${fs}, "
-        fs="${fs}recalibration"
+        fs="${fs}chargeonce, discharge, recalibrate"
     fi
     if [ -n "$fs" ]; then
         cprintf "success" "Supported features: %s\n" "$fs"

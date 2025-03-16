@@ -741,7 +741,7 @@ print_methods_per_driver () {
             case $bm in
                 _bm_read)   [ "$1" = "tpsmapi" ] && m="status" ;;
                 _bm_thresh) m="charge thresholds" ;;
-                _bm_dischg) m="recalibration" ;;
+                _bm_dischg) m="force-discharge" ;;
             esac
             if [ -n "$m" ]; then
                 # concat method to output
