@@ -561,13 +561,13 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
         for sens in $(glob_files '/temp?_input' "$CORETEMP_GLOB"); do
             if ctemp=$(read_sysval "$sens"); then
                 if [ "$show_verbose" = "1" ]; then
-                    perl -e 'printf ("%s = %3d [°C]\n", "'"$sens"'", '"$ctemp"' / 1000.0);'
+                    perl -e 'printf (" - %s = %3d [°C]\n", "'"$sens"'", '"$ctemp"' / 1000.0);'
                 fi
                 [ "$ctemp" -gt "$cmax" ] && cmax=$ctemp
             fi
         done
-        if [ "$show_verbose" = "0" ] && [ "$cmax" -gt 0 ]; then
-            perl -e 'printf ("CPU temp (coretemp)    = %5d [°C]\n", '"$cmax"' / 1000.0);'
+        if [ "$cmax" -gt 0 ]; then
+            perl -e 'printf ("CPU temp (coretemp)    = %4d [°C]\n", '"$cmax"' / 1000.0);'
             tempshown=1
         fi
     fi
@@ -580,14 +580,14 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
             if [ "$(read_sysf "${sens%temp}type")" = "acpitz" ]; then
                 if ctemp=$(read_sysval "$sens"); then
                     if [ "$show_verbose" = "1" ]; then
-                        perl -e 'printf ("%s = %3d [°C]\n", "'"$sens"'", '"$ctemp"' / 1000.0);'
+                        perl -e 'printf (" - %s = %3d [°C]\n", "'"$sens"'", '"$ctemp"' / 1000.0);'
                     fi
                     [ "$ctemp" -gt "$cmax" ] && cmax=$ctemp
                 fi
             fi
         done
-        if  [ "$show_verbose" = "0" ] && [ "$cmax" -gt 0 ]; then
-            perl -e 'printf ("CPU temp (ACPI)        = %5d [°C]\n", '"$cmax"' / 1000.0);'
+        if  [ "$cmax" -gt 0 ]; then
+            perl -e 'printf ("CPU temp (acpitz)      = %4d [°C]\n", '"$cmax"' / 1000.0);'
             tempshown=1
         fi
     fi
@@ -600,7 +600,7 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
     fanshown=0
     if [ -f $IBMFAN ] && [ "$X_IGNORE_IBM_TEMPFAN" != "1" ]; then
         # use thinkpad-specific sysfile
-        awk '$1 ~ /speed:/ { printf "'$IBMFAN'     = %5d [/min]\n", $2 }' $IBMFAN
+        awk '$1 ~ /speed:/ { printf "'$IBMFAN'     = %4d [/min]\n", $2 }' $IBMFAN
         fanshown=1
     fi
     if { [ "$fanshown" = "0" ] || [ "$show_verbose" = "1" ]; } \
@@ -612,10 +612,9 @@ if [ "$show_temp" = "1" ] || [ "$show_all" = "1" ]; then
                 fan_name="${fan##*/}"; fan_name="${fan_name%_input}"
                 fanshown=1
                 if [ "$show_verbose" = "1" ]; then
-                    printf "%s = %5d [/min]\n" "${fan}" "${fan_speed}"
-                else
-                    printf "Fan speed (%s)       = %5d [/min]\n" "${fan_name}" "${fan_speed}"
+                    printf " - %s = %4d [/min]\n" "${fan}" "${fan_speed}"
                 fi
+                printf "Fan speed (%s)       = %4d [/min]\n" "${fan_name}" "${fan_speed}"
             fi
         done
     fi
