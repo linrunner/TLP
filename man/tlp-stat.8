@@ -1,4 +1,4 @@
-.TH tlp-stat 8 2024-09-17 "TLP 1.8.0" "Power Management"
+.TH tlp-stat 8 2025-03-22 "TLP 1.9.0" "Power Management"
 .
 .SH NAME
 tlp-stat - view power saving status
@@ -61,6 +61,7 @@ View system information and TLP status.
 .TP
 .B -t, --temp
 View temperatures and fan speed.
+Add \fB-v\fR to see all individual sensors.
 .
 .TP
 .B -u, --usb
@@ -68,7 +69,7 @@ View USB device information. Add \fB-v\fR to see device runtime status.
 .
 .TP
 .B -v, --verbose
-Show more information in the battery, PCIe, processor and USB categories.
+Show more information in the battery, PCIe, processor, temperature and USB categories.
 .
 .TP
 .B --version
