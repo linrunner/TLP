@@ -408,6 +408,9 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                     if [ -f "$cpuf/scaling_max_freq" ]; then
                         printf "%-54s = %8d [kHz]\n" "$cpuf/scaling_max_freq" "$(read_sysf "$cpuf/scaling_max_freq")"
                     fi
+                    if [ -f "$cpuf/scaling_cur_freq" ] && [ $show_verbose -eq 1 ]; then
+                        cprintf "notice" "%-54s = %8d [kHz]\n" "$cpuf/scaling_cur_freq" "$(read_sysf "$cpuf/scaling_cur_freq")"
+                    fi
                     if [ -f "$cpuf/scaling_available_frequencies" ]; then
                         printf "%s = " "$cpuf/scaling_available_frequencies"
                         for freq in $(read_sysf "$cpuf/scaling_available_frequencies"); do
