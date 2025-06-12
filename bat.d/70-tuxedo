@@ -13,12 +13,12 @@
 
 # --- Hardware Detection
 
-readonly BATDRV_TEMPLATE_MD=/sys/module/TEMPLATE_MODULE_DIR
+readonly BATDRV_TUXEDO_MD=/sys/module/clevo_acpi
 
-batdrv_is_TEMPLATE () {
+batdrv_is_tuxedo () {
     # check if vendor specific kernel module is loaded
     # rc: 0=ok, 1=other hardware
-    [ -d $BATDRV_TEMPLATE_MD ]
+    [ -d $BATDRV_TUXEDO_MD ]
 }
 
 # --- Plugin API functions
@@ -53,8 +53,8 @@ batdrv_init () {
     #    start threshold                        --> retval $_bt_def_start,
     #    stop threshold                         --> retval $_bt_def_stop;
 
-    _batdrv_plugin="TEMPLATE"
-    _batdrv_kmod="TEMPLATE_MOD" # kernel module for natacpi
+    _batdrv_plugin="tuxedo"
+    _batdrv_kmod="clevo_acpi" # kernel module for natacpi
 
     # check plugin simulation override and denylist
     if [ -n "$X_BAT_PLUGIN_SIMULATE" ]; then
@@ -69,7 +69,7 @@ batdrv_init () {
         return 1
     else
         # check if hardware matches
-        if ! batdrv_is_TEMPLATE; then
+        if ! batdrv_is_tuxedo; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match"
             return 1
         fi
@@ -84,14 +84,12 @@ batdrv_init () {
     _bn_stop=""
     _bn_dischg=""
     _batteries=""
-    # TEMPLATE: customize to vendor defaults
-    _bt_def_start=96
+    _bt_def_start=95
     _bt_def_stop=100
 
     # iterate batteries and check for native kernel ACPI
     local bd bs
     local done=0
-    # TEMPLATE: customize battery names if necessary
     for bd in "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf "$bd/present")" = "1" ]; then
             # record detected batteries and directories
@@ -166,7 +164,6 @@ batdrv_select_battery () {
     local bat="$1"
 
     # convert battery param to uppercase
-    # TEMPLATE: omit the following line for lower case battery device names
     bat="$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")"
 
     # validate battery param
@@ -186,7 +183,6 @@ batdrv_select_battery () {
             ;;
     esac
 
-    # TEMPLATE: assume config suffix matches battery name, i.e. works for BAT0/BAT1 only
     _bt_cfg_bat="$_bat_str"
 
     # determine natacpi sysfiles
@@ -296,7 +292,7 @@ batdrv_write_thresholds () {
     # TEMPLATE: customize boundaries to vendor specs
     # start: check for 3 digits max, ensure min 0 / max 100
     if ! is_uint "$new_start" 3 || \
-       ! is_within_bounds "$new_start" 0 100; then
+       ! wordinlist "$new_start" "40 50 60 70 80 95"; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
@@ -320,7 +316,7 @@ batdrv_write_thresholds () {
     # TEMPLATE: customize boundaries to vendor specs
     # stop: check for 3 digits max, ensure min 0 / max 100
     if ! is_uint "$new_stop" 3 || \
-       ! is_within_bounds "$new_stop" 0 100; then
+       ! wordinlist "$new_stop" "60 70 80 90 100"; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
@@ -703,7 +699,7 @@ batdrv_check_soc_gt_stop () {
 }
 
 batdrv_recommendations () {
-    # output TEMPLATE laptop specific recommendations
+    # output tuxedo laptop specific recommendations
     # prerequisite: batdrv_init()
 
     soc_gt_stop_recommendation
