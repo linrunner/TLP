@@ -12,6 +12,8 @@
     - tlp-stat -t -v: show all individual sensors
 
   * Bugfixes
+    Battery:
+    - tlp-stat -b: Fix ThinkPad X13s Gen 1 ARM data read out (Issue #807)
     Battery Care:
     - ThinkPads:
       - Fix X201, X220 discharge (Issue #793)
