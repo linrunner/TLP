@@ -61,10 +61,8 @@ batdrv_select_battery () {
 
     local bat="$1"
 
-    # convert battery param to uppercase
-    bat="$(printf '%s' "$1" | tr "[:lower:]" "[:upper:]")"
-
-   _bd_read="$ACPIBATDIR/$bat"
+    # note: do *not* convert battery name to uppercase
+    _bd_read="$ACPIBATDIR/$bat"
     return 0
 }
 
