@@ -259,8 +259,8 @@ batdrv_read_threshold () {
 batdrv_write_thresholds () {
     # write both charge thresholds for a battery
     # use pre-determined method and sysfiles from global parms
-    # $1: new start threshold 0(disabled)..100/DEF(default)
-    # $2: new stop threshold 0..100/DEF(default)
+    # $1: new start threshold 40, 50, 60, 70, 80, 95 or DEF(default)
+    # $2: new stop threshold or 60, 70, 80, 90, 100 or DEF(default)
     # $3: 0=quiet/1=output parameter errors/2=output progress and errors
     # $4: non-empty string indicates thresholds stem from configuration
     # global params: $_batdrv_plugin, $_bm_thresh, $_bat_str, $_bt_cfg_bat, $_bf_start, $_bf_stop
@@ -289,10 +289,9 @@ batdrv_write_thresholds () {
         return 1
     fi
 
-    # TEMPLATE: customize boundaries to vendor specs
     # start: check for 3 digits max, ensure min 0 / max 100
     if ! is_uint "$new_start" 3 || \
-       ! wordinlist "$new_start" "40 50 60 70 80 95"; then
+       ! is_within_bounds "$new_start" 1 100; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
@@ -312,11 +311,29 @@ batdrv_write_thresholds () {
         esac
         return 2
     fi
+    # warn if threshold is not in 40, 50, 60, 70, 80, 95
+    if ! wordinlist "$new_start" "40 50 60 70 80 95"; then
+        # threshold will be rounded
+        case $verb in
+            1)
+                if [ -n "$4" ]; then
+                    echo_message "Notice: START_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_start}\" will be rounded to the closest value in 40, 50, 60, 70, 80, 95."
+                fi
+                ;;
 
-    # TEMPLATE: customize boundaries to vendor specs
+            2)
+                if [ -n "$4" ]; then
+                    echo_message "Notice: START_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_start}\" will be rounded to the closest value in 40, 50, 60, 70, 80, 95."
+                else
+                    cprintf "" "Notice: START_CHARGE_THRESH_%s=\"%s\" will be rounded to the closest value in 40, 50, 60, 70, 80, 95." "$_bat_str" "$new_start" 1>&2
+                fi
+                ;;
+        esac
+    fi
+
     # stop: check for 3 digits max, ensure min 0 / max 100
     if ! is_uint "$new_stop" 3 || \
-       ! wordinlist "$new_stop" "60 70 80 90 100"; then
+       ! is_within_bounds "$new_stop" 1 100; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
@@ -335,6 +352,25 @@ batdrv_write_thresholds () {
                 ;;
         esac
         return 2
+    fi
+    # warn if threshold is not in 60, 70, 80, 90, 100
+    if ! wordinlist "$new_stop" "60 70 80 90 100"; then
+        # threshold will be rounded
+        case $verb in
+            1)
+                if [ -n "$4" ]; then
+                    echo_message "Notice: STOP_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_stop}\" will be rounded to the closest value in 60, 70, 80, 90, 100."
+                fi
+                ;;
+
+            2)
+                if [ -n "$4" ]; then
+                    echo_message "Notice: STOP_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_stop}\" will be rounded to the closest value in 60, 70, 80, 90, 100."
+                else
+                    cprintf "" "Notice: STOP_CHARGE_THRESH_%s=\"%s\" will be rounded to the closest value in 60, 70, 80, 90, 100." "$_bat_str" "$new_stop" 1>&2
+                fi
+                ;;
+        esac
     fi
 
     # TEMPLATE: customize assertion to vendor specs
@@ -581,11 +617,10 @@ batdrv_show_battery_data () {
         254) cprintf "warning" "* natacpi (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
         *)   cprintf "err"     "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
-    # TEMPLATE: customize to vendor specs
     if [ "$_bm_thresh" != "none" ]; then
         printf "Parameter value ranges:\n"
-        printf "* START_CHARGE_THRESH_BAT0/1:  0(off)..100\n"
-        printf "* STOP_CHARGE_THRESH_BAT0/1:   0..100(default)\n"
+        printf "* START_CHARGE_THRESH_BAT0/1: 40, 50, 60, 70, 80 or 95\n"
+        printf "* STOP_CHARGE_THRESH_BAT0/1: 60, 70, 80, 90 or 100\n"
     fi
     printf "\n"
 
