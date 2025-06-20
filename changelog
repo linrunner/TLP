@@ -5,6 +5,8 @@
   * Features
     Battery Care:
     - tlp-stat -b: advertise chargeonce, discharge, recalibrate features individually
+    General:
+    - Invalid subcommands/options: output not only “Usage:” but also “Error:”
     Graphics:
     - RADEON_POWER_PROFILE_ON_AC/BAT removed
     Processor:
