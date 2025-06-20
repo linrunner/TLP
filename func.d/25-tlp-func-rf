@@ -201,3 +201,10 @@ any_bluetooth_in_use () { # check if any bluetooth interface is in use
 
     return 1
 }
+
+# --- NFC Device Checks
+
+any_nfc_in_use () { # always consider nfc *not* in use
+
+    return 1
+}

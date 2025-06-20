@@ -415,10 +415,10 @@ set_radio_device_states () { # set/initialize all radio states
 
                 # check configured list for connected devices
                 for dev in ${DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE:-}; do
-                     # if device is not connected and not in list yet --> add to disable list
+                    # if device is not connected and not in list yet --> add to disable list
                     { case $dev in
                         bluetooth) any_bluetooth_in_use ;;
-                        nfc) false ;; # always consider nfc *not* in use
+                        nfc) any_nfc_in_use ;;
                         wifi) any_wifi_in_use ;;
                         wwan) any_wwan_in_use ;;
                     esac } || wordinlist "$dev" "$devs2disable" || devs2disable="$dev $devs2disable"
