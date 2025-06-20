@@ -116,6 +116,12 @@ parse_args () { # parse command-line arguments
                 init)
                     # command with subcommand and no arguments
                     _cmd="$1"
+                    if [ -z "$2" ]; then
+                        cecho "Error: missing subcommand" 1>&2
+                        echo "Usage: tlp init {start|stop|restart|force-reload}" 1>&2
+                        do_exit 3
+                    fi
+
                     _carg1=""
                     _carg2=""
                     _carg3=""
@@ -123,7 +129,7 @@ parse_args () { # parse command-line arguments
 
                 stat)
                     # unsupported command
-                    cecho "Error: 'tlp stat' no longer supported, use 'tlp-stat' instead."  1>&2
+                    cecho "Error: 'tlp stat' no longer supported, use 'tlp-stat' instead." 1>&2
                     do_exit 3
                     ;;
 
@@ -141,7 +147,7 @@ parse_args () { # parse command-line arguments
 
                 *)
                     # unknown command
-                    cecho "Error: unknown command \"$1\"."  1>&2
+                    cecho "Error: unknown command \"$1\"." 1>&2
                     show_usage
                     do_exit 3
                     ;;
@@ -155,7 +161,7 @@ parse_args () { # parse command-line arguments
                     ;;
 
                 *) # unknown subcommand
-                    cecho "Error: unknown subcommand \"$1\"."  1>&2
+                    cecho "Error: unknown subcommand \"$1\"." 1>&2
                     echo "Usage: tlp init {start|stop|restart|force-reload}" 1>&2
                     do_exit 3
                     ;;
