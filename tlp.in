@@ -155,7 +155,8 @@ parse_args () { # parse command-line arguments
                     ;;
 
                 *) # unknown subcommand
-                    echo "Usage: tlp init {start|stop|restart|force-reload}" >&2
+                    cecho "Error: unknown subcommand \"$1\"."  1>&2
+                    echo "Usage: tlp init {start|stop|restart|force-reload}" 1>&2
                     do_exit 3
                     ;;
             esac
@@ -336,11 +337,6 @@ case "$_cmd" in
 
                 # apply radio states
                 set_radio_device_states stop
-                ;;
-
-            *)
-                echo "Usage: tlp init {start|stop|restart|force-reload}" >&2
-                do_exit 3
                 ;;
         esac
 

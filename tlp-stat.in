@@ -195,17 +195,18 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 ;;
 
             *)
-                echo "Usage: tlp-stat [ -b | --battery   | -c | --config    |"
-                echo "                  -d | --disk      | -e | --pcie      |"
-                echo "                  -g | --graphics  | -m | --mode      |"
-                echo "                  -p | --processor | -q | --quiet     |"
-                echo "                  -r | --rfkill    | -s | --system    |"
-                echo "                  -t | --temp      | -u | --usb       |"
-                echo "                  -w | --warn      | -v | --verbose   |"
-                echo "                     | --version   |    | --cdiff     |"
-                echo "                  -P | --pev       |    | --psup      |"
-                echo "                  -T | --trace     |    | --udev      |"
-                echo "                ]"
+                cecho "Error: invalid option \"$1\"." 1>&2
+                echo "Usage: tlp-stat [ -b | --battery   | -c | --config    |" 1>&2
+                echo "                  -d | --disk      | -e | --pcie      |" 1>&2
+                echo "                  -g | --graphics  | -m | --mode      |" 1>&2
+                echo "                  -p | --processor | -q | --quiet     |" 1>&2
+                echo "                  -r | --rfkill    | -s | --system    |" 1>&2
+                echo "                  -t | --temp      | -u | --usb       |" 1>&2
+                echo "                  -w | --warn      | -v | --verbose   |" 1>&2
+                echo "                     | --version   |    | --cdiff     |" 1>&2
+                echo "                  -P | --pev       |    | --psup      |" 1>&2
+                echo "                  -T | --trace     |    | --udev      |" 1>&2
+                echo "                ]" 1>&2
                 do_exit 3
                 ;;
         esac

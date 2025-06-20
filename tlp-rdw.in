@@ -48,7 +48,8 @@ case $carg1 in
         ;;
 
     *)
-        echo "Usage: tlp-rdw [ enable | disable ]"
+        cecho "Error: invalid command \"$carg1\"." 1>&2
+        echo  "Usage: tlp-rdw [ enable | disable ]" 1>&2
         do_exit 3
 
 esac

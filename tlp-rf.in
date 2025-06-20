@@ -46,8 +46,9 @@ case $self in
                 ;;
 
             *)
-                device_state "$self"
-                echo_device_state "$self" "$_devs"
+                cecho "Error: invalid command \"$carg1\"." 1>&2
+                echo  "Usage: $self [ on | off | toggle ]" 1>&2
+                do_exit 3
                 ;;
         esac
         ;;
