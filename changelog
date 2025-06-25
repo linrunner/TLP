@@ -4,11 +4,15 @@
 
   * Features
     Battery Care:
-    - tlp-stat -b: advertise chargeonce, discharge, recalibrate features individually
+    - tlp-stat -b: advertise chargeonce, discharge, recalibrate features
+      individually
     General:
     - Invalid subcommands/options: output not only “Usage:” but also “Error:”
     Graphics:
     - RADEON_POWER_PROFILE_ON_AC/BAT removed
+    Radio Devices:
+    - DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE: Fix the disabling of nfc
+      (Issue #808)
     Processor:
     - tlp-stat -p -v: show current frequency per core (scaling_cur_freq)
     - tlp-stat -t -v: show all individual sensors
