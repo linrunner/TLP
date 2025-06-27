@@ -204,7 +204,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 break
                 ;;
 
-            *)
+            *) ##########
                 cecho "Error: invalid option \"$1\"." 1>&2
                 echo "Usage: tlp-stat [ -b | --battery   | -c | --config    |" 1>&2
                 echo "                  -d | --disk      | -e | --pcie      |" 1>&2
@@ -375,14 +375,14 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     printf "Last run       = %s\n" "$(print_file_modtime_and_age "$PWRRUNFILE")"
 
     # --- actual opmode
-    printf "Mode           = %s\n" "$(print_saved_powerstate)"
+    printf "Power profile  = %s\n" "$(print_saved_powerstate)"
 
     # ---- actual power source
     get_sys_power_supply
     case $? in
-        0) printf "Power source   = AC\n" ;;
-        1) printf "Power source   = battery\n" ;;
-        *) printf "Power source   = unknown\n" ;;
+        "$PS_AC")      printf "Power source   = AC\n" ;;
+        "$PS_BAT")     printf "Power source   = battery\n" ;;
+        "$PS_UNKNOWN") printf "Power source   = unknown\n" ;;
     esac
     if check_ac_quirk "$model"; then
         echo "Notice: system may not detect AC/charger -- see: https://linrunner.de/faq/operation.html#faq-ac-quirk"

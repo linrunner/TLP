@@ -49,15 +49,23 @@ apply_common_settings () { # apply settings common to all modes
 
 apply_suspend_settings () { # apply settings before suspending
 
-    set_ahci_port_runtime_pm "2"
-    set_ahci_disk_runtime_pm "2"
-    set_pcie_aspm "2"
+    set_ahci_port_runtime_pm "$PP_SUS"
+    set_ahci_disk_runtime_pm "$PP_SUS"
+    set_pcie_aspm "$PP_SUS"
 
     return 0
 }
 
 show_usage () {
-    echo "Usage: tlp start|true|bat|false|ac|usb|bayoff|chargeonce|discharge|setcharge|fullcharge|recalibrate|diskid" 1>&2
+    echo "Usage: tlp {performance | ac          |" 1>&2
+    echo "            balanced    | bat         |" 1>&2
+    echo "            power-saver | usb         |" 1>&2
+    echo "            setcharge   | chargeonce  | fullcharge  |" 1>&2
+    echo "            discharge   | recalibrate |" 1>&2
+    echo "            bayoff      | diskid      |" 1>&2
+    echo "            --version}" 1>&2
+    do_exit 3
+
 }
 
 parse_args () { # parse command-line arguments
@@ -83,7 +91,7 @@ parse_args () { # parse command-line arguments
         elif [ "$_cmd" = "nil" ]; then
             # command
             case "$1" in
-                ac|auto|bat|bayoff|false|diskid|resume|suspend|start|true|usb)
+                ac|auto|bat|balanced|bayoff|false|diskid|performance|power-saver|resume|suspend|start|true|usb)
                     # commands without further arguments
                     _cmd="$1"
                     _cmd2=""
@@ -140,7 +148,6 @@ parse_args () { # parse command-line arguments
                     ;;
 
                 --version)
-                    # no operation
                     _cmd="version"
                     _cmd2=""
                     ;;
@@ -230,11 +237,11 @@ else
 fi
 echo_debug "run" "SHELL=$(print_shell); umask=$(umask)"
 
-# get current power state
+# get current power profile
 get_power_mode "$_cmd"; pwrmode=$?
 get_manual_mode
 
-# determine new power state
+# select target power profile
 case "$_cmd" in
     init|start)
         # discard manual mode
@@ -244,35 +251,51 @@ case "$_cmd" in
     auto|resume)
         # if manual mode is set, use instead of current power state
         # shellcheck disable=SC2154
-        case $_manual_mode in
-            0|1) pwrmode="$_manual_mode" ;;
-        esac
+        if [ "$_manual_mode" != "$PP_NONE" ]; then
+            pwrmode="$_manual_mode"
+        fi
         ;;
 
     true|bat)
-        pwrmode=1
-        set_manual_mode 1
+        pwrmode="$PP_BAL"
+        set_manual_mode "$PP_BAL"
         ;;
 
     false|ac)
-        pwrmode=0
-        set_manual_mode 0
+        pwrmode="$PP_PRF"
+        set_manual_mode "$PP_PRF"
+        ;;
+
+    power-saver)
+        pwrmode="$PP_SAV"
+        clear_manual_mode
+        ;;
+
+    balanced)
+        pwrmode="$PP_BAL"
+        clear_manual_mode
+        ;;
+
+    performance)
+        pwrmode="$PP_PRF"
+        clear_manual_mode
         ;;
 esac
 
 # shellcheck disable=SC2154
 case "$_syspwr" in
-    0) echo_debug "run" "power_source=ac" ;;
-    1) echo_debug "run" "power_source=bat" ;;
-    *) echo_debug "run" "power_source=unknown ($_syspwr)" ;;
+    "$PS_AC")  echo_debug "run" "power_source=ac" ;;
+    "$PS_BAT") echo_debug "run" "power_source=bat" ;;
+    *)         echo_debug "run" "power_source=unknown ($_syspwr)" ;;
 esac
 
 echo_debug "run" "manual_mode=$_manual_mode"
 
 case "$pwrmode" in
-    0) echo_debug "run" "power_mode=ac" ;;
-    1) echo_debug "run" "power_mode=bat" ;;
-    *) echo_debug "run" "power_mode=unknown ($pwrmode)" ;;
+    "$PP_PRF")  echo_debug "run" "power_profile=performance" ;;
+    "$PP_BAL")  echo_debug "run" "power_profile=balanced" ;;
+    "$PP_SAV")  echo_debug "run" "power_profile=power-saver" ;;
+    *)          echo_debug "run" "power_profile=unknown ($pwrmode)" ;;
 esac
 
 # process command
@@ -392,37 +415,19 @@ case "$_cmd" in
         fi
         ;;
 
-    true|bat) # set battery power mode
+    performance|ac|false|balanced|bat|true|power-saver) # apply performance/balanced/power-saver profile
         check_services_activation_status
         check_root
         if lock_tlp; then
-            compare_and_save_power_state 1
-            apply_common_settings 1
+            compare_and_save_power_state "$pwrmode"
+            apply_common_settings "$pwrmode"
             poweroff_drivebay "$pwrmode" 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
-            set_radio_device_states 1
+            set_radio_device_states "$pwrmode"
             save_runconf
             unlock_tlp
 
-            echo_started_mode 1
-        else
-            echo_tlp_locked
-        fi
-        ;;
-
-    false|ac) # set ac power mode
-        check_services_activation_status
-        check_root
-        if lock_tlp; then
-            compare_and_save_power_state 0
-            apply_common_settings 0
-            poweroff_drivebay "$pwrmode" 0
-            [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
-            set_radio_device_states 0
-            save_runconf
-            unlock_tlp
-
-            echo_started_mode 0
+            echo_started_mode "$pwrmode"
         else
             echo_tlp_locked
         fi
@@ -434,9 +439,9 @@ case "$_cmd" in
         suspend_drivebay "$pwrmode"
 
         case "$X_TLP_SUSPEND_ACMODE" in
-            1) # workaround (optional): apply ac settings
+            1) # workaround (optional): apply performance profile
                 if lock_tlp; then
-                    apply_common_settings 0
+                    apply_common_settings "$PP_PRF"
                     save_runconf
                     unlock_tlp
                 fi
@@ -445,7 +450,7 @@ case "$_cmd" in
             0) # workaround disabled: do nothing
                 ;;
 
-            *) # workaround (default): apply selected settings to avoid freezes on wakeup
+            *) # workaround (default): apply only selected settings to avoid freezes on wakeup
                 if lock_tlp; then
                     apply_suspend_settings
                     save_runconf

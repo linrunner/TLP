@@ -481,7 +481,7 @@ set_sata_link_power () { # set ahci link power management
 }
 
 set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
-    # $1: 0=ac mode, 1=battery mode, 2=suspend mode
+    # $1: 0=ac mode, 1=battery mode, 3=suspend mode
     # $2: target disk device (optional)
 
     local target="$2"
@@ -490,7 +490,7 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
     case "$1" in
         0) control=${AHCI_RUNTIME_PM_ON_AC:-} ;;
         1) control=${AHCI_RUNTIME_PM_ON_BAT:-} ;;
-        2) # reset on suspend only when configured
+        3) # reset on suspend only when configured
             if [ -n "${AHCI_RUNTIME_PM_ON_AC:-}${AHCI_RUNTIME_PM_ON_BAT:-}" ]; then
                 control="on"
             fi
@@ -562,14 +562,14 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
 }
 
 set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
-    # $1: 0=ac mode, 1=battery mode, 2=suspend mode
+    # $1: 0=ac mode, 1=battery mode, 3=suspend mode
 
     local control device
 
     case "$1" in
         0) control=${AHCI_RUNTIME_PM_ON_AC:-} ;;
         1) control=${AHCI_RUNTIME_PM_ON_BAT:-} ;;
-        2) # reset on suspend only when configured
+        3) # reset on suspend only when configured
             if [ -n "${AHCI_RUNTIME_PM_ON_AC:-}${AHCI_RUNTIME_PM_ON_BAT:-}" ]; then
                 control="on"
             fi
