@@ -188,31 +188,26 @@ print_file_modtime_and_age () {
 }
 
 print_saved_powerstate () {
-    # read and print saved state
-    local sps
+    # read and print saved power profile
+    local saved_pp
 
-    sps="$(read_sysf "$PWRRUNFILE")"
-    case "$sps" in
-        0) printf "AC" ;;
-        1) printf "battery" ;;
-        *) printf "unknown" ;;
+    saved_pp="$(read_sysf "$PWRRUNFILE")"
+    case "$saved_pp" in
+        "$PP_PRF")  printf "performance/AC" ;;
+        "$PP_BAL")  printf "balanced/BAT" ;;
+        "$PP_SAV")  printf "power-saver/SAV" ;;
+        "$PP_NONE") printf "unknown" ;;
     esac
 
-    # check for manual mode
-    get_manual_mode
+    # check for manual and persistent default mode
     # shellcheck disable=SC2154
-    case "$_manual_mode" in
-        0|1|a) printf " (manual)\n" ;;
-
-        n) # check for persistent mode
-            # shellcheck disable=SC2154
-            if get_persist_mode && [ "$_persist_mode" = "$sps" ]; then
-                printf " (persistent)\n"
-            else
-                printf "\n"
-            fi
-            ;;
-    esac
+    if get_manual_mode; then
+        printf " (manual)\n"
+    elif get_persist_mode && [ "$_persist_mode" = "$saved_pp" ]; then
+        printf " (persistent)\n"
+    else
+        printf "\n"
+    fi
 
     return 0
 }

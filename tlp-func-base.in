@@ -55,6 +55,18 @@ readonly TLP_SERVICES="tlp.service"
 readonly PPD_SERVICE="power-profiles-daemon.service"
 readonly RFKILL_SERVICES="systemd-rfkill.service systemd-rfkill.socket"
 
+# power supplies
+readonly PS_AC=0
+readonly PS_BAT=1
+readonly PS_UNKNOWN=128
+
+# power profiles
+readonly PP_PRF=0
+readonly PP_BAL=1
+readonly PP_SAV=2
+readonly PP_SUS=3
+readonly PP_NONE=128
+
 # ----------------------------------------------------------------------------
 # Control
 
@@ -809,10 +821,10 @@ read_dmi () { # read DMI data
 
 get_sys_power_supply () {
     # determine active power supply
-    # $1: command
-    # rc: 0=ac/1=battery/2=unknown
+    # $1: tlp command
+    # rc: PS_AC=0/PS_BAT=/PS_UNKNOWN=128
     # retval: $_syspwr == rc
-    #         $_psdev: 1st power supply found (for udev rule check)
+    #         $_psdev: 1st power supply (sysfs path) found (for udev rule check)
     #
     # examine all power supply devices in lexical order, typically this is:
     #   AC, ADPx (AC chargers) -> BATx, CMBx (batteries) -> ucsi* (USB).
@@ -821,12 +833,13 @@ get_sys_power_supply () {
     # the ranking of power source classes for the determination of the active
     # power supply is as follows:
     #   1. AC chargers
-    #   2. Batteries
-    #   3. USB
+    #   2. USB chargers (also power banks)
+    #   3. Batteries
     # $TLP_PS_IGNORE may be used to ignore one or more power source classes
 
     local bs ps_ignore psrc psrc_name
     local ac0seen=
+    local tlp_cmd="$1"
     local wait=
     _psdev=""
 
@@ -858,12 +871,12 @@ get_sys_power_supply () {
                 # check AC status
                 if [ "$(read_sysf "$psrc/online")" = "1" ]; then
                     # AC online --> end iteration
-                    _syspwr=0
+                    _syspwr=$PS_AC
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_online: syspwr=$_syspwr"
                     break
                 else
                     # AC offine --> end iteration
-                    _syspwr=1
+                    _syspwr=$PS_BAT
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_offline: syspwr=$_syspwr"
                     break
                 fi
@@ -872,7 +885,7 @@ get_sys_power_supply () {
             USB)
                 # USB PS detected
                 _psdev="${_psdev:-$psrc}"
-                # if configured, skip device to ignore incorrect AC status
+                # if configured, skip device to ignore incorrect USB status
                 if wordinlist "USB" "$ps_ignore"; then
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_ignored: syspwr=$_syspwr"
                     continue
@@ -881,7 +894,7 @@ get_sys_power_supply () {
                 # check USB PS status
                 if [ "$(read_sysf "$psrc/online")" = "1" ]; then
                     # USB online --> end iteration
-                    _syspwr=0
+                    _syspwr=$PS_AC
                     echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_online: syspwr=$_syspwr"
                     break
                 else
@@ -903,7 +916,7 @@ get_sys_power_supply () {
 
                 # check battery status
                 bs="$(read_sysf "$psrc/status")"
-                if [ "$bs" != "Discharging" ] && [ "$1" = "auto" ] && [ -z "$wait" ]; then
+                if [ "$bs" != "Discharging" ] && [ "$tlp_cmd" = "auto" ] && [ -z "$wait" ]; then
                     # when command is 'tlp auto', not "Discharging" might be caused by lagging battery status updates
                     # --> recheck every 0.1 secs for 1.5 secs (or user value in deciseconds) max
                     # use delay loop only once
@@ -921,11 +934,11 @@ get_sys_power_supply () {
                     Discharging)
                         if ! lockpeek_tlp tlp_discharge; then
                             # battery status "Discharging" means battery mode ...
-                            _syspwr=1
+                            _syspwr=$PS_BAT
                             echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_discharging: syspwr=$_syspwr; wait=$wait"
                         else
                             # ... unless forced discharge is in progress, which means AC
-                            _syspwr=0
+                            _syspwr=$PS_AC
                             echo_debug "ps" "get_sys_power_supply(${psrc_name}).forced_discharge: syspwr=$_syspwr; wait=$wait"
                         fi
                         break # --> end iteration
@@ -933,7 +946,7 @@ get_sys_power_supply () {
 
                     *) # assume AC mode for everything else, e.g. "Charging", "Full", "Not charging", "Unknown"
                        # --> continue looking because there may be multiple batteries
-                        _syspwr=0
+                        _syspwr=$PS_AC
                         echo_debug "ps" "get_sys_power_supply(${psrc_name}).bat_not_discharging: bs=$bs; syspwr=$_syspwr; wait=$wait"
                         ;;
                 esac
@@ -948,11 +961,11 @@ get_sys_power_supply () {
         # _syspwr result yet undecided
         if [ "$ac0seen" = "1" ]; then
             # AC offline remembered --> battery mode
-            _syspwr=1
+            _syspwr=$PS_BAT
             echo_debug "ps" "get_sys_power_supply(${ac0seen##/*/}).ac_offline_remembered: syspwr=$_syspwr"
         else
             # we have seen neither a AC nor a battery power source --> unknown mode
-            _syspwr=2
+            _syspwr=$PS_UNKNOWN
             echo_debug "ps" "get_sys_power_supply.none_found: syspwr=$_syspwr"
         fi
     fi
@@ -960,17 +973,18 @@ get_sys_power_supply () {
     return "$_syspwr"
 }
 
-get_persist_mode () { # get persistent operation mode
+get_persist_mode () { # get persistent power profile
     # rc: 0=persistent/1=not persistent
-    # retval: $_persist_mode (0=ac, 1=battery, none)
+    # retval: $_persist_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, PP_NONE=128)
     local rc=1
-    _persist_mode="none"
+    _persist_mode=$PP_NONE
 
     if [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then
         # persistent mode = configured default mode
         case $(toupper "$TLP_DEFAULT_MODE") in
-            AC)  _persist_mode=0; rc=0 ;;
-            BAT) _persist_mode=1; rc=0 ;;
+            AC|PRF)  _persist_mode=$PP_PRF; rc=0 ;;
+            BAT|BAL) _persist_mode=$PP_BAL; rc=0 ;;
+            SAV)     _persist_mode=$PP_SAV; rc=0 ;;
         esac
     fi
 
@@ -986,13 +1000,13 @@ is_laptop () { # check if machine is a laptop
 }
 
 get_power_mode () {
-    # get current operation mode
-    # $1: command
-    # rc: 0=AC/1=battery
+    # get power profile depending on actual power source or default/persistence setting
+    # $1: tlp command - passed on to get_sys_power_supply()
+    # rc: PP_PRF=0/PP_BAL=1/PP_SAV=2/PP_NONE=128
     # similar to get_sys_power_supply(), but maps unknown power source to TLP_DEFAULT_MODE
     # or returns persistent mode when enabled.
     # if TLP_DEFAULT_MODE is unconfigured and power source is unknown, returns
-    # 1=BAT for laptop/0=AC for desktop/other.
+    # PP_BAL for laptop/PP_PRF for desktop/other.
 
     get_sys_power_supply "$1"
     local rc=$?
@@ -1002,16 +1016,17 @@ get_power_mode () {
         rc=$_persist_mode
     else
         # non-persistent mode, use current power source
-        if [ $rc -eq 2 ]; then
+        if [ $rc -eq $PS_UNKNOWN ]; then
             # unknown power supply, use configured default mode
             case $(toupper "$TLP_DEFAULT_MODE") in
-                AC)  rc=0 ;;
-                BAT) rc=1 ;;
+                AC|PRF)  rc=$PP_PRF ;;
+                BAT|BAL) rc=$PP_BAL ;;
+                SAV)     rc=$PP_SAV ;;
                 *) # unconfigured or invalid default mode -> check machine type
                     if is_laptop; then
-                        rc=1 # laptop: assume BAT
+                        rc=$PP_BAL # laptop: assume battery
                     else
-                        rc=0 # desktop/other: assume AC
+                        rc=$PP_PRF # desktop/other: assume AC
                     fi
                     ;;
             esac
@@ -1021,15 +1036,17 @@ get_power_mode () {
     return $rc
 }
 
-compare_and_save_power_state() { # compare $1 to last saved power state,
-    # save $1 afterwards when different
-    # $1: new state 0=ac, 1=battery
+compare_and_save_power_state () {
+    # select new power profile:
+    # - compare $1 to last saved power profile,
+    # - save $1 afterwards when different
+    # $1: new profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
     # rc: 0=different, 1=equal
-    local lp
+    local saved_pp
 
     # intercept invalid states
     case $1 in
-        0|1) ;; # valid state
+        "$PP_PRF"|"$PP_BAL"|"$PP_SAV") ;; # valid state
         *) # invalid new state --> return "different"
             echo_debug "ps" "compare_and_save_power_state($1).invalid"
             return 0
@@ -1037,14 +1054,14 @@ compare_and_save_power_state() { # compare $1 to last saved power state,
     esac
 
     # read saved state
-    lp=$(read_sysf $PWRRUNFILE)
+    saved_pp=$(read_sysf $PWRRUNFILE)
 
     # compare
-    if [ -z "$lp" ] || [ "$lp" != "$1" ]; then
+    if [ -z "$saved_pp" ] || [ "$saved_pp" != "$1" ]; then
         # saved state is nonexistent/empty or is different --> save new state
         create_rundir
         write_sysf "$1" $PWRRUNFILE
-        echo_debug "ps" "compare_and_save_power_state($1).different: old=$lp"
+        echo_debug "ps" "compare_and_save_power_state($1).different: old=$saved_pp"
         return 0
     else
         # touch file for last run
@@ -1073,12 +1090,13 @@ check_ac_power () { # check if ac power connected -- $1: function
 }
 
 echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
-    if [ "$1" = "0" ]; then
-        printf "TLP started in AC mode"
-    else
-        printf "TLP started in battery mode"
-    fi
-    if [ "$_manual_mode" != "n" ]; then
+
+    case "$1" in
+        "$PP_PRF") printf "TLP started using profile performance/AC" ;;
+        "$PP_BAL") printf "TLP started using profile balanced/BAT" ;;
+        "$PP_SAV") printf "TLP started using profile power-saver/SAV" ;;
+    esac
+    if [ "$_manual_mode" != "$PP_NONE" ]; then
         printf " (manual).\n"
     else
         printf " (auto).\n"
@@ -1087,11 +1105,11 @@ echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
     return 0
 }
 
-set_manual_mode () { # set manual operation mode
-    # $1: 0=ac mode, 1=battery mode
-    # retval: $_manual_mode (0=ac, 1=battery)
+set_manual_mode () { # set manual profile
+    # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
+    # retval: $_manual_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2)
 
-    if [ "$1" != "0" ] && [ "$1" != "1" ]; then
+    if ! wordinlist "$1" "$PP_PRF $PP_BAL $PP_SAV"; then
         echo_debug "pm" "set_manual_mode($1).invalid"
         return 1
     fi
@@ -1107,28 +1125,28 @@ set_manual_mode () { # set manual operation mode
     fi
 }
 
-clear_manual_mode () { # remove manual operation mode
+clear_manual_mode () { # remove manual profile
     # retval: $_manual_mode (none)
 
     rm -f $MANUALMODEFILE 2> /dev/null
-    _manual_mode="n"
+    _manual_mode="$PP_NONE"
 
     echo_debug "pm" "clear_manual_mode"
     return 0
 }
 
-get_manual_mode () { # get manual operation mode
+get_manual_mode () { # get manual profile
     # rc: 0=active/1=inactive
-    # retval: $_manual_mode (0=ac, 1=battery, a=active, n=inactive)
+    # retval: $_manual_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, PP_NONE=128)
     local rc=1
-    _manual_mode="n"
+    _manual_mode="$PP_NONE"
 
     if [ -f $MANUALMODEFILE ]; then
         # read mode file
         if _manual_mode=$(read_sysf $MANUALMODEFILE); then
             case $_manual_mode in
-                0|1) rc=0 ;;
-                *) _manual_mode="n" ;;
+                "$PP_PRF"|"$PP_BAL"|"$PP_SAV") rc=0 ;;
+                *) _manual_mode=$PP_NONE ;;
             esac
         else
             # cannot read mode file - possible cause:
@@ -1136,9 +1154,10 @@ get_manual_mode () { # get manual operation mode
             #   because tlp ac/bat is invoked with sudo when creating the file and thereby a
             #   restrictive umask applies; see https://github.com/linrunner/TLP/issues/702
             # -> manual mode is active but operation mode cannot be determined
-            _manual_mode="a"
+            _manual_mode=$PP_NONE
             rc=0
         fi
     fi
+
     return $rc
 }
