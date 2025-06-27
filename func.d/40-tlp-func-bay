@@ -105,7 +105,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
             return 0
         else
             echo_debug "pm" "poweroff_drivebay($1): optdrv=$optdrv"
-            [ "$2" = "1" ] && echo -n "Powering off drive bay..."
+            [ "$2" = "1" ] && printf "Powering off drive bay..."
 
             # Unmount media
             umount -l "$optdrv" > /dev/null 2>&1

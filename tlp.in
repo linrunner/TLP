@@ -296,14 +296,14 @@ case "$_cmd" in
             start)
                 # apply power save settings
                 compare_and_save_power_state "$pwrmode"
-                echo -n "Applying power save settings..."
+                printf "Applying power save settings..."
                 apply_common_settings "$pwrmode"
                 poweroff_drivebay "$pwrmode" 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
 
                 # apply battery settings
-                echo -n "Setting battery charge thresholds..."
+                printf "Setting battery charge thresholds..."
                 init_batteries_thresholds
                 echo "done."
 
@@ -314,14 +314,14 @@ case "$_cmd" in
             restart|force-reload)
                 # apply power save settings
                 compare_and_save_power_state "$pwrmode"
-                echo -n "Applying power save settings..."
+                printf "Applying power save settings..."
                 apply_common_settings "$pwrmode"
                 poweroff_drivebay "$pwrmode" 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
 
                 # apply battery settings
-                echo -n "Setting battery charge thresholds..."
+                printf "Setting battery charge thresholds..."
                 init_batteries_thresholds
                 echo "done."
                 ;;
@@ -335,7 +335,7 @@ case "$_cmd" in
 
                 if [ "$X_TLP_SHUTDOWN_ACMODE" = "1" ]; then
                     # workaround (optional): apply ac settings
-                    echo -n "Applying power save settings..."
+                    printf "Applying power save settings..."
                     apply_common_settings 0
                     poweroff_drivebay "$pwrmode" 0
                     echo "done."

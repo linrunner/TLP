@@ -442,7 +442,7 @@ set_radio_device_states () { # set/initialize all radio states
 
         # disable configured radios
         if [ -n "$devs2disable" ]; then
-            [ "$quiet" = "1" ] || echo -n "Disabling radios:"
+            [ "$quiet" = "1" ] || printf "Disabling radios:"
             for dev in bluetooth nfc wifi wwan; do
                 if wordinlist "$dev" "$devs2disable"; then
                     [ "$quiet" = "1" ] || printf ' %s' "$dev"
@@ -463,7 +463,7 @@ set_radio_device_states () { # set/initialize all radio states
                 done
             else
                 # start mode: enable listed radios
-                [ "$quiet" = "1" ] || echo -n "Enabling radios:"
+                [ "$quiet" = "1" ] || printf "Enabling radios:"
                 for dev in bluetooth nfc wifi wwan; do
                     if wordinlist "$dev" "$devs2enable"; then
                         [ "$quiet" = "1" ] || printf ' %s' "$dev"
