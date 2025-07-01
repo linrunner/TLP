@@ -545,7 +545,7 @@
 #RESTORE_THRESHOLDS_ON_BAT=1
 
 # ------------------------------------------------------------------------------
-# tlp-rdw - Parameters for the radio device wizard
+# Radio Device Wizard - requires installation of the optional tlp-rdw package.
 
 # Possible devices: bluetooth, wifi, wwan.
 # Separate multiple radio devices with spaces.
@@ -564,6 +564,9 @@
 #DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT=""
 
 # Radio devices to enable/disable when docked.
+# Note: not all docks can be recognized, especially USB-C docks. If a LAN cable
+# is connected to the dock, use DEVICES_TO_DISABLE_ON_LAN_CONNECT and
+# DEVICES_TO_ENABLE_ON_LAN_DISCONNECT instead.
 
 #DEVICES_TO_ENABLE_ON_DOCK=""
 #DEVICES_TO_DISABLE_ON_DOCK=""
