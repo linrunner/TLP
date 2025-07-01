@@ -7,9 +7,22 @@
 # ----------------------------------------------------------------------------
 # Constants
 
+# ansi codes
 readonly ANSI_RED="\033[31m"
 readonly ANSI_GREEN="\033[32m"
 readonly ANSI_BLACK="\033[m"
+
+# power supplies
+readonly PS_AC=0
+readonly PS_BAT=1
+readonly PS_UNKNOWN=128
+
+# power profiles
+readonly PP_PRF=0
+readonly PP_BAL=1
+readonly PP_SAV=2
+readonly PP_SUS=3
+readonly PP_NONE=128
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -72,14 +85,18 @@ compare_sysf () {
     local cmp_str="$1"
     local sys_str
 
-    if [ -f "$2" ] && sys_str=$(read_sysf "$2"); then
+    if [ -f "$2" ]; then
+        sys_str=$(read_sysf "$2")
         if [ "$sys_str" != "$cmp_str" ]; then
             printf_msg "\n*** Deviation at %s: %s (act) != %s (exp)\n" "$2" "$sys_str" "$cmp_str"
             return 1
         fi
     else
-        printf_msg "\n*** Deviation for %s: sysfile does not exist.\n" "$2"
-        return 2
+        # file is missing
+        if [ -n "$cmp_str" ]; then
+            printf_msg "\n*** Deviation for %s: sysfile does not exist.\n" "$2"
+            return 2
+        fi
     fi
 
     return 0
