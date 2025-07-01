@@ -687,7 +687,7 @@ batdrv_force_discharge_active () {
     # battery readings to be returned to caller as retvals (and for trace output)
     case "$_batdrv_sim" in
         0) # runs on native hardware
-            _bat_cn="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/energy_now")"' / 1000.0 );')"
+            _bat_cn="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/charge_now")"' / 1000.0 );')"
             _bat_soc="$(batdrv_calc_soc)"
             _bat_cur="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/current_now")"' / 1000.0 );')"
             _bat_volt="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/voltage_now")"' / 1000.0 );')"
@@ -803,9 +803,9 @@ batdrv_discharge () {
     fi
     case "$_batdrv_sim" in
         0) # runs on native hardware
-            cf="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/energy_full")"' / 1000.0 );')"
+            cf="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/charge_full")"' / 1000.0 );')"
             _bat_target_ch="$(perl -e 'printf ("%d", '"$cf"' * '"$target_soc"' / 100.0)')"
-            cn="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/energy_now")"' / 1000.0 );')"
+            cn="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/charge_now")"' / 1000.0 );')"
             ;;
 
         1) # simulation on ThinkPad
