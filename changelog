@@ -21,6 +21,7 @@
     Battery:
     - tlp-stat -b: Fix ThinkPad X13s Gen 1 ARM data read out (Issue #807)
     Battery Care:
+    - Chromebooks, Framework laptops: fix tlp discharge to a target percentage
     - ThinkPads:
       - Fix X201, X220 discharge (Issue #793)
       - Fix bash completion for tlp discharge on tp-smapi models
