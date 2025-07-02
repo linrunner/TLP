@@ -41,23 +41,27 @@ get_intel_gpu_sysdirs () {
 
 set_intel_gpu_min_max_boost_freq () {
     # set gpu frequency limits
-    # $1: 0=ac mode, 1=battery mode
+    # $1: PP_PRF, PP_BAL, PP_SAV
     # rc: 0=ok/1=parameter error
     local new_min new_max new_boost
     local old_min old_max old_boost gpu_min gpu_max
     local driver suffix
 
-    if [ "$1" = "1" ]; then
-        new_min=${INTEL_GPU_MIN_FREQ_ON_BAT:-}
-        new_max=${INTEL_GPU_MAX_FREQ_ON_BAT:-}
-        new_boost=${INTEL_GPU_BOOST_FREQ_ON_BAT:-}
-        suffix="BAT"
-    else
-        new_min=${INTEL_GPU_MIN_FREQ_ON_AC:-}
-        new_max=${INTEL_GPU_MAX_FREQ_ON_AC:-}
-        new_boost=${INTEL_GPU_BOOST_FREQ_ON_AC:-}
-        suffix="AC"
-    fi
+    case "$1" in
+        "$PP_PRF")
+            new_min=${INTEL_GPU_MIN_FREQ_ON_AC:-}
+            new_max=${INTEL_GPU_MAX_FREQ_ON_AC:-}
+            new_boost=${INTEL_GPU_BOOST_FREQ_ON_AC:-}
+            suffix="AC"
+            ;;
+
+        "$PP_BAL"|"$PP_SAV")
+            new_min=${INTEL_GPU_MIN_FREQ_ON_BAT:-}
+            new_max=${INTEL_GPU_MAX_FREQ_ON_BAT:-}
+            new_boost=${INTEL_GPU_BOOST_FREQ_ON_BAT:-}
+            suffix="BAT"
+            ;;
+    esac
 
     if [ -z "$new_min" ] && [ -z "$new_max" ] && [ -z "$new_boost" ]; then
         echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_configured"
@@ -127,7 +131,7 @@ set_intel_gpu_min_max_boost_freq () {
 
 set_amdgpu_profile () {
     # set amdgpu/radeon power profile
-    # $1: 0=ac mode, 1=battery mode
+    # $1: PP_PRF, PP_BAL, PP_SAV
 
     local driver gpu level pwr rc1 rc2
     local sdone=0 # 1=gpu present
@@ -139,11 +143,10 @@ set_amdgpu_profile () {
             amdgpu)
                 if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
                     # Use amdgpu dynamic power management method (DPM)
-                    if [ "$1" = "1" ]; then
-                        level=${RADEON_DPM_PERF_LEVEL_ON_BAT:-}
-                    else
-                        level=${RADEON_DPM_PERF_LEVEL_ON_AC:-}
-                    fi
+                    case "$1" in
+                        "$PP_PRF")           level=${RADEON_DPM_PERF_LEVEL_ON_AC:-} ;;
+                        "$PP_BAL"|"$PP_SAV") level="${RADEON_DPM_PERF_LEVEL_ON_BAT:-}" ;;
+                    esac
 
                     if [ -z "$level" ]; then
                         # do nothing if unconfigured
@@ -160,13 +163,17 @@ set_amdgpu_profile () {
             radeon)
                 if [ -f "$gpu/device/power_dpm_force_performance_level" ] && [ -f "$gpu/device/power_dpm_state" ]; then
                     # Use radeon dynamic power management method (DPM)
-                    if [ "$1" = "1" ]; then
-                        level=${RADEON_DPM_PERF_LEVEL_ON_BAT:-}
-                        pwr=${RADEON_DPM_STATE_ON_BAT:-}
-                    else
-                        level=${RADEON_DPM_PERF_LEVEL_ON_AC:-}
-                        pwr=${RADEON_DPM_STATE_ON_AC:-}
-                    fi
+                    case "$1" in
+                        "$PP_PRF")
+                            level="${RADEON_DPM_PERF_LEVEL_ON_AC:-}"
+                            pwr="${RADEON_DPM_STATE_ON_AC:-}"
+                            ;;
+
+                        "$PP_BAL"|"$PP_SAV")
+                            level="${RADEON_DPM_PERF_LEVEL_ON_BAT:-}"
+                            pwr="${RADEON_DPM_STATE_ON_BAT:-}"
+                            ;;
+                    esac
 
                     if [ -z "$pwr" ] || [ -z "$level" ]; then
                         # do nothing if (partially) unconfigured
@@ -192,7 +199,7 @@ set_amdgpu_profile () {
 
 set_abm_level () {
     # set amdgpu adaptive backlight modulation (ABM)
-    # $1: 0=ac mode, 1=battery mode
+    # $1: PP_PRF, PP_BAL, PP_SAV
 
     local card driver gpu level old_level pps rc
     local sdone=0 # 1=gpu present
@@ -205,12 +212,10 @@ set_abm_level () {
                 card="${gpu##/*/}"
                 for pps in "$gpu/${card}-eDP"*; do
                     if [ -f "$pps/amdgpu/panel_power_savings" ]; then
-                        if [ "$1" = "1" ]; then
-                            level=${AMDGPU_ABM_LEVEL_ON_BAT:-}
-                        else
-                            level=${AMDGPU_ABM_LEVEL_ON_AC:-}
-                        fi
-
+                        case "$1" in
+                            "$PP_PRF")           level="${AMDGPU_ABM_LEVEL_ON_AC:-}" ;;
+                            "$PP_BAL"|"$PP_SAV") level="${AMDGPU_ABM_LEVEL_ON_BAT:-}" ;;
+                        esac
                         if [ -z "$level" ]; then
                             # do nothing if unconfigured
                             echo_debug "pm" "set_abm_level($1).amdgpu.not_configured: gpu=$gpu"
