@@ -216,7 +216,7 @@
 # thermal and fan speed. Values are given in order of increasing power saving.
 # Note: check the output of tlp-stat -p to determine availability on your
 # hardware and additional profiles such as: balanced-performance, quiet, cool.
-# Default: <none>
+# Default: performance (AC), balanced (BAT), low-power (SAV)
 
 #PLATFORM_PROFILE_ON_AC=performance
 #PLATFORM_PROFILE_ON_BAT=balanced
