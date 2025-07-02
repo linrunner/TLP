@@ -69,14 +69,13 @@ any_wifi_in_use () { # check if any wifi device is in use
 
 # --- Wifi Power Management
 
-set_wifi_power_mode () { # set wifi power save mode -- $1: 0=ac mode, 1=battery mode
+set_wifi_power_mode () { # set wifi power save mode -- $1: PP_PRF, PP_BAL, PP_SAV
     local pwr iface
 
-    if [ "$1" = "1" ]; then
-        pwr=${WIFI_PWR_ON_BAT:-}
-    else
-        pwr=${WIFI_PWR_ON_AC:-}
-    fi
+    case "$1" in
+        "$PP_PRF")           pwr="${WIFI_PWR_ON_AC:-}" ;;
+        "$PP_BAL"|"$PP_SAV") pwr="${WIFI_PWR_ON_BAT:-}" ;;
+    esac
 
     # check values, translate obsolete syntax
     case "$pwr" in

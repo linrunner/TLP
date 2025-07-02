@@ -45,16 +45,20 @@ print_cpu_driver () {
 }
 
 set_cpu_driver_opmode () {
-    # set CPU driver operation mode -- $1: 0=ac mode, 1=battery mode
+    # set CPU driver operation mode -- $1: PP_PRF, PP_BAL, PP_SAV
     local cfg opmode
 
-    if [ "$1" = "1" ]; then
-        opmode=${CPU_DRIVER_OPMODE_ON_BAT:-}
-        cfg="CPU_DRIVER_OPMODE_ON_BAT"
-    else
-        opmode=${CPU_DRIVER_OPMODE_ON_AC:-}
-        cfg="CPU_DRIVER_OPMODE_ON_AC"
-    fi
+    case "$1" in
+        "$PP_PRF")
+            opmode="${CPU_DRIVER_OPMODE_ON_AC:-}"
+            cfg="CPU_DRIVER_OPMODE_ON_AC"
+            ;;
+
+        "$PP_BAL"|"$PP_SAV")
+            opmode="${CPU_DRIVER_OPMODE_ON_BAT:-}"
+            cfg="CPU_DRIVER_OPMODE_ON_BAT"
+            ;;
+    esac
 
     if [ -z "$opmode" ]; then
         echo_debug "pm" "set_cpu_driver_opmode($1).not_configured"
@@ -89,16 +93,20 @@ set_cpu_driver_opmode () {
 }
 
 set_cpu_scaling_governor () {
-    # set CPU scaling governor -- $1: 0=ac mode, 1=battery mode
+    # set CPU scaling governor -- $1:  PP_PRF, PP_BAL, PP_SAV
     local cfg cpu ec gov
 
-    if [ "$1" = "1" ]; then
-        gov=${CPU_SCALING_GOVERNOR_ON_BAT:-}
-        cfg="CPU_SCALING_GOVERNOR_ON_BAT"
-    else
-        gov=${CPU_SCALING_GOVERNOR_ON_AC:-}
-        cfg="CPU_SCALING_GOVERNOR_ON_AC"
-    fi
+    case "$1" in
+        "$PP_PRF")
+            gov="${CPU_SCALING_GOVERNOR_ON_AC:-}"
+            cfg="CPU_SCALING_GOVERNOR_ON_AC"
+            ;;
+
+        "$PP_BAL"|"$PP_SAV")
+            gov="${CPU_SCALING_GOVERNOR_ON_BAT:-}"
+            cfg="CPU_SCALING_GOVERNOR_ON_BAT"
+            ;;
+    esac
 
     if [ -n "$gov" ]; then
         # apply governor
@@ -124,17 +132,21 @@ set_cpu_scaling_governor () {
 }
 
 set_cpu_scaling_min_max_freq () {
-    # set CPU scaling limits -- $1: 0=ac mode, 1=battery mode
+    # set CPU scaling limits -- $1: PP_PRF, PP_BAL, PP_SAV
     local minfreq maxfreq cpu ec
     local conf=0
 
-    if [ "$1" = "1" ]; then
-        minfreq=${CPU_SCALING_MIN_FREQ_ON_BAT:-}
-        maxfreq=${CPU_SCALING_MAX_FREQ_ON_BAT:-}
-    else
-        minfreq=${CPU_SCALING_MIN_FREQ_ON_AC:-}
-        maxfreq=${CPU_SCALING_MAX_FREQ_ON_AC:-}
-    fi
+    case "$1" in
+        "$PP_PRF")
+            minfreq="${CPU_SCALING_MIN_FREQ_ON_AC:-}"
+            maxfreq="${CPU_SCALING_MAX_FREQ_ON_AC:-}"
+            ;;
+
+        "$PP_BAL"|"$PP_SAV")
+            minfreq="${CPU_SCALING_MIN_FREQ_ON_BAT:-}"
+            maxfreq="${CPU_SCALING_MAX_FREQ_ON_BAT:-}"
+            ;;
+    esac
 
     if [ -n "$minfreq" ] && [ "$minfreq" != "0" ]; then
         conf=1
@@ -183,7 +195,7 @@ supports_amd_cpu_epp () {
 
 set_cpu_perf_policy () {
     # set Intel/AMD CPU energy vs. performance policies
-    # $1: 0=ac mode, 1=battery mode
+    # $1: PP_PRF, PP_BAL, PP_SAV
     #
     # depending on the CPU model the values
     #   performance, balance_performance, default, balance_power, power
@@ -205,11 +217,12 @@ set_cpu_perf_policy () {
 
     local cnt cpuf ec perf pnum
 
-    if [ "$1" = "1" ]; then
-        perf=${CPU_ENERGY_PERF_POLICY_ON_BAT:-}
-    else
-        perf=${CPU_ENERGY_PERF_POLICY_ON_AC:-}
-    fi
+    case "$1" in
+        "$PP_PRF") perf="${CPU_ENERGY_PERF_POLICY_ON_AC:-}" ;;
+        "$PP_BAL") perf="${CPU_ENERGY_PERF_POLICY_ON_BAT:-}" ;;
+        "$PP_SAV") perf="${CPU_ENERGY_PERF_POLICY_ON_SAV:-$CPU_ENERGY_PERF_POLICY_ON_BAT}" ;;
+    esac
+
     # translate alphanumeric values from EPB to EPP syntax
     case "$perf" in
         'balance-performance')  perf='balance_performance' ;;
@@ -314,22 +327,25 @@ set_cpu_perf_policy () {
 
 set_intel_cpu_perf_pct () {
     # set Intel P-state performance limits
-    # $1: 0=ac mode, 1=battery mode
+    # $1: PP_PRF, PP_BAL, PP_SAV
     local min max
-
 
     if ! check_intel_pstate; then
         echo_debug "pm" "set_intel_cpu_perf_pct($1).no_intel_pstate"
         return 0
     fi
 
-    if [ "$1" = "1" ]; then
-        min=${CPU_MIN_PERF_ON_BAT:-}
-        max=${CPU_MAX_PERF_ON_BAT:-}
-    else
-        min=${CPU_MIN_PERF_ON_AC:-}
-        max=${CPU_MAX_PERF_ON_AC:-}
-    fi
+    case "$1" in
+        "$PP_PRF")
+            min="${CPU_MIN_PERF_ON_AC:-}"
+            max="${CPU_MAX_PERF_ON_AC:-}"
+            ;;
+
+        "$PP_BAL"|"$PP_SAV")
+            min="${CPU_MIN_PERF_ON_BAT:-}"
+            max="${CPU_MAX_PERF_ON_BAT:-}"
+            ;;
+    esac
 
     if [ ! -f $CPU_MIN_PERF_PCT ]; then
         echo_debug "pm" "set_intel_cpu_perf_pct($1).min.not_supported"
@@ -352,10 +368,8 @@ set_intel_cpu_perf_pct () {
     return 0
 }
 
-set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
-    # global cpu boost behavior control based on the current power mode
-    #
-    # Relevant config option(s): CPU_BOOST_ON_{AC,BAT} with values {'',0,1}
+set_cpu_boost_all () { # $1: PP_PRF, PP_BAL, PP_SAV
+    # set global CPU boost behavior
     #
     # Note:
     #  * needs commit #615b7300717b9ad5c23d1f391843484fe30f6c12
@@ -364,11 +378,10 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
 
     local val
 
-    if [ "$1" = "1" ]; then
-        val=${CPU_BOOST_ON_BAT:-}
-    else
-        val=${CPU_BOOST_ON_AC:-}
-    fi
+    case "$1" in
+        "$PP_PRF")           val="${CPU_BOOST_ON_AC:-}" ;;
+        "$PP_BAL"|"$PP_SAV") val="${CPU_BOOST_ON_BAT:-}" ;;
+    esac
 
     if [ -z "$val" ]; then
         # do nothing if unconfigured
@@ -406,15 +419,14 @@ set_cpu_boost_all () { # $1: 0=ac mode, 1=battery mode
 
 set_cpu_dyn_boost () {
     # set CPU dynamic boost feature
-    # - intel_state in HWP active mode
-    # $1: 0=ac mode, 1=battery mode
+    # requires intel_state in HWP active mode
+    # $1: PP_PRF, PP_BAL, PP_SAV, PP_SUS
     local val
 
-    if [ "$1" = "1" ]; then
-        val=${CPU_HWP_DYN_BOOST_ON_BAT:-}
-    else
-        val=${CPU_HWP_DYN_BOOST_ON_AC:-}
-    fi
+    case "$1" in
+        "$PP_PRF")           val="${CPU_HWP_DYN_BOOST_ON_AC:-}" ;;
+        "$PP_BAL"|"$PP_SAV") val="${CPU_HWP_DYN_BOOST_ON_BAT:-}" ;;
+    esac
 
     if [ -z "$val" ]; then
         echo_debug "pm" "set_cpu_dyn_boost($1).not_configured"
@@ -459,15 +471,15 @@ set_nmi_watchdog () { # enable/disable nmi watchdog
 # --- Platform
 
 set_platform_profile () { # set platform profile
-    # $1: 0=ac mode, 1=battery mode
+    # $1: PP_PRF, PP_BAL, PP_SAV
 
     local pwr
 
-    if [ "$1" = "1" ]; then
-        pwr=${PLATFORM_PROFILE_ON_BAT:-}
-    else
-        pwr=${PLATFORM_PROFILE_ON_AC:-}
-    fi
+    case "$1" in
+        "$PP_PRF") pwr="${PLATFORM_PROFILE_ON_AC:-}" ;;
+        "$PP_BAL") pwr="${PLATFORM_PROFILE_ON_BAT:-}" ;;
+        "$PP_SAV") pwr="${PLATFORM_PROFILE_ON_SAV:-$PLATFORM_PROFILE_ON_BAT}" ;;
+    esac
 
     if [ -z "$pwr" ]; then
         # do nothing if unconfigured

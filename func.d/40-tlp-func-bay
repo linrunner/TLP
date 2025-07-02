@@ -50,17 +50,16 @@ check_is_docked() { # check if $dock is docked;
 }
 
 poweroff_drivebay () { # power off optical drive in drive bay
-    # $1: 0=ac mode, 1=battery mode
+    # $1: PP_PRF, PP_BAL, PP_SAV
     # $2: 0=conditional+quiet mode, 1=force+verbose mode
     # Some code adapted from https://www.thinkwiki.org/wiki/How_to_hotswap_UltraBay_devices
 
     local pwr optdrv syspath
 
-    if [ "$1" = "1" ]; then
-        pwr="$BAY_POWEROFF_ON_BAT"
-    else
-        pwr="$BAY_POWEROFF_ON_AC"
-    fi
+    case "$1" in
+        "$PP_PRF")           pwr="$BAY_POWEROFF_ON_AC" ;;
+        "$PP_BAL"|"$PP_SAV") pwr="$BAY_POWEROFF_ON_BAT" ;;
+    esac
 
     # Run only if forced or enabled
     if [ "$2" != "1" ]; then
@@ -143,10 +142,10 @@ poweroff_drivebay () { # power off optical drive in drive bay
 }
 
 suspend_drivebay () { # Save power state of drive bay before suspend
-                      # $1: 0=ac mode, 1=battery mode
+                      # $1: PP_PRF, PP_BAL, PP_SAV
 
-    if [ "$1" = "1" ] && [ "$BAY_POWEROFF_ON_BAT" = "1" ] || \
-       [ "$1" = "0" ] && [ "$BAY_POWEROFF_ON_AC"  = "1" ]; then
+    if { [ "$1" = "$PP_BAL" ] || [ "$1" = "$PP_SAV" ]; } && [ "$BAY_POWEROFF_ON_BAT" = "1" ] || \
+       [ "$1" = "$PP_PRF" ] && [ "$BAY_POWEROFF_ON_AC"  = "1" ]; then
         # setting corresponding to mode is active -> save state
         get_drivebay_device
 

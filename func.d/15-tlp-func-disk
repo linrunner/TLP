@@ -221,7 +221,7 @@ show_disk_ids () { # show disk id's
 # --- Disk APM Features
 
 set_disk_apm_level () { # set disk apm level
-    # $1: 0=ac mode, 1=battery mode
+    # $1: PP_PRF, PP_BAL, PP_SAV
     # $2: target disk device (optional)
 
     local pwrmode="$1"
@@ -235,13 +235,17 @@ set_disk_apm_level () { # set disk apm level
     fi
 
     # set @argv := apmlist (blanks removed - relying on a sane $IFS)
-    if [ "$pwrmode" = "1" ]; then
-        # shellcheck disable=SC2086
-        set -- $DISK_APM_LEVEL_ON_BAT
-    else
-        # shellcheck disable=SC2086
-        set -- $DISK_APM_LEVEL_ON_AC
-    fi
+    case "$1" in
+        "$PP_PRF")
+            # shellcheck disable=SC2086
+            set -- $DISK_APM_LEVEL_ON_AC
+            ;;
+
+        "$PP_BAL"|"$PP_SAV")
+            # shellcheck disable=SC2086
+            set -- $DISK_APM_LEVEL_ON_BAT
+            ;;
+    esac
 
     # quit if empty apmlist
     if [ $# -eq 0 ]; then
@@ -303,13 +307,17 @@ set_disk_spindown_timeout () { # set disk spindown timeout
     fi
 
     # set @argv := timeoutlist
-    if [ "$pwrmode" = "1" ]; then
-        # shellcheck disable=SC2086
-        set -- $DISK_SPINDOWN_TIMEOUT_ON_BAT
-    else
-        # shellcheck disable=SC2086
-        set -- $DISK_SPINDOWN_TIMEOUT_ON_AC
-    fi
+    case "$pwrmode" in
+        "$PP_PRF")
+            # shellcheck disable=SC2086
+            set -- $DISK_SPINDOWN_TIMEOUT_ON_AC
+            ;;
+
+        "$PP_BAL"|"$PP_SAV")
+            # shellcheck disable=SC2086
+            set -- $DISK_SPINDOWN_TIMEOUT_ON_BAT
+            ;;
+    esac
 
     # quit if empty timeoutlist
     if [ $# -eq 0 ]; then
@@ -425,20 +433,19 @@ set_disk_iosched () { # set disk io scheduler
 set_sata_link_power () { # set ahci link power management
     # $1: 0=ac mode, 1=battery mode
 
-    local pm="$1"
+    local pwrmode="$1"
     local host host_bl hostid linkpol pwr rc
     local pwrlist=""
     local ctrl_avail="0"
 
-    if [ "$pm" = "1" ]; then
-        pwrlist=${SATA_LINKPWR_ON_BAT:-}
-    else
-        pwrlist=${SATA_LINKPWR_ON_AC:-}
-    fi
+    case "$pwrmode" in
+        "$PP_PRF")           pwrlist="${SATA_LINKPWR_ON_AC:-}" ;;
+        "$PP_BAL"|"$PP_SAV") pwrlist="${SATA_LINKPWR_ON_BAT:-}" ;;
+    esac
 
     if [ -z "$pwrlist" ]; then
         # do nothing if unconfigured
-        echo_debug "disk" "set_sata_link_power($pm).not_configured"
+        echo_debug "disk" "set_sata_link_power($pwrmode).not_configured"
         return 0
     fi
 
@@ -455,13 +462,13 @@ set_sata_link_power () { # set ahci link power management
             hostid=${host##*/}
             if wordinlist "$hostid" "$host_bl"; then
                 # host denylisted --> skip
-                echo_debug "disk" "set_sata_link_power($pm).deny: $host"
+                echo_debug "disk" "set_sata_link_power($pwrmode).deny: $host"
                 ctrl_avail="1"
             else
                 # host not denylisted --> iterate all configured values
                 for pwr in "$@"; do
                     write_sysf "$pwr" "$linkpol"; rc=$?
-                    echo_debug "disk" "set_sata_link_power($pm).$pwr: $host; rc=$rc"
+                    echo_debug "disk" "set_sata_link_power($pwrmode).$pwr: $host; rc=$rc"
                     if [ $rc -eq 0 ]; then
                         # write successful --> goto next host
                         ctrl_avail="1"
@@ -476,21 +483,21 @@ set_sata_link_power () { # set ahci link power management
         fi
     done
 
-    [ "$ctrl_avail" = "0" ] && echo_debug "disk" "set_sata_link_power($pm).not_available"
+    [ "$ctrl_avail" = "0" ] && echo_debug "disk" "set_sata_link_power($pwrmode).not_available"
     return 0
 }
 
 set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
-    # $1: 0=ac mode, 1=battery mode, 3=suspend mode
+    # $1: PP_PRF, PP_BAL, PP_SAV, PP_SUS
     # $2: target disk device (optional)
 
     local target="$2"
     local control dev timeout rc
 
     case "$1" in
-        0) control=${AHCI_RUNTIME_PM_ON_AC:-} ;;
-        1) control=${AHCI_RUNTIME_PM_ON_BAT:-} ;;
-        3) # reset on suspend only when configured
+        "$PP_PRF")           control="${AHCI_RUNTIME_PM_ON_AC:-}" ;;
+        "$PP_BAL"|"$PP_SAV") control="${AHCI_RUNTIME_PM_ON_BAT:-}" ;;
+        "$PP_SUS") # reset on suspend only when configured
             if [ -n "${AHCI_RUNTIME_PM_ON_AC:-}${AHCI_RUNTIME_PM_ON_BAT:-}" ]; then
                 control="on"
             fi
@@ -520,9 +527,9 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "*** set_ahci_disk_runtime_pm($pwrmode).all"
+        echo_debug "disk" "*** set_ahci_disk_runtime_pm($1).all"
     else
-        echo_debug "disk" "*** set_ahci_disk_runtime_pm($pwrmode).target: $target"
+        echo_debug "disk" "*** set_ahci_disk_runtime_pm($1).target: $target"
     fi
 
     # iterate DISK_DEVICES
@@ -567,9 +574,9 @@ set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
     local control device
 
     case "$1" in
-        0) control=${AHCI_RUNTIME_PM_ON_AC:-} ;;
-        1) control=${AHCI_RUNTIME_PM_ON_BAT:-} ;;
-        3) # reset on suspend only when configured
+        "$PP_PRF")           control="${AHCI_RUNTIME_PM_ON_AC:-}" ;;
+        "$PP_BAL"|"$PP_SAV") control="${AHCI_RUNTIME_PM_ON_BAT:-}" ;;
+        "$PP_SUS") # reset on suspend only when configured
             if [ -n "${AHCI_RUNTIME_PM_ON_AC:-}${AHCI_RUNTIME_PM_ON_BAT:-}" ]; then
                 control="on"
             fi
@@ -604,15 +611,15 @@ set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
 
 set_laptopmode () {
     # set kernel laptop mode
-    # $1: 0=ac mode, 1=battery mode
+    # $1: PP_PRF, PP_BAL, PP_SAV
 
     local isec
 
-    if [ "$1" = "1" ]; then
-        isec="$DISK_IDLE_SECS_ON_BAT"
-    else
-        isec="$DISK_IDLE_SECS_ON_AC"
-    fi
+    case "$1" in
+        "$PP_PRF")           isec="${DISK_IDLE_SECS_ON_AC:-}" ;;
+        "$PP_BAL"|"$PP_SAV") isec="${DISK_IDLE_SECS_ON_BAT:-}" ;;
+    esac
+
     # replace with empty string if non-numeric chars are contained
     isec=$(printf '%s' "$isec" | grep -E '^[0-9]+$')
 
@@ -630,15 +637,14 @@ set_laptopmode () {
 
 set_dirty_parms () {
     # set filesystem buffer params
-    # $1: 0=ac mode, 1=battery mode
+    # $1: PP_PRF, PP_BAL, PP_SAV
 
     local age cage df ec
 
-    if [ "$1" = "1" ]; then
-        age=${MAX_LOST_WORK_SECS_ON_BAT:-0}
-    else
-        age=${MAX_LOST_WORK_SECS_ON_AC:-0}
-    fi
+    case "$1" in
+        "$PP_PRF")           age="${MAX_LOST_WORK_SECS_ON_AC:-0}" ;;
+        "$PP_BAL"|"$PP_SAV") age="${MAX_LOST_WORK_SECS_ON_BAT:-0}" ;;
+    esac
 
     # calc age in centisecs, non numeric values result in "0"
     cage=$((age * 100))
