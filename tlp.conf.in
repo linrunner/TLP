@@ -11,6 +11,17 @@
 # 2. /etc/tlp.d/*.conf - Drop-in customization snippets
 # 3. /etc/tlp.conf     - User configuration (this file)
 #
+# Power Profiles: a significant part of TLP's parameters is divided into
+# two or three categories:
+# - performance: parameters ending in _AC will be used when AC is connected
+#   or when the command 'tlp performance' is run.
+# - balanced: parameters ending in _BAT will be used when running
+#   on battery power or when the command 'tlp balanced' is run.
+# - power-saver: parameters ending in _SAV will be used when the command
+#   'tlp power-saver' is run (if there is no _SAV value available for a
+#   parameter, the _BAT value is used instead).
+# - Any remaining parameters not divided apply to all power profiles.
+#
 # Please note:
 # - If parameters are specified more than once, the last occurrence takes
 #   precedence. This also means that any parameters defined here will take
@@ -20,9 +31,10 @@
 # - Important: all parameters are disabled here. Remove the leading '#' if you
 #   want to enable a feature without a default or if you want to set a value
 #   other than the default.
-# - Parameters must always be specified in pairs, i.e. for AC and BAT.
-#   If you omit one of them, the value you set will apply to both power
-#   sources, since a change will only occur if different values are defined.
+# - Parameters must always be specified for all power profiles, i.e. in the
+#   AC, BAT and SAV category (where applicable). If you omit one of them,
+#   the missing profile will receive its value from another profile, since
+#   a change will only occur if different values are defined.
 # - To completely disable a parameter, use PARAMETER="".
 # Legend for defaults:
 # - Default *: intrinsic default that is effective when the parameter is
@@ -153,10 +165,11 @@
 #   will not honor EPB. Only the matching feature will be applied by TLP.
 # * AMD Zen 2 or newer CPU
 #   EPP: amd-pstate driver in active mode ('amd-pstate-epp') as of kernel 6.3
-# Default: balance_performance (AC), balance_power (BAT)
+# Default: balance_performance (AC), balance_power (BAT), power (SAV)
 
 #CPU_ENERGY_PERF_POLICY_ON_AC=balance_performance
 #CPU_ENERGY_PERF_POLICY_ON_BAT=balance_power
+#CPU_ENERGY_PERF_POLICY_ON_SAV=power
 
 # Set Intel CPU P-state performance: 0..100 (%).
 # Limit the max/min P-state to control the power dissipation of the CPU.
@@ -177,7 +190,8 @@
 # Default: <none>
 
 #CPU_BOOST_ON_AC=1
-#CPU_BOOST_ON_BAT=0
+#CPU_BOOST_ON_BAT=1
+#CPU_BOOST_ON_SAV=0
 
 # Set CPU dynamic boost feature:
 #   0=disable, 1=enable.
@@ -205,7 +219,8 @@
 # Default: <none>
 
 #PLATFORM_PROFILE_ON_AC=performance
-#PLATFORM_PROFILE_ON_BAT=low-power
+#PLATFORM_PROFILE_ON_BAT=balanced
+#PLATFORM_PROFILE_ON_SAV=low-power
 
 # System suspend mode:
 #   s2idle: Idle standby - a pure software, light-weight, system sleep state,
@@ -554,7 +569,8 @@
 #RESTORE_THRESHOLDS_ON_BAT=1
 
 # ------------------------------------------------------------------------------
-# Radio Device Wizard - requires installation of the optional tlp-rdw package.
+# tlp-rdw - Radio Device Wizard
+# Note: requires installation of the optional package tlp-rdw.
 
 # Possible devices: bluetooth, wifi, wwan.
 # Separate multiple radio devices with spaces.
