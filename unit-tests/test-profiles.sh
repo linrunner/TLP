@@ -26,7 +26,7 @@ check_profile_select () {
 
     local prof_seq
     local prof prof_save prof_xpect
-    local mm_save mm_xpect mm_prev
+    local mm_save mm_xpect
     local rc=0
     local errcnt=0
 
@@ -85,7 +85,7 @@ check_profile_select () {
 
         esac
 
-        ${SUDO} ${TLP} $prof > /dev/null 2>&1
+        ${SUDO} ${TLP} "$prof" > /dev/null 2>&1
 
         # expect change
         compare_sysf "$prof_xpect" "$LASTPWR";  rc=$?
@@ -98,7 +98,6 @@ check_profile_select () {
         compare_sysf "$mm_xpect" "$MANUALMODE";rc=$?
         if [ "$rc" -eq 0 ]; then
             printf_msg " manual_mode/%s=ok" "$mm_xpect"
-            mm_prev="$(read_sysf "$MANUALMODE")"
         else
             printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
             errcnt=$((errcnt + 1))
