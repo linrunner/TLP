@@ -232,7 +232,7 @@ batdrv_init () {
                             # --> calculate charge level from mAh attributes
                             _bn_charge="charge"
                             _bn_draw="current"
-                            _bn_chunit="mA"
+                            _bn_unit="mA"
                         fi
                     fi
                 fi
@@ -281,7 +281,7 @@ batdrv_init () {
     _batdrv_selected=$_batdrv_plugin
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; tpsmapi=$_tpsmapi"
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: read=$_bm_read; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop; dischg=$_bm_dischg; bn_dischg=$_bn_dischg"
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: bn_charge=$_bn_charge; bn_draw=$_bn_draw; bn_unit$_bn_unit"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: bn_charge=$_bn_charge; bn_draw=$_bn_draw; bn_unit=$_bn_unit"
     return 0
 }
 
@@ -977,7 +977,7 @@ batdrv_discharge () {
 
             if [ "$_bat_pwr" != "0" ]; then
                 perl -e 'printf ("remaining time     = %6d [min]\n", 60.0 * ('"$_bat_en"' - '"$_bat_target_en"') / '"$_bat_pwr"');' 1>&2
-                printf "%-6s             = %6s [%s]\n" "$_bn_draw" "$_bat_pwr" "$_bn_unit" 1>&2
+                printf "%-8s           = %6s [%s]\n" "$_bn_draw" "$_bat_pwr" "$_bn_unit" 1>&2
             else
                 printf "remaining time     = not discharging [min]\n" 1>&2
             fi
