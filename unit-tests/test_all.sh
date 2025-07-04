@@ -9,6 +9,7 @@ readonly TESTLIB="./test-func"
 cache_root_cred
 start_report
 
+./test-profiles.sh
 ./test-cpufreq.sh
 ./test-gpufreq.sh
 ./test-bc_all.sh
