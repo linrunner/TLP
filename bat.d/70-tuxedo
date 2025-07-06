@@ -295,88 +295,50 @@ batdrv_write_thresholds () {
         return 1
     fi
 
-    # start: check for 3 digits max, ensure min 0 / max 100
+    # start: check for 3 digits max, ensure in 40, 50, 60, 70, 80, 95
     if ! is_uint "$new_start" 3 || \
-       ! is_within_bounds "$new_start" 1 100; then
+       ! wordinlist "$new_start" "40 50 60 70 80 95"; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
             1)
                 if [ -n "$4" ]; then
-                    echo_message "Error in configuration at START_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_start}\": not specified, invalid or out of range (0..100). Battery skipped."
+                    echo_message "Error in configuration at START_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_start}\": not specified, invalid or not in {40, 50, 60, 70, 80, 95}. Battery skipped."
                 fi
                 ;;
 
             2)
                 if [ -n "$4" ]; then
-                    cprintf "" "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..100). Aborted.\n" "$_bt_cfg_bat" "$new_start" 1>&2
+                    cprintf "" "Error in configuration at START_CHARGE_THRESH_%s=\"%s\": not specified, invalid or not in {40, 50, 60, 70, 80, 95}. Aborted.\n" "$_bt_cfg_bat" "$new_start" 1>&2
                 else
-                    cprintf "" "Error: start charge threshold (%s) for %s is not specified, invalid or out of range (0..100). Aborted.\n" "$new_start" "$_bat_str" 1>&2
+                    cprintf "" "Error: start charge threshold (%s) for %s is not specified, invalid or not in {40, 50, 60, 70, 80, 95}. Aborted.\n" "$new_start" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
         return 2
     fi
-    # warn if threshold is not in 40, 50, 60, 70, 80, 95
-    if ! wordinlist "$new_start" "40 50 60 70 80 95"; then
-        # threshold will be rounded
-        case $verb in
-            1)
-                if [ -n "$4" ]; then
-                    echo_message "Notice: START_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_start}\" will be rounded to the closest value in 40, 50, 60, 70, 80, 95."
-                fi
-                ;;
 
-            2)
-                if [ -n "$4" ]; then
-                    echo_message "Notice: START_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_start}\" will be rounded to the closest value in 40, 50, 60, 70, 80, 95."
-                else
-                    cprintf "" "Notice: START_CHARGE_THRESH_%s=\"%s\" will be rounded to the closest value in 40, 50, 60, 70, 80, 95." "$_bat_str" "$new_start" 1>&2
-                fi
-                ;;
-        esac
-    fi
-
-    # stop: check for 3 digits max, ensure min 0 / max 100
+    # stop: check for 3 digits max, ensure in 60, 70, 80, 90, 100
     if ! is_uint "$new_stop" 3 || \
-       ! is_within_bounds "$new_stop" 1 100; then
+       ! wordinlist "$new_stop" "60 70 80 90 100"; then
         # threshold out of range
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
             1)
                 if [ -n "$4" ]; then
-                    echo_message "Error in configuration at STOP_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_stop}\": not specified, invalid or out of range (0..100). Battery skipped."
+                    echo_message "Error in configuration at STOP_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_stop}\": not specified, invalid or not in {60, 70, 80, 90, 100}. Battery skipped."
                 fi
                 ;;
 
             2)
                 if [ -n "$4" ]; then
-                    cprintf "" "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or out of range (0..100). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
+                    cprintf "" "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": not specified, invalid or not in {60, 70, 80, 90, 100}. Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
                 else
-                    cprintf "" "Error: stop charge threshold (%s) for %s is not specified, invalid or out of range (0..100). Aborted.\n" "$new_stop" "$_bat_str" 1>&2
+                    cprintf "" "Error: stop charge threshold (%s) for %s is not specified, invalid or not in {60, 70, 80, 90, 100}. Aborted.\n" "$new_stop" "$_bat_str" 1>&2
                 fi
                 ;;
         esac
         return 2
-    fi
-    # warn if threshold is not in 60, 70, 80, 90, 100
-    if ! wordinlist "$new_stop" "60 70 80 90 100"; then
-        # threshold will be rounded
-        case $verb in
-            1)
-                if [ -n "$4" ]; then
-                    echo_message "Notice: STOP_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_stop}\" will be rounded to the closest value in 60, 70, 80, 90, 100."
-                fi
-                ;;
-
-            2)
-                if [ -n "$4" ]; then
-                    echo_message "Notice: STOP_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_stop}\" will be rounded to the closest value in 60, 70, 80, 90, 100."
-                else
-                    cprintf "" "Notice: STOP_CHARGE_THRESH_%s=\"%s\" will be rounded to the closest value in 60, 70, 80, 90, 100." "$_bat_str" "$new_stop" 1>&2
-                fi
-                ;;
-        esac
     fi
 
     # TEMPLATE: customize assertion to vendor specs
@@ -709,7 +671,7 @@ batdrv_show_battery_data () {
         if [ "$_bm_thresh" = "natacpi" ]; then
             printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
             printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
-            printparm "%-59s = ##%6s## [mV]" "$_bd_read/charge_behaviour" "not available"
+            printparm "%-59s = ##%s##" "$_bf_chtype" "not available"
             printf "\n"
         fi
 
