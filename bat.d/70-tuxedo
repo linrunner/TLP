@@ -1,10 +1,13 @@
 #!/bin/sh
-# Battery Plugin TEMPLATE for laptops providing standard sysfs nodes for
-# charge thresholds:
-# * /sys/class/power_supply/BAT0/charge_control_start_threshold
-# * /sys/class/power_supply/BAT0/charge_control_end_threshold
+# 70-tuxedo - Battery Plugin for Tuxedo laptops (Clevo OEM chassis)
 #
-# IMPORTANT: customize at least all places marked with "TEMPLATE"
+# Requires the out-of-tree clevo_acpi module from Tuxedo providing the
+# following sysfs nodes:
+# * /sys/class/power_supply/BAT[01]/charge_control_start_threshold:
+#     40, 50, 60, 70, 80, 95
+# * /sys/class/power_supply/BAT[01]/charge_control_end_threshold:
+#     60, 70, 80, 90, 100
+# Condition:  charge_control_start_threshold < charge_control_end_threshold
 #
 # Copyright (c) 2025 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
@@ -26,9 +29,9 @@ batdrv_is_tuxedo () {
 batdrv_init () {
     # detect hardware and initialize driver
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
-    # retval: $_batdrv_plugin, $_batdrv_kmod
+    # retval: $_batdrv_plugin, $_batdrv_kmod, $_batdrv_sim
     #
-    # 1. check for native kernel acpi (TEMPLATE: Linux m.n or higher required)
+    # 1. check for native kernel acpi
     #    --> retval $_natacpi:
     #       0=thresholds/
     #       32=disabled/
@@ -56,11 +59,13 @@ batdrv_init () {
 
     _batdrv_plugin="tuxedo"
     _batdrv_kmod="clevo_acpi" # kernel module for natacpi
+    _batdrv_sim=0
 
     # check plugin simulation override and denylist
     if [ -n "$X_BAT_PLUGIN_SIMULATE" ]; then
         if [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.simulate"
+            _batdrv_sim=1
         else
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.simulate_skip"
             return 1
@@ -265,8 +270,8 @@ batdrv_read_threshold () {
 batdrv_write_thresholds () {
     # write both charge thresholds for a battery
     # use pre-determined method and sysfiles from global parms
-    # $1: new start threshold 40, 50, 60, 70, 80, 95 or DEF(default)
-    # $2: new stop threshold or 60, 70, 80, 90, 100 or DEF(default)
+    # $1: new start threshold: 40/50/60/70/80/95(default)/DEF
+    # $2: new stop threshold: 60/70/80/90/100(default)/DEF
     # $3: 0=quiet/1=output parameter errors/2=output progress and errors
     # $4: non-empty string indicates thresholds stem from configuration
     # global params: $_batdrv_plugin, $_bm_thresh, $_bat_str, $_bt_cfg_bat, $_bf_start, $_bf_stop
@@ -341,7 +346,6 @@ batdrv_write_thresholds () {
         return 2
     fi
 
-    # TEMPLATE: customize assertion to vendor specs
     # check start < stop
     if [ "$new_start" -ge "$new_stop" ]; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_diff: bat=$_bat_str; cfg=$_bt_cfg_bat"
@@ -368,14 +372,13 @@ batdrv_write_thresholds () {
        ! old_stop=$(batdrv_read_threshold stop 0); then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat"
         case $verb in
-            1) echo_message "Error: could not read current charge threshold(s) for $_bat_str. Battery skipped." ;;
-            2) cprintf "" "Error: could not read current charge threshold(s) for %s. Aborted.\n" "$_bat_str" 1>&2 ;;
+            1) echo_message "Error: could not read current charge threshold(s) for battery $_bat_str. Battery skipped." ;;
+            2) cprintf "" "Error: could not read current charge threshold(s) for battery %s. Aborted.\n" "$_bat_str" 1>&2 ;;
         esac
         return 4
     fi
 
-    # TEMPLATE: customize assertion to vendor specs
-    # determine write sequence too meet boundary condition start < stop
+    # determine write sequence to meet boundary condition start < stop
     # disclaimer: the driver doesn't enforce it but we don't know about the
     # firmware and it's reasonable anyway
     local rc=0 steprc tseq
@@ -388,24 +391,26 @@ batdrv_write_thresholds () {
 
     # write new thresholds in determined sequence
     if [ "$verb" = "2" ]; then
-        printf "Setting temporary charge thresholds for %s:\n" "$_bat_str" 1>&2
+        printf "Setting temporary charge thresholds for battery %s:\n" "$_bat_str" 1>&2
     fi
 
     # prerequisite: check charge type and change to 'Custom' if necessary
-    old_chtype="$(read_sysf "$_bf_chtype")"
-    if [ "$old_chtype" != "Custom" ] && ! write_sysf "Custom" "$_bf_chtype" ; then
-        # changing to 'Custom' failed
-        case $verb in
-            1)
-                echo_message "Error: failed to set 'Custom' charge type for battery $_bat_str. Battery skipped."
-                ;;
+    if [ "$_batdrv_sim" = "0" ]; then
+        old_chtype="$(read_sysf "$_bf_chtype")"
+        if [ "$old_chtype" != "Custom" ] && ! write_sysf "Custom" "$_bf_chtype" ; then
+            # changing to 'Custom' failed
+            case $verb in
+                1)
+                    echo_message "Error: failed to set 'Custom' charge type for battery $_bat_str. Battery skipped."
+                    ;;
 
-            2)
-                cprintf "" "Error: failed to set 'Custom' charge type for battery %s. Aborted.\n" "$_bat_str" 1>&2
-                ;;
-        esac
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).chtype_error: bat=$_bat_str; cfg=$_bt_cfg_bat; old_chtype=$old_chtype; rc=6"
-        return 6
+                2)
+                    cprintf "" "Error: failed to set 'Custom' charge type for battery %s. Aborted.\n" "$_bat_str" 1>&2
+                    ;;
+            esac
+            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).chtype_error: bat=$_bat_str; cfg=$_bt_cfg_bat; old_chtype=$old_chtype; rc=6"
+            return 6
+        fi
     fi
 
     for step in $tseq; do
@@ -426,10 +431,10 @@ batdrv_write_thresholds () {
         if [ "$old_thresh" != "$new_thresh" ]; then
             # new threshold differs from effective one --> write it
             case $step in
-                start) write_sysf "$new_thresh" "$_bf_start" ;;
-                stop)  write_sysf "$new_thresh" "$_bf_stop"  ;;
+                start) [ "$X_THRESH_SIMULATE_WRITEERR" != "1" ] && write_sysf "$new_thresh" "$_bf_start" ;;
+                stop)  [ "$X_THRESH_SIMULATE_WRITEERR" != "1" ] && write_sysf "$new_thresh" "$_bf_stop"  ;;
             esac
-            steprc=$?; [ $steprc -ne 0 ] && rc=5
+            steprc=$?; [ $steprc -ne 0 ] && [ $rc -eq 0 ] && rc=5
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.write: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_thresh; new=$new_thresh; steprc=$steprc"
 
             case $verb in
@@ -521,7 +526,7 @@ batdrv_apply_configured_thresholds () {
 }
 
 batdrv_read_force_discharge () {
-    # function not implemented
+    # function not implemented for Tuxedo/Clevo laptops
     # global param: $_batdrv_plugin
     # prerequisite: batdrv_init()
 
@@ -530,7 +535,7 @@ batdrv_read_force_discharge () {
 }
 
 batdrv_write_force_discharge () {
-    # function not implemented
+    # function not implemented for Tuxedo/Clevo laptops
     # global param: $_batdrv_plugin
     # prerequisite: batdrv_init()
 
@@ -539,7 +544,7 @@ batdrv_write_force_discharge () {
 }
 
 batdrv_cancel_force_discharge () {
-    # function not implemented
+    # function not implemented for Tuxedo/Clevo laptops
     # global param: $_batdrv_plugin
     # prerequisite: batdrv_init()
 
@@ -548,7 +553,7 @@ batdrv_cancel_force_discharge () {
 }
 
 batdrv_force_discharge_active () {
-    # function not implemented
+    # function not implemented for Tuxedo/Clevo laptops
     # global param: $_batdrv_plugin
     # prerequisite: batdrv_init()
 
@@ -565,7 +570,7 @@ batdrv_discharge_safetylock () {
 }
 
 batdrv_discharge () {
-    # function not implemented
+    # function not implemented for Tuxedo/Clevo laptops
     # global param: $_batdrv_plugin
     # prerequisite: batdrv_init()
 
@@ -604,8 +609,8 @@ batdrv_show_battery_data () {
     esac
     if [ "$_bm_thresh" != "none" ]; then
         printf "Parameter value ranges:\n"
-        printf "* START_CHARGE_THRESH_BAT0/1: 40, 50, 60, 70, 80 or 95\n"
-        printf "* STOP_CHARGE_THRESH_BAT0/1: 60, 70, 80, 90 or 100\n"
+        printf "* START_CHARGE_THRESH_BAT0/1:  40, 50, 60, 70, 80, 95(default)\n"
+        printf "* STOP_CHARGE_THRESH_BAT0/1:   60, 70, 80, 90, 100(default)\n"
     fi
     printf "\n"
 
