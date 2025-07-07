@@ -692,7 +692,7 @@ batdrv_check_soc_gt_stop () {
 
     local soc stop
 
-    if [ "$_bm_thresh" = "natacpi" ] && soc="$(batdrv_cal_soc)"; then
+    if [ "$_bm_thresh" = "natacpi" ] && soc="$(batdrv_calc_soc)"; then
         stop="$(batdrv_read_threshold stop 0)"
         if [ -n "$stop" ] && [ "$soc" -gt "$stop" ]; then
              return 0
