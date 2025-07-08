@@ -894,7 +894,7 @@ check_cpu_boost () {
                 fi
                 ;;
 
-            acpi-cpufreq)
+            acpi-cpufreq|amd?pstate*)
                 if [ $sc -eq 1 ]; then
                     # --- test settings profile for active power source
 
