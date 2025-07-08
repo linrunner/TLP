@@ -39,7 +39,7 @@ readonly LOCKTIMEOUT=2
 readonly PWRRUNFILE=$RUNDIR/last_pwr
 readonly MANUALMODEFILE=$RUNDIR/manual_mode
 
-readonly DMID=/sys/class/dmi/id/
+readonly DMID=/sys/devices/virtual/dmi/id/
 readonly NETD=/sys/class/net
 readonly TPACPID=/sys/devices/platform/thinkpad_acpi
 
