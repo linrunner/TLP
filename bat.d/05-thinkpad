@@ -59,7 +59,7 @@ check_thinkpad () {
             # it's a real ThinkPad --> save model substring
             _tpmodel=$(printf '%s\n' "$pv" | sed -r 's/^Think[Pp]ad //')
         elif [ -z "$X_SIMULATE_MODEL" ]; then
-            # Libreboot uses DMI product_name, check it too
+            # coreboot happens to use DMI product_name, check it too
             pv="$(read_dmi product_name | tr -C -d 'a-zA-Z0-9 ')"
             if printf '%s' "$pv" | grep -E -q 'Think[Pp]ad'; then
                 # it's a librebooted' ThinkPad --> save model substring
@@ -80,6 +80,12 @@ check_thinkpad () {
         echo_debug "bat" "check_thinkpad.not_a_thinkpad: model=$pv"
         return 1
     fi
+}
+
+is_coreboot () {
+    # check if coreboot BIOS
+    # rc: 0=coreboot detected/1=not detected
+    [ "$(read_dmi bios_vendor)" = "coreboot" ]
 }
 
 # --- Plugin API functions
@@ -631,11 +637,14 @@ batdrv_calc_soc () {
     local ef en
 
     if [ -f "$_bd_read/energy_full" ]; then
-        # vendor BIOS
+        # standard case: Lenovo BIOS
         ef=$(read_sysval "$_bd_read/energy_full")
         en=$(read_sysval "$_bd_read/energy_now")
     elif [ -f "$_bd_read/charge_full" ]; then
-        # coreboot
+        # special cases:
+        # - coreboot
+        # OR
+        # - EC firmware glitch (?), refer to issue #812
         ef=$(read_sysval "$_bd_read/charge_full")
         en=$(read_sysval "$_bd_read/charge_now")
     else
@@ -1063,7 +1072,6 @@ batdrv_show_battery_data () {
     local ed ef en
     local efsum=0
     local ensum=0
-    local coreboot=0
 
     for bat in $_batteries; do # iterate detected batteries
         batdrv_select_battery "$bat"
@@ -1083,7 +1091,7 @@ batdrv_show_battery_data () {
                 print_battery_cycle_count "$_bd_read/cycle_count" "$(read_sysf "$_bd_read/cycle_count")"
 
                 if [ -f "$_bd_read/energy_full" ]; then
-                    # vendor BIOS
+                    # standard case: Lenovo BIOS
                     printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full_design" "" 000
                     printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full" "" 000
                     printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_now" "" 000
@@ -1097,16 +1105,23 @@ batdrv_show_battery_data () {
                     ensum=$((ensum + en))
 
                 elif [ -f "$_bd_read/charge_full" ]; then
-                    # workaround: coreboot (Skulls) provides ACPI mW(h) values incorrectly:
-                    # -  using sysfiles for mA(h)
-                    # -  one decimal place too little
-                    # refer to https://github.com/linrunner/TLP/issues/657
-                    coreboot=1
-
-                    printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_full_design" "" 00
-                    printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_full" "" 00
-                    printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_now" "" 00
-                    printparm "%-59s = ##%6d## [mW] *" "$_bd_read/current_now" "" 00
+                    # special cases
+                    if is_coreboot; then
+                        # coreboot (Skulls) provides ACPI mW(h) values incorrectly:
+                        # -  using sysfiles for mA(h)
+                        # -  one decimal place too little
+                        # refer to issue #657
+                        printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_full_design" "" 00
+                        printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_full" "" 00
+                        printparm "%-59s = ##%6d## [mWh] *" "$_bd_read/charge_now" "" 00
+                        printparm "%-59s = ##%6d## [mW] *" "$_bd_read/current_now" "" 00
+                    else
+                        # EC firmware glitch (?), refer to issue #812
+                        printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full_design" "" 000
+                        printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full" "" 000
+                        printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_now" "" 000
+                        printparm "%-59s = ##%6d## [mA]" "$_bd_read/current_now" "" 000
+                    fi
 
                     # store values for charge / capacity calculation below
                     ed=$(read_sysval "$_bd_read/charge_full_design")
@@ -1210,7 +1225,7 @@ batdrv_show_battery_data () {
         printf "\n"
     fi
 
-    if [ "$coreboot" = "1" ]; then
+    if is_coreboot; then
         printf "*) Converted coreboot charge readings may differ.\n\n"
     fi
 
