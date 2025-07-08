@@ -445,6 +445,12 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                     fi
 
                     if [ $show_verbose -eq 1 ]; then
+                        if [ -f "$cpuf/amd_pstate_hw_prefcore" ]; then
+                            printf "%-70s = %s\n" "$cpuf/amd_pstate_hw_prefcore" "$(read_sysf "$cpuf/amd_pstate_hw_prefcore")"
+                        fi
+                        if [ -f "$cpuf/amd_pstate_prefcore_ranking" ]; then
+                            printf "%-70s = %8d\n" "$cpuf/amd_pstate_prefcore_ranking" "$(read_sysf "$cpuf/amd_pstate_prefcore_ranking")"
+                        fi
                         if [ -f "$cpuf/amd_pstate_highest_perf" ]; then
                             printf "%-70s = %8d [%%]\n" "$cpuf/amd_pstate_highest_perf" "$(read_sysf "$cpuf/amd_pstate_highest_perf")"
                         fi
@@ -509,6 +515,9 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     elif check_amd_pstate; then
         # AMD P-state
         printparm "%-54s = ##%s##" "$AMD_PSTATED/status"
+        if [ $show_verbose -eq 1 ]; then
+            printparm "%-54s = ##%s##" "$AMD_PSTATED/prefcore"
+        fi
         if [ -f "$CPU_BOOST_ALL_CTRL" ]; then
             printparm "%-54s = ##%d##" "$CPU_BOOST_ALL_CTRL" "not available"
         fi
