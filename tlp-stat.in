@@ -732,7 +732,7 @@ if [ "$show_graf" = "1" ] || [ "$show_all" = "1" ]; then
     fi
 
     # --- gpu data for all drivers
-    show_gpu_data
+    show_gpu_data "$show_verbose"
 fi # show_graf
 
 # --- show rfkill state

@@ -615,9 +615,46 @@ printparm_i915 () {
     return 0
 }
 
+printparm_amdgpu_ml () {
+    # output multiline clock readout from sysfile $1 as columns
+    # $1: sysfile
+    # rc: 0=file exists/1=file non-existent
+
+    local sysf="$1"
+    local out=""
+    local line
+    local rc=0
+
+    if [ ! -f "$sysf" ]; then
+        # sysfile nonexistent
+        out="(not available)"
+        rc=1
+    else
+        # parse sysfile line by line
+        # shellcheck disable=SC2162
+        while read -r line; do
+            if [ -n "$line" ]; then
+                line=$(printf "%-13s" "$line")
+                if [ -n "$out" ]; then
+                    out="${out} ${line}"
+                else
+                    out="${line}"
+                fi
+            fi
+        done < "$sysf"
+    fi
+    if [ -n "$out" ]; then
+        printf "%-43s = %s\n" "$sysf" "$out"
+    fi
+
+    return $rc
+}
+
 show_gpu_data () {
     # show GPU data for all drivers
-    local card driver gpu lc pps sysout
+    # $1: 1=verbose (default: 0)
+    local verbose="${1:-0}"
+    local card clk driver gpu lc pps sysout
     local hdr=
 
     for gpu in "${BASE_DRMD}"/card?; do
@@ -681,6 +718,17 @@ show_gpu_data () {
                 done
                 if [ "$lc" -eq "1" ]; then
                     printf "\n"
+                fi
+
+                if [ "$verbose" = "1" ]; then
+                    lc=0
+                    printparm "%-43s = ##%s##" "$gpu/device/power_state" "not available"
+                    for clk in pp_dpm_dcefclk  pp_dpm_fclk  pp_dpm_mclk  pp_dpm_pcie  pp_dpm_sclk  pp_dpm_socclk; do
+                        printparm_amdgpu_ml "$gpu/device/${clk}" && lc=1
+                    done
+                    if [ "$lc" -eq "1" ]; then
+                        printf "\n"
+                    fi
                 fi
                 ;;
 
