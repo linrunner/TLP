@@ -12,6 +12,7 @@ _regex_words commands "$service command" \
     'on:Switch device on' \
     'off:Switch device off' \
     'toggle:Toggle device state' \
+    'cycle:Toggle device state twice' \
     '--version:Print TLP version'
 args+=("$reply[@]")
 

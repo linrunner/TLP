@@ -77,7 +77,7 @@ _tlp_rf() {
     local cur prev words cword opts
     _init_completion || return
 
-    opts="on off toggle --version"
+    opts="on off toggle cycle --version"
 
     if [ $cword -eq 1 ]; then
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )

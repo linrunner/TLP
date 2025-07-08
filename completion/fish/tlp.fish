@@ -37,6 +37,7 @@ if contains $current_command $tlp_rf_devices
     complete -c $current_command -n "not __fish_seen_subcommand_from $tlp_rf_devices_commands" -a on -d 'Switch device on'
     complete -c $current_command -n "not __fish_seen_subcommand_from $tlp_rf_devices_commands" -a off -d 'Switch device off'
     complete -c $current_command -n "not __fish_seen_subcommand_from $tlp_rf_devices_commands" -a toggle -d 'Toggle device state'
+    complete -c $current_command -n "not __fish_seen_subcommand_from $tlp_rf_devices_commands" -a cycle -d 'Toggle device state twice'
     complete -c $current_command -n "not __fish_seen_subcommand_from $tlp_rf_devices_commands" -l version -d 'Print TLP version'
 end
 
