@@ -1006,6 +1006,7 @@ if [ "$show_psup" = "1" ]; then
         printparm "%s: ##%s##" "$ps/present" _
         printparm "%s: ##%s##" "$ps/online" _
         printparm "%s: ##%s##" "$ps/capacity" _
+        printparm "%s: ##%s##" "$ps/cycle_count" _
         printparm "%s: ##%s##" "$ps/charge_full_design" _
         printparm "%s: ##%s##" "$ps/charge_full" _
         printparm "%s: ##%s##" "$ps/charge_now" _
@@ -1016,11 +1017,15 @@ if [ "$show_psup" = "1" ]; then
         printparm "%s: ##%s##" "$ps/power_now" _
         printparm "%s: ##%s##" "$ps/voltage_max" _
         printparm "%s: ##%s##" "$ps/voltage_min" _
+        printparm "%s: ##%s##" "$ps/voltage_min_design" _
         printparm "%s: ##%s##" "$ps/voltage_now" _
         printparm "%s: ##%s##" "$ps/charge_control_start_threshold" _
+        printparm "%s: ##%s##" "$ps/charge_control_start_available_thresholds" _
         printparm "%s: ##%s##" "$ps/charge_control_end_threshold" _
+        printparm "%s: ##%s##" "$ps/charge_control_end_available_thresholds" _
         printparm "%s: ##%s##" "$ps/charge_behaviour" _
         printparm "%s: ##%s##" "$ps/charge_types" _
+        printparm "%s: ##%s##" "$ps/charge_type" _
         printparm "%s: ##%s##" "$ps/status" _
         printparm "%s: ##%s##" "$ps/device/path" _
     done
