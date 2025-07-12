@@ -107,7 +107,6 @@ $ sudo tlp setcharge 0 3 ${batb} -- ${xinc} 2>&1 | sed -r "s/${batb}/BATB/"
 Error: battery BATB not present.
 $ sudo tlp setcharge XYZZY ABCDE ${batb} -- ${xinc} 2>&1 | sed -r "s/${batb}/BATB/"
 Error: battery BATB not present.
-$ exit
 $ #
 $ # --- tlp-stat
 $ sudo tlp-stat -b -- ${xinc} | grep -E 'BAT0/charge_(control|behaviour)'
