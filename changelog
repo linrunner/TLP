@@ -4,17 +4,24 @@
 
   * Features
     Battery Care:
+    - Tuxedo laptops (Clevo OEM chassis) with out-of-tree tuxedo-drivers:
+      start and stop threshold (Issue #803)
     - tlp-stat -b: advertise chargeonce, discharge, recalibrate features
       individually
     General:
-    - Invalid subcommands/options: output not only “Usage:” but also “Error:”
+    - Response to invalid subcommands/options: output not only “Usage:”
+      but also “Error:”
     Graphics:
-    - RADEON_POWER_PROFILE_ON_AC/BAT removed
+    - RADEON_POWER_PROFILE_ON_AC/BAT removed (deprecated since 1.8.0)
+    - tlp-stat -g -v: show power_state, pp_dpm_*clk of AMD GPUs
     Radio Devices:
+    - bluetooth/nfc/wifi/wwan: add command "cycle", equivalent of "toggle" twice
     - DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE: Fix the disabling of nfc
       (Issue #808)
     Processor:
-    - tlp-stat -p -v: show current frequency per core (scaling_cur_freq)
+    - tlp-stat -p -v:
+      - Show current frequency per core (scaling_cur_freq)
+      - Show AMD prefcore, amd_pstate_hw_prefcore, amd_pstate_prefcore_ranking
     - tlp-stat -t -v: show all individual sensors
 
   * Bugfixes
@@ -25,6 +32,7 @@
     - ThinkPads:
       - Fix X201, X220 discharge (Issue #793)
       - Fix bash completion for tlp discharge on tp-smapi models
+      - Detect coreboot more reliable via DMI bios_vendor
 
 +++ 1.8.0 --- 13.02.2025 +++
 
