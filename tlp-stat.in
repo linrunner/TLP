@@ -207,7 +207,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 echo "                  -w | --warn      | -v | --verbose   |" 1>&2
                 echo "                     | --version   |    | --cdiff     |" 1>&2
                 echo "                  -P | --pev       |    | --psup      |" 1>&2
-                echo "                  -T | --trace     |    | --udev      |" 1>&2
+                echo "                  -T | --trace     |    | --udev" 1>&2
                 echo "                ]" 1>&2
                 do_exit 3
                 ;;
