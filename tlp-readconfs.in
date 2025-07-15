@@ -34,14 +34,21 @@ use constant CONF_OLD => "@TLP_CONF@";
 use constant EXIT_TLPCONF => 5;
 use constant EXIT_DEFCONF => 6;
 
-# --- Global vars
-my @config_val = ();  # 2-dim array: parameter name, value, source, default-value
-my %config_idx = ();  # hash: parameter name => index into the name-value array
+# Special config parameters
+use constant PARM_DEBUG         => "TLP_DEBUG";
+use constant PARM_KILL_DEFAULTS => "TLP_DISABLE_DEFAULTS";
+use constant PARM_KILL_DEF_SKIP => "TLP_ENABLE";
 
-my %rename = ();      # hash: OLD_PARAMETER => NEW_PARAMETER
-my $renrex;           # compiled regex for renaming parameters
-my $do_rename = 0;    # enable renaming (when $renrex not empty)
-my %dprmsg = ();      # hash: PARAMETER => deprecated message
+# --- Global vars
+my @config_val = ();      # 2-dim array: parameter name, value, source, default-value
+my %config_idx = ();      # hash: parameter name => index into the name-value array
+
+my $kill_defaults = 0;    # skip all entries from CONF_DEF
+
+my %rename = ();          # hash: OLD_PARAMETER => NEW_PARAMETER
+my $renrex;               # compiled regex for renaming parameters
+my $do_rename = 0;        # enable renaming (when $renrex not empty)
+my %dprmsg    = ();       # hash: PARAMETER => deprecated message
 
 my $notrace = 0;
 my $debug   = 0;
@@ -49,7 +56,7 @@ my $cdiff   = 0;
 
 my $outfile;
 
-my $defsrc = basename (CONF_DEF);
+my $defsrc = basename(CONF_DEF);
 
 # --- Subroutines
 
@@ -73,13 +80,18 @@ sub printf_debug {
 # $_[4]: 0=user config/1=default
 # return: 0=new name/1=known name
 sub store_name_value_source {
-    my $name = $_[0];
-    my $value = $_[1];
+    my $name   = $_[0];
+    my $value  = $_[1];
     my $append = $_[2];
     my $source = $_[3];
     my $is_def = $_[4];
 
-    $debug = 1 if ( $name eq "TLP_DEBUG" && $value =~ /\bcfg\b/ );
+    $debug = 1 if ( $name eq PARM_DEBUG && $value =~ /\bcfg\b/ );
+
+    if ( $name eq PARM_KILL_DEFAULTS && $value eq "1" ) {
+        $kill_defaults = 1;
+        printf_debug ("tlp-readconfs.kill_defaults\n");
+    }
 
     if ( defined $config_idx{$name} ) {
         # existing name
@@ -173,23 +185,29 @@ sub write_runconf {
 
     foreach ( @config_val ) {
         my ($name, $value, $source, $default) = @$_;
+
+        # skip default entries
+        next if ( $kill_defaults eq 1 and length $default and $name ne PARM_KILL_DEF_SKIP );
+
         if ( $runconf eq *STDOUT ) {
             my $msg = "";
+
             # stdout: check for deprecated message
             if ( defined $dprmsg{$name} ) {
                 $msg = " #! $dprmsg{$name}";
             }
+
             # --cdiff: do not show user config lines matching the default
             if ( ! $cdiff || $value ne $default ) {
                 printf {$runconf} "%s: %s=\"%s\"%s\n", $source, $name, $value, $msg;
             }
-        } else  {
+        } else {
             printf {$runconf} "%s=\"%s\"\n", $name, $value;
         }
     }
     close ($runconf);
 
-    return 0
+    return 0;
 }
 
 # Parse parameter renaming rules from file

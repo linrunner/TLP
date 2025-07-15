@@ -37,6 +37,13 @@
 
 #TLP_ENABLE=1
 
+# Set to 1 to deactivate all intrinsic defaults of TLP. This means that TLP
+# only applies those sttings that the user has explicitly activated i.e.
+# parameters without a leading '#'. TLP_ENABLE=1 is the only exception.
+# Note: useful if one wants to use only selected features of TLP.
+
+#TLP_DISABLE_DEFAULTS=1
+
 # Control how warnings about invalid settings are issued:
 #   0=disabled,
 #   1=background tasks (boot, resume, change of power source) report to syslog,
