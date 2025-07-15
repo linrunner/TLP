@@ -79,7 +79,7 @@ echo_env () {
 _bgtask=1
 
 # read configuration: quit on error, trace allowed
-read_config 1 0
+read_config 0
 
 # quit if TLP disabled
 check_tlp_enabled || do_exit 0

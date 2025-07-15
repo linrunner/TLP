@@ -661,13 +661,13 @@ select_batdrv () { # source battery feature drivers and
 # --- Configuration
 
 read_config () { # read all config files and write temporary runconf file
-    # $1: 0=continue/1=quit on error
-    # $2: 1=no trace
+    # $1: 1=no trace
     # rc: 0=ok/5=tlp.conf missing/6=defaults.conf missing/7=file creation error
     # retval: config parameters;
     #         _conf_tmp: runconf
     local rc=0
     local tmpdir
+    local no_trace="$1"
 
     if test_root; then
         tmpdir=$RUNDIR
@@ -677,7 +677,7 @@ read_config () { # read all config files and write temporary runconf file
     fi
     if _conf_tmp=$($MKTEMP -p "$tmpdir" "tlp-run.conf_tmpXXXXXX"); then
         # external perl script: merge all config files to $cf
-        if [ "$2" = "1" ]; then
+        if [ "$no_trace" = "1" ]; then
             $READCONFS --outfile "$_conf_tmp" --notrace; rc=$?
         else
             $READCONFS --outfile "$_conf_tmp"; rc=$?
@@ -694,9 +694,6 @@ read_config () { # read all config files and write temporary runconf file
             6) cecho "Error: cannot read default configuration from $CONF_DEF." 1>&2 ;;
             7) cecho "Error: cannot write runtime configuration to $_conf_tmp." 1>&2 ;;
         esac
-        if [ "$1" = "1" ]; then
-            do_exit $rc
-        fi
     fi
 
     return 0

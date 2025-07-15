@@ -14,7 +14,7 @@ done
 # --- MAIN
 
 # read configuration: quit on error, trace allowed
-read_config 1 0
+read_config 0
 
 check_tlp_enabled || do_exit 0
 check_run_flag "$RDW_KILL" && do_exit 0

@@ -221,7 +221,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
 
 # --- MAIN
 # read configuration; continue on error, no trace
-read_config 0 1
+read_config 1
 
 parse_args "$@"
 parse_args4config "$@"
