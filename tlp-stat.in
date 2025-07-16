@@ -350,6 +350,15 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         fi
     else
         printf "RDW state      = not installed\n"
+        if [ -n "$DEVICES_TO_DISABLE_ON_LAN_CONNECT" ] || \
+           [ -n "$DEVICES_TO_DISABLE_ON_WIFI_CONNECT" ] || \
+           [ -n "$DEVICES_TO_DISABLE_ON_WWAN_CONNECT" ] || \
+           [ -n "$DEVICES_TO_ENABLE_ON_LAN_DISCONNECT" ] || \
+           [ -n "$DEVICES_TO_ENABLE_ON_WIFI_DISCONNECT" ] || \
+           [ -n "$DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT" ]; then
+            echo_message "Warning: at least one of DEVICES_TO_DISABLE/ENABLE_ON_*_CONNECT/DISCONNECT is configured but tlp-rdw is not installed."
+            echo_message "The corresponding settings will not work." "warning"
+        fi
     fi
 
     # --- last invocation time
