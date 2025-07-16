@@ -9,6 +9,11 @@
     - tlp-stat -b: advertise chargeonce, discharge, recalibrate features
       individually
     General:
+    - TLP_DISABLE_DEFAULTS: deactivate all intrinsic defaults so that
+      only settings that have been explicitly activated are applied;
+      helpful to use only selected features
+    - tlp-stat --trace-nm: show the journal entries for NetworkManager
+      correlated with TLP's trace output
     - Response to invalid subcommands/options: output not only “Usage:”
       but also “Error:”
     Graphics:
