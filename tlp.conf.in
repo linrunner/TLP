@@ -39,7 +39,7 @@
 
 # Set to 1 to deactivate all intrinsic defaults of TLP. This means that
 # TLP only applies settings that have been explicitly activated i.e.
-# parameters without a leading '#'. TLP_ENABLE is the only exception.
+# parameters without a leading '#'.
 # Notes:
 # - Helpful if one wants to use only selected features of TLP
 # - After activation, use tlp-stat -c to display your effective configuration
