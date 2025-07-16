@@ -221,7 +221,7 @@ parse_args () { # parse command-line -- $@: arguments to parse
 
 # --- MAIN
 # read configuration; continue on error, no trace
-read_config 1
+read_config 1 "$@"
 
 parse_args "$@"
 parse_args4config "$@"
@@ -253,13 +253,21 @@ fi # show_version
 # --- show configuration
 if [ "$show_conf" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Configured Settings:"
-    $READCONFS --notrace
+    if [ "$TLP_DISABLE_DEFAULTS" = "1" ]; then
+        $READCONFS --skipdefs --notrace
+    else
+        $READCONFS --notrace
+    fi
     echo
 fi # show_conf
 
 if [ "$show_cdiff" = "1" ]; then
     echo "+++ Configured Settings (only differences to defaults):"
-    $READCONFS --notrace --cdiff
+    if [ "$TLP_DISABLE_DEFAULTS" = "1" ]; then
+        $READCONFS --cdiff --skipdefs --notrace
+    else
+        $READCONFS --cdiff --notrace
+    fi
     echo
 fi # show_cdiff
 

@@ -662,12 +662,26 @@ select_batdrv () { # source battery feature drivers and
 
 read_config () { # read all config files and write temporary runconf file
     # $1: 1=no trace
+    # $2..n: arguments of the caller for examination if in-cmd-config TLP_DISABLE_DEFAULTS=1 is set
     # rc: 0=ok/5=tlp.conf missing/6=defaults.conf missing/7=file creation error
     # retval: config parameters;
     #         _conf_tmp: runconf
     local rc=0
-    local tmpdir
+    local in_cmd_cfg=0
     local no_trace="$1"
+    local tmpdir
+    local xargs=""
+
+    # check if caller holds in-cmd-config TLP_DISABLE_DEFAULTS=1
+    shift
+    while [ $# -gt 0 ]; do
+        if [ "$in_cmd_cfg" = "1" ] && [ "$1" = "TLP_DISABLE_DEFAULTS=1" ]  ; then
+            xargs="--skipdefs"
+        elif [ "$1" = "--" ]; then
+            in_cmd_cfg=1
+        fi
+        shift # next argument
+    done # while arguments
 
     if test_root; then
         tmpdir=$RUNDIR
@@ -676,12 +690,16 @@ read_config () { # read all config files and write temporary runconf file
         tmpdir=${TMPDIR:-/tmp}
     fi
     if _conf_tmp=$($MKTEMP -p "$tmpdir" "tlp-run.conf_tmpXXXXXX"); then
-        # external perl script: merge all config files to $cf
+        # external perl script: merge all config files
         if [ "$no_trace" = "1" ]; then
-            $READCONFS --outfile "$_conf_tmp" --notrace; rc=$?
-        else
-            $READCONFS --outfile "$_conf_tmp"; rc=$?
+            if [ -z "$xargs" ]; then
+                xargs="--notrace"
+            else
+                xargs="$xargs --notrace"
+            fi
         fi
+        # shellcheck disable=SC2086
+        $READCONFS --outfile "$_conf_tmp" $xargs; rc=$?
         # shellcheck disable=SC1090
         [ $rc -eq 0 ] && . "$_conf_tmp"
     else

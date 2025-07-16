@@ -6,6 +6,7 @@
 
 # Cmdline options
 #   --outfile <FILE>: filepath to contain merged configuration
+#   --skipdefs: skip intrinsic defaults from CONF_DEF
 #   --notrace: disable trace
 #   --cdiff: only show differences to the default
 #
@@ -34,16 +35,11 @@ use constant CONF_OLD => "@TLP_CONF@";
 use constant EXIT_TLPCONF => 5;
 use constant EXIT_DEFCONF => 6;
 
-# Special config parameters
-use constant PARM_DEBUG         => "TLP_DEBUG";
-use constant PARM_KILL_DEFAULTS => "TLP_DISABLE_DEFAULTS";
-use constant PARM_KILL_DEF_SKIP => "TLP_ENABLE";
-
 # --- Global vars
 my @config_val = ();      # 2-dim array: parameter name, value, source, default-value
 my %config_idx = ();      # hash: parameter name => index into the name-value array
 
-my $kill_defaults = 0;    # skip all entries from CONF_DEF
+my $skip_defaults = 0;    # skip all entries from CONF_DEF
 
 my %rename = ();          # hash: OLD_PARAMETER => NEW_PARAMETER
 my $renrex;               # compiled regex for renaming parameters
@@ -86,11 +82,11 @@ sub store_name_value_source {
     my $source = $_[3];
     my $is_def = $_[4];
 
-    $debug = 1 if ( $name eq PARM_DEBUG && $value =~ /\bcfg\b/ );
+    $debug = 1 if ( $name eq "TLP_DEBUG" && $value =~ /\bcfg\b/ );
 
-    if ( $name eq PARM_KILL_DEFAULTS && $value eq "1" ) {
-        $kill_defaults = 1;
-        printf_debug ("tlp-readconfs.kill_defaults\n");
+    if ( $name eq "TLP_DISABLE_DEFAULTS" && $value eq "1" ) {
+        $skip_defaults = 1;
+        printf_debug ("tlp-readconfs.skip_defaults\n");
     }
 
     if ( defined $config_idx{$name} ) {
@@ -186,8 +182,8 @@ sub write_runconf {
     foreach ( @config_val ) {
         my ($name, $value, $source, $default) = @$_;
 
-        # skip default entries
-        next if ( $kill_defaults eq 1 and length $default and $name ne PARM_KILL_DEF_SKIP );
+        # skip default entries except TLP_ENABLE
+        next if ( $skip_defaults eq 1 and length $default and ! ( $name =~ /TLP_ENABLE/ ) );
 
         if ( $runconf eq *STDOUT ) {
             my $msg = "";
@@ -265,7 +261,7 @@ sub parse_dprfile {
 
 # --- MAIN
 # parse arguments
-GetOptions ('outfile=s' => \$outfile, 'notrace' => \$notrace, 'cdiff' => \$cdiff);
+GetOptions ('outfile=s' => \$outfile, 'skipdefs' => \$skip_defaults, 'notrace' => \$notrace, 'cdiff' => \$cdiff);
 
 # read parameter renaming rules
 parse_renfile (CONF_REN);

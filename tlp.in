@@ -207,7 +207,7 @@ if [ "$_cmd" = "version" ]; then
 fi
 
 # read configuration: quit on error, trace allowed
-read_config 0
+read_config 0 "$@"
 parse_args4config "$@"
 cprintf_init
 
