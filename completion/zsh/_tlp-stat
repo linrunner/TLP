@@ -22,6 +22,7 @@ args=(
     '(-P --pev)'{--pev,-P}'[Monitor power supply udev events]'
     '--psup[View power supply diagnostics]'
     '(-T --trace)'{--trace,-T}'[View trace output]'
+    '--trace-nm[View trace output correlated with NetworkManager journal]'
     '--udev[Check if udev rules for power source changes and connecting USB devices are active]'
     '(-w --warn)'{--warn,-w}'[View warnings about SATA disks]'
 )
