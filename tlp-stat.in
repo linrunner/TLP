@@ -59,6 +59,7 @@ show_rfkill=0
 show_system=0
 show_temp=0
 show_trace=0
+show_trace_nm=0
 show_udev=0
 show_usb=0
 show_verbose=0
@@ -179,6 +180,13 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 needs_root_priv=1
                 ;;
 
+            "--trace-nm")
+                show_all=0
+                show_trace=1
+                show_trace_nm=1
+                needs_root_priv=1
+                ;;
+
             "--udev")
                 show_all=0
                 show_udev=1
@@ -207,8 +215,8 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 echo "                  -w | --warn      | -v | --verbose   |" 1>&2
                 echo "                     | --version   |    | --cdiff     |" 1>&2
                 echo "                  -P | --pev       |    | --psup      |" 1>&2
-                echo "                  -T | --trace     |    | --udev" 1>&2
-                echo "                ]" 1>&2
+                echo "                  -T | --trace     |      --trace-nm  |" 1>&2
+                echo "                       --udev                           ]" 1>&2
                 do_exit 3
                 ;;
         esac
@@ -1062,21 +1070,32 @@ fi # show_udev
 if [ "$show_trace" = "1" ]; then
     # check for systemd journal
     jdone=0
+    if [ "$show_trace_nm" = "1" ]; then
+        log_ids="SYSLOG_IDENTIFIER=tlp SYSLOG_IDENTIFIER=NetworkManager"
+    else
+        log_ids="SYSLOG_IDENTIFIER=tlp"
+    fi
     if cmd_exists $JOURNALCTL; then
         # retrieve trace output from journal, rc=1 if journald has no data available
         if [ $show_verbose -eq 1 ]; then
             # verbose: show all output
-            $JOURNALCTL -p debug --no-pager SYSLOG_IDENTIFIER=tlp 2> /dev/null && jdone=1
+            # shellcheck disable=SC2086
+            $JOURNALCTL -p debug --no-pager $log_ids    2> /dev/null && jdone=1
         else
             # non-verbose: show output since last reboot only
-            $JOURNALCTL -p debug --no-pager SYSLOG_IDENTIFIER=tlp -b 2> /dev/null && jdone=1
+            # shellcheck disable=SC2086
+            $JOURNALCTL -p debug --no-pager $log_ids -b 2> /dev/null && jdone=1
         fi
     fi
 
     if [ "$jdone" = "0"  ]; then
         # no journald data available --> retrieve trace output from logfile
         if [ -f $DEBUGLOG ]; then
-            grep 'tlp\[' $DEBUGLOG
+            if [ "$show_trace_nm" = "1" ]; then
+                grep -E '(tlp|NetworkManager)\[' $DEBUGLOG
+            else
+                grep -E 'tlp\[' $DEBUGLOG
+            fi
         else
             cecho "Error: $DEBUGLOG does not exist." 1>&2
             echo 1>&2
