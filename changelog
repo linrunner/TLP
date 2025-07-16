@@ -28,6 +28,8 @@
       - Show current frequency per core (scaling_cur_freq)
       - Show AMD prefcore, amd_pstate_hw_prefcore, amd_pstate_prefcore_ranking
     - tlp-stat -t -v: show all individual sensors
+    Radio Devices:
+    - tlp-stat -s: warn if RDW is configured but tlp-rdw is not installed
 
   * Bugfixes
     Battery:
