@@ -2,6 +2,15 @@
 # Copyright (c) 2025 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 TLPVER := $(shell read _ver _dummy < ./VERSION; printf '%s' "$${_ver:-undef}")
+# Append Git commit ID to TLPVER for alpha and beta versions
+ifneq (,$(shell which git 2> /dev/null))
+	ifneq (,$(shell echo "$(TLPVER)" | grep -E 'alpha|beta'))
+		COMMIT_ID := $(shell git rev-parse --short HEAD 2> /dev/null)
+		ifneq (,$(COMMIT_ID))
+			TLPVER := $(TLPVER)_$(COMMIT_ID)
+		endif
+	endif
+endif
 
 # Evaluate parameters
 TLP_SBIN    ?= /usr/sbin
