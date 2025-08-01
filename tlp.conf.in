@@ -11,15 +11,15 @@
 # 2. /etc/tlp.d/*.conf - Drop-in customization snippets
 # 3. /etc/tlp.conf     - User configuration (this file)
 #
-# Power Profiles: a significant part of TLP's parameters is divided into
-# two or three categories:
-# - performance: parameters ending in _AC will be used when AC is connected
+# Power Profiles: a part of TLP's parameters is divided into two or three
+# groups:
+# - performance: parameters ending in _AC are used when AC is connected
 #   or when the command 'tlp performance' is run.
-# - balanced: parameters ending in _BAT will be used when running
+# - balanced: parameters ending in _BAT are used when running
 #   on battery power or when the command 'tlp balanced' is run.
-# - power-saver: parameters ending in _SAV will be used when the command
-#   'tlp power-saver' is run (if there is no _SAV value available for a
-#   parameter, the _BAT value is used instead).
+# - power-saver: parameters ending in _SAV are used when the command
+#   'tlp power-saver' is run. If there is no _SAV parameter available for a
+#   feature, the _BAT paremeter will be used instead.
 # - Any remaining parameters not divided apply to all power profiles.
 #
 # Please note:
