@@ -40,16 +40,19 @@ args=(
 )
 
 _regex_words commands 'tlp command' \
-    'start:Start TLP and apply power saving profile for the actual power source' \
-    'bat:Apply battery profile and enter manual mode' \
-    'ac:Apply AC profile and enter manual mode' \
+    'start:Start TLP and apply power profile for the actual power source' \
+    'performance:Apply "performance" profile' \
+    'balanced:Apply "balanced" profile' \
+    'power-saver:Apply "power-saver" profile' \
+    'ac:Apply "performance" profile and enter manual mode' \
+    'bat:Apply "balanced" profile and enter manual mode' \
     'usb:Enable autosuspend for all USB devices except excluded' \
     'bayoff:Turn off optical drive in UltraBay/MediaBay' \
-    'chargeonce:Charge battery to the stop charge threshold once (ThinkPads only):$subcmd_batteries' \
-    'discharge:Force a complete discharge of the battery (ThinkPads only):$subcmd_batteries' \
+    'chargeonce:Charge battery to the stop charge threshold once:$subcmd_batteries' \
+    'discharge:Force a complete discharge of the battery:$subcmd_batteries' \
     'setcharge:Change charge thresholds temporarily:$subcmd_setcharge' \
     'fullcharge:Charge battery to full capacity:$subcmd_batteries' \
-    'recalibrate:Perform a battery recalibration (ThinkPads only):$subcmd_batteries' \
+    'recalibrate:Perform a battery recalibration:$subcmd_batteries' \
     'diskid:Print disk ids for configured drives' \
     '--version:Print TLP version'
 args+=("$reply[@]")
