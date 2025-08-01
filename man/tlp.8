@@ -1,4 +1,4 @@
-.TH tlp 8 2025-02-04 "TLP 1.8.0" "Power Management"
+.TH tlp 8 2025-08-01 "TLP 1.9.0" "Power Management"
 .
 .SH NAME
 tlp - apply laptop power saving settings
@@ -14,28 +14,42 @@ features.
 .
 .TP
 .B start
-Start \fBtlp\fR and apply power saving profile for the actual power source.
+Start \fBtlp\fR and apply the power profile for the actual power source.
 Also use to apply a changed configuration or to leave manual mode.
 .
 .TP
-.B bat
-Apply battery profile and enter manual mode.
-Manual mode means that changes to the power source will be ignored until the
-next reboot or \fBtlp start\fR is issued to resume automatic mode.
+.B performance
+Apply the "performance" profile. Parameters ending in _AC are used.
 .
 .TP
-.B true
-Alias for \fBbat\fR.
+.B balanced
+Apply the "balanced" profile. Parameters ending in _BAT are used.
+.
+.TP
+.B power-saver
+Apply the "power-saver" profile. Parameters ending in _SAV are used.
+If there is no _SAV parameter available for a feature, the _BAT parameter
+will be used instead.
 .
 .TP
 .B ac
-Apply AC profile and enter manual mode.
+Apply profile "performance" and enter manual mode.
 Manual mode means that changes to the power source will be ignored until the
 next reboot or \fBtlp start\fR is issued to resume automatic mode.
 .
 .TP
 .B false
 Alias for \fBac\fR.
+.
+.TP
+.B bat
+Apply profile "battery" and enter manual mode.
+Manual mode means that changes to the power source will be ignored until the
+next reboot or \fBtlp start\fR is issued to resume automatic mode.
+.
+.TP
+.B true
+Alias for \fBbat\fR.
 .
 .TP
 .B usb
