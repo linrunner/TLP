@@ -314,7 +314,13 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
 
     # --- init system info
     if check_systemd; then
-        echo "Init system    = systemd $(systemd --version 2> /dev/null | sed -rn 's/systemd ([0-9]+)/v\1/p')"
+        systemd_version="$($SYSTEMCTL --version 2> /dev/null | head -1 | awk '{ print $2; }')"
+        if [ -n "$systemd_version" ]; then
+            echo "Init system    = systemd ${systemd_version}"
+        else
+            # unable to determine version
+            echo "Init system    = systemd"
+        fi
     elif check_upstart; then
         echo "Init system    = upstart"
     elif check_openrc; then
