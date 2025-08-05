@@ -196,7 +196,85 @@ check_persistent_mode () {
     prof_save="$(read_sysf "$LASTPWR")"
     mm_save="$(read_sysf "$MANUALMODE")"
 
-    printf_msg " result: last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
+    printf_msg " result:                                        last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
+
+    # print summary
+    printf_msg "}}} errcnt=%s\n\n" "$errcnt"
+    _testcnt=$((_testcnt + 1))
+    [ "$errcnt" -gt 0 ] && _failcnt=$((_failcnt + 1))
+    return $errcnt
+}
+
+check_power_supply () {
+    # run 'tlp auto' with simulated power supply AC/battery/unknown
+    # global param: $_testcnt, $_failcnt
+    # retval: $_testcnt++, $_failcnt++
+
+    local ps ps_seq
+    local prof_save prof_xpect
+    local mm_save mm_xpect
+    local rc=0
+    local errcnt=0
+
+    # save initial profile
+    prof_save="$(read_sysf "$LASTPWR")"
+    mm_save="$(read_sysf "$MANUALMODE")"
+
+    printf_msg "check_power_supply {{{\n"
+
+    # iterate power supplies, return to initial power supply
+    case "$prof_save" in
+        "$PP_PRF") ps_seq="$PS_BAT $PS_UNKNOWN $PS_AC" ;;
+        "$PP_BAL") ps_seq="$PS_UNKNOWN $PS_AC $PS_BAT" ;;
+        "$PP_SAV") ps_seq="$PS_UNKNOWN $PS_AC $PS_BAT" ;;
+    esac
+
+    printf_msg " initial:                                last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
+
+    for ps in $ps_seq; do
+        printf_msg " X_SIMULATE_PS=%-3s TLP_DEFAULT_MODE=SAV:" "$ps"
+
+        case "$ps" in
+            "$PS_AC")
+                prof_xpect="$PP_PRF"
+                ;;
+
+            "$PS_BAT")
+                prof_xpect="$PP_BAL"
+                ;;
+
+            "$PS_UNKNOWN")
+                prof_xpect="$PP_SAV"
+                ;;
+        esac
+
+        ${SUDO} ${TLP} auto -- X_SIMULATE_PS="$ps" TLP_DEFAULT_MODE=SAV > /dev/null 2>&1
+
+        # expect changing profiles
+        compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
+        if [ "$rc" -eq 0 ]; then
+            printf_msg " last_pwr/%s=ok" "$prof_xpect"
+        else
+            printf_msg " last_pwr/%s=err(%s)" "$prof_xpect" "$rc"
+            errcnt=$((errcnt + 1))
+        fi
+        # do not expect manual mode
+        mm_xpect=""
+        compare_sysf "$mm_xpect" "$MANUALMODE"; rc=$?
+        if [ "$rc" -eq 0 ]; then
+            printf_msg " manual_mode/%s=ok" "$mm_xpect"
+        else
+            printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
+            errcnt=$((errcnt + 1))
+        fi
+        printf "\n"
+
+    done # prof
+
+    prof_save="$(read_sysf "$LASTPWR")"
+    mm_save="$(read_sysf "$MANUALMODE")"
+
+    printf_msg " result:                                 last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
 
     # print summary
     printf_msg "}}} errcnt=%s\n\n" "$errcnt"
@@ -229,6 +307,7 @@ report_test "$_basename"
 
 check_profile_select
 check_persistent_mode
+check_power_supply
 
 report_result "$_testcnt" "$_failcnt"
 
