@@ -127,10 +127,6 @@ check_persistent_mode () {
     local rc=0
     local errcnt=0
 
-    # save initial profile
-    prof_save="$(read_sysf "$LASTPWR")"
-    mm_save="$(read_sysf "$MANUALMODE")"
-
     printf_msg "check_persistent_mode {{{\n"
 
     # save initial profile
