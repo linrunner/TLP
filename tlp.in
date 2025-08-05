@@ -237,23 +237,15 @@ else
 fi
 echo_debug "run" "SHELL=$(print_shell); umask=$(umask)"
 
-# get current power profile
 get_power_mode "$_cmd"; pwrmode=$?
-get_manual_mode
 
-# select target power profile
 case "$_cmd" in
     init|start)
-        # discard manual mode
         clear_manual_mode
         ;;
 
     auto|resume)
-        # if manual mode is set, use instead of current power state
-        # shellcheck disable=SC2154
-        if wordinlist "$_manual_mode" "$PP_VALID"; then
-            pwrmode="$_manual_mode"
-        fi
+        # do not change profile and manual mode
         ;;
 
     true|bat)
@@ -284,18 +276,16 @@ esac
 
 # shellcheck disable=SC2154
 case "$_syspwr" in
-    "$PS_AC")  echo_debug "run" "power_source=ac" ;;
-    "$PS_BAT") echo_debug "run" "power_source=bat" ;;
-    *)         echo_debug "run" "power_source=unknown ($_syspwr)" ;;
+    "$PS_AC")  echo_debug "run" "power_source=ac($_syspwr)" ;;
+    "$PS_BAT") echo_debug "run" "power_source=bat($_syspwr)" ;;
+    *)         echo_debug "run" "power_source=unknown($_syspwr)" ;;
 esac
 
-echo_debug "run" "manual_mode=$_manual_mode"
-
 case "$pwrmode" in
-    "$PP_PRF")  echo_debug "run" "power_profile=performance" ;;
-    "$PP_BAL")  echo_debug "run" "power_profile=balanced" ;;
-    "$PP_SAV")  echo_debug "run" "power_profile=power-saver" ;;
-    *)          echo_debug "run" "power_profile=unknown ($pwrmode)" ;;
+    "$PP_PRF")  echo_debug "run" "new_power_profile=performance($pwrmode)" ;;
+    "$PP_BAL")  echo_debug "run" "new_power_profile=balanced($pwrmode)" ;;
+    "$PP_SAV")  echo_debug "run" "new_power_profile=power-saver($pwrmode)" ;;
+    *)          echo_debug "run" "new_power_profile=unknown($pwrmode)" ;;
 esac
 
 # process command

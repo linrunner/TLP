@@ -921,7 +921,7 @@ get_sys_power_supply () {
                 # check battery status
                 bs="$(read_sysf "$psrc/status")"
                 if [ "$bs" != "Discharging" ] && [ "$tlp_cmd" = "auto" ] && [ -z "$wait" ]; then
-                    # when command is 'tlp auto', not "Discharging" might be caused by lagging battery status updates
+                    # if command is 'tlp auto', not "Discharging" might be caused by lagging battery status updates
                     # --> recheck every 0.1 secs for 1.5 secs (or user value in deciseconds) max
                     # use delay loop only once
                     wait="$X_PS_WAIT_DS"
@@ -1004,40 +1004,49 @@ is_laptop () { # check if machine is a laptop
 }
 
 get_power_mode () {
-    # get power profile depending on actual power source or default/persistence setting
+    # get current power profile either depending on actual power source or on default/persistence setting
     # $1: tlp command - passed on to get_sys_power_supply()
-    # rc: PP_PRF=0/PP_BAL=1/PP_SAV=2/MPM_OFF=255
-    # similar to get_sys_power_supply(), but maps unknown power source to TLP_DEFAULT_MODE
-    # or returns persistent mode when enabled.
-    # if TLP_DEFAULT_MODE is unconfigured and power source is unknown, returns
-    # PP_BAL for laptop/PP_PRF for desktop/other.
+    # rc: PP_PRF=0/PP_BAL=1/PP_SAV=2
+    # like get_sys_power_supply(), plus:
+    # - maps unknown power source to TLP_DEFAULT_MODE
+    # - returns manual or persistent mode if applicable and not 'tlp start'
+    # - if TLP_DEFAULT_MODE is unconfigured and power source is unknown, 
+    #   returns PP_BAL for laptop / PP_PRF for desktop/other
 
-    get_sys_power_supply "$1"
-    local rc=$?
+    local tlp_cmd="$1"
+
+    get_sys_power_supply "$tlp_cmd"
+    local cur_pp=$?
+    get_manual_mode
 
     if get_persist_mode; then
         # persistent mode
-        rc=$_persist_mode
+        cur_pp=$_persist_mode
+    elif [ "$tlp_cmd" != "start" ] && wordinlist "$_manual_mode" "$PP_VALID"; then
+        # do not evaluate manual mode for 'tlp start'
+        cur_pp=$_manual_mode
     else
-        # non-persistent mode, use current power source
-        if [ $rc -eq $PS_UNKNOWN ]; then
+        # neither persistent nor manual mode -> use current power source
+        if [ $cur_pp -eq $PS_UNKNOWN ]; then
             # unknown power supply, use configured default mode
             case $(toupper "$TLP_DEFAULT_MODE") in
-                AC|PRF)  rc=$PP_PRF ;;
-                BAT|BAL) rc=$PP_BAL ;;
-                SAV)     rc=$PP_SAV ;;
+                AC|PRF)  cur_pp=$PP_PRF ;;
+                BAT|BAL) cur_pp=$PP_BAL ;;
+                SAV)     cur_pp=$PP_SAV ;;
+
                 *) # unconfigured or invalid default mode -> check machine type
                     if is_laptop; then
-                        rc=$PP_BAL # laptop: assume battery
+                        cur_pp=$PP_BAL # laptop: assume battery
                     else
-                        rc=$PP_PRF # desktop/other: assume AC
+                        cur_pp=$PP_PRF # desktop/other: assume AC
                     fi
                     ;;
             esac
         fi
     fi
 
-    return $rc
+    echo_debug "ps" "get_power_mode($tlp_cmd): manual=$_manual_mode; persist=$_persist_mode; cur_pp=$cur_pp"
+    return $cur_pp
 }
 
 compare_and_save_power_state () {
@@ -1114,17 +1123,17 @@ set_manual_mode () { # set manual profile
     # retval: $_manual_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2)
 
     if ! wordinlist "$1" "$PP_PRF $PP_BAL $PP_SAV"; then
-        echo_debug "pm" "set_manual_mode($1).invalid"
+        echo_debug "ps" "set_manual_mode($1).invalid"
         return 1
     fi
 
     create_rundir
     if write_sysf "$1" $MANUALMODEFILE; then
         _manual_mode="$1"
-        echo_debug "pm" "set_manual_mode($1).ok"
+        echo_debug "ps" "set_manual_mode($1).ok"
         return 0
     else
-        echo_debug "pm" "set_manual_mode($1).write_error"
+        echo_debug "ps" "set_manual_mode($1).write_error"
         return 1
     fi
 }
@@ -1135,7 +1144,7 @@ clear_manual_mode () { # remove manual profile
     rm -f $MANUALMODEFILE 2> /dev/null
     _manual_mode="$MPM_OFF"
 
-    echo_debug "pm" "clear_manual_mode"
+    echo_debug "ps" "clear_manual_mode"
     return 0
 }
 
