@@ -44,10 +44,10 @@ check_profile_select () {
         "$PP_SAV") prof_seq="ac bat start auto performance balanced power-saver" ;;
     esac
 
-    printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
+    printf_msg " initial:      last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
 
     for prof in $prof_seq; do
-        printf_msg " %s:" "$prof"
+        printf_msg " %-12s:" "$prof"
 
         case "$prof" in
             performance)
@@ -110,7 +110,7 @@ check_profile_select () {
     prof_save="$(read_sysf "$LASTPWR")"
     mm_save="$(read_sysf "$MANUALMODE")"
 
-    printf_msg " result: last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
+    printf_msg " result:       last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
 
     # print summary
     printf_msg "}}} errcnt=%s\n\n" "$errcnt"
@@ -120,6 +120,9 @@ check_profile_select () {
 }
 
 check_persistent_mode () {
+    # invoke perstent mode PRF/BAL/SAV/AC/BAT
+    # global param: $_testcnt, $_failcnt
+    # retval: $_testcnt++, $_failcnt++
 
     local prof_seq
     local prof prof_save prof_xpect
@@ -140,10 +143,10 @@ check_persistent_mode () {
         "$PP_SAV") prof_seq="AC BAT PRF BAL SAV" ;;
     esac
 
-    printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
+    printf_msg " initial:                                       last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
 
     for prof in $prof_seq; do
-        printf_msg " %s:" "$prof"
+        printf_msg " TLP_PERSISTENT_DEFAULT=1 TLP_DEFAULT_MODE=%-3s:" "$prof"
 
         case "$prof" in
             PRF)
