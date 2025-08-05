@@ -24,7 +24,11 @@ readonly PP_PRF=0
 readonly PP_BAL=1
 readonly PP_SAV=2
 readonly PP_SUS=3
-readonly PP_NONE=128
+readonly PP_VALID="0 1 2"
+
+# manual/persistent mode exceptional cases
+readonly MPM_UNKNOWN=128
+readonly MPM_OFF=255
 
 # ----------------------------------------------------------------------------
 # Functions

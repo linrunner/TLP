@@ -196,7 +196,7 @@ print_saved_powerstate () {
         "$PP_PRF")  printf "performance/AC" ;;
         "$PP_BAL")  printf "balanced/BAT" ;;
         "$PP_SAV")  printf "power-saver/SAV" ;;
-        "$PP_NONE") printf "unknown" ;;
+        *)          printf "unknown" ;;
     esac
 
     # check for manual and persistent default mode

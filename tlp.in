@@ -251,7 +251,7 @@ case "$_cmd" in
     auto|resume)
         # if manual mode is set, use instead of current power state
         # shellcheck disable=SC2154
-        if [ "$_manual_mode" != "$PP_NONE" ]; then
+        if wordinlist "$_manual_mode" "$PP_VALID"; then
             pwrmode="$_manual_mode"
         fi
         ;;
