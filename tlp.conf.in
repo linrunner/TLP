@@ -80,7 +80,10 @@
 
 #TLP_MSG_COLORS="91 93 1 92"
 
-# Operation mode when no power supply can be detected: AC, BAT.
+# Power profile when no power supply is detected:
+# PRF=performance, BAL=balanced, SAV=power-saver.
+# Note: legacy values AC and BAT continue to work. They are mapped to PRF and BAL,
+# respectively.
 # Concerns some desktop and embedded hardware only.
 # Default: <none>
 
