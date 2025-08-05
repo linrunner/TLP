@@ -65,7 +65,11 @@ readonly PP_PRF=0
 readonly PP_BAL=1
 readonly PP_SAV=2
 readonly PP_SUS=3
-readonly PP_NONE=128
+readonly PP_VALID="0 1 2"
+
+# manual/persistent mode exceptional cases
+readonly MPM_UNKNOWN=128
+readonly MPM_OFF=255
 
 # ----------------------------------------------------------------------------
 # Control
@@ -975,9 +979,9 @@ get_sys_power_supply () {
 
 get_persist_mode () { # get persistent power profile
     # rc: 0=persistent/1=not persistent
-    # retval: $_persist_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, PP_NONE=128)
+    # retval: $_persist_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, MPM_OFF=255)
     local rc=1
-    _persist_mode=$PP_NONE
+    _persist_mode=$MPM_OFF
 
     if [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then
         # persistent mode = configured default mode
@@ -1002,7 +1006,7 @@ is_laptop () { # check if machine is a laptop
 get_power_mode () {
     # get power profile depending on actual power source or default/persistence setting
     # $1: tlp command - passed on to get_sys_power_supply()
-    # rc: PP_PRF=0/PP_BAL=1/PP_SAV=2/PP_NONE=128
+    # rc: PP_PRF=0/PP_BAL=1/PP_SAV=2/MPM_OFF=255
     # similar to get_sys_power_supply(), but maps unknown power source to TLP_DEFAULT_MODE
     # or returns persistent mode when enabled.
     # if TLP_DEFAULT_MODE is unconfigured and power source is unknown, returns
@@ -1096,7 +1100,7 @@ echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
         "$PP_BAL") printf "TLP started using profile balanced/BAT" ;;
         "$PP_SAV") printf "TLP started using profile power-saver/SAV" ;;
     esac
-    if [ "$_manual_mode" != "$PP_NONE" ]; then
+    if [ "$_manual_mode" != "$MPM_OFF" ]; then
         printf " (manual).\n"
     else
         printf " (auto).\n"
@@ -1129,7 +1133,7 @@ clear_manual_mode () { # remove manual profile
     # retval: $_manual_mode (none)
 
     rm -f $MANUALMODEFILE 2> /dev/null
-    _manual_mode="$PP_NONE"
+    _manual_mode="$MPM_OFF"
 
     echo_debug "pm" "clear_manual_mode"
     return 0
@@ -1137,16 +1141,16 @@ clear_manual_mode () { # remove manual profile
 
 get_manual_mode () { # get manual profile
     # rc: 0=active/1=inactive
-    # retval: $_manual_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, PP_NONE=128)
+    # retval: $_manual_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, MPM_OFF=255
     local rc=1
-    _manual_mode="$PP_NONE"
+    _manual_mode="$MPM_OFF"
 
     if [ -f $MANUALMODEFILE ]; then
         # read mode file
         if _manual_mode=$(read_sysf $MANUALMODEFILE); then
             case $_manual_mode in
                 "$PP_PRF"|"$PP_BAL"|"$PP_SAV") rc=0 ;;
-                *) _manual_mode=$PP_NONE ;;
+                *) _manual_mode=$MPM_UNKNOWN ;;
             esac
         else
             # cannot read mode file - possible cause:
@@ -1154,7 +1158,7 @@ get_manual_mode () { # get manual profile
             #   because tlp ac/bat is invoked with sudo when creating the file and thereby a
             #   restrictive umask applies; see https://github.com/linrunner/TLP/issues/702
             # -> manual mode is active but operation mode cannot be determined
-            _manual_mode=$PP_NONE
+            _manual_mode=$MPM_UNKNOWN
             rc=0
         fi
     fi
