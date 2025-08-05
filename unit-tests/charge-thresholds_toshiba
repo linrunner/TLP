@@ -11,16 +11,16 @@ $ # +++ Toshiba/Dynabook +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
 $ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
-TLP started in AC mode (auto).
+TLP started using profile performance/AC (auto).
 $ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="42" STOP_CHARGE_THRESH_BAT1="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT1="24": not specified or invalid (must be 80 or 100). Battery skipped.
-TLP started in AC mode (auto).
+TLP started using profile performance/AC (auto).
 $ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="42" STOP_CHARGE_THRESH_BAT1="80"
-TLP started in AC mode (auto).
+TLP started using profile performance/AC (auto).
 $ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
-TLP started in AC mode (auto).
+TLP started using profile performance/AC (auto).
 $ sudo tlp start -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
-TLP started in AC mode (auto).
+TLP started using profile performance/AC (auto).
 $ #
 $ # --- tlp setcharge w/o threshold arguments
 $ sudo tlp setcharge BAT1 -- START_CHARGE_THRESH_BAT1="42" STOP_CHARGE_THRESH_BAT1="24"
