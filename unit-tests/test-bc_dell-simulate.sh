@@ -1,8 +1,9 @@
 #!/bin/sh
-readonly TESTLIB="./test-func"
+readonly TESTLIB="test-func"
+spath="${0%/*}"
 # shellcheck disable=SC1090
-. $TESTLIB || {
-    printf "Error: missing library %s\n" "${TESTLIB}" 1>&2
+. "$spath/$TESTLIB" || {
+    printf "Error: missing library %s\n" "$spath/$TESTLIB" 1>&2
     exit 70
 }
 
@@ -11,7 +12,7 @@ start_report
 
 export xinc="X_BAT_PLUGIN_SIMULATE=dell"
 echo "        # xinc=${xinc}" 1>&2
-run_clitest charge-thresholds_dell "" "$1"
+run_clitest "$spath/charge-thresholds_dell" "" "$1"
 sudo tlp setcharge BAT0  > /dev/null 2>&1 # reset test machine to configured thresholds
 
 print_report

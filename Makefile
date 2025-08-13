@@ -148,7 +148,7 @@ $(INFILES): %: %.in
 clean:
 	rm -f $(INFILES)
 	rm -f bat.d/*~
-	rm -f unit-tests/*.log
+	rm -f *.log unit-tests/*.log
 
 install-tlp: all
 	# Package tlp

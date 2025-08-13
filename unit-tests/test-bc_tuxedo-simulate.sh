@@ -1,8 +1,9 @@
 #!/bin/sh
-readonly TESTLIB="./test-func"
+readonly TESTLIB="test-func"
+spath="${0%/*}"
 # shellcheck disable=SC1090
-. $TESTLIB || {
-    printf "Error: missing library %s\n" "${TESTLIB}" 1>&2
+. "$spath/$TESTLIB" || {
+    printf "Error: missing library %s\n" "$spath/$TESTLIB" 1>&2
     exit 70
 }
 
@@ -26,7 +27,7 @@ fi
 
 export xinc="X_BAT_PLUGIN_SIMULATE=tuxedo"
 echo "        # xinc=${xinc} bata=${bata} batb=${batb}" 1>&2
-run_clitest charge-thresholds_tuxedo
+run_clitest "$spath/charge-thresholds_tuxedo"
 sudo tlp setcharge ${bata}  > /dev/null 2>&1 # reset test machine to configured thresholds
 
 print_report

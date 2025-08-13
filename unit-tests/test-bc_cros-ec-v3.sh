@@ -1,8 +1,9 @@
 #!/bin/sh
-readonly TESTLIB="./test-func"
+readonly TESTLIB="test-func"
+spath="${0%/*}"
 # shellcheck disable=SC1090
-. $TESTLIB || {
-    printf "Error: missing library %s\n" "${TESTLIB}" 1>&2
+. "$spath/$TESTLIB" || {
+    printf "Error: missing library %s\n" "$spath/$TESTLIB" 1>&2
     exit 70
 }
 
@@ -26,6 +27,6 @@ fi
 
 # shellcheck disable=SC2154
 echo "        # bata=${bata} batb=${batb} xinc=${xinc}"
-run_clitest charge-thresholds_cros-ec-v3
+run_clitest "$spath/charge-thresholds_cros-ec-v3"
 
 print_report

@@ -1,15 +1,16 @@
 #!/bin/sh
-readonly TESTLIB="./test-func"
+readonly TESTLIB="test-func"
+spath="${0%/*}"
 # shellcheck disable=SC1090
-. $TESTLIB || {
-    printf "Error: missing library %s\n" "${TESTLIB}" 1>&2
+. "$spath/$TESTLIB" || {
+    printf "Error: missing library %s\n" "$spath/$TESTLIB" 1>&2
     exit 70
 }
 
 cache_root_cred
 start_report
 
-./test-bc_thinkpad.sh
-./test-bc_all-simulate.sh
+"$spath/test-bc_thinkpad.sh"
+"$spath/test-bc_all-simulate.sh"
 
 print_report
