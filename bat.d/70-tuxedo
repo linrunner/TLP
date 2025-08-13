@@ -16,12 +16,10 @@
 
 # --- Hardware Detection
 
-readonly BATDRV_TUXEDO_MD=/sys/module/clevo_acpi
-
 batdrv_is_tuxedo () {
-    # check if vendor specific kernel module is loaded
+    # check if DMI system vendor is Tuxedo
     # rc: 0=ok, 1=other hardware
-    [ -d $BATDRV_TUXEDO_MD ]
+    [ "$(read_dmi sys_vendor)" = "TUXEDO" ]
 }
 
 # --- Plugin API functions
@@ -35,8 +33,9 @@ batdrv_init () {
     #    --> retval $_natacpi:
     #       0=thresholds/
     #       32=disabled/
-    #       128=no kernel support/
-    #       254=laptop not supported
+    #       64=kernel module not loaded/
+    #       128=kernel module not installed/
+    #       254=model not supported
     #
     # 2. determine method for
     #    reading battery data                   --> retval $_bm_read,
@@ -60,7 +59,8 @@ batdrv_init () {
     #    stop threshold allowed values set      --> retval $_bt_set_stop;
 
     _batdrv_plugin="tuxedo"
-    _batdrv_kmod="clevo_acpi" # kernel module for natacpi
+    # kernel module for natacpi; in the simulation, a different one can be entered
+    _batdrv_kmod="${X_BAT_PLUGIN_SIM_KMOD:-clevo_acpi}"
     _batdrv_sim=0
 
     # check plugin simulation override and denylist
@@ -84,7 +84,7 @@ batdrv_init () {
     fi
 
     # presume no features at all
-    _natacpi=128
+    _natacpi=254
     _bm_read="natacpi"
     _bm_thresh="none"
     _bm_dischg="none"
@@ -97,6 +97,21 @@ batdrv_init () {
     _bt_def_stop=100
     _bt_set_start=""
     _bt_set_stop=""
+
+    # check out-of-tree kernel module inavailability cases
+    if [ "$NATACPI_ENABLE" = "0" ]; then
+        # natacpi disabled in configuration --> skip actual detection
+        _natacpi=32
+    elif $MODINFO "$_batdrv_kmod" > /dev/null 2>&1; then
+        # module installed -> load it (also succeeds if builtin)
+        if ! $MODPRO "$_batdrv_kmod" > /dev/null 2>&1; then
+            # module load error
+            _natacpi=64
+        fi
+    else
+        # module neither installed nor builtin
+        _natacpi=128
+    fi
 
     # iterate batteries and check for native kernel ACPI
     local bd bs
@@ -114,28 +129,17 @@ batdrv_init () {
             [ $done -eq 1 ] && continue
 
             done=1
-            if [ "$NATACPI_ENABLE" = "0" ]; then
-                # natacpi disabled in configuration --> skip actual detection
-                _natacpi=32
+            if [ "$_natacpi" -lt "254" ]; then
+                # natacpi kernel module not available --> skip actual detection
                 continue
             fi
 
-            if [ -f "$bd/charge_control_start_threshold" ] \
-                && [ -f "$bd/charge_control_end_threshold" ]; then
-                # threshold sysfiles exist
+            if readable_sysf "$bd/charge_control_start_threshold"  \
+                && readable_sysf "$bd/charge_control_end_threshold" ; then
+                # threshold sysfiles exist and are actually readable
+                _natacpi=0
                 _bn_start="charge_control_start_threshold"
                 _bn_stop="charge_control_end_threshold"
-                _natacpi=254
-            else
-                # nothing detected
-                _natacpi=254
-                continue
-            fi
-
-            if readable_sysf "$bd/$_bn_start" \
-                && readable_sysf "$bd/$_bn_stop"; then
-                # threshold sysfiles are actually readable
-                _natacpi=0
                 _bm_thresh="natacpi"
                 _bn_chtype="charge_type"
 
@@ -614,8 +618,9 @@ batdrv_show_battery_data () {
     case $_natacpi in
         0)   cprintf "success" "* natacpi (%s) = active (charge thresholds)\n" "$_batdrv_kmod" ;;
         32)  cprintf "notice"  "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
-        128) cprintf "err"     "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
-        254) cprintf "warning" "* natacpi (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
+        64)  cprintf "err"     "* natacpi (%s) = inactive (kernel module '%s' load error)\n" "$_batdrv_kmod" "$_batdrv_kmod" ;;
+        128) cprintf "err"     "* natacpi (%s) = inactive (kernel module '%s' not installed)\n" "$_batdrv_kmod" "$_batdrv_kmod" ;;
+        254) cprintf "warning" "* natacpi (%s) = inactive (Tuxedo model not supported)\n" "$_batdrv_kmod" ;;
         *)   cprintf "err"     "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
     if [ "$_bm_thresh" != "none" ]; then
@@ -739,6 +744,10 @@ batdrv_recommendations () {
     # prerequisite: batdrv_init()
 
     soc_gt_stop_recommendation
+
+    if [ "$_natacpi" = "128" ]; then
+        printf "Install tuxedo-drivers for battery thresholds\n"
+    fi
 
     return 0
 }

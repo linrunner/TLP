@@ -14,7 +14,6 @@ readonly RE_TPSMAPI_ONLY='^(Edge( 13.*)?|G41|R[56][012][eip]?|R[45]00|SL[45]10|T
 readonly RE_TPSMAPI_AND_TPACPI='^(X1|X220[s]?( Tablet)?|T[45]20[s]?|W520)$'
 readonly RE_TP_NONE='^(L[45]20|L512|SL[345]00|X121e)$'
 
-readonly MODINFO=modinfo
 readonly MOD_TPSMAPI="tp_smapi"
 
 supports_tpsmapi_only () {
