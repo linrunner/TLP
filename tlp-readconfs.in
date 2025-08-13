@@ -183,7 +183,7 @@ sub write_runconf {
         my ($name, $value, $source, $default) = @$_;
 
         # skip default entries except TLP_ENABLE
-        next if ( $skip_defaults eq 1 and length $default and ! ( $name =~ /TLP_ENABLE|TLP_WARN_LEVEL/ ) );
+        next if ( $skip_defaults eq 1 and length $default and not ( $name =~ /TLP_ENABLE|TLP_WARN_LEVEL/ ) );
 
         if ( $runconf eq *STDOUT ) {
             my $msg = "";
