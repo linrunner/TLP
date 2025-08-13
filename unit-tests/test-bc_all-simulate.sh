@@ -1,4 +1,7 @@
 #!/bin/sh
+# Note: the simulation is intended to run on a ThinkPad, which has a superset
+# of all battery care features
+
 readonly TESTLIB="./test-func"
 # shellcheck disable=SC1090
 . $TESTLIB || {
