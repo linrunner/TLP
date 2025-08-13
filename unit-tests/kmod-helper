@@ -12,12 +12,6 @@ unload_kmod () { # $1: module name
 }
 
 # MAIN
-
-if [ "$1" != "acpi_call" ] &&  [ "$1" != "tp_smapi" ]; then
-    echo "Error: unknown kernel module \"$1\"." 1>&2
-    exit 1
-fi
-
 kernel=$(uname -r)
 module=$1
 if ! modfile="$(modinfo -F filename "$module" 2> /dev/null)"; then
