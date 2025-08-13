@@ -11,7 +11,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # --- Constants
-readonly TESTLIB="./test-func"
 readonly TLP="tlp"
 readonly SUDO="sudo"
 
@@ -285,9 +284,11 @@ check_power_supply () {
 
 # --- MAIN
 # source library
+readonly TESTLIB="test-func"
+spath="${0%/*}"
 # shellcheck disable=SC1090
-. $TESTLIB || {
-    printf "Error: missing library %s\n" "${TESTLIB}" 1>&2
+. "$spath/$TESTLIB" || {
+    printf "Error: missing library %s\n" "$spath/$TESTLIB" 1>&2
     exit 70
 }
 
