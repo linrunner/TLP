@@ -16,5 +16,6 @@ run_clitest "$spath/charge-thresholds_simulate2"
 
 "$spath/test-bc_cros-ec-all-simulate.sh"
 "$spath/test-bc_dell-simulate.sh"
+"$spath/test-bc_tuxedo-simulate.sh"
 
 print_report
