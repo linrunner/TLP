@@ -38,9 +38,9 @@ check_profile_select () {
 
     # iterate supported profiles, return to initial profile
     case "$prof_save" in
-        "$PP_PRF") prof_seq="balanced power-saver ac bat start auto performance" ;;
-        "$PP_BAL") prof_seq="power-saver ac bat start auto performance balanced" ;;
-        "$PP_SAV") prof_seq="ac bat start auto performance balanced power-saver" ;;
+        "$PP_PRF") prof_seq="balanced power-saver ac bat start auto usb suspend resume performance" ;;
+        "$PP_BAL") prof_seq="power-saver ac bat start auto performance usb suspend resume balanced" ;;
+        "$PP_SAV") prof_seq="ac bat start auto performance balanced usb suspend resume power-saver" ;;
     esac
 
     printf_msg " initial:      last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
@@ -83,11 +83,16 @@ check_profile_select () {
                 mm_xpect=""
                 ;;
 
+            usb|suspend|resume)
+                prof_xpect="$prof_save"
+                mm_xpect=""
+                ;;
+
         esac
 
         ${SUDO} ${TLP} "$prof" > /dev/null 2>&1
 
-        # expect changes
+        # check expect results
         compare_sysf "$prof_xpect" "$LASTPWR";  rc=$?
         if [ "$rc" -eq 0 ]; then
             printf_msg " last_pwr/%s=ok" "$prof_xpect"
@@ -292,6 +297,23 @@ spath="${0%/*}"
     exit 70
 }
 
+# read args
+if [ $# -eq 0 ]; then
+    do_profile="1"
+    do_persist="1"
+    do_power="1"
+else
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            profile)  do_profile="1" ;;
+            persist)  do_persist="1" ;;
+            power)    do_power="1" ;;
+        esac
+
+        shift # next argument
+    done # while arguments
+fi
+
 # check prerequisites and initialize
 check_tlp
 cache_root_cred
@@ -306,9 +328,9 @@ _failcnt=0
 
 report_test "$_basename"
 
-check_profile_select
-check_persistent_mode
-check_power_supply
+[ "$do_profile" = "1" ] && check_profile_select
+[ "$do_persist" = "1" ] && check_persistent_mode
+[ "$do_power" = "1" ] && check_power_supply
 
 report_result "$_testcnt" "$_failcnt"
 
