@@ -237,42 +237,7 @@ else
 fi
 echo_debug "run" "SHELL=$(print_shell); umask=$(umask)"
 
-get_power_mode "$_cmd"; pwrmode=$?
-
-case "$_cmd" in
-    init|start)
-        clear_manual_mode
-        ;;
-
-    auto|resume)
-        # do not change profile and manual mode
-        ;;
-
-    true|bat)
-        pwrmode="$PP_BAL"
-        set_manual_mode "$PP_BAL"
-        ;;
-
-    false|ac)
-        pwrmode="$PP_PRF"
-        set_manual_mode "$PP_PRF"
-        ;;
-
-    power-saver)
-        pwrmode="$PP_SAV"
-        clear_manual_mode
-        ;;
-
-    balanced)
-        pwrmode="$PP_BAL"
-        clear_manual_mode
-        ;;
-
-    performance)
-        pwrmode="$PP_PRF"
-        clear_manual_mode
-        ;;
-esac
+get_next_power_profile "$_cmd"
 
 # shellcheck disable=SC2154
 case "$_syspwr" in
@@ -281,11 +246,12 @@ case "$_syspwr" in
     *)         echo_debug "run" "power_source=unknown($_syspwr)" ;;
 esac
 
-case "$pwrmode" in
-    "$PP_PRF")  echo_debug "run" "new_power_profile=performance($pwrmode)" ;;
-    "$PP_BAL")  echo_debug "run" "new_power_profile=balanced($pwrmode)" ;;
-    "$PP_SAV")  echo_debug "run" "new_power_profile=power-saver($pwrmode)" ;;
-    *)          echo_debug "run" "new_power_profile=unknown($pwrmode)" ;;
+# shellcheck disable=SC2154
+case "$_pp_next" in
+    "$PP_PRF")  echo_debug "run" "power_profile=performance($_pp_next)" ;;
+    "$PP_BAL")  echo_debug "run" "power_profile=balanced($_pp_next)" ;;
+    "$PP_SAV")  echo_debug "run" "power_profile=power-saver($_pp_next)" ;;
+    *)          echo_debug "run" "power_profile=unknown($_pp_next)" ;;
 esac
 
 # process command
@@ -308,10 +274,10 @@ case "$_cmd" in
         case "$_cmd2" in
             start)
                 # apply power save settings
-                compare_and_save_power_state "$pwrmode"
+                has_power_profile_changed
                 printf "Applying power save settings..."
-                apply_common_settings "$pwrmode"
-                poweroff_drivebay "$pwrmode" 0
+                apply_common_settings "$_pp_next"
+                poweroff_drivebay "$_pp_next" 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
 
@@ -326,10 +292,10 @@ case "$_cmd" in
 
             restart|force-reload)
                 # apply power save settings
-                compare_and_save_power_state "$pwrmode"
+                has_power_profile_changed
                 printf "Applying power save settings..."
-                apply_common_settings "$pwrmode"
-                poweroff_drivebay "$pwrmode" 0
+                apply_common_settings "$_pp_next"
+                poweroff_drivebay "$_pp_next" 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
 
@@ -344,13 +310,13 @@ case "$_cmd" in
                 [ -f "$USB_DONE" ] && rm "$USB_DONE"
 
                 # clear saved power state
-                clear_saved_power_state
+                clear_saved_power_profile
 
                 if [ "$X_TLP_SHUTDOWN_ACMODE" = "1" ]; then
                     # workaround (optional): apply ac settings
                     printf "Applying power save settings..."
                     apply_common_settings 0
-                    poweroff_drivebay "$pwrmode" 0
+                    poweroff_drivebay "$_pp_next" 0
                     echo "done."
                 fi
 
@@ -364,20 +330,20 @@ case "$_cmd" in
         [ $locked -eq 0 ] || unlock_tlp
         ;;
 
-    auto) # set mode depending on state (called by udev rule)
-          # -- but only if not previously run for the same power state
+    auto) # apply power profile depending on power source and manual/persistent modes (called by udev rule)
+          # -- but only if not previously run for the same power profile
           # rationale: filter out duplicate power_supply udev events
         check_root
         # shellcheck disable=SC2034
         _bgtask=1
         check_services_activation_status
         if lock_tlp_nb; then
-            if compare_and_save_power_state "$pwrmode"; then
-                apply_common_settings "$pwrmode"
-                poweroff_drivebay "$pwrmode" 0
-                set_radio_device_states "$pwrmode"
+            if has_power_profile_changed; then
+                apply_common_settings "$_pp_next"
+                poweroff_drivebay "$_pp_next" 0
+                set_radio_device_states "$_pp_next"
                 if [ "$RESTORE_THRESHOLDS_ON_BAT" = "1" ] \
-                    && [ "$pwrmode" = "1" ]; then
+                    && [ "$_pp_next" = "1" ]; then
                     init_batteries_thresholds
                 fi
                 save_runconf
@@ -386,38 +352,38 @@ case "$_cmd" in
         fi
         ;;
 
-    start) # set mode depending on state (interactive mode)
+    start) # apply power profile depending on power source and manual/persistent modes (interactive mode)
         check_services_activation_status
         check_root
         if lock_tlp; then
-            compare_and_save_power_state "$pwrmode"
-            apply_common_settings "$pwrmode"
-            poweroff_drivebay "$pwrmode" 0
+            has_power_profile_changed
+            apply_common_settings "$_pp_next"
+            poweroff_drivebay "$_pp_next" 0
             set_usb_suspend 0 auto
             init_batteries_thresholds
-            set_radio_device_states "$pwrmode"
+            set_radio_device_states "$_pp_next"
             save_runconf
             unlock_tlp
 
-            echo_started_mode "$pwrmode"
+            echo_started_mode "$_pp_next"
         else
             echo_tlp_locked
         fi
         ;;
 
-    performance|ac|false|balanced|bat|true|power-saver) # apply performance/balanced/power-saver profile
+    performance|ac|false|balanced|bat|true|power-saver) # apply profile for $_cmd
         check_services_activation_status
         check_root
         if lock_tlp; then
-            compare_and_save_power_state "$pwrmode"
-            apply_common_settings "$pwrmode"
-            poweroff_drivebay "$pwrmode" 0
+            has_power_profile_changed
+            apply_common_settings "$_pp_next"
+            poweroff_drivebay "$_pp_next" 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
-            set_radio_device_states "$pwrmode"
+            set_radio_device_states "$_pp_next"
             save_runconf
             unlock_tlp
 
-            echo_started_mode "$pwrmode"
+            echo_started_mode "$_pp_next"
         else
             echo_tlp_locked
         fi
@@ -426,10 +392,10 @@ case "$_cmd" in
     suspend) # handle suspend/hibernate
         check_root
         save_device_states "bluetooth wwan"
-        suspend_drivebay "$pwrmode"
+        suspend_drivebay "$_pp_next"
 
         case "$X_TLP_SUSPEND_ACMODE" in
-            1) # workaround (optional): apply performance profile
+            1) # workaround optional: apply performance profile
                 if lock_tlp; then
                     apply_common_settings "$PP_PRF"
                     save_runconf
@@ -440,7 +406,7 @@ case "$_cmd" in
             0) # workaround disabled: do nothing
                 ;;
 
-            *) # workaround (default): apply only selected settings to avoid freezes on wakeup
+            *) # default: apply only selected settings to avoid freezes on wakeup
                 if lock_tlp; then
                     apply_suspend_settings
                     save_runconf
@@ -455,23 +421,23 @@ case "$_cmd" in
         if lock_tlp; then
             restore_device_states
 
-            compare_and_save_power_state "$pwrmode"
-            apply_common_settings "$pwrmode"
-            resume_drivebay "$pwrmode"
+            has_power_profile_changed
+            apply_common_settings "$_pp_next"
+            resume_drivebay "$_pp_next"
             init_batteries_thresholds "asus huawei lg lg-legacy"
             save_runconf
             unlock_tlp
         fi
         ;;
 
-    usb) # Enable usb autosuspend
+    usb) # enable usb autosuspend
         check_root
         set_usb_suspend 1 auto
         ;;
 
     bayoff) # power off drive bay
         check_root
-        poweroff_drivebay "$pwrmode" 1
+        poweroff_drivebay "$_pp_next" 1
         ;;
 
     setcharge) # set charge thresholds (temporarily)
@@ -522,7 +488,7 @@ case "$_cmd" in
         show_disk_ids
         ;;
 
-    noop) # Debug: no operation
+    noop) # debug: no operation
         check_root
         select_batdrv
         batdrv_select_battery "DEF"

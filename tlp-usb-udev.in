@@ -53,11 +53,12 @@ case "$1" in
         ;;
 
     disk) # (s)ata disks attached via usb
-        get_power_mode; pwrmode=$?
+        get_next_power_profile
         dev="${2##*/block/}"
-        set_ahci_disk_runtime_pm $pwrmode "$dev"
-        set_disk_apm_level $pwrmode "$dev"
-        set_disk_spindown_timeout $pwrmode "$dev"
+        # shellcheck disable=SC2154
+        set_ahci_disk_runtime_pm "$_pp_next" "$dev"
+        set_disk_apm_level "$_pp_next" "$dev"
+        set_disk_spindown_timeout "$_pp_next" "$dev"
         set_disk_iosched "$dev"
         ;;
 esac

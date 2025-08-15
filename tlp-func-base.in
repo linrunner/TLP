@@ -1003,88 +1003,162 @@ is_laptop () { # check if machine is a laptop
     esac
 }
 
-get_power_mode () {
-    # get current power profile either depending on actual power source or on default/persistence setting
-    # $1: tlp command - passed on to get_sys_power_supply()
-    # rc: PP_PRF=0/PP_BAL=1/PP_SAV=2
+get_next_power_profile () {
+    # determine next power profile: either
+    # - depending on the tlp command,
+    # - actual power source or
+    # - default/persistence setting
+    # $1: tlp command
+    # retval: $_pp_next, $_pp_cur (PP_PRF=0, PP_BAL=1, PP_SAV=2)
+    # rc: same as $_pp_next
     # like get_sys_power_supply(), plus:
     # - maps unknown power source to TLP_DEFAULT_MODE
     # - returns manual or persistent mode if applicable and not 'tlp start'
-    # - if TLP_DEFAULT_MODE is unconfigured and power source is unknown, 
+    # - if TLP_DEFAULT_MODE is unconfigured and power source is unknown,
     #   returns PP_BAL for laptop / PP_PRF for desktop/other
 
-    local tlp_cmd="$1"
+    local ps_cur tlp_cmd
 
+    tlp_cmd="$1"
+
+    _pp_cur="$(read_saved_power_profile)"
+
+    # determine current power supply
     get_sys_power_supply "$tlp_cmd"
-    local cur_pp=$?
     get_manual_mode
+    _pp_next="$PS_UNKNOWN"
 
+    # determine next power profile based on command
     if get_persist_mode; then
         # persistent mode
-        cur_pp=$_persist_mode
-    elif [ "$tlp_cmd" != "start" ] && wordinlist "$_manual_mode" "$PP_VALID"; then
-        # do not evaluate manual mode for 'tlp start'
-        cur_pp=$_manual_mode
+        _pp_next=$_persist_mode
     else
-        # neither persistent nor manual mode -> use current power source
-        if [ $cur_pp -eq $PS_UNKNOWN ]; then
-            # unknown power supply, use configured default mode
+        # non-persistent mode
+        case "$tlp_cmd" in
+            init|start)
+                # use current power source
+                _pp_next=$_syspwr
+                clear_manual_mode
+                ;;
+
+            auto|resume)
+                if wordinlist "$_manual_mode" "$PP_VALID"; then
+                    # use manual mode
+                    _pp_next=$_manual_mode
+                else
+                    # use current power source
+                    _pp_next=$_syspwr
+                fi
+                ;;
+
+            true|bat)
+                _pp_next="$PP_BAL"
+                set_manual_mode "$PP_BAL"
+                ;;
+
+            false|ac)
+                _pp_next="$PP_PRF"
+                set_manual_mode "$PP_PRF"
+                ;;
+
+            power-saver)
+                _pp_next="$PP_SAV"
+                clear_manual_mode
+                ;;
+
+            balanced)
+                _pp_next="$PP_BAL"
+                clear_manual_mode
+                ;;
+
+            performance)
+                _pp_next="$PP_PRF"
+                clear_manual_mode
+                ;;
+
+            *)
+                # all other tlp commands that do not change the power profile, as well as tlp-usb-udev disk
+                if wordinlist "$_manual_mode" "$PP_VALID"; then
+                    # use manual mode
+                    _pp_next=$_manual_mode
+                else
+                    # use current power source
+                    _pp_next=$_syspwr
+                fi
+                ;;
+
+        esac # $tlp_cmd
+
+        if [ "$_pp_next" -eq "$PS_UNKNOWN" ]; then
+            # unknown power source -> use configured default mode
             case $(toupper "$TLP_DEFAULT_MODE") in
-                AC|PRF)  cur_pp=$PP_PRF ;;
-                BAT|BAL) cur_pp=$PP_BAL ;;
-                SAV)     cur_pp=$PP_SAV ;;
+                AC|PRF)  _pp_next=$PP_PRF ;;
+                BAT|BAL) _pp_next=$PP_BAL ;;
+                SAV)     _pp_next=$PP_SAV ;;
 
                 *) # unconfigured or invalid default mode -> check machine type
                     if is_laptop; then
-                        cur_pp=$PP_BAL # laptop: assume battery
+                        _pp_next=$PP_BAL # laptop: assume battery
                     else
-                        cur_pp=$PP_PRF # desktop/other: assume AC
+                        _pp_next=$PP_PRF # desktop/other: assume AC
                     fi
                     ;;
             esac
-        fi
-    fi
+        fi # unknown power source
 
-    echo_debug "ps" "get_power_mode($tlp_cmd): manual=$_manual_mode; persist=$_persist_mode; cur_pp=$cur_pp"
-    return $cur_pp
+    fi # non-persistent mode
+
+    echo_debug "ps" "get_next_power_profile($tlp_cmd): manual=$_manual_mode; persist=$_persist_mode; cur=$_pp_cur; next=$_pp_next"
+
+    return "$_pp_next"
 }
 
-compare_and_save_power_state () {
-    # select new power profile:
-    # - compare $1 to last saved power profile,
-    # - save $1 afterwards when different
-    # $1: new profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
-    # rc: 0=different, 1=equal
-    local saved_pp
+read_saved_power_profile () {
+    # print saved power profile
 
-    # intercept invalid states
-    case $1 in
-        "$PP_PRF"|"$PP_BAL"|"$PP_SAV") ;; # valid state
-        *) # invalid new state --> return "different"
-            echo_debug "ps" "compare_and_save_power_state($1).invalid"
-            return 0
+    local pp_saved
+
+    pp_saved=$(read_sysf $PWRRUNFILE)
+
+    # intercept invalid saved states
+    case "$pp_saved" in
+        "$PP_PRF"|"$PP_BAL"|"$PP_SAV")
+            ;; # valid
+
+        "")
+            ;; # nothing
+
+        *) # invalid
+            echo_debug "ps" "read_saved_power_profile.invalid: saved=$_pp_cur"
+            pp_saved=""
             ;;
     esac
 
-    # read saved state
-    saved_pp=$(read_sysf $PWRRUNFILE)
+    printf "%s" "$pp_saved"
+    return 0
+}
+
+has_power_profile_changed () {
+    # compare $_pp_next to $_pp_cur, save $_pp_next when different
+    # rc: 0=different, 1=equal
 
     # compare
-    if [ -z "$saved_pp" ] || [ "$saved_pp" != "$1" ]; then
+    if [ -z "$_pp_cur" ] || [ "$_pp_next" != "$_pp_cur" ]; then
         # saved state is nonexistent/empty or is different --> save new state
         create_rundir
-        write_sysf "$1" $PWRRUNFILE
-        echo_debug "ps" "compare_and_save_power_state($1).different: old=$saved_pp"
+        write_sysf "$_pp_next" $PWRRUNFILE
+        echo_debug "ps" "has_power_profile_changed.different: cur=$_pp_cur; next=$_pp_next"
         return 0
     else
         # touch file for last run
         touch $PWRRUNFILE
-        echo_debug "ps" "compare_and_save_power_state($1).equal"
+        echo_debug "ps" "has_power_profile_changed.equal: next=$_pp_next"
         return 1
     fi
 }
 
-clear_saved_power_state() { # remove last saved power state
+clear_saved_power_profile () {
+    # remove last saved power profile
 
     rm -f $PWRRUNFILE 2> /dev/null
 

@@ -28,13 +28,13 @@ shift
 
 case $self in
     run-on-ac)
-        if get_power_mode; then
+        if get_next_power_profile; then
             $cmd "$@"
         fi
         ;;
 
     run-on-bat)
-        if ! get_power_mode; then
+        if ! get_next_power_profile; then
             $cmd "$@"
         fi
         ;;
