@@ -620,7 +620,7 @@ batdrv_show_battery_data () {
         32)  cprintf "notice"  "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
         64)  cprintf "err"     "* natacpi (%s) = inactive (kernel module '%s' load error)\n" "$_batdrv_kmod" "$_batdrv_kmod" ;;
         128) cprintf "err"     "* natacpi (%s) = inactive (kernel module '%s' not installed)\n" "$_batdrv_kmod" "$_batdrv_kmod" ;;
-        254) cprintf "warning" "* natacpi (%s) = inactive (Tuxedo model not supported)\n" "$_batdrv_kmod" ;;
+        254) cprintf "warning" "* natacpi (%s) = inactive (Tuxedo's non-Clevo models are unsupported)\n" "$_batdrv_kmod" ;;
         *)   cprintf "err"     "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
     if [ "$_bm_thresh" != "none" ]; then
