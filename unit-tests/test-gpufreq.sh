@@ -34,154 +34,158 @@ check_intel_gpu_freq () {
 
     printf_msg "check_intel_gpu_freq {{{\n"
 
-    # determine test sequence for parameter suffix _AC/BAT, active power source goes first
-    if on_ac; then
-        psfsq="AC BAT"
-    else
-        psfsq="BAT AC"
-    fi
-
-    for psfx in $psfsq; do
-        sc=$((sc + 1))
-
-        if [ $sc -eq 1 ]; then
-            # --- test settings profile for active power source
-            # /sys/class/drm/card1/gt_min_freq_mhz         =   100 [MHz]
-            # /sys/class/drm/card1/gt_max_freq_mhz         =  1300 [MHz]
-            # /sys/class/drm/card1/gt_boost_freq_mhz       =  1300 [MHz]
-            # /sys/class/drm/card1/gt_RPn_freq_mhz         =   100 [MHz] (GPU min)
-            # /sys/class/drm/card1/gt_RP0_freq_mhz         =  1300 [MHz] (GPU max)
-
-            # save initial frequencies
-            min_save="$(read_sysf "${_gpu_base}/gt_min_freq_mhz")"
-            max_save="$(read_sysf "${_gpu_base}/gt_max_freq_mhz")"
-            boost_save="$(read_sysf "${_gpu_base}/gt_boost_freq_mhz")"
-
-            printf_msg " initial: min/%s max/%s boost/%s\n" "$min_save" "$max_save" "$boost_save"
-
-            printf_msg " %s(active):" "$psfx"
-
-            # increase min, decrease max/boost frequency
-            min=$((min_save + 100))
-            max=$((max_save - 200))
-            boost=$((boost_save - 100))
-            case "$psfx" in
-                AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
-                                     INTEL_GPU_MAX_FREQ_ON_AC="$max"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
-                                     INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
-                                     INTEL_GPU_MAX_FREQ_ON_BAT="$max"    INTEL_GPU_MAX_FREQ_ON_AC="" \
-                                     INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-            esac
-
-            # expect change
-            compare_sysf "$min" "${_gpu_base}/gt_min_freq_mhz"
-            rc=$?
-            if [ "$rc" -eq 0 ]; then
-                printf_msg " min/%s=ok" "$min"
-            else
-                printf_msg " min/%s=err(%s)" "$min" "$rc"
-                errcnt=$((errcnt + 1))
-            fi
-            compare_sysf "$max" "${_gpu_base}/gt_max_freq_mhz"
-            rc=$?
-            if [ "$rc" -eq 0 ]; then
-                printf_msg " max/%s=ok" "$max"
-            else
-                printf_msg " max/%s=err(%s)" "$max" "$rc"
-                errcnt=$((errcnt + 1))
-            fi
-            compare_sysf "$boost" "${_gpu_base}/gt_boost_freq_mhz"
-            rc=$?
-            if [ "$rc" -eq 0 ]; then
-                printf_msg " boost/%s=ok" "$boost"
-            else
-                printf_msg " boost/%s=err(%s)" "$boost" "$rc"
-                errcnt=$((errcnt + 1))
-            fi
-
-            # revert to initial frequencies
-            case "$psfx" in
-                AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min_save"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
-                                     INTEL_GPU_MAX_FREQ_ON_AC="$max_save"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
-                                     INTEL_GPU_BOOST_FREQ_ON_AC="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min_save"    INTEL_GPU_MIN_FREQ_ON_AC="" \
-                                     INTEL_GPU_MAX_FREQ_ON_BAT="$max_save"    INTEL_GPU_MAX_FREQ_ON_AC="" \
-                                     INTEL_GPU_BOOST_FREQ_ON_AC="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-            esac
-
-            # expect initial frequencies
-            compare_sysf "$min_save" "${_gpu_base}/gt_min_freq_mhz"
-            rc=$?
-            if [ "$rc" -eq 0 ]; then
-                printf_msg " min/%s=ok" "$min_save"
-            else
-                printf_msg " min/%s=err(%s)" "$min_save" "$rc"
-                errcnt=$((errcnt + 1))
-            fi
-            compare_sysf "$max_save" "${_gpu_base}/gt_max_freq_mhz"
-            rc=$?
-            if [ "$rc" -eq 0 ]; then
-                printf_msg " max/%s=ok" "$max_save"
-            else
-                printf_msg " max/%s=err(%s)" "$max_save" "$rc"
-                errcnt=$((errcnt + 1))
-            fi
-            compare_sysf "$boost_save" "${_gpu_base}/gt_boost_freq_mhz"
-            rc=$?
-            if [ "$rc" -eq 0 ]; then
-                printf_msg " boost/%s=ok" "$boost_save"
-            else
-                printf_msg " boost/%s=err(%s)" "$boost_save" "$rc"
-                errcnt=$((errcnt + 1))
-            fi
+    if [ -f "${_gpu_base}/gt_min_freq_mhz" ]; then
+        # determine test sequence for parameter suffix _AC/BAT, active power source goes first
+        if on_ac; then
+            psfsq="AC BAT"
         else
-            # --- test settings profile for inactive power source
-            printf_msg "\n %s(inactive):" "$psfx"
-
-            # try increased min, decreased max frequency again (from above)
-            case "$psfx" in
-                AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
-                                     INTEL_GPU_MAX_FREQ_ON_AC="$max"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
-                                     INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
-                                     INTEL_GPU_MAX_FREQ_ON_BAT="$max"    INTEL_GPU_MAX_FREQ_ON_AC="" \
-                                     INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-            esac
-
-            # do not expect change
-            compare_sysf "$min_save" "${_gpu_base}/gt_min_freq_mhz"
-            rc=$?
-            if [ "$rc" -eq 0 ]; then
-                printf_msg " min/%s=ignored(ok)" "$min_save"
-            else
-                printf_msg " min/%s=err(%s)" "$min_save" "$rc"
-                errcnt=$((errcnt + 1))
-            fi
-            compare_sysf "$max_save" "${_gpu_base}/gt_max_freq_mhz"
-            rc=$?
-            if [ "$rc" -eq 0 ]; then
-                printf_msg " max/%s=ignored(ok)" "$max_save"
-            else
-                printf_msg " max/%s=err(%s)" "$max_save" "$rc"
-                errcnt=$((errcnt + 1))
-            fi
-            compare_sysf "$boost_save" "${_gpu_base}/gt_boost_freq_mhz"
-            rc=$?
-            if [ "$rc" -eq 0 ]; then
-                printf_msg " boost/%s=ignored(ok)" "$boost_save"
-            else
-                printf_msg " boost/%s=err(%s)" "$boost_save" "$rc"
-                errcnt=$((errcnt + 1))
-            fi
-
-            # print resulting frequencies
-            printf_msg "\n result: min/%s max/%s boost/%s\n" \
-                "$(read_sysf "${_gpu_base}/gt_min_freq_mhz")" "$(read_sysf "${_gpu_base}/gt_max_freq_mhz")" \
-                "$(read_sysf "${_gpu_base}/gt_boost_freq_mhz")"
+            psfsq="BAT AC"
         fi
 
-    done # psfx
+        for psfx in $psfsq; do
+            sc=$((sc + 1))
+
+            if [ $sc -eq 1 ]; then
+                # --- test settings profile for active power source
+                # /sys/class/drm/card1/gt_min_freq_mhz         =   100 [MHz]
+                # /sys/class/drm/card1/gt_max_freq_mhz         =  1300 [MHz]
+                # /sys/class/drm/card1/gt_boost_freq_mhz       =  1300 [MHz]
+                # /sys/class/drm/card1/gt_RPn_freq_mhz         =   100 [MHz] (GPU min)
+                # /sys/class/drm/card1/gt_RP0_freq_mhz         =  1300 [MHz] (GPU max)
+
+                # save initial frequencies
+                min_save="$(read_sysf "${_gpu_base}/gt_min_freq_mhz")"
+                max_save="$(read_sysf "${_gpu_base}/gt_max_freq_mhz")"
+                boost_save="$(read_sysf "${_gpu_base}/gt_boost_freq_mhz")"
+
+                printf_msg " initial: min/%s max/%s boost/%s\n" "$min_save" "$max_save" "$boost_save"
+
+                printf_msg " %s(active):" "$psfx"
+
+                # increase min, decrease max/boost frequency
+                min=$((min_save + 100))
+                max=$((max_save - 200))
+                boost=$((boost_save - 100))
+                case "$psfx" in
+                    AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
+                                        INTEL_GPU_MAX_FREQ_ON_AC="$max"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
+                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                    BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
+                                        INTEL_GPU_MAX_FREQ_ON_BAT="$max"    INTEL_GPU_MAX_FREQ_ON_AC="" \
+                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                esac
+
+                # expect change
+                compare_sysf "$min" "${_gpu_base}/gt_min_freq_mhz"
+                rc=$?
+                if [ "$rc" -eq 0 ]; then
+                    printf_msg " min/%s=ok" "$min"
+                else
+                    printf_msg " min/%s=err(%s)" "$min" "$rc"
+                    errcnt=$((errcnt + 1))
+                fi
+                compare_sysf "$max" "${_gpu_base}/gt_max_freq_mhz"
+                rc=$?
+                if [ "$rc" -eq 0 ]; then
+                    printf_msg " max/%s=ok" "$max"
+                else
+                    printf_msg " max/%s=err(%s)" "$max" "$rc"
+                    errcnt=$((errcnt + 1))
+                fi
+                compare_sysf "$boost" "${_gpu_base}/gt_boost_freq_mhz"
+                rc=$?
+                if [ "$rc" -eq 0 ]; then
+                    printf_msg " boost/%s=ok" "$boost"
+                else
+                    printf_msg " boost/%s=err(%s)" "$boost" "$rc"
+                    errcnt=$((errcnt + 1))
+                fi
+
+                # revert to initial frequencies
+                case "$psfx" in
+                    AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min_save"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
+                                        INTEL_GPU_MAX_FREQ_ON_AC="$max_save"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
+                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                    BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min_save"    INTEL_GPU_MIN_FREQ_ON_AC="" \
+                                        INTEL_GPU_MAX_FREQ_ON_BAT="$max_save"    INTEL_GPU_MAX_FREQ_ON_AC="" \
+                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                esac
+
+                # expect initial frequencies
+                compare_sysf "$min_save" "${_gpu_base}/gt_min_freq_mhz"
+                rc=$?
+                if [ "$rc" -eq 0 ]; then
+                    printf_msg " min/%s=ok" "$min_save"
+                else
+                    printf_msg " min/%s=err(%s)" "$min_save" "$rc"
+                    errcnt=$((errcnt + 1))
+                fi
+                compare_sysf "$max_save" "${_gpu_base}/gt_max_freq_mhz"
+                rc=$?
+                if [ "$rc" -eq 0 ]; then
+                    printf_msg " max/%s=ok" "$max_save"
+                else
+                    printf_msg " max/%s=err(%s)" "$max_save" "$rc"
+                    errcnt=$((errcnt + 1))
+                fi
+                compare_sysf "$boost_save" "${_gpu_base}/gt_boost_freq_mhz"
+                rc=$?
+                if [ "$rc" -eq 0 ]; then
+                    printf_msg " boost/%s=ok" "$boost_save"
+                else
+                    printf_msg " boost/%s=err(%s)" "$boost_save" "$rc"
+                    errcnt=$((errcnt + 1))
+                fi
+            else
+                # --- test settings profile for inactive power source
+                printf_msg "\n %s(inactive):" "$psfx"
+
+                # try increased min, decreased max frequency again (from above)
+                case "$psfx" in
+                    AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
+                                        INTEL_GPU_MAX_FREQ_ON_AC="$max"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
+                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                    BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
+                                        INTEL_GPU_MAX_FREQ_ON_BAT="$max"    INTEL_GPU_MAX_FREQ_ON_AC="" \
+                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                esac
+
+                # do not expect change
+                compare_sysf "$min_save" "${_gpu_base}/gt_min_freq_mhz"
+                rc=$?
+                if [ "$rc" -eq 0 ]; then
+                    printf_msg " min/%s=ignored(ok)" "$min_save"
+                else
+                    printf_msg " min/%s=err(%s)" "$min_save" "$rc"
+                    errcnt=$((errcnt + 1))
+                fi
+                compare_sysf "$max_save" "${_gpu_base}/gt_max_freq_mhz"
+                rc=$?
+                if [ "$rc" -eq 0 ]; then
+                    printf_msg " max/%s=ignored(ok)" "$max_save"
+                else
+                    printf_msg " max/%s=err(%s)" "$max_save" "$rc"
+                    errcnt=$((errcnt + 1))
+                fi
+                compare_sysf "$boost_save" "${_gpu_base}/gt_boost_freq_mhz"
+                rc=$?
+                if [ "$rc" -eq 0 ]; then
+                    printf_msg " boost/%s=ignored(ok)" "$boost_save"
+                else
+                    printf_msg " boost/%s=err(%s)" "$boost_save" "$rc"
+                    errcnt=$((errcnt + 1))
+                fi
+
+                # print resulting frequencies
+                printf_msg "\n result: min/%s max/%s boost/%s\n" \
+                    "$(read_sysf "${_gpu_base}/gt_min_freq_mhz")" "$(read_sysf "${_gpu_base}/gt_max_freq_mhz")" \
+                    "$(read_sysf "${_gpu_base}/gt_boost_freq_mhz")"
+            fi
+
+        done # psfx
+    else
+        printf_msg "*** unsupported gpu\n"
+    fi
 
     # print summary
     printf_msg "}}} errcnt=%s\n\n" "$errcnt"
