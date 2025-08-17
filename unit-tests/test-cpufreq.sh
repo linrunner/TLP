@@ -521,70 +521,75 @@ check_cpu_epp () {
 
         case "$_cpu_driver" in
             amd?pstate?epp|intel_pstate|intel_cpufreq)
-                if [ $sc -eq 1 ]; then
-                    # --- test settings profile for active power source
+                if [ -f "${CPU0}/cpufreq/energy_performance_preference" ]; then
+                    if [ $sc -eq 1 ]; then
+                        # --- test settings profile for active power source
 
-                    # save initial policy
-                    pol_save="$(read_sysf "${CPU0}/cpufreq/energy_performance_preference")"
-                    printf_msg " initial: %s\n" "$pol_save"
+                        # save initial policy
+                        pol_save="$(read_sysf "${CPU0}/cpufreq/energy_performance_preference")"
+                        printf_msg " initial: %s\n" "$pol_save"
 
-                    printf_msg " %s(active):" "$psfx"
+                        printf_msg " %s(active):" "$psfx"
 
-                    # iterate policies supported by the driver, return to initial policy
-                    case "$pol_save" in
-                        performance) pol_seq="balance_performance balance_power power performance" ;;
-                        balance_performance) pol_seq="performance balance_power power balance_performance" ;;
-                        balance_power) pol_seq="performance balance_performance power balance_power" ;;
-                        power) pol_seq="performance balance_performance balance_power power" ;;
-                    esac
+                        # iterate policies supported by the driver, return to initial policy
+                        case "$pol_save" in
+                            performance) pol_seq="balance_performance balance_power power performance" ;;
+                            balance_performance) pol_seq="performance balance_power power balance_performance" ;;
+                            balance_power) pol_seq="performance balance_performance power balance_power" ;;
+                            power) pol_seq="performance balance_performance balance_power power" ;;
+                        esac
 
-                    for pol in $pol_seq; do
+                        for pol in $pol_seq; do
+                            case "$psfx" in
+                                AC)  ${SUDO} ${TLP} start -- CPU_ENERGY_PERF_POLICY_ON_AC="$pol" CPU_ENERGY_PERF_POLICY_ON_BAT="" > /dev/null 2>&1 ;;
+                                BAT) ${SUDO} ${TLP} start -- CPU_ENERGY_PERF_POLICY_ON_BAT="$pol" CPU_ENERGY_PERF_POLICY_ON_AC="" > /dev/null 2>&1 ;;
+                            esac
+
+                            # expect change
+                            glob_compare_sysf "$pol" ${CPUD}/cpu*/cpufreq/energy_performance_preference
+                            rc=$?
+                            if [ "$rc" -eq 0 ]; then
+                                printf_msg " %s=ok" "$pol"
+                            else
+                                printf_msg " %s=%s" "$pol" "$rc"
+                                errcnt=$((errcnt + 1))
+                            fi
+                        done # pol
+                    else
+                        # --- test settings profile for inactive power source
+                        printf_msg "\n %s(inactive):" "$psfx"
+
+                        # save current policy
+                        pol_cur="$(read_sysf "${CPU0}/cpufreq/energy_performance_preference")"
+
+                        # try different policy
+                        case "$pol_cur" in
+                            performance)         pol="balance_performance" ;;
+                            balance_performance) pol="balance_power" ;;
+                            balance_power)       pol="power" ;;
+                            power)               pol="performance" ;;
+                        esac
                         case "$psfx" in
                             AC)  ${SUDO} ${TLP} start -- CPU_ENERGY_PERF_POLICY_ON_AC="$pol" CPU_ENERGY_PERF_POLICY_ON_BAT="" > /dev/null 2>&1 ;;
                             BAT) ${SUDO} ${TLP} start -- CPU_ENERGY_PERF_POLICY_ON_BAT="$pol" CPU_ENERGY_PERF_POLICY_ON_AC="" > /dev/null 2>&1 ;;
                         esac
 
-                        # expect change
-                        glob_compare_sysf "$pol" ${CPUD}/cpu*/cpufreq/energy_performance_preference
+                        # do not expect change
+                        glob_compare_sysf "$pol_cur" ${CPUD}/cpu*/cpufreq/energy_performance_preference
                         rc=$?
                         if [ "$rc" -eq 0 ]; then
-                            printf_msg " %s=ok" "$pol"
+                            printf_msg " %s=ignored(ok)" "$pol"
                         else
-                            printf_msg " %s=%s" "$pol" "$rc"
+                            printf_msg " %s=err(%s)" "$pol" "$rc"
                             errcnt=$((errcnt + 1))
                         fi
-                    done # pol
-                else
-                    # --- test settings profile for inactive power source
-                    printf_msg "\n %s(inactive):" "$psfx"
 
-                    # save current policy
-                    pol_cur="$(read_sysf "${CPU0}/cpufreq/energy_performance_preference")"
-
-                    # try different policy
-                    case "$pol_cur" in
-                        performance)         pol="balance_performance" ;;
-                        balance_performance) pol="balance_power" ;;
-                        balance_power)       pol="power" ;;
-                        power)               pol="performance" ;;
-                    esac
-                    case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_ENERGY_PERF_POLICY_ON_AC="$pol" CPU_ENERGY_PERF_POLICY_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_ENERGY_PERF_POLICY_ON_BAT="$pol" CPU_ENERGY_PERF_POLICY_ON_AC="" > /dev/null 2>&1 ;;
-                    esac
-
-                    # do not expect change
-                    glob_compare_sysf "$pol_cur" ${CPUD}/cpu*/cpufreq/energy_performance_preference
-                    rc=$?
-                    if [ "$rc" -eq 0 ]; then
-                        printf_msg " %s=ignored(ok)" "$pol"
-                    else
-                        printf_msg " %s=err(%s)" "$pol" "$rc"
-                        errcnt=$((errcnt + 1))
+                        # print resulting policy
+                        printf_msg "\n result: %s\n" "$(read_sysf "${CPU0}/cpufreq/energy_performance_preference")"
                     fi
-
-                    # print resulting policy
-                    printf_msg "\n result: %s\n" "$(read_sysf "${CPU0}/cpufreq/energy_performance_preference")"
+                else
+                    printf_msg "*** unsupported cpu\n"
+                    break
                 fi
                 ;;
 
@@ -894,65 +899,70 @@ check_cpu_boost () {
                 ;;
 
             acpi-cpufreq|amd?pstate*)
-                if [ $sc -eq 1 ]; then
-                    # --- test settings profile for active power source
+                if [ -f "${CPUD}/cpufreq/boost" ]; then
+                    if [ $sc -eq 1 ]; then
+                        # --- test settings profile for active power source
 
-                    # save initial boost state
-                    boost_save="$(read_sysf "${CPUD}/cpufreq/boost")"
-                    printf_msg " initial: boost/%s\n" "$boost_save"
+                        # save initial boost state
+                        boost_save="$(read_sysf "${CPUD}/cpufreq/boost")"
+                        printf_msg " initial: boost/%s\n" "$boost_save"
 
-                    printf_msg " %s(active):" "$psfx"
+                        printf_msg " %s(active):" "$psfx"
 
-                    # invert boost state
-                    boost="$((boost_save ^ 1))"
-                    case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$boost"  CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_BOOST_ON_BAT="$boost" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
-                    esac
+                        # invert boost state
+                        boost="$((boost_save ^ 1))"
+                        case "$psfx" in
+                            AC)  ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$boost"  CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start -- CPU_BOOST_ON_BAT="$boost" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
+                        esac
 
-                    # expect change
-                    compare_sysf "$boost" "${CPUD}/cpufreq/boost"
-                    rc=$?
-                    if [ "$rc" -eq 0 ]; then
-                        printf_msg " boost/%s=ok" "$boost"
+                        # expect change
+                        compare_sysf "$boost" "${CPUD}/cpufreq/boost"
+                        rc=$?
+                        if [ "$rc" -eq 0 ]; then
+                            printf_msg " boost/%s=ok" "$boost"
+                        else
+                            printf_msg " boost/%s=err(%s)" "$boost" "$rc"
+                            errcnt=$((errcnt + 1))
+                        fi
+
+                        # revert to initial boost state
+                        ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$boost_save" CPU_BOOST_ON_BAT="$boost_save" > /dev/null 2>&1
+                        compare_sysf "$boost_save" "${CPUD}/cpufreq/boost"
+                        rc=$?
+                        if [ "$rc" -eq 0 ]; then
+                            printf_msg " boost/%s=ok" "$boost_save"
+                        else
+                            printf_msg " boost/%s=err(%s)" "$boost_save" "$rc"
+                            errcnt=$((errcnt + 1))
+                        fi
                     else
-                        printf_msg " boost/%s=err(%s)" "$boost" "$rc"
-                        errcnt=$((errcnt + 1))
-                    fi
+                        # --- test settings profile for inactive power source
+                        printf_msg "\n %s(inactive):" "$psfx"
 
-                    # revert to initial boost state
-                    ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$boost_save" CPU_BOOST_ON_BAT="$boost_save" > /dev/null 2>&1
-                    compare_sysf "$boost_save" "${CPUD}/cpufreq/boost"
-                    rc=$?
-                    if [ "$rc" -eq 0 ]; then
-                        printf_msg " boost/%s=ok" "$boost_save"
-                    else
-                        printf_msg " boost/%s=err(%s)" "$boost_save" "$rc"
-                        errcnt=$((errcnt + 1))
+                        # try to invert boost state
+                        boost="$((boost_save ^ 1))"
+                        case "$psfx" in
+                            AC)  ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$boost"  CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start -- CPU_BOOST_ON_BAT="$boost" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
+                        esac
+
+                        # do not expect change
+                        compare_sysf "$boost_save" "${CPUD}/cpufreq/boost"
+                        rc=$?
+                        if [ "$rc" -eq 0 ]; then
+                            printf_msg " boost/%s=ignored(ok)" "$boost_save"
+                        else
+                            printf_msg " boost/%s=err(%s)" "$boost_save" "$rc"
+                            errcnt=$((errcnt + 1))
+                        fi
+
+                        # print resultign boost state
+                        printf_msg "\n result: boost/%s\n" "$(read_sysf "${CPUD}/cpufreq/boost")"
                     fi
                 else
-                    # --- test settings profile for inactive power source
-                    printf_msg "\n %s(inactive):" "$psfx"
-
-                    # try to invert boost state
-                    boost="$((boost_save ^ 1))"
-                    case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$boost"  CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_BOOST_ON_BAT="$boost" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
-                    esac
-
-                    # do not expect change
-                    compare_sysf "$boost_save" "${CPUD}/cpufreq/boost"
-                    rc=$?
-                    if [ "$rc" -eq 0 ]; then
-                        printf_msg " boost/%s=ignored(ok)" "$boost_save"
-                    else
-                        printf_msg " boost/%s=err(%s)" "$boost_save" "$rc"
-                        errcnt=$((errcnt + 1))
-                    fi
-
-                    # print resultign boost state
-                    printf_msg "\n result: boost/%s\n" "$(read_sysf "${CPUD}/cpufreq/boost")"
+                    printf_msg "*** unsupported cpu\n"
+                    break
                 fi
                 ;;
 
