@@ -1,11 +1,13 @@
-+++ 1.9.0-alpha.0 --- <unreleased> +++
++++ 1.9.0-alpha.1 --- <unreleased> +++
 
   * Development version
 
   * Features
     Battery Care:
-    - Tuxedo laptops (Clevo OEM chassis) with out-of-tree tuxedo-drivers:
-      start and stop threshold (Issue #803)
+    - Tuxedo laptops supported by the clevo_acpi out-of-tree driver from
+      tuxedo-drivers: start and stop threshold (Issue #803);
+      only models with a Clevo ODM chassis are compatible,
+      check the tlp-stat -b output to find out if yours is
     - tlp-stat -b: advertise chargeonce, discharge, recalibrate features
       individually
     General:
