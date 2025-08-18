@@ -25,7 +25,7 @@ else
     exit 1
 fi
 
-export xinc="X_BAT_PLUGIN_SIMULATE=tuxedo"
+export xinc="X_BAT_PLUGIN_SIMULATE=tuxedo X_BAT_PLUGIN_SIM_KMOD=thinkpad_acpi"
 echo "        # xinc=${xinc} bata=${bata} batb=${batb}" 1>&2
 run_clitest "$spath/charge-thresholds_tuxedo"
 sudo tlp setcharge ${bata}  > /dev/null 2>&1 # reset test machine to configured thresholds

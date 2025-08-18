@@ -26,6 +26,7 @@ readonly LAPMODE=laptop_mode
 readonly LOGGER=logger
 readonly MKTEMP=mktemp
 readonly MODPRO=modprobe
+readonly MODINFO=modinfo
 readonly READCONFS=@TLP_TLIB@/tlp-readconfs
 readonly SYSTEMCTL=systemctl
 readonly TPACPIBAT=@TPACPIBAT@
