@@ -22,11 +22,23 @@
     - RADEON_POWER_PROFILE_ON_AC/BAT removed (deprecated since 1.8.0)
     - tlp-stat -g -v: show power_state, pp_dpm_*clk of AMD GPUs
     Processor:
+<<<<<<< HEAD
     - tlp-stat -p: add to display per core
       - amd_pstate_lowest_nonlinear_freq, amd_pstate_max_freq
       - (-v) scaling_cur_freq (current core frequency)
       - (-v) amd_pstate_hw_prefcore, amd_pstate_prefcore_ranking
     - tlp-stat -t -v: show all individual temperature/fan sensors
+||||||| parent of 19a575c (changelog: 1.9.0-alpha.1, Tuxedo)
+    - tlp-stat -p -v:
+      - Show current frequency per core (scaling_cur_freq)
+      - Show AMD prefcore, amd_pstate_hw_prefcore, amd_pstate_prefcore_ranking
+    - tlp-stat -t -v: show all individual sensors
+=======
+    - tlp-stat -p -v:
+      - Show current frequency per core (scaling_cur_freq)
+      - Show amd_pstate_hw_prefcore and amd_pstate_prefcore_ranking
+    - tlp-stat -t -v: show all individual sensors
+>>>>>>> 19a575c (changelog: 1.9.0-alpha.1, Tuxedo)
     Radio Devices:
     - bluetooth/nfc/wifi/wwan: add command "cycle", equivalent of "toggle" twice
     - DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE: Fix the disabling of nfc
