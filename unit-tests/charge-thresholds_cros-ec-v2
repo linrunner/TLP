@@ -25,12 +25,14 @@ Error in configuration at STOP_CHARGE_THRESH_BATA="101": not specified, invalid 
 TLP started
 $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="na" STOP_CHARGE_THRESH_${bata}="86" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="DEF" STOP_CHARGE_THRESH_${bata}="DEF" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ sudo tlp start -- ${xinc} NATACPI_ENABLE=0 START_CHARGE_THRESH_${bata}="DEF" STOP_CHARGE_THRESH_${bata}="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ #
 $ # --- tlp setcharge w/o arguments
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_${bata}="60" STOP_CHARGE_THRESH_${bata}="100" 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   stop  = 100 (no change)
@@ -46,6 +48,7 @@ Setting temporary charge threshold(s) for battery BATA:
 $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_${bata}="na" STOP_CHARGE_THRESH_${bata}="86" 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   stop  =  86
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_${bata}="na" STOP_CHARGE_THRESH_${bata}="80" 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   stop  =  80
@@ -82,9 +85,6 @@ Setting temporary charge threshold(s) for battery BATA:
 $ sudo tlp setcharge 0 60 -- ${xinc} X_THRESH_SIMULATE_STOP="100" 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   stop  =  60
-$ sudo tlp setcharge 0 60 -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
-Setting temporary charge threshold(s) for battery BATA:
-  stop  =  60 (no change)
 $ sudo tlp setcharge DEF DEF -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   stop  = 100

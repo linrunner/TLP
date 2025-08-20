@@ -11,6 +11,7 @@ spath="${0%/*}"
 cache_root_cred
 start_report
 
+export VWRITE_SLEEP=2
 run_clitest "$spath/charge-thresholds_simulate1"
 run_clitest "$spath/charge-thresholds_simulate2"
 

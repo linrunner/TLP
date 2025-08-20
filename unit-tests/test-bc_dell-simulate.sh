@@ -10,6 +10,7 @@ spath="${0%/*}"
 cache_root_cred
 start_report
 
+export VWRITE_SLEEP=2
 export xinc="X_BAT_PLUGIN_SIMULATE=dell"
 echo "        # xinc=${xinc}" 1>&2
 run_clitest "$spath/charge-thresholds_dell" "" "$1"

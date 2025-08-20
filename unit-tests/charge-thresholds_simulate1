@@ -273,6 +273,7 @@ TLP started
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": not specified or invalid (must be 80 or 100). Skipped.
 TLP started
+$ [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" X_THRESH_SIMULATE_STOP="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_STOP="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"

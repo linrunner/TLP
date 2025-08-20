@@ -25,6 +25,7 @@ else
     exit 1
 fi
 
+export VWRITE_SLEEP=2
 export xinc="X_BAT_PLUGIN_SIMULATE=tuxedo X_BAT_PLUGIN_SIM_KMOD=thinkpad_acpi"
 echo "        # xinc=${xinc} bata=${bata} batb=${batb}" 1>&2
 run_clitest "$spath/charge-thresholds_tuxedo"

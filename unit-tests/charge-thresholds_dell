@@ -31,12 +31,14 @@ Error in configuration: START_CHARGE_THRESH_BAT0 > STOP_CHARGE_THRESH_BAT0 - 5. 
 TLP started
 $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ sudo tlp start -- ${xinc} NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ #
 $ # --- tlp setcharge w/o arguments
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SOC_CHECK=0
 Setting temporary charge thresholds for battery BAT0:
   start =  60
@@ -90,12 +92,14 @@ $ sudo tlp setcharge 50 XYZZY -- ${xinc}
 Error: stop charge threshold (XYZZY) for battery BAT0 is not specified, invalid or out of range (55..100). Aborted.
 $ sudo tlp setcharge 90 91 -- ${xinc}
 Error: start threshold > stop threshold - 5 for battery BAT0. Aborted.
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp setcharge 90 95 -- ${xinc}
 Setting temporary charge thresholds for battery BAT0:
   start =  90
   stop  =  95
 $ sudo tlp setcharge 90 95 -- ${xinc} X_THRESH_SIMULATE_READERR="1"
 Error: could not read current charge threshold(s) for battery BAT0. Aborted.
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp setcharge 90 95 -- ${xinc} X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
 Setting temporary charge thresholds for battery BAT0:
   start =  90

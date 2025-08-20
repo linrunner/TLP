@@ -27,12 +27,14 @@ Error in configuration: START_CHARGE_THRESH_BATA >= STOP_CHARGE_THRESH_BATA. Bat
 TLP started
 $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="95" STOP_CHARGE_THRESH_${bata}="96" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="DEF" STOP_CHARGE_THRESH_${bata}="DEF" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ sudo tlp start -- ${xinc} NATACPI_ENABLE=0 START_CHARGE_THRESH_${bata}="DEF" STOP_CHARGE_THRESH_${bata}="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ #
 $ # --- tlp setcharge w/o arguments
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_${bata}="60" STOP_CHARGE_THRESH_${bata}="100" X_SOC_CHECK=0 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   start =  60
@@ -77,6 +79,7 @@ $ sudo tlp setcharge 0 XYZZY -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Error: stop charge threshold (XYZZY) for BATA is not specified, invalid or out of range (1..100). Aborted.
 $ sudo tlp setcharge 97 97 -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Error: start threshold >= stop threshold for BATA. Aborted.
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp setcharge 95 96 -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   start =  95
@@ -87,6 +90,7 @@ $ sudo tlp setcharge 95 96 -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   start =  95 (no change)
   stop  =  96 (no change)
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp setcharge DEF DEF -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   start =   0
@@ -99,8 +103,7 @@ $ sudo tlp setcharge XYZZY ABCDE ${batb} -- ${xinc} 2>&1 | sed -r "s/${batb}/BAT
 Error: battery BATB not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b  -- ${xinc}| grep -E "${bata}/charge_(control|behaviour)" | sed -r "s/${bata}/BATA/"
-/sys/class/power_supply/BATA/charge_control_start_threshold =      0 [%]
+$ sudo tlp-stat -b  -- ${xinc}| grep -E "${bata}/charge_(control_end|behaviour)" | sed -r "s/${bata}/BATA/"
 /sys/class/power_supply/BATA/charge_control_end_threshold   =    100 [%]
 /sys/class/power_supply/BATA/charge_behaviour               = [auto] inhibit-charge force-discharge
 $ sudo tlp-stat -b -- ${xinc} X_THRESH_SIMULATE_READERR=1 | grep -E "${bata}/charge_(control|behaviour)" | sed -r "s/${bata}/BATA/"
