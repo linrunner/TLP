@@ -4,6 +4,7 @@ debian
 *.log
 PKGBUILD*
 pkg
+research*
 src
 tlp.install
 worktree*
