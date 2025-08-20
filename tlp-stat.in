@@ -468,17 +468,11 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                     if [ -f "$cpuf/boost" ] && [ $show_verbose -eq 1 ]; then
                         printf "%-54s = %d\n" "$cpuf/boost" "$(read_sysf "$cpuf/boost")"
                     fi
-
-                    if [ -f "$cpuf/energy_performance_preference" ]; then
-                        printparm "%s = ##%s## [EPP]" "$cpuf/energy_performance_preference"
+                    if [ -f "$cpuf/amd_pstate_lowest_nonlinear_freq" ]; then
+                        printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_lowest_nonlinear_freq" "$(read_sysf "$cpuf/amd_pstate_lowest_nonlinear_freq")"
                     fi
-                    if [ -f "$cpuf/energy_performance_available_preferences" ]; then
-                        printparm "%s = ##%s##" "$cpuf/energy_performance_available_preferences"
-                    fi
-
-                    if { supports_intel_cpu_epb && [ "$epp" -eq 0 ]; } || [ "$X_SHOW_EPB" = "1" ] ; then
-                        # CPU supports EPB: use native kernel API (5.2 and later)
-                        printparm_epb "${CPUD}/cpu${cn}/power/energy_perf_bias"
+                    if [ -f "$cpuf/amd_pstate_max_freq" ]; then
+                        printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_max_freq" "$(read_sysf "$cpuf/amd_pstate_max_freq")"
                     fi
 
                     if [ $show_verbose -eq 1 ]; then
@@ -490,12 +484,6 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                         fi
                         if [ -f "$cpuf/amd_pstate_highest_perf" ]; then
                             printf "%-70s = %8d [%%]\n" "$cpuf/amd_pstate_highest_perf" "$(read_sysf "$cpuf/amd_pstate_highest_perf")"
-                        fi
-                        if [ -f "$cpuf/amd_pstate_max_freq" ]; then
-                            printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_max_freq" "$(read_sysf "$cpuf/amd_pstate_max_freq")"
-                        fi
-                        if [ -f "$cpuf/amd_pstate_lowest_nonlinear_freq" ]; then
-                            printf "%-70s = %8d [kHz]\n" "$cpuf/amd_pstate_lowest_nonlinear_freq" "$(read_sysf "$cpuf/amd_pstate_lowest_nonlinear_freq")"
                         fi
                         if [ -f "$cpua/lowest_perf" ]; then
                             printf "%-61s = %5d\n" "$cpua/lowest_perf" "$(read_sysf "$cpua/lowest_perf")"
@@ -520,6 +508,16 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
                         fi
                     fi
 
+                    if [ -f "$cpuf/energy_performance_preference" ]; then
+                        printparm "%s = ##%s## [EPP]" "$cpuf/energy_performance_preference"
+                    fi
+                    if [ -f "$cpuf/energy_performance_available_preferences" ]; then
+                        printparm "%s = ##%s##" "$cpuf/energy_performance_available_preferences"
+                    fi
+                    if { supports_intel_cpu_epb && [ "$epp" -eq 0 ]; } || [ "$X_SHOW_EPB" = "1" ] ; then
+                        # CPU supports EPB: use native kernel API (5.2 and later)
+                        printparm_epb "${CPUD}/cpu${cn}/power/energy_perf_bias"
+                    fi
                     printf "\n"
                 fi
 
