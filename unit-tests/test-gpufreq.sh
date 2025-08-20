@@ -47,11 +47,6 @@ check_intel_gpu_freq () {
 
             if [ $sc -eq 1 ]; then
                 # --- test settings profile for active power source
-                # /sys/class/drm/card1/gt_min_freq_mhz         =   100 [MHz]
-                # /sys/class/drm/card1/gt_max_freq_mhz         =  1300 [MHz]
-                # /sys/class/drm/card1/gt_boost_freq_mhz       =  1300 [MHz]
-                # /sys/class/drm/card1/gt_RPn_freq_mhz         =   100 [MHz] (GPU min)
-                # /sys/class/drm/card1/gt_RP0_freq_mhz         =  1300 [MHz] (GPU max)
 
                 # save initial frequencies
                 min_save="$(read_sysf "${_gpu_base}/gt_min_freq_mhz")"
