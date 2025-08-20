@@ -130,7 +130,7 @@ SHFILES = \
 
 UTSHFILES = \
 	unit-tests/test-func \
-	unit-tests/test-*.sh
+	unit-tests/*.sh
 
 PLFILES = \
 	tlp-pcilist \
