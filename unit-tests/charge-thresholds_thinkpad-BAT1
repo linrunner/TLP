@@ -11,26 +11,26 @@
 $ # +++ ThinkPad (BAT1) +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
-TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="61" STOP_CHARGE_THRESH_BAT1="100"
-TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="100" STOP_CHARGE_THRESH_BAT1="100"
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="61" STOP_CHARGE_THRESH_BAT1="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="100" STOP_CHARGE_THRESH_BAT1="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at START_CHARGE_THRESH_BAT1="100": not specified, invalid or out of range (0..99). Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="0"
+TLP started
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="0" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BAT1="0": not specified, invalid or out of range (1..100). Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="101"
+TLP started
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="0" STOP_CHARGE_THRESH_BAT1="101" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BAT1="101": not specified, invalid or out of range (1..100). Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="97" STOP_CHARGE_THRESH_BAT1="97"
+TLP started
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="97" STOP_CHARGE_THRESH_BAT1="97" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration: START_CHARGE_THRESH_BAT1 >= STOP_CHARGE_THRESH_BAT1. Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96"
-TLP started in AC mode (auto).
-$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF"
-TLP started in AC mode (auto).
+TLP started
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="95" STOP_CHARGE_THRESH_BAT1="96" 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
+$ sudo tlp start -- START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1="DEF" STOP_CHARGE_THRESH_BAT1="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
 $ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge BAT1 -- X_SOC_CHECK=0 START_CHARGE_THRESH_BAT1="60" STOP_CHARGE_THRESH_BAT1="100" X_SOC_CHECK=0

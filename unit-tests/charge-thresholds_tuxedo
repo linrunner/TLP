@@ -9,28 +9,28 @@
 $ # +++ Tuxedo laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}= STOP_CHARGE_THRESH_${bata}= START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}=
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="60" STOP_CHARGE_THRESH_${bata}="100" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/${bata}/BATA/"
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="100" STOP_CHARGE_THRESH_${bata}="100" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/${bata}/BATA/"
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}= STOP_CHARGE_THRESH_${bata}= START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r 's/(TLP started).*/\1/'
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="60" STOP_CHARGE_THRESH_${bata}="100" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/${bata}/BATA/;s/(TLP started).*/\1/"
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="100" STOP_CHARGE_THRESH_${bata}="100" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/${bata}/BATA/;s/(TLP started).*/\1/"
 Error in configuration at START_CHARGE_THRESH_BATA="100": not specified, invalid or not in {40, 50, 60, 70, 80, 95}. Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="50" STOP_CHARGE_THRESH_${bata}="0" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/${bata}/BATA/"
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="50" STOP_CHARGE_THRESH_${bata}="0" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/${bata}/BATA/;s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BATA="0": not specified, invalid or not in {60, 70, 80, 90, 100}. Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="50" STOP_CHARGE_THRESH_${bata}="101" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/${bata}/BATA/"
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="50" STOP_CHARGE_THRESH_${bata}="101" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/${bata}/BATA/;s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BATA="101": not specified, invalid or not in {60, 70, 80, 90, 100}. Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="80" STOP_CHARGE_THRESH_${bata}="80" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/${bata}/BATA/g"
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="80" STOP_CHARGE_THRESH_${bata}="80" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/${bata}/BATA/g;s/(TLP started).*/\1/"
 Error in configuration: START_CHARGE_THRESH_BATA >= STOP_CHARGE_THRESH_BATA. Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="80" STOP_CHARGE_THRESH_${bata}="90" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}=
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="DEF" STOP_CHARGE_THRESH_${bata}="DEF" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}=
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} NATACPI_ENABLE=0 START_CHARGE_THRESH_${bata}="DEF" STOP_CHARGE_THRESH_${bata}="DEF"
-TLP started in AC mode (auto).
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="80" STOP_CHARGE_THRESH_${bata}="90" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r 's/(TLP started).*/\1/'
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="DEF" STOP_CHARGE_THRESH_${bata}="DEF" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r 's/(TLP started).*/\1/'
+TLP started
+$ sudo tlp start -- ${xinc} NATACPI_ENABLE=0 START_CHARGE_THRESH_${bata}="DEF" STOP_CHARGE_THRESH_${bata}="DEF" 2>&1 | sed -r 's/(TLP started).*/\1/'
+TLP started
 $ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_${bata}="60" STOP_CHARGE_THRESH_${bata}="100" X_SOC_CHECK=0 2>&1 | sed -r "s/${bata}/BATA/"

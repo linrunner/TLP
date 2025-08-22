@@ -9,32 +9,32 @@
 $ # +++ Dell laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} X_THRESH_SIMULATE_LOCKEDBIOS=1 START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
+$ sudo tlp start -- ${xinc} X_THRESH_SIMULATE_LOCKEDBIOS=1 START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error: failed to set 'Custom' charge type for battery BAT0. Battery skipped.
 Remove the BIOS Admin password to allow the thresholds to be set.
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at START_CHARGE_THRESH_BAT0="100": not specified, invalid or out of range (50..95). Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (55..100). Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="50" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (55..100). Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="91" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="91" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration: START_CHARGE_THRESH_BAT0 > STOP_CHARGE_THRESH_BAT0 - 5. Battery skipped.
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1=
-TLP started in AC mode (auto).
-$ sudo tlp start -- ${xinc} NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-TLP started in AC mode (auto).
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="90" STOP_CHARGE_THRESH_BAT0="95" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
+$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
+$ sudo tlp start -- ${xinc} NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
 $ #
 $ # --- tlp setcharge w/o arguments
 $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SOC_CHECK=0
