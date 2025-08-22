@@ -9,8 +9,6 @@
 $ # +++ ChromeOS EC (cmd v3) laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
-$ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}= STOP_CHARGE_THRESH_${bata}= START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/(TLP started).*/\1/"
-TLP started
 $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="60" STOP_CHARGE_THRESH_${bata}="100" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_${bata}="100" STOP_CHARGE_THRESH_${bata}="100" START_CHARGE_THRESH_${batb}= STOP_CHARGE_THRESH_${batb}= 2>&1 | sed -r "s/${bata}/BATA/;s/(TLP started).*/\1/"
