@@ -1,4 +1,4 @@
-.TH tlp 8 2025-08-01 "TLP 1.9.0" "Power Management"
+.TH tlp 8 2025-08-25 "TLP 1.9.0" "Power Management"
 .
 .SH NAME
 tlp - apply laptop power saving settings
@@ -35,21 +35,13 @@ will be used instead.
 .B ac
 Apply profile "performance" and enter manual mode.
 Manual mode means that changes to the power source will be ignored until the
-next reboot or \fBtlp start\fR is issued to resume automatic mode.
-.
-.TP
-.B false
-Alias for \fBac\fR.
+next reboot or \fBtlp start\fR is invoked to resume automatic mode.
 .
 .TP
 .B bat
 Apply profile "battery" and enter manual mode.
 Manual mode means that changes to the power source will be ignored until the
-next reboot or \fBtlp start\fR is issued to resume automatic mode.
-.
-.TP
-.B true
-Alias for \fBbat\fR.
+next reboot or \fBtlp start\fR is invoked to resume automatic mode.
 .
 .TP
 .B usb

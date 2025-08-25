@@ -91,7 +91,7 @@ parse_args () { # parse command-line arguments
         elif [ "$_cmd" = "nil" ]; then
             # command
             case "$1" in
-                ac|auto|bat|balanced|bayoff|false|diskid|performance|power-saver|resume|suspend|start|true|usb)
+                ac|auto|bat|balanced|bayoff|diskid|performance|power-saver|resume|suspend|start|usb)
                     # commands without further arguments
                     _cmd="$1"
                     _cmd2=""
@@ -371,7 +371,7 @@ case "$_cmd" in
         fi
         ;;
 
-    performance|ac|false|balanced|bat|true|power-saver) # apply profile for $_cmd
+    performance|ac|balanced|bat|power-saver) # apply profile for $_cmd
         check_services_activation_status
         check_root
         if lock_tlp; then

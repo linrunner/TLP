@@ -1051,12 +1051,12 @@ get_next_power_profile () {
                 fi
                 ;;
 
-            true|bat)
+            bat)
                 _pp_next="$PP_BAL"
                 set_manual_mode "$PP_BAL"
                 ;;
 
-            false|ac)
+            ac)
                 _pp_next="$PP_PRF"
                 set_manual_mode "$PP_PRF"
                 ;;
