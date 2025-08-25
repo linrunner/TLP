@@ -22,15 +22,17 @@
     - RADEON_POWER_PROFILE_ON_AC/BAT removed (deprecated since 1.8.0)
     - tlp-stat -g -v: show power_state, pp_dpm_*clk of AMD GPUs
     Power Profiles:
-      The release introduces a third configuration profile for maximum
-      power savings. The following are now available:
+    - Introduce a third configuration profile for maximum power savings.
+      The following are now available:
       - performance: parameters ending in _AC are used when AC power
-        is connected or when the command 'tlp performance' is run.
+        is connected or when the new command 'tlp performance' is run.
       - balanced: parameters ending in _BAT are used when operating
-        on battery power or when the command 'tlp balanced' is run.
-      - power-saver: parameters ending in _SAV are used when the command
+        on battery power or when the new command 'tlp balanced' is run.
+      - power-saver: parameters ending in _SAV are used when the new command
         'tlp power-saver' is run. If there is no _SAV parameter available
         for a feature, the _BAT parameter will be used instead.
+    - tlp: drop the commands 'false' and 'true', which have been superseded
+      by 'ac' and 'bat' for ages
     Processor:
     - PLATFORM_PROFILE_ON_AC/BAT/SAV: enable by default
     - tlp-stat -p: add to display per core
@@ -39,7 +41,7 @@
       - (-v) amd_pstate_hw_prefcore, amd_pstate_prefcore_ranking
     - tlp-stat -t -v: show all individual temperature/fan sensors
     Radio Devices:
-    - bluetooth/nfc/wifi/wwan: add command "cycle", equivalent of "toggle" twice
+    - bluetooth/nfc/wifi/wwan: add command 'cycle', equivalent of 'toggle' twice
     - DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE: Fix the disabling of nfc
       (Issue #808)
     - tlp-stat -s: warn if RDW is configured but tlp-rdw is not installed
