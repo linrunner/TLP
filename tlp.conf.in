@@ -13,13 +13,13 @@
 #
 # Power Profiles: a part of TLP's parameters is divided into two or three
 # groups:
-# - performance: parameters ending in _AC are used when AC is connected
-#   or when the command 'tlp performance' is run.
-# - balanced: parameters ending in _BAT are used when running
+# - performance: parameters ending in _AC are used when AC power is
+#   connected or when the command 'tlp performance' is run.
+# - balanced: parameters ending in _BAT are used when operating
 #   on battery power or when the command 'tlp balanced' is run.
 # - power-saver: parameters ending in _SAV are used when the command
-#   'tlp power-saver' is run. If there is no _SAV parameter available for a
-#   feature, the _BAT paremeter will be used instead.
+#   'tlp power-saver' is run. If there is no _SAV parameter available
+#   for a feature, the _BAT parameter will be used instead.
 # - Any remaining parameters not divided apply to all power profiles.
 #
 # Please note:
