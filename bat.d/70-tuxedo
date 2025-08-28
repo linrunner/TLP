@@ -689,9 +689,9 @@ batdrv_show_battery_data () {
         fi
 
         # --- show battery features: thresholds
-        printf "%-59s = %6s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
-        printf "%-59s = %6s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
-        printparm "%-59s = ##%s##" "$_bf_chtype" "not available"
+        printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_start_threshold" "not available"
+        printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_end_threshold" "not available"
+        printparm "%-59s = ##%6s##" "$_bd_read/charge_type" "not available"
         printf "\n"
 
         # --- show charge level (SOC) and capacity
