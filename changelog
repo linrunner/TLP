@@ -34,8 +34,8 @@
     - tlp: drop the commands 'false' and 'true', which have been superseded
       by 'ac' and 'bat' for ages
     Processor:
-    - PLATFORM_PROFILE_ON_AC/BAT/SAV: enable by default
-    - tlp-stat -p: add to display per core
+    - PLATFORM_PROFILE_ON_AC/BAT/SAV: activated by default
+    - tlp-stat -p: add to display per core:
       - amd_pstate_lowest_nonlinear_freq, amd_pstate_max_freq
       - (-v) scaling_cur_freq (current core frequency)
       - (-v) amd_pstate_hw_prefcore, amd_pstate_prefcore_ranking
