@@ -47,14 +47,16 @@
     - tlp-stat -s: warn if RDW is configured but tlp-rdw is not installed
 
   * Bugfixes
-    Battery:
-    - tlp-stat -b: Fix ThinkPad X13s Gen 1 ARM data read out (Issue #807)
     Battery Care:
     - Chromebooks, Framework laptops: fix tlp discharge to a target percentage
     - ThinkPads:
       - Fix X201, X220 discharge (Issue #793)
       - Fix bash completion for tlp discharge on tp-smapi models
       - Detect coreboot more reliable via DMI bios_vendor
+      - tlp-stat -b:
+        - Fix X13s Gen 1 ARM data read out (Issue #807)
+        - Do not wrongly recommend kernel 5.17 if coreboot is detected,
+          as coreboot does not implement discharge anyway
 
 +++ 1.8.0 --- 13.02.2025 +++
 
