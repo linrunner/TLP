@@ -1224,7 +1224,7 @@ batdrv_show_battery_data () {
         printf "\n"
     fi
 
-    if is_coreboot; then
+    if is_coreboot && [ -f "$_bd_read/charge_full" ]; then
         printf "*) Converted coreboot charge readings may differ.\n\n"
     fi
 
@@ -1254,8 +1254,7 @@ batdrv_recommendations () {
     # prerequisite: batdrv_init()
 
     soc_gt_stop_recommendation
-
-    if [ "$_natacpi" = "1" ] && [ -f "$_bd_read/energy_full" ]; then
+    if [ "$_natacpi" = "1" ] && ! is_coreboot; then
         # natacpi degraded and no coreboot
         printf "Install kernel 5.17 (or later) for battery recalibration support\n"
     fi
