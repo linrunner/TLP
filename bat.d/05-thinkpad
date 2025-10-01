@@ -1077,7 +1077,7 @@ batdrv_show_battery_data () {
 
         case $_bat_idx in
             1) printf "+++ ThinkPad Battery Status: %s (Main / Internal)\n" "$bat" ;;
-            2) printf "+++ ThinkPad Battery Status: %s (Removable / Ultrabay / Slice)\n" "$bat" ;;
+            2) printf "+++ ThinkPad Battery Status: %s (Removable)\n" "$bat" ;;
             0) printf "+++ ThinkPad Battery Status: %s\n" "$bat" ;;
         esac
 
