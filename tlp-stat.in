@@ -1088,9 +1088,9 @@ if [ "$show_trace" = "1" ]; then
     # check for systemd journal
     jdone=0
     if [ "$show_trace_nm" = "1" ]; then
-        log_ids="SYSLOG_IDENTIFIER=tlp SYSLOG_IDENTIFIER=NetworkManager"
+        log_ids="SYSLOG_IDENTIFIER=tlp SYSLOG_IDENTIFIER=tlp-pd SYSLOG_IDENTIFIER=NetworkManager"
     else
-        log_ids="SYSLOG_IDENTIFIER=tlp"
+        log_ids="SYSLOG_IDENTIFIER=tlp SYSLOG_IDENTIFIER=tlp-pd"
     fi
     if cmd_exists $JOURNALCTL; then
         # retrieve trace output from journal, rc=1 if journald has no data available
