@@ -191,13 +191,8 @@ print_saved_profile () {
     # read and print saved power profile
     local saved_pp
 
-    saved_pp="$(read_sysf "$PWRRUNFILE")"
-    case "$saved_pp" in
-        "$PP_PRF")  printf "performance/AC" ;;
-        "$PP_BAL")  printf "balanced/BAT" ;;
-        "$PP_SAV")  printf "power-saver/SAV" ;;
-        *)          printf "unknown" ;;
-    esac
+    saved_pp="$(read_saved_power_profile)"
+    printf "%s" "$(pp2strx "$saved_pp")"
 
     # check for manual and persistent default mode
     # shellcheck disable=SC2154
