@@ -807,7 +807,7 @@ load_modules () { # load kernel module(s) -- $*: modules
     return 0
 }
 
-# --- DMI
+# --- DMI and Hardware
 
 read_dmi () { # read DMI data
     # $1: dmi id
@@ -826,7 +826,15 @@ read_dmi () { # read DMI data
     fi
 }
 
-# --- Power Source and Power Profiles
+is_laptop () { # check if machine is a laptop
+    # rc: 0=laptop/1=other/desktop
+    case "$(read_dmi "chassis_type")" in
+        8|9|10|11) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+# --- Power Source
 
 get_sys_power_supply () {
     # determine active power supply
@@ -982,6 +990,19 @@ get_sys_power_supply () {
     return "$_syspwr"
 }
 
+check_ac_power () { # check if ac power connected -- $1: function
+
+    if ! get_sys_power_supply ; then
+        echo_debug "bat" "check_ac_power($1).no_ac_power"
+        cecho "Error: $1 is possible on AC power only." 1>&2
+        return 1
+    fi
+
+    return 0
+}
+
+# --- Persist and Manual Modes
+
 get_persist_mode () { # get persistent power profile
     # rc: 0=persistent/1=not persistent
     # retval: $_persist_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, MPM_OFF=255)
@@ -1000,13 +1021,64 @@ get_persist_mode () { # get persistent power profile
     return $rc
 }
 
-is_laptop () { # check if machine is a laptop
-    # rc: 0=laptop/1=other/desktop
-    case "$(read_dmi "chassis_type")" in
-        8|9|10|11) return 0 ;;
-        *) return 1 ;;
-    esac
+set_manual_mode () { # set manual profile
+    # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
+    # retval: $_manual_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2)
+
+    if ! wordinlist "$1" "$PP_PRF $PP_BAL $PP_SAV"; then
+        echo_debug "ps" "set_manual_mode($1).invalid"
+        return 1
+    fi
+
+    create_rundir
+    if write_sysf "$1" $MANUALMODEFILE; then
+        _manual_mode="$1"
+        echo_debug "ps" "set_manual_mode($1).ok"
+        return 0
+    else
+        echo_debug "ps" "set_manual_mode($1).write_error"
+        return 1
+    fi
 }
+
+clear_manual_mode () { # remove manual profile
+    # retval: $_manual_mode (none)
+
+    rm -f $MANUALMODEFILE 2> /dev/null
+    _manual_mode="$MPM_OFF"
+
+    echo_debug "ps" "clear_manual_mode"
+    return 0
+}
+
+get_manual_mode () { # get manual profile
+    # rc: 0=active/1=inactive
+    # retval: $_manual_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, MPM_OFF=255
+    local rc=1
+    _manual_mode="$MPM_OFF"
+
+    if [ -f $MANUALMODEFILE ]; then
+        # read mode file
+        if _manual_mode=$(read_sysf $MANUALMODEFILE); then
+            case $_manual_mode in
+                "$PP_PRF"|"$PP_BAL"|"$PP_SAV") rc=0 ;;
+                *) _manual_mode=$MPM_UNKNOWN ;;
+            esac
+        else
+            # cannot read mode file - possible cause:
+            #   tlp-stat -s is running without root privilege and the file is not world readable
+            #   because tlp ac/bat is invoked with sudo when creating the file and thereby a
+            #   restrictive umask applies; see https://github.com/linrunner/TLP/issues/702
+            # -> manual mode is active but operation mode cannot be determined
+            _manual_mode=$MPM_UNKNOWN
+            rc=0
+        fi
+    fi
+
+    return $rc
+}
+
+# --- Power Profiles
 
 pp2str () { # convert power profile code to string
     # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
@@ -1028,6 +1100,31 @@ pp2strx () { # convert power profile code to string plus config suffix
         "$PP_BAL")  printf "/BAT" ;;
         "$PP_SAV")  printf "/SAV" ;;
     esac
+}
+
+read_saved_power_profile () {
+    # print saved power profile
+
+    local pp_saved
+
+    pp_saved=$(read_sysf $PWRRUNFILE)
+
+    # intercept invalid saved states
+    case "$pp_saved" in
+        "$PP_PRF"|"$PP_BAL"|"$PP_SAV")
+            ;; # valid
+
+        "")
+            ;; # nothing
+
+        *) # invalid
+            echo_debug "ps" "read_saved_power_profile.invalid: saved=$_pp_cur"
+            pp_saved=""
+            ;;
+    esac
+
+    printf "%s" "$pp_saved"
+    return 0
 }
 
 get_next_power_profile () {
@@ -1156,31 +1253,6 @@ notify_profile_daemon () {
     fi
 }
 
-read_saved_power_profile () {
-    # print saved power profile
-
-    local pp_saved
-
-    pp_saved=$(read_sysf $PWRRUNFILE)
-
-    # intercept invalid saved states
-    case "$pp_saved" in
-        "$PP_PRF"|"$PP_BAL"|"$PP_SAV")
-            ;; # valid
-
-        "")
-            ;; # nothing
-
-        *) # invalid
-            echo_debug "ps" "read_saved_power_profile.invalid: saved=$_pp_cur"
-            pp_saved=""
-            ;;
-    esac
-
-    printf "%s" "$pp_saved"
-    return 0
-}
-
 has_power_profile_changed () {
     # compare $_pp_next to $_pp_cur, save $_pp_next when different
     # rc: 0=different, 1=equal
@@ -1208,17 +1280,6 @@ clear_saved_power_profile () {
     return 0
 }
 
-check_ac_power () { # check if ac power connected -- $1: function
-
-    if ! get_sys_power_supply ; then
-        echo_debug "bat" "check_ac_power($1).no_ac_power"
-        cecho "Error: $1 is possible on AC power only." 1>&2
-        return 1
-    fi
-
-    return 0
-}
-
 echo_started_profile () { # announce power profile and auto/manual mode after start
     # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
 
@@ -1231,61 +1292,4 @@ echo_started_profile () { # announce power profile and auto/manual mode after st
     fi
 
     return 0
-}
-
-set_manual_mode () { # set manual profile
-    # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
-    # retval: $_manual_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2)
-
-    if ! wordinlist "$1" "$PP_PRF $PP_BAL $PP_SAV"; then
-        echo_debug "ps" "set_manual_mode($1).invalid"
-        return 1
-    fi
-
-    create_rundir
-    if write_sysf "$1" $MANUALMODEFILE; then
-        _manual_mode="$1"
-        echo_debug "ps" "set_manual_mode($1).ok"
-        return 0
-    else
-        echo_debug "ps" "set_manual_mode($1).write_error"
-        return 1
-    fi
-}
-
-clear_manual_mode () { # remove manual profile
-    # retval: $_manual_mode (none)
-
-    rm -f $MANUALMODEFILE 2> /dev/null
-    _manual_mode="$MPM_OFF"
-
-    echo_debug "ps" "clear_manual_mode"
-    return 0
-}
-
-get_manual_mode () { # get manual profile
-    # rc: 0=active/1=inactive
-    # retval: $_manual_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, MPM_OFF=255
-    local rc=1
-    _manual_mode="$MPM_OFF"
-
-    if [ -f $MANUALMODEFILE ]; then
-        # read mode file
-        if _manual_mode=$(read_sysf $MANUALMODEFILE); then
-            case $_manual_mode in
-                "$PP_PRF"|"$PP_BAL"|"$PP_SAV") rc=0 ;;
-                *) _manual_mode=$MPM_UNKNOWN ;;
-            esac
-        else
-            # cannot read mode file - possible cause:
-            #   tlp-stat -s is running without root privilege and the file is not world readable
-            #   because tlp ac/bat is invoked with sudo when creating the file and thereby a
-            #   restrictive umask applies; see https://github.com/linrunner/TLP/issues/702
-            # -> manual mode is active but operation mode cannot be determined
-            _manual_mode=$MPM_UNKNOWN
-            rc=0
-        fi
-    fi
-
-    return $rc
 }
