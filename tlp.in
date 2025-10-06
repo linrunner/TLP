@@ -271,9 +271,9 @@ case "$_cmd" in
             start)
                 # apply power save settings
                 has_power_profile_changed
-                notify_profile_daemon "$(pp2str "$_pp_next")"
                 printf "Applying power save settings..."
                 apply_common_settings "$_pp_next"
+                notify_profile_daemon "$(pp2str "$_pp_next")"
                 poweroff_drivebay "$_pp_next" 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
@@ -290,9 +290,9 @@ case "$_cmd" in
             restart|force-reload)
                 # apply power save settings
                 has_power_profile_changed
-                notify_profile_daemon "$(pp2str "$_pp_next")"
                 printf "Applying power save settings..."
                 apply_common_settings "$_pp_next"
+                notify_profile_daemon "$(pp2str "$_pp_next")"
                 poweroff_drivebay "$_pp_next" 0
                 [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
                 echo "done."
@@ -337,8 +337,8 @@ case "$_cmd" in
         check_services_activation_status
         if lock_tlp_nb; then
             if has_power_profile_changed; then
-                notify_profile_daemon "$(pp2str "$_pp_next")"
                 apply_common_settings "$_pp_next"
+                notify_profile_daemon "$(pp2str "$_pp_next")"
                 poweroff_drivebay "$_pp_next" 0
                 set_radio_device_states "$_pp_next"
                 if [ "$RESTORE_THRESHOLDS_ON_BAT" = "1" ] \
@@ -356,8 +356,8 @@ case "$_cmd" in
         check_root
         if lock_tlp; then
             has_power_profile_changed
-            notify_profile_daemon "$(pp2str "$_pp_next")"
             apply_common_settings "$_pp_next"
+            notify_profile_daemon "$(pp2str "$_pp_next")"
             poweroff_drivebay "$_pp_next" 0
             set_usb_suspend 0 auto
             init_batteries_thresholds
@@ -376,8 +376,8 @@ case "$_cmd" in
         check_root
         if lock_tlp; then
             has_power_profile_changed
-            notify_profile_daemon "$(pp2str "$_pp_next")"
             apply_common_settings "$_pp_next"
+            notify_profile_daemon "$(pp2str "$_pp_next")"
             poweroff_drivebay "$_pp_next" 0
             [ "$X_TLP_USB_MODE" = "1" ] && set_usb_suspend 0 auto
             set_radio_device_states "$_pp_next"
@@ -423,8 +423,8 @@ case "$_cmd" in
             restore_device_states
 
             has_power_profile_changed
-            notify_profile_daemon "$(pp2str "$_pp_next")"
             apply_common_settings "$_pp_next"
+            notify_profile_daemon "$(pp2str "$_pp_next")"
             resume_drivebay "$_pp_next"
             init_batteries_thresholds "asus huawei lg lg-legacy"
             save_runconf
