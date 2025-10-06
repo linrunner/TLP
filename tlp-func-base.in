@@ -821,7 +821,7 @@ read_dmi () { # read DMI data
     fi
 }
 
-# --- Power Source
+# --- Power Source and Power Profiles
 
 get_sys_power_supply () {
     # determine active power supply
@@ -1003,6 +1003,28 @@ is_laptop () { # check if machine is a laptop
     esac
 }
 
+pp2str () { # convert power profile code to string
+    # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
+
+    case "$1" in
+        "$PP_PRF")  printf "performance" ;;
+        "$PP_BAL")  printf "balanced" ;;
+        "$PP_SAV")  printf "power-saver" ;;
+        *)          printf "unknown" ;;
+    esac
+}
+
+pp2strx () { # convert power profile code to string plus config suffix
+    # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
+
+    pp2str "$1"
+    case "$1" in
+        "$PP_PRF")  printf "/AC" ;;
+        "$PP_BAL")  printf "/BAT" ;;
+        "$PP_SAV")  printf "/SAV" ;;
+    esac
+}
+
 get_next_power_profile () {
     # determine next power profile: either
     # - depending on the tlp command,
@@ -1176,13 +1198,11 @@ check_ac_power () { # check if ac power connected -- $1: function
     return 0
 }
 
-echo_started_mode () { # print operation mode -- $1: 0=ac mode, 1=battery mode
+echo_started_profile () { # announce power profile and auto/manual mode after start
+    # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
 
-    case "$1" in
-        "$PP_PRF") printf "TLP started using profile performance/AC" ;;
-        "$PP_BAL") printf "TLP started using profile balanced/BAT" ;;
-        "$PP_SAV") printf "TLP started using profile power-saver/SAV" ;;
-    esac
+    printf "TLP started using profile %s" "$(pp2strx "$1")"
+
     if [ "$_manual_mode" != "$MPM_OFF" ]; then
         printf " (manual).\n"
     else

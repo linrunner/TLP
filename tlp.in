@@ -247,12 +247,7 @@ case "$_syspwr" in
 esac
 
 # shellcheck disable=SC2154
-case "$_pp_next" in
-    "$PP_PRF")  echo_debug "run" "power_profile=performance($_pp_next)" ;;
-    "$PP_BAL")  echo_debug "run" "power_profile=balanced($_pp_next)" ;;
-    "$PP_SAV")  echo_debug "run" "power_profile=power-saver($_pp_next)" ;;
-    *)          echo_debug "run" "power_profile=unknown($_pp_next)" ;;
-esac
+echo_debug "run" "power_profile=$(pp2str "$_pp_next")($_pp_next)"
 
 # process command
 exitcode=0
@@ -365,7 +360,7 @@ case "$_cmd" in
             save_runconf
             unlock_tlp
 
-            echo_started_mode "$_pp_next"
+            echo_started_profile "$_pp_next"
         else
             echo_tlp_locked
         fi
@@ -383,7 +378,7 @@ case "$_cmd" in
             save_runconf
             unlock_tlp
 
-            echo_started_mode "$_pp_next"
+            echo_started_profile "$_pp_next"
         else
             echo_tlp_locked
         fi
