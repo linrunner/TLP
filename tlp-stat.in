@@ -281,7 +281,7 @@ fi # show_cdiff
 
 # --- show opmode
 if [ "$show_mode" = "1" ]; then
-    printf "%s\n" "$(print_saved_powerstate)"
+    printf "%s\n" "$(print_saved_profile)"
 fi # show_mode
 
 # --- show system info and status
@@ -374,8 +374,8 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # --- last invocation time
     printf "Last run       = %s\n" "$(print_file_modtime_and_age "$PWRRUNFILE")"
 
-    # --- actual opmode
-    printf "Power profile  = %s\n" "$(print_saved_powerstate)"
+    # --- actual power profile
+    printf "Power profile  = %s\n" "$(print_saved_profile)"
 
     # ---- actual power source
     get_sys_power_supply

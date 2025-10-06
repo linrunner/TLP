@@ -187,7 +187,7 @@ print_file_modtime_and_age () {
     fi
 }
 
-print_saved_powerstate () {
+print_saved_profile () {
     # read and print saved power profile
     local saved_pp
 
