@@ -20,6 +20,7 @@ readonly CONF_USR=@TLP_CONFUSR@
 readonly CONF_OLD=@TLP_CONF@
 readonly CONF_RUN="$RUNDIR/run.conf"
 
+readonly BUSCTL=busctl
 readonly FLOCK=flock
 readonly HDPARM=hdparm
 readonly LAPMODE=laptop_mode
@@ -33,6 +34,10 @@ readonly TPACPIBAT=@TPACPIBAT@
 readonly UDEVADM=udevadm
 
 readonly TLPRDW=tlp-rdw
+
+readonly TLPPD_BUS_NAME="org.freedesktop.UPower.PowerProfiles"
+readonly TLPPD_INTERFACE_NAME="$TLPPD_BUS_NAME"
+readonly TLPPD_OBJECT_PATH="/org/freedesktop/UPower/PowerProfiles"
 
 readonly LOCKFILE=$RUNDIR/lock
 readonly LOCKTIMEOUT=2
@@ -1133,6 +1138,22 @@ get_next_power_profile () {
     echo_debug "ps" "get_next_power_profile($tlp_cmd): manual=$_manual_mode; persist=$_persist_mode; cur=$_pp_cur; next=$_pp_next"
 
     return "$_pp_next"
+}
+
+notify_profile_daemon () {
+    # Notify TLP-PD of a profile change via D-Bus
+    # $1: profile id
+
+    if [ -n "$1" ]; then
+       if cmd_exists "$BUSCTL"; then
+           busctl -q call $TLPPD_BUS_NAME $TLPPD_OBJECT_PATH $TLPPD_INTERFACE_NAME SyncProfile s "$1" 2> /dev/null
+           echo_debug "ps" "notify_profile_daemon($1).busctl: rc=$?"
+       else
+           echo_debug "ps" "notify_profile_daemon($1).busctl_missing"
+       fi
+    else
+        echo_debug "ps" "notify_profile_daemon($1).no_profile"
+    fi
 }
 
 read_saved_power_profile () {
