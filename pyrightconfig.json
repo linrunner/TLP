@@ -1,0 +1,15 @@
+{
+    "include": [],
+
+    "exclude": ["worktree*"],
+
+    "defineConstant": {
+        "DEBUG": true
+    },
+
+    "typeCheckingMode": "standard",
+    "reportAttributeAccessIssue": "none",
+    "reportUnusedImport": true,
+    "reportUnusedClass": true,
+    "reportUnusedFunction": true
+}

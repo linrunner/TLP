@@ -5,6 +5,7 @@ debian
 PKGBUILD*
 pkg
 research*
+.ropeproject
 src
 tlp.install
 worktree*

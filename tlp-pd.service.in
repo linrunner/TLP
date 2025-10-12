@@ -1,0 +1,13 @@
+[Unit]
+Description=TLP profiles daemon API service
+After=multi-user.target display-manager.target
+Documentation=https://linrunner.de/tlp
+
+[Service]
+Type=dbus
+BusName=org.freedesktop.UPower.PowerProfiles
+BusName=net.hadess.PowerProfiles
+ExecStart=@TLP_LIB@/tlp-pd
+
+[Install]
+WantedBy=graphical.target

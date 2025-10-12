@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=@BUS_NAME@
+Exec=/bin/false
+User=root
+SystemdService=tlp-pd.service

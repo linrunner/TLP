@@ -15,6 +15,7 @@ endif
 # Evaluate parameters
 TLP_SBIN    ?= /usr/sbin
 TLP_BIN     ?= /usr/bin
+TLP_LIB		?= /usr/lib
 TLP_TLIB    ?= /usr/share/tlp
 TLP_FLIB    ?= /usr/share/tlp/func.d
 TLP_ULIB    ?= /usr/lib/udev
@@ -30,6 +31,9 @@ TLP_SYSD    ?= /usr/lib/systemd/system
 TLP_SDSL    ?= /usr/lib/systemd/system-sleep
 TLP_SYSV    ?= /etc/init.d
 TLP_ELOD    ?= /usr/lib/elogind/system-sleep
+TLP_POLKIT  ?= /usr/share/polkit-1/actions
+TLP_DBCONF  ?= /usr/share/dbus-1/system.d
+TLP_DBSVC   ?= /usr/share/dbus-1/system-services
 TLP_SHCPL   ?= /usr/share/bash-completion/completions
 TLP_ZSHCPL  ?= /usr/share/zsh/site-functions
 TLP_FISHCPL ?= /usr/share/fish/vendor_completions.d
@@ -41,6 +45,7 @@ TLP_VAR     ?= /var/lib/tlp
 # Catenate DESTDIR to paths
 _SBIN    = $(DESTDIR)$(TLP_SBIN)
 _BIN     = $(DESTDIR)$(TLP_BIN)
+_LIB     = $(DESTDIR)$(TLP_LIB)
 _TLIB    = $(DESTDIR)$(TLP_TLIB)
 _FLIB    = $(DESTDIR)$(TLP_FLIB)
 _ULIB    = $(DESTDIR)$(TLP_ULIB)
@@ -56,6 +61,9 @@ _SYSD    = $(DESTDIR)$(TLP_SYSD)
 _SDSL    = $(DESTDIR)$(TLP_SDSL)
 _SYSV    = $(DESTDIR)$(TLP_SYSV)
 _ELOD    = $(DESTDIR)$(TLP_ELOD)
+_POLKIT  = $(DESTDIR)$(TLP_POLKIT)
+_DBCONF  = $(DESTDIR)$(TLP_DBCONF)
+_DBSVC   = $(DESTDIR)$(TLP_DBSVC)
 _SHCPL   = $(DESTDIR)$(TLP_SHCPL)
 _ZSHCPL  = $(DESTDIR)$(TLP_ZSHCPL)
 _FISHCPL = $(DESTDIR)$(TLP_FISHCPL)
@@ -67,6 +75,7 @@ _VAR     = $(DESTDIR)$(TLP_VAR)
 SED = sed \
 	-e "s|@TLPVER@|$(TLPVER)|g" \
 	-e "s|@TLP_SBIN@|$(TLP_SBIN)|g" \
+	-e "s|@TLP_LIB@|$(TLP_LIB)|g" \
 	-e "s|@TLP_TLIB@|$(TLP_TLIB)|g" \
 	-e "s|@TLP_FLIB@|$(TLP_FLIB)|g" \
 	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
@@ -84,6 +93,8 @@ INFILES = \
 	tlp \
 	tlp.conf \
 	tlp-func-base \
+	tlp-pd \
+	tlp-pd.service \
 	tlp-rdw-nm \
 	tlp-rdw.rules \
 	tlp-rdw-udev \
@@ -113,6 +124,9 @@ MANFILES8 = \
 MANFILESRDW8 = \
 	tlp-rdw.8
 
+MANFILESPD8 = \
+	tlp-pd.service.8
+
 SHFILES = \
 	tlp.in \
 	tlp-func-base.in \
@@ -136,6 +150,9 @@ PLFILES = \
 	tlp-pcilist \
 	tlp-readconfs.in \
 	tlp-usblist
+
+PYFILES = \
+	tlp-pd.in
 
 BATDRVFILES = $(foreach drv,$(wildcard bat.d/[0-9][0-9]-[a-z]*),$(drv)~)
 
@@ -230,6 +247,17 @@ ifneq ($(TLP_NO_FISHCOMP),1)
 	install -D -m 644 completion/fish/tlp-rdw.fish $(_FISHCPL)/tlp-rdw.fish
 endif
 
+install-pd: all
+	# Package tlp-pd
+	install -D -m 755 tlp-pd $(_LIB)/tlp-pd
+	install -D -m 644 tlp-pd.service $(_SYSD)/tlp-pd.service
+	install -D -m 644 tlp-pd.policy $(_POLKIT)/tlp-pd.policy
+	$(foreach BUS_NAME,org.freedesktop.UPower.PowerProfiles net.hadess.PowerProfiles, \
+		install -D -m 644 tlp-pd.dbus.conf $(_DBCONF)/$(BUS_NAME).conf; \
+		sed -e 's|@BUS_NAME@|$(BUS_NAME)|g' -i $(_DBCONF)/$(BUS_NAME).conf; \
+		install -D -m 644 tlp-pd.dbus.service $(_DBSVC)/$(BUS_NAME).service; \
+		sed -e 's|@BUS_NAME@|$(BUS_NAME)|g' -i $(_DBSVC)/$(BUS_NAME).service;)
+
 install-man-tlp:
 	# manpages
 	install -d -m 755 $(_MAN)/man1
@@ -242,9 +270,14 @@ install-man-rdw:
 	install -d -m 755 $(_MAN)/man8
 	cd man-rdw && install -m 644 $(MANFILESRDW8) $(_MAN)/man8/
 
-install: install-tlp install-rdw
+install-man-pd:
+	# manpages
+	install -d -m 755 $(_MAN)/man8
+	cd man-pd && install -m 644 $(MANFILESPD8) $(_MAN)/man8/
 
-install-man: install-man-tlp install-man-rdw
+install: install-tlp install-rdw install-pd
+
+install-man: install-man-tlp install-man-rdw install-man-pd
 
 uninstall-tlp:
 	# Package tlp
@@ -298,6 +331,14 @@ uninstall-rdw:
 	rm -f $(_ZSHCPL)/_tlp-rdw
 	rm -f $(_FISHCPL)/tlp-rdw.fish
 
+uninstall-pd:
+	rm -f $(_LIB)/tlp-pd
+	rm -f $(_POLKIT)/tlp-pd.policy
+	rm -f $(_DBCONF)/org.freedesktop.UPower.PowerProfiles.conf
+	rm -f $(_DBSVC)/org.freedesktop.UPower.PowerProfiles.service
+	rm -f $(_DBCONF)/net.hadess.PowerProfiles.conf
+	rm -f $(_DBSVC)/net.hadess.PowerProfiles.service
+
 uninstall-man-tlp:
 	# manpages
 	cd $(_MAN)/man1 && rm -f $(MANFILES1)
@@ -307,9 +348,13 @@ uninstall-man-rdw:
 	# manpages
 	cd $(_MAN)/man8 && rm -f $(MANFILESRDW8)
 
-uninstall: uninstall-tlp uninstall-rdw
+uninstall-man-pd:
+	# manpages
+	cd $(_MAN)/man8 && rm -f $(MANFILESPD8)
 
-uninstall-man: uninstall-man-tlp uninstall-man-rdw
+uninstall: uninstall-tlp uninstall-rdw uninstall-pd
+
+uninstall-man: uninstall-man-tlp uninstall-man-rdw uninstall-man-pd
 
 checkall: checkbashisms shellcheck perlcritic checkdupconst checkbatdrv checkwip
 
@@ -331,7 +376,7 @@ checkdupconst:
 
 checkwip:
 	@echo "*** checkwip ********************************************************************************"
-	@grep -E -n "### (DEBUG|DEVEL|TODO|WIP)" $(SHFILES) $(UTSHFILES) $(PLFILES) || true
+	@grep -E -n "### (DEBUG|DEVEL|TODO|WIP)" $(SHFILES) $(UTSHFILES) $(PLFILES) $(PYFILES) || true
 
 bat.d/TEMPLATE~: bat.d/TEMPLATE
 	@awk '/^batdrv_[a-z_]+ ()/ { print $$1; }' $< | grep -v 'batdrv_is' | sort > $@
