@@ -534,15 +534,19 @@ class ProfilesDaemon(dbus.service.Object):
 
     def _get_tlp_profile(self):
         # Read TLP statefile and translate into the last profile applied
-        with open(TLP_LAST_PROFILE, "r") as f:
-            last_pwr = f.readline().strip()
+        try:
+            with open(TLP_LAST_PROFILE, "r") as f:
+                last_pwr = f.readline().strip()
+        except (FileNotFoundError, IOError) as errmsg:
+            logger.info(f"{errmsg} --> TLP may not have applied a profile yet.")
+            return "balanced"
 
         if last_pwr not in TLP_PROFILE_IDX:
             logger.warning(f"Unknown TLP profile: {last_pwr}")
             return "balanced"
 
         tlp_profile = AVAILABLE_PROFILES[int(last_pwr)]
-        logger.debug(f"Current TLP profile: {tlp_profile}")
+        logger.info(f"Current TLP profile: {tlp_profile}")
 
         return tlp_profile
 
@@ -595,8 +599,8 @@ class ProfilesDaemon(dbus.service.Object):
             is_authorized = result[0]
             return bool(is_authorized)
 
-        except dbus.exceptions.DBusException as e:
-            logger.error(f"PolicyKit authorization check failed: {e}")
+        except dbus.exceptions.DBusException as errmsg:
+            logger.error(f"PolicyKit authorization check failed: {errmsg}")
             return False
 
 
