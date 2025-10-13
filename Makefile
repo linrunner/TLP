@@ -15,7 +15,6 @@ endif
 # Evaluate parameters
 TLP_SBIN    ?= /usr/sbin
 TLP_BIN     ?= /usr/bin
-TLP_LIB		?= /usr/lib
 TLP_TLIB    ?= /usr/share/tlp
 TLP_FLIB    ?= /usr/share/tlp/func.d
 TLP_ULIB    ?= /usr/lib/udev
@@ -45,7 +44,6 @@ TLP_VAR     ?= /var/lib/tlp
 # Catenate DESTDIR to paths
 _SBIN    = $(DESTDIR)$(TLP_SBIN)
 _BIN     = $(DESTDIR)$(TLP_BIN)
-_LIB     = $(DESTDIR)$(TLP_LIB)
 _TLIB    = $(DESTDIR)$(TLP_TLIB)
 _FLIB    = $(DESTDIR)$(TLP_FLIB)
 _ULIB    = $(DESTDIR)$(TLP_ULIB)
@@ -75,7 +73,6 @@ _VAR     = $(DESTDIR)$(TLP_VAR)
 SED = sed \
 	-e "s|@TLPVER@|$(TLPVER)|g" \
 	-e "s|@TLP_SBIN@|$(TLP_SBIN)|g" \
-	-e "s|@TLP_LIB@|$(TLP_LIB)|g" \
 	-e "s|@TLP_TLIB@|$(TLP_TLIB)|g" \
 	-e "s|@TLP_FLIB@|$(TLP_FLIB)|g" \
 	-e "s|@TLP_ULIB@|$(TLP_ULIB)|g" \
@@ -249,7 +246,7 @@ endif
 
 install-pd: all
 	# Package tlp-pd
-	install -D -m 755 tlp-pd $(_LIB)/tlp-pd
+	install -D -m 755 tlp-pd $(_SBIN)/tlp-pd
 	install -D -m 644 tlp-pd.service $(_SYSD)/tlp-pd.service
 	install -D -m 644 tlp-pd.policy $(_POLKIT)/tlp-pd.policy
 	$(foreach BUS_NAME,org.freedesktop.UPower.PowerProfiles net.hadess.PowerProfiles, \
@@ -332,7 +329,7 @@ uninstall-rdw:
 	rm -f $(_FISHCPL)/tlp-rdw.fish
 
 uninstall-pd:
-	rm -f $(_LIB)/tlp-pd
+	rm -f $(_SBIN)/tlp-pd
 	rm -f $(_POLKIT)/tlp-pd.policy
 	rm -f $(_DBCONF)/org.freedesktop.UPower.PowerProfiles.conf
 	rm -f $(_DBSVC)/org.freedesktop.UPower.PowerProfiles.service
