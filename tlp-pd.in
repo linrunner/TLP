@@ -112,13 +112,14 @@ INTROSPECTION_PROPERTIES_XML = """
 
 # --- D-Bus service implementing the power-profiles-daemon API
 class ProfilesDaemon(dbus.service.Object):
-    def __init__(self, bus):
+    def __init__(self, bus, logger):
         dbus.service.Object.__init__(self, bus, OBJECT_PATH)
         # Export on the legacy interface net.hadess.PowerProfiles and legacy path too
         self.SUPPORTS_MULTIPLE_OBJECT_PATHS = True
         dbus.service.Object.add_to_connection(self, bus, OBJECT_PATH_LEGACY)
         # Remember bus for _check_polkit_auth()
         self._bus = bus
+        self._logger = logger
 
         # Internal state
         self._active_profile = self._get_tlp_profile()  # Last profile applied by TLP
@@ -184,7 +185,7 @@ class ProfilesDaemon(dbus.service.Object):
             "sender": sender,
         }
 
-        logger.info(
+        self._logger.info(
             f"Profile hold created: {application_id} holds {profile} (cookie: {cookie}, reason: {reason})"
         )
 
@@ -211,7 +212,7 @@ class ProfilesDaemon(dbus.service.Object):
             )
 
         hold_rel = self._holds.pop(cookie)
-        logger.info(
+        self._logger.info(
             f"Profile hold {hold_rel['profile']} released: {hold_rel['application_id']} (cookie: {cookie})"
         )
 
@@ -234,7 +235,7 @@ class ProfilesDaemon(dbus.service.Object):
                 name="org.freedesktop.DBus.Error.InvalidArgs",
             )
 
-        logger.debug(f"SyncProfile: {profile}")
+        self._logger.debug(f"SyncProfile: {profile}")
 
         # Update active profile
         self._active_profile = profile
@@ -246,7 +247,7 @@ class ProfilesDaemon(dbus.service.Object):
     # Exported on the interface org.freedesktop.UPower.PowerProfiles
     # Emitted when a profile hold is released due to manual profile change
     def ProfileReleased(self, cookie):
-        logger.debug("Signal ProfileReleased")
+        self._logger.debug("Signal ProfileReleased")
         pass
 
     # --- Interface org.freedesktop.DBus.Peer
@@ -281,7 +282,7 @@ class ProfilesDaemon(dbus.service.Object):
         object_path = _sanitize_input(object_path)
         # Note: connection is not a string, do *not* sanitize
 
-        logger.debug(
+        self._logger.debug(
             f"Method Introspect: object_path={object_path}, connection={connection}"
         )
 
@@ -315,7 +316,7 @@ class ProfilesDaemon(dbus.service.Object):
         interface_name = _sanitize_input(interface_name)
         property_name = _sanitize_input(property_name)
 
-        logger.debug(
+        self._logger.debug(
             f"Method Get: interface={interface_name}, property={property_name}"
         )
 
@@ -334,7 +335,7 @@ class ProfilesDaemon(dbus.service.Object):
         # Get all properties
         interface_name = _sanitize_input(interface_name)
 
-        logger.debug(f"Method GetAll: interface={interface_name}")
+        self._logger.debug(f"Method GetAll: interface={interface_name}")
 
         if interface_name not in [INTERFACE_NAME, INTERFACE_NAME_LEGACY]:
             raise dbus.exceptions.DBusException(
@@ -370,7 +371,7 @@ class ProfilesDaemon(dbus.service.Object):
         value = _sanitize_input(value)
         sender = _sanitize_input(sender)
 
-        logger.debug(
+        self._logger.debug(
             f"Method Set: interface={interface_name}, property={property_name}, value={value}"
         )
 
@@ -391,7 +392,7 @@ class ProfilesDaemon(dbus.service.Object):
         interface_name = _sanitize_input(interface_name)
         # Note: changed_properties, invalidated_properties are not strings, do *not* sanitize
 
-        logger.debug(
+        self._logger.debug(
             f"Signal PropertiesChanged: interface={interface_name}, changed_properties={changed_properties}, invalidated_properties={invalidated_properties}"
         )
         pass
@@ -458,7 +459,7 @@ class ProfilesDaemon(dbus.service.Object):
         # Change active profile to the last hold (highest cookie)
         # If there are no holds remaining, revert to the last user selected profile
         if len(self._holds) == 0:
-            logger.info(
+            self._logger.info(
                 f"Changing active profile from hold {self._active_profile} to last user selection {self._selected_profile}"
             )
             self._apply_profile_with_tlp(self._selected_profile)
@@ -469,12 +470,12 @@ class ProfilesDaemon(dbus.service.Object):
             new_appid = self._holds[last_cookie_key]["application_id"]
             old_profile = self._active_profile
             if new_profile != old_profile:
-                logger.info(
+                self._logger.info(
                     f"Changing active profile from hold {old_profile} to {new_profile}: {new_appid} (cookie: {last_cookie_key})"
                 )
                 self._apply_profile_with_tlp(new_profile)
             else:
-                logger.info(
+                self._logger.info(
                     f"Keeping active profile at hold {new_profile}: {new_appid} (cookie: {last_cookie_key})"
                 )
 
@@ -483,7 +484,7 @@ class ProfilesDaemon(dbus.service.Object):
         cookies2release = list(self._holds.keys())
         for cookie in cookies2release:
             hold2release = self._holds.pop(cookie)
-            logger.info(
+            self._logger.info(
                 f"Auto-releasing hold {hold2release['profile']}: {hold2release['application_id']} (cookie: {cookie})"
             )
 
@@ -522,7 +523,7 @@ class ProfilesDaemon(dbus.service.Object):
         # Note: start_new_session=True detaches the process from the parent’s
         #   process group, but the parent is still responsible for reaping the
         #   child. Therefore auto-reap must be used (see __main__)
-        logger.info(f"Run detached TLP to apply profile: {profile}")
+        self._logger.info(f"Run detached TLP to apply profile: {profile}")
         _ = subprocess.Popen(
             ["tlp", f"{profile}"],
             start_new_session=True,
@@ -538,15 +539,15 @@ class ProfilesDaemon(dbus.service.Object):
             with open(TLP_LAST_PROFILE, "r") as f:
                 last_pwr = f.readline().strip()
         except (FileNotFoundError, IOError) as errmsg:
-            logger.info(f"{errmsg} --> TLP may not have applied a profile yet.")
+            self._logger.info(f"{errmsg} --> TLP may not have applied a profile yet.")
             return "balanced"
 
         if last_pwr not in TLP_PROFILE_IDX:
-            logger.warning(f"Unknown TLP profile: {last_pwr}")
+            self._logger.warning(f"Unknown TLP profile: {last_pwr}")
             return "balanced"
 
         tlp_profile = AVAILABLE_PROFILES[int(last_pwr)]
-        logger.info(f"Current TLP profile: {tlp_profile}")
+        self._logger.info(f"Current TLP profile: {tlp_profile}")
 
         return tlp_profile
 
@@ -600,7 +601,7 @@ class ProfilesDaemon(dbus.service.Object):
             return bool(is_authorized)
 
         except dbus.exceptions.DBusException as errmsg:
-            logger.error(f"PolicyKit authorization check failed: {errmsg}")
+            self._logger.error(f"PolicyKit authorization check failed: {errmsg}")
             return False
 
 
@@ -622,7 +623,7 @@ def _sanitize_input(input_str, sani_ch="¿"):
 
 
 # --- MAIN
-if __name__ == "__main__":
+def main():
     # Parse arguments
     parser = argparse.ArgumentParser(description=f"{DAEMON_NAME}")
     _ = parser.add_argument(
@@ -669,7 +670,7 @@ if __name__ == "__main__":
     bus_name_legacy = dbus.service.BusName(BUS_NAME_LEGACY, bus)
 
     # --- Create daemon instance
-    daemon = ProfilesDaemon(bus)
+    daemon = ProfilesDaemon(bus, logger)
     logger.info(f"{DAEMON_NAME} started.")
     logger.info(f"Interfaces: {BUS_NAME}, {BUS_NAME_LEGACY}")
     logger.info(f"Object path: {OBJECT_PATH}")
@@ -682,3 +683,7 @@ if __name__ == "__main__":
         mainloop.run()
     except KeyboardInterrupt:
         logger.info(f"{DAEMON_NAME} shutting down ...")
+
+
+if __name__ == "__main__":
+    main()
