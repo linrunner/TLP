@@ -666,8 +666,8 @@ def main():
     # Claim well-known names on the bus
     # Note: the name is released when the BusName object becomes unreferenced
     #   -> ignore "never used" linter warning
-    bus_name = dbus.service.BusName(BUS_NAME, bus)
-    bus_name_legacy = dbus.service.BusName(BUS_NAME_LEGACY, bus)
+    bus_name = dbus.service.BusName(BUS_NAME, bus)  # noqa: F841
+    bus_name_legacy = dbus.service.BusName(BUS_NAME_LEGACY, bus)  # noqa: F841
 
     # --- Create daemon instance
     daemon = ProfilesDaemon(bus, logger)
