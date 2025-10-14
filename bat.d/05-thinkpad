@@ -1005,6 +1005,27 @@ batdrv_discharge () {
                 cecho "Done: battery $_bat_str discharge complete." "success" 1>&2
                 ;;
         esac
+
+        wt="$X_DISCHG_TRACE_FOLLOWUP"
+        if is_uint "$wt"; then
+            # diagnostic: trace battery status after force-discharge stop
+            printf "Additional battery trace data is being collected for %d seconds, hold on " "$wt" 1>&2
+            while [ "$wt" -gt 0 ]; do
+                # battery readings to be returned to caller as retvals (and for trace output)
+                _bat_en="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/energy_now")"' / 1000.0 );')"
+                _bat_soc="$(batdrv_calc_soc)"
+                _bat_pwr="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/power_now")"' / 1000.0 );')"
+                _bat_volt="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/voltage_now")"' / 1000.0 );')"
+                _bat_st="$(read_sysf "$_bd_read/status")"
+                _bat_fd="$(batdrv_read_force_discharge 0)"
+                echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.followup($_bat_str): fd=$_bat_fd; st=$_bat_st; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; wt=$wt"
+                printf "." 1>&2
+                sleep 0.5
+                wt=$((wt - 1))
+            done
+            printf " ok.\n" 1>&2
+        fi
+
     else
         # force-discharge init malfunction
         _bat_dischg_rc=8
