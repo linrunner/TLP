@@ -4,9 +4,16 @@ TLP is a feature-rich command line utility for Linux, saving laptop battery powe
 without the need to delve deeper into technical details.
 
 TLP’s default settings are already optimized for battery life, so you may just
-install and forget it.
+install and forget it. Nevertheless TLP is highly customizable to meet your specific
+requirements.
 
-Nevertheless TLP is highly customizable to meet your specific requirements.
+Starting with version 1.9 (which hasn't been released yet), TLP will be supplemented
+by the TLP profile daemon (TLP-PD).
+It provides the D-Bus interface, which lets desktop environments show a
+power profile switch with three options: *performance*, *balanced* and *power-saver*.
+
+Together with TLP as the backend for applying these profiles, TLP-PD **replaces the
+power-profiles-daemon**.
 
 Documentation
 -------------
