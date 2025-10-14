@@ -13,6 +13,7 @@ import dbus.mainloop.glib
 from gi.repository import GLib
 
 import argparse
+import inspect
 import logging
 import logging.handlers
 import os
@@ -160,17 +161,18 @@ class ProfilesDaemon(dbus.service.Object):
         reason = _sanitize_input(reason)
         application_id = _sanitize_input(application_id)
         sender = _sanitize_input(sender)
+        _method = _method_name()
 
         if profile not in AVAILABLE_PROFILES:
             raise dbus.exceptions.DBusException(
-                f"Invalid profile: {profile}",
+                f"{_method}(): Invalid profile '{profile}'",
                 name="org.freedesktop.DBus.Error.InvalidArgs",
             )
 
         # Check authorization first
         if not self._check_polkit_auth(sender, f"{BUS_NAME}.hold-profile"):
             raise dbus.exceptions.DBusException(
-                "Not authorized to hold power profile",
+                f"{_method}(): Not authorized to hold power profile",
                 name="org.freedesktop.PolicyKit1.Error.NotAuthorized",
             )
 
@@ -186,7 +188,7 @@ class ProfilesDaemon(dbus.service.Object):
         }
 
         self._logger.info(
-            f"Profile hold created: {application_id} holds {profile} (cookie: {cookie}, reason: {reason})"
+            f"{_method}(profile='{profile}', reason='{reason}', appid='{application_id}'): cookie: '{cookie}'"
         )
 
         # Update active profile based on holds
@@ -205,15 +207,17 @@ class ProfilesDaemon(dbus.service.Object):
         # - either the previous held profile
         # - or the last profile selected by the user
         cookie = int(cookie)
+        _method = _method_name()
+
         if cookie not in self._holds:
             raise dbus.exceptions.DBusException(
-                f"Invalid cookie: {cookie}",
+                f"{_method}(): Invalid cookie '{cookie}'",
                 name="org.freedesktop.DBus.Error.InvalidArgs",
             )
 
         hold_rel = self._holds.pop(cookie)
         self._logger.info(
-            f"Profile hold {hold_rel['profile']} released: {hold_rel['application_id']} (cookie: {cookie})"
+            f"{_method}(cookie='{cookie}'): hold: '{hold_rel['profile']}', appid: '{hold_rel['application_id']}'"
         )
 
         # Update active profile based on remaining holds
@@ -228,14 +232,14 @@ class ProfilesDaemon(dbus.service.Object):
     def SyncProfile(self, profile):
         # Callback for tlp after profile changes: update internal state only
         profile = _sanitize_input(profile)
+        _method = _method_name()
+        self._logger.debug(f"{_method}(profile='{profile}')")
 
         if profile not in AVAILABLE_PROFILES:
             raise dbus.exceptions.DBusException(
-                f"Invalid profile: {profile}",
+                f"{_method}(): Invalid profile '{profile}'",
                 name="org.freedesktop.DBus.Error.InvalidArgs",
             )
-
-        self._logger.debug(f"SyncProfile: {profile}")
 
         # Update active profile
         self._active_profile = profile
@@ -247,7 +251,8 @@ class ProfilesDaemon(dbus.service.Object):
     # Exported on the interface org.freedesktop.UPower.PowerProfiles
     # Emitted when a profile hold is released due to manual profile change
     def ProfileReleased(self, cookie):
-        self._logger.debug("Signal ProfileReleased")
+        _method = _method_name()
+        self._logger.debug(f"Signal {_method}()")
         pass
 
     # --- Interface org.freedesktop.DBus.Peer
@@ -281,9 +286,9 @@ class ProfilesDaemon(dbus.service.Object):
         # Return introspection XML describing this service
         object_path = _sanitize_input(object_path)
         # Note: connection is not a string, do *not* sanitize
-
+        _method = _method_name()
         self._logger.debug(
-            f"Method Introspect: object_path={object_path}, connection={connection}"
+            f"{_method}(object_path='{object_path}', connection='{connection}')"
         )
 
         # Get 'dbus' introspection XML in a string
@@ -293,7 +298,7 @@ class ProfilesDaemon(dbus.service.Object):
             intro_xml = intro_xml.replace(INTERFACE_NAME, INTERFACE_NAME_LEGACY)
         elif object_path != OBJECT_PATH:
             raise dbus.exceptions.DBusException(
-                f"(No such object path '{object_path}'",
+                f"{_method}(): No such object path '{object_path}'",
                 name="org.freedesktop.DBus.Error.UnknownObject",
             )
         # Convert to list/array and insert properties
@@ -315,14 +320,14 @@ class ProfilesDaemon(dbus.service.Object):
         # Get a property value
         interface_name = _sanitize_input(interface_name)
         property_name = _sanitize_input(property_name)
-
+        _method = _method_name()
         self._logger.debug(
-            f"Method Get: interface={interface_name}, property={property_name}"
+            f"{_method}(interface='{interface_name}', property='{property_name})'"
         )
 
         if interface_name not in [INTERFACE_NAME, INTERFACE_NAME_LEGACY]:
             raise dbus.exceptions.DBusException(
-                f"Unknown interface: {interface_name}",
+                f"{_method}(): Unknown interface '{interface_name}'",
                 name="org.freedesktop.DBus.Error.UnknownInterface",
             )
 
@@ -334,12 +339,12 @@ class ProfilesDaemon(dbus.service.Object):
     def GetAll(self, interface_name):
         # Get all properties
         interface_name = _sanitize_input(interface_name)
-
-        self._logger.debug(f"Method GetAll: interface={interface_name}")
+        _method = _method_name()
+        self._logger.debug(f"{_method}(interface='{interface_name}')")
 
         if interface_name not in [INTERFACE_NAME, INTERFACE_NAME_LEGACY]:
             raise dbus.exceptions.DBusException(
-                f"Unknown interface: {interface_name}",
+                f"{_method}(): Unknown interface '{interface_name}'",
                 name="org.freedesktop.DBus.Error.UnknownInterface",
             )
 
@@ -370,14 +375,14 @@ class ProfilesDaemon(dbus.service.Object):
         property_name = _sanitize_input(property_name)
         value = _sanitize_input(value)
         sender = _sanitize_input(sender)
-
+        _method = _method_name()
         self._logger.debug(
-            f"Method Set: interface={interface_name}, property={property_name}, value={value}"
+            f"{_method}(interface='{interface_name}', property='{property_name}', value='{value}')"
         )
 
         if interface_name not in [INTERFACE_NAME, INTERFACE_NAME_LEGACY]:
             raise dbus.exceptions.DBusException(
-                f"Unknown interface: {interface_name}",
+                f"{_method}(interface='{interface_name}')",
                 name="org.freedesktop.DBus.Error.UnknownInterface",
             )
 
@@ -391,9 +396,9 @@ class ProfilesDaemon(dbus.service.Object):
     ):
         interface_name = _sanitize_input(interface_name)
         # Note: changed_properties, invalidated_properties are not strings, do *not* sanitize
-
+        _method = f"Signal {_method_name()}"
         self._logger.debug(
-            f"Signal PropertiesChanged: interface={interface_name}, changed_properties={changed_properties}, invalidated_properties={invalidated_properties}"
+            f"{_method}(interface='{interface_name}', changed_properties='{changed_properties}', invalidated_properties='{invalidated_properties}')"
         )
         pass
 
@@ -419,18 +424,21 @@ class ProfilesDaemon(dbus.service.Object):
         elif property_name == "BatteryAware":
             return self._battery_aware
         else:
+            _method = _method_name()
             raise dbus.exceptions.DBusException(
-                f"Unknown property: {property_name}",
+                f"{_method}(): Unknown property '{property_name}'",
                 name="org.freedesktop.DBus.Error.UnknownProperty",
             )
 
     def _set_property(self, property_name, value, sender):
         # Internal method to set property values
+        _method = _method_name()
+
         if property_name == "ActiveProfile":
             # Check authorization first
             if not self._check_polkit_auth(sender, f"{BUS_NAME}.switch-profile"):
                 raise dbus.exceptions.DBusException(
-                    "Not authorized to switch power profile",
+                    f"{_method}(): Not authorized to switch power profile",
                     name="org.freedesktop.PolicyKit1.Error.NotAuthorized",
                 )
 
@@ -446,7 +454,7 @@ class ProfilesDaemon(dbus.service.Object):
                 self._battery_aware = False
         else:
             raise dbus.exceptions.DBusException(
-                f"Property {property_name} is readonly",
+                f"{_method}(): Property '{property_name}' is readonly",
                 name="org.freedesktop.DBus.Error.PropertyReadOnly",
             )
             return
@@ -460,7 +468,7 @@ class ProfilesDaemon(dbus.service.Object):
         # If there are no holds remaining, revert to the last user selected profile
         if len(self._holds) == 0:
             self._logger.info(
-                f"Changing active profile from hold {self._active_profile} to last user selection {self._selected_profile}"
+                f"Changing active profile: from hold '{self._active_profile}' to last user selection '{self._selected_profile}'"
             )
             self._apply_profile_with_tlp(self._selected_profile)
         else:
@@ -471,21 +479,24 @@ class ProfilesDaemon(dbus.service.Object):
             old_profile = self._active_profile
             if new_profile != old_profile:
                 self._logger.info(
-                    f"Changing active profile from hold {old_profile} to {new_profile}: {new_appid} (cookie: {last_cookie_key})"
+                    f"Changing active profile: from hold '{old_profile}' to '{new_profile}' (appid: '{new_appid}', cookie: '{last_cookie_key})'"
                 )
                 self._apply_profile_with_tlp(new_profile)
             else:
                 self._logger.info(
-                    f"Keeping active profile at hold {new_profile}: {new_appid} (cookie: {last_cookie_key})"
+                    f"Keeping active profile: hold '{new_profile}' (appid: '{new_appid}', cookie: '{last_cookie_key}')"
                 )
 
     def _drop_all_holds(self):
         # Release all holds and notify holders
+        _method = _method_name()
+        self._logger.debug(f"{_method}()")
+
         cookies2release = list(self._holds.keys())
         for cookie in cookies2release:
             hold2release = self._holds.pop(cookie)
             self._logger.info(
-                f"Auto-releasing hold {hold2release['profile']}: {hold2release['application_id']} (cookie: {cookie})"
+                f"Auto-releasing hold: profile '{hold2release['profile']}' (appid: '{hold2release['application_id']}', cookie: '{cookie})'"
             )
 
             # Emit ProfileReleased signal to the sender
@@ -510,8 +521,9 @@ class ProfilesDaemon(dbus.service.Object):
     def _apply_profile_with_tlp(self, profile):
         # Call tlp to apply the new profile
         if profile not in AVAILABLE_PROFILES:
+            _method = _method_name()
             raise dbus.exceptions.DBusException(
-                f"Invalid profile: {profile}",
+                f"{_method}(): Invalid profile '{profile}'",
                 name="org.freedesktop.DBus.Error.InvalidArgs",
             )
 
@@ -523,7 +535,7 @@ class ProfilesDaemon(dbus.service.Object):
         # Note: start_new_session=True detaches the process from the parent’s
         #   process group, but the parent is still responsible for reaping the
         #   child. Therefore auto-reap must be used (see __main__)
-        self._logger.info(f"Run detached TLP to apply profile: {profile}")
+        self._logger.info(f"Run detached TLP to apply profile '{profile}'")
         _ = subprocess.Popen(
             ["tlp", f"{profile}"],
             start_new_session=True,
@@ -535,19 +547,23 @@ class ProfilesDaemon(dbus.service.Object):
 
     def _get_tlp_profile(self):
         # Read TLP statefile and translate into the last profile applied
+        _method = _method_name()
+
         try:
             with open(TLP_LAST_PROFILE, "r") as f:
                 last_pwr = f.readline().strip()
         except (FileNotFoundError, IOError) as errmsg:
-            self._logger.info(f"{errmsg} --> TLP may not have applied a profile yet.")
+            self._logger.info(
+                f"{_method}(): {errmsg} --> TLP may not have applied a profile yet."
+            )
             return "balanced"
 
         if last_pwr not in TLP_PROFILE_IDX:
-            self._logger.warning(f"Unknown TLP profile: {last_pwr}")
+            self._logger.warning(f"{_method}(): Unknown TLP profile '{last_pwr}'")
             return "balanced"
 
         tlp_profile = AVAILABLE_PROFILES[int(last_pwr)]
-        self._logger.info(f"Current TLP profile: {tlp_profile}")
+        self._logger.info(f"Current TLP profile is '{tlp_profile}'")
 
         return tlp_profile
 
@@ -601,8 +617,17 @@ class ProfilesDaemon(dbus.service.Object):
             return bool(is_authorized)
 
         except dbus.exceptions.DBusException as errmsg:
-            self._logger.error(f"PolicyKit authorization check failed: {errmsg}")
+            _method = _method_name()
+            self._logger.error(
+                f"{_method}(): PolicyKit authorization check failed: {errmsg}"
+            )
             return False
+
+
+# --- Log helpers
+def _method_name():
+    # Return method name of caller
+    return inspect.currentframe().f_back.f_code.co_name  # type: ignore[reportOptionalMemberAccess]
 
 
 # --- Input sanitation
@@ -634,7 +659,7 @@ def main():
     # Check root privileges
     if os.geteuid() != 0:
         print(
-            f"ERROR: root privileges are required to run the {DAEMON_NAME}.",
+            f"Error: root privileges are required to run the {DAEMON_NAME}.",
             file=sys.stderr,
         )
         sys.exit(1)
