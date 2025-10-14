@@ -22,8 +22,12 @@
     - RADEON_POWER_PROFILE_ON_AC/BAT removed (deprecated since 1.8.0)
     - tlp-stat -g -v: show power_state, pp_dpm_*clk of AMD GPUs
     Power Profiles:
-    - Introduce a third configuration profile for maximum power savings.
-      The following are now available:
+    - tlp-pd: TLP Profiles Daemon is a new addition to TLP. It implements
+      the D-Bus interface, which lets desktop environments show a
+      power profile switch. Together with TLP as the backend for applying
+      these profiles, it replaces power-profiles-daemon.
+    - Introduce a third configuration profile for maximum power savings
+      and make tlp-pd possible. The following are now available:
       - performance: parameters ending in _AC are used when AC power
         is connected or when the new command 'tlp performance' is run.
       - balanced: parameters ending in _BAT are used when operating
