@@ -39,6 +39,7 @@ readonly TLPPD=tlp-pd
 readonly TLPPD_BUS_NAME="org.freedesktop.UPower.PowerProfiles"
 readonly TLPPD_INTERFACE_NAME="$TLPPD_BUS_NAME"
 readonly TLPPD_OBJECT_PATH="/org/freedesktop/UPower/PowerProfiles"
+readonly PROPERTY_INTERFACE_NAME="org.freedesktop.DBus.Properties"
 
 readonly LOCKFILE=$RUNDIR/lock
 readonly LOCKTIMEOUT=2
@@ -57,7 +58,7 @@ readonly RE_PS_IGNORE='sbs-charger|qcom-battmgr-ac|hidpp_battery|hid-|controller
 
 readonly DEBUG_TAGS_ALL="arg bat cfg disk lock nm path pm ps rf run sysfs udev usb"
 
-readonly TLP_SERVICES="tlp.service"
+readonly TLP_SERVICE="tlp.service"
 readonly TLPPD_SERVICE="tlp-pd.service"
 readonly PPD_SERVICE="power-profiles-daemon.service"
 readonly RFKILL_SERVICES="systemd-rfkill.service systemd-rfkill.socket"
@@ -420,15 +421,24 @@ check_services_activation_status () {
     local rc=0
 
     if check_systemd; then
-        cnt=0
-        for su in $TLP_SERVICES; do
-            if ! check_service_state "$su" enabled > /dev/null 2>&1 ; then
-                echo_message "Error: TLP's power saving will not apply on boot because $su is not enabled "`
-                            `"--> Invoke 'systemctl enable $su' to ensure the full functionality of TLP." "err"
-                echo_message ""
-                rc=1
+        if ! check_service_state "$TLP_SERVICE" enabled > /dev/null 2>&1; then
+            echo_message "Error: TLP's power saving will not apply on boot because $TLP_SERVICE is not enabled "`
+                        `"--> Invoke 'systemctl enable $TLP_SERVICE' to ensure the full functionality of TLP." "err"
+            echo_message ""
+            rc=1
+        fi
+        if check_tlp_pd_installed && ! check_service_state "$TLPPD_SERVICE" enabled > /dev/null 2>&1; then
+            if ! check_service_state "$TLPPD_SERVICE" active; then
+                echo_message "Error: You can't switch power profiles on the desktop because $TLPPD_SERVICE is not enabled "`
+                            `"--> Invoke 'systemctl enable --now $TLPPD_SERVICE' to ensure the full functionality of TLP." "err"
+            else
+                echo_message "Error: After the next restart, you won't be able to switch power profiles on the desktop because "`
+                            `"$TLPPD_SERVICE is not enabled --> Invoke 'systemctl enable $TLPPD_SERVICE' to ensure the "`
+                            `"full functionality of TLP." "err"
             fi
-        done
+            echo_message ""
+            rc=1
+        fi
         for su in $RFKILL_SERVICES; do
             if ! check_service_state "$su" masked 2> /dev/null; then
                 if [ "$RESTORE_DEVICE_STATE_ON_STARTUP" = "1" ]; then
