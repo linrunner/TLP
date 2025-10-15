@@ -134,7 +134,7 @@ class ProfilesDaemon(dbus.service.Object):
         self._performance_degraded = ""
         self._actions = []
         self._actions_info = []
-        self._version = "TLP @TLPVER@"
+        self._version = "tlp-pd @TLPVER@"
         self._battery_aware = False
         self._cookie_counter = 0
         self._holds = {}  # cookie -> {profile, reason, application_id, sender}
