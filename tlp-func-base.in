@@ -1249,7 +1249,7 @@ notify_profile_daemon () {
 
     if [ -n "$1" ]; then
        if cmd_exists "$BUSCTL"; then
-           busctl -q call $TLPPD_BUS_NAME $TLPPD_OBJECT_PATH $TLPPD_INTERFACE_NAME \
+           $BUSCTL -q call $TLPPD_BUS_NAME $TLPPD_OBJECT_PATH $TLPPD_INTERFACE_NAME \
                 SyncProfile s "$1" 2> /dev/null
            echo_debug "ps" "notify_profile_daemon.busctl.call.SyncProfile($1): rc=$?"
        else
