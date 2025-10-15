@@ -8,7 +8,7 @@ install and forget it. Nevertheless TLP is highly customizable to meet your spec
 requirements.
 
 Starting with version 1.9 (which hasn't been released yet), TLP will be supplemented
-by the TLP profile daemon (TLP-PD).
+by the *TLP profiles daemon* (TLP-PD).
 It provides the D-Bus interface, which lets desktop environments show a
 power profile switch with three options: *performance*, *balanced* and *power-saver*.
 
