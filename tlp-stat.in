@@ -17,6 +17,7 @@ readonly TLPUSB=@TLP_TLIB@/tlp-usblist
 readonly TLPPCI=@TLP_TLIB@/tlp-pcilist
 
 readonly DMIDECODE=dmidecode
+readonly GDBUS=gdbus
 readonly JOURNALCTL=journalctl
 readonly LSPCI=lspci
 readonly LSUSB=lsusb
@@ -55,6 +56,7 @@ show_pcie=0
 show_pev=0
 show_proc=0
 show_psup=0
+show_pddiag=0
 show_rfkill=0
 show_system=0
 show_temp=0
@@ -168,6 +170,12 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 needs_root_priv=1
                 ;;
 
+            "--pd-diag")
+                show_all=0
+                show_pddiag=1
+                : ${needs_root_priv:=0}
+                ;;
+
             "--psup")
                 show_all=0
                 show_psup=1
@@ -215,7 +223,8 @@ parse_args () { # parse command-line -- $@: arguments to parse
                 echo "                  -w | --warn      | -v | --verbose   |" 1>&2
                 echo "                     | --version   |    | --cdiff     |" 1>&2
                 echo "                  -P | --pev       |    | --psup      |" 1>&2
-                echo "                  -T | --trace     |      --trace-nm  |" 1>&2
+                echo "                     | --pd-diag   |    |             |" 1>&2
+                echo "                  -T | --trace     |    | --trace-nm  |" 1>&2
                 echo "                       --udev                           ]" 1>&2
                 do_exit 3
                 ;;
@@ -1093,6 +1102,43 @@ if [ "$show_psup" = "1" ]; then
     printf "\n+++ udev diagnostic\n"
     check_udev_rule_ps
 fi # show_psup
+
+# --- show tlp-pd diagnostic
+ if [ "$show_pddiag" = "1" ]; then
+    printf "+++ tlp-pd Diagnostic\n"
+    if check_tlp_pd_installed; then
+        echo_message "tlp-pd.service is installed." "success"
+        if check_service_state "$TLPPD_SERVICE" enabled; then
+            echo_message "tlp-pd.service is enabled." "success"
+        else
+            echo_message "tlp-pd.service is disabled." "err"
+        fi
+        if check_service_state "$TLPPD_SERVICE" active; then
+            echo_message "tlp-pd.service is running." "success"
+        else
+            echo_message "tlp-pd.service is not running." "err"
+        fi
+    else
+         echo_message "tlp-pd.service is not installed." "warning"
+    fi
+
+    if cmd_exists "$BUSCTL"; then
+        pd_version="$($BUSCTL call "$TLPPD_BUS_NAME" "$TLPPD_OBJECT_PATH" "$PROPERTY_INTERFACE_NAME" \
+            "Get" "ss" "$TLPPD_INTERFACE_NAME" "Version" 2> /dev/null | sed 's/v s "\(.*\)"/\1/')"
+        printf "D-Bus Version: %s\n" "$pd_version"
+        if [ "${pd_version#tlp-pd}" = "$pd_version" ]; then
+            echo_message "Error: a foreign Power Profile D-Bus service is running, "`
+                        `"possibly power-profiles-daemon or tuned-ppd." "warning"
+        else
+            if cmd_exists "$GDBUS"; then
+                printf "D-Bus Properties:\n"
+                $GDBUS call -y -d "$TLPPD_BUS_NAME" -o "$TLPPD_OBJECT_PATH" -m  "${PROPERTY_INTERFACE_NAME}.GetAll" \
+                    "$TLPPD_INTERFACE_NAME"
+            fi
+        fi
+    fi
+    printf "\n"
+ fi # show_pddiag
 
 # --- show udev diagnostic
 if [ "$show_udev" = "1" ]; then
