@@ -123,6 +123,7 @@
 # Default: <none>
 #CPU_DRIVER_OPMODE_ON_AC=active
 #CPU_DRIVER_OPMODE_ON_BAT=active
+#CPU_DRIVER_OPMODE_ON_SAV=active
 
 # Select a CPU frequency scaling governor.
 # Intel CPU with intel_pstate driver or
@@ -140,8 +141,9 @@
 #   changing the governor.
 # Default: <none>
 
-#CPU_SCALING_GOVERNOR_ON_AC=powersave
+#CPU_SCALING_GOVERNOR_ON_AC=performance
 #CPU_SCALING_GOVERNOR_ON_BAT=powersave
+#CPU_SCALING_GOVERNOR_ON_SAV=powersave
 
 # Set the min/max frequency available for the scaling governor.
 # Possible values depend on your CPU. For available frequencies see
@@ -156,6 +158,8 @@
 #CPU_SCALING_MAX_FREQ_ON_AC=0
 #CPU_SCALING_MIN_FREQ_ON_BAT=0
 #CPU_SCALING_MAX_FREQ_ON_BAT=0
+#CPU_SCALING_MIN_FREQ_ON_SAV=0
+#CPU_SCALING_MAX_FREQ_ON_SAV=0
 
 # Set CPU energy/performance policies EPP and EPB:
 #   performance, balance_performance, default, balance_power, power.
@@ -183,7 +187,9 @@
 #CPU_MIN_PERF_ON_AC=0
 #CPU_MAX_PERF_ON_AC=100
 #CPU_MIN_PERF_ON_BAT=0
-#CPU_MAX_PERF_ON_BAT=30
+#CPU_MAX_PERF_ON_BAT=70
+#CPU_MIN_PERF_ON_SAV=0
+#CPU_MAX_PERF_ON_SAV=30
 
 # Set the CPU "turbo boost" (Intel) or "core performance boost" (AMD) feature:
 #   0=disable, 1=allow.
@@ -205,7 +211,8 @@
 # Default: <none>
 
 #CPU_HWP_DYN_BOOST_ON_AC=1
-#CPU_HWP_DYN_BOOST_ON_BAT=0
+#CPU_HWP_DYN_BOOST_ON_BAT=1
+#CPU_HWP_DYN_BOOST_ON_SAV=0
 
 # Kernel NMI Watchdog:
 #   0=disable (default, saves power), 1=enable (for kernel debugging only).

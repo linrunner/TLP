@@ -54,9 +54,14 @@ set_cpu_driver_opmode () {
             cfg="CPU_DRIVER_OPMODE_ON_AC"
             ;;
 
-        "$PP_BAL"|"$PP_SAV")
+        "$PP_BAL")
             opmode="${CPU_DRIVER_OPMODE_ON_BAT:-}"
             cfg="CPU_DRIVER_OPMODE_ON_BAT"
+            ;;
+
+        "$PP_SAV")
+            opmode="${CPU_DRIVER_OPMODE_ON_SAV:-$CPU_DRIVER_OPMODE_ON_BAT}"
+            cfg="CPU_DRIVER_OPMODE_ON_SAV"
             ;;
     esac
 
@@ -102,9 +107,19 @@ set_cpu_scaling_governor () {
             cfg="CPU_SCALING_GOVERNOR_ON_AC"
             ;;
 
-        "$PP_BAL"|"$PP_SAV")
+        "$PP_BAL")
             gov="${CPU_SCALING_GOVERNOR_ON_BAT:-}"
             cfg="CPU_SCALING_GOVERNOR_ON_BAT"
+            ;;
+
+        "$PP_SAV")
+            if [ -n "$CPU_SCALING_GOVERNOR_ON_SAV" ]; then
+                gov="${CPU_SCALING_GOVERNOR_ON_SAV}"
+                cfg="CPU_SCALING_GOVERNOR_ON_SAV"
+            else
+                gov="${CPU_SCALING_GOVERNOR_ON_BAT}"
+                cfg="CPU_SCALING_GOVERNOR_ON_BAT"
+            fi
             ;;
     esac
 
@@ -142,9 +157,14 @@ set_cpu_scaling_min_max_freq () {
             maxfreq="${CPU_SCALING_MAX_FREQ_ON_AC:-}"
             ;;
 
-        "$PP_BAL"|"$PP_SAV")
+        "$PP_BAL")
             minfreq="${CPU_SCALING_MIN_FREQ_ON_BAT:-}"
             maxfreq="${CPU_SCALING_MAX_FREQ_ON_BAT:-}"
+            ;;
+
+        "$PP_SAV")
+            minfreq="${CPU_SCALING_MIN_FREQ_ON_SAV:-$CPU_SCALING_MIN_FREQ_ON_BAT}"
+            maxfreq="${CPU_SCALING_MAX_FREQ_ON_SAV:-$CPU_SCALING_MAX_FREQ_ON_BAT}"
             ;;
     esac
 
@@ -253,7 +273,7 @@ set_cpu_perf_policy () {
 
         # don't apply EPP when power-profiles-daemon is running
         if check_ppd_active ; then
-            echo_message "Warning: CPU_ENERGY_PERF_POLICY_ON_AC/BAT is not set because power-profiles-daemon is running."
+            echo_message "Warning: CPU_ENERGY_PERF_POLICY_ON_AC/BAT/SAV is not set because power-profiles-daemon is running."
             echo_debug "pm" "set_cpu_perf_policy($1).epp.nop_ppd_active"
             return 0
         fi
@@ -341,9 +361,14 @@ set_intel_cpu_perf_pct () {
             max="${CPU_MAX_PERF_ON_AC:-}"
             ;;
 
-        "$PP_BAL"|"$PP_SAV")
+        "$PP_BAL")
             min="${CPU_MIN_PERF_ON_BAT:-}"
             max="${CPU_MAX_PERF_ON_BAT:-}"
+            ;;
+
+        "$PP_SAV")
+            min="${CPU_MIN_PERF_ON_SAV:-}"
+            max="${CPU_MAX_PERF_ON_SAV:-}"
             ;;
     esac
 
@@ -379,8 +404,9 @@ set_cpu_boost_all () { # $1: PP_PRF, PP_BAL, PP_SAV
     local val
 
     case "$1" in
-        "$PP_PRF")           val="${CPU_BOOST_ON_AC:-}" ;;
-        "$PP_BAL"|"$PP_SAV") val="${CPU_BOOST_ON_BAT:-}" ;;
+        "$PP_PRF") val="${CPU_BOOST_ON_AC:-}" ;;
+        "$PP_BAL") val="${CPU_BOOST_ON_BAT:-}" ;;
+        "$PP_SAV") val="${CPU_BOOST_ON_SAV:-$CPU_BOOST_ON_BAT}" ;;
     esac
 
     if [ -z "$val" ]; then
@@ -424,8 +450,9 @@ set_cpu_dyn_boost () {
     local val
 
     case "$1" in
-        "$PP_PRF")           val="${CPU_HWP_DYN_BOOST_ON_AC:-}" ;;
-        "$PP_BAL"|"$PP_SAV") val="${CPU_HWP_DYN_BOOST_ON_BAT:-}" ;;
+        "$PP_PRF") val="${CPU_HWP_DYN_BOOST_ON_AC:-}" ;;
+        "$PP_BAL") val="${CPU_HWP_DYN_BOOST_ON_BAT:-}" ;;
+        "$PP_SAV") val="${CPU_HWP_DYN_BOOST_ON_SAV:-$CPU_HWP_DYN_BOOST_ON_BAT}" ;;
     esac
 
     if [ -z "$val" ]; then
