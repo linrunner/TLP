@@ -39,6 +39,13 @@
       by 'ac' and 'bat' for ages
     Processor:
     - PLATFORM_PROFILE_ON_AC/BAT/SAV: activated by default
+    - New parameters for the power-saver profile:
+      - CPU_DRIVER_OPMODE_ON_SAV
+      - CPU_SCALING_GOVERNOR_ON_SAV
+      - CPU_SCALING_MIN/MAX_FREQ_ON_SAV
+      - CPU_MIN/MAX_PERF_ON_SAV
+      - CPU_BOOST_ON_SAV
+      - CPU_HWP_DYN_BOOST_ON_SAV
     - tlp-stat -p: add to display per core:
       - amd_pstate_lowest_nonlinear_freq, amd_pstate_max_freq
       - (-v) scaling_cur_freq (current core frequency)
