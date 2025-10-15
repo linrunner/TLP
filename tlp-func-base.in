@@ -34,6 +34,7 @@ readonly TPACPIBAT=@TPACPIBAT@
 readonly UDEVADM=udevadm
 
 readonly TLPRDW=tlp-rdw
+readonly TLPPD=tlp-pd
 
 readonly TLPPD_BUS_NAME="org.freedesktop.UPower.PowerProfiles"
 readonly TLPPD_INTERFACE_NAME="$TLPPD_BUS_NAME"
@@ -57,6 +58,7 @@ readonly RE_PS_IGNORE='sbs-charger|qcom-battmgr-ac|hidpp_battery|hid-|controller
 readonly DEBUG_TAGS_ALL="arg bat cfg disk lock nm path pm ps rf run sysfs udev usb"
 
 readonly TLP_SERVICES="tlp.service"
+readonly TLPPD_SERVICE="tlp-pd.service"
 readonly PPD_SERVICE="power-profiles-daemon.service"
 readonly RFKILL_SERVICES="systemd-rfkill.service systemd-rfkill.socket"
 
@@ -379,6 +381,10 @@ check_tlp_enabled () {
 
 check_rdw_installed () {
     cmd_exists "$TLPRDW"
+}
+
+check_tlp_pd_installed () {
+    cmd_exists "$TLPPD"
 }
 
 check_systemd () {

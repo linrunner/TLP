@@ -371,6 +371,24 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         fi
     fi
 
+    # --- tlp-pd status
+    if check_tlp_pd_installed; then
+        tlp_pd_state="installed"
+        if check_service_state "$TLPPD_SERVICE" enabled; then
+            tlp_pd_state="enabled"
+        else
+            tlp_pd_state="disabled"
+        fi
+        if check_service_state "$TLPPD_SERVICE" active; then
+            tlp_pd_state="${tlp_pd_state}, running"
+        else
+            tlp_pd_state="${tlp_pd_state}, not running"
+        fi
+        printf "tlp-pd.service = %s\n" "$tlp_pd_state"
+    else
+        printf "tlp-pd.service = not installed\n"
+    fi
+
     # --- last invocation time
     printf "Last run       = %s\n" "$(print_file_modtime_and_age "$PWRRUNFILE")"
 
