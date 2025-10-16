@@ -4,8 +4,9 @@ tlp (1.9.0~alpha.2-1) unstable; urgency=medium
 
   [ Thomas Koch ]
   * New sub-package tlp-pd
+  * Update lintian overrides
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 13 Oct 2025 10:21:42 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 16 Oct 2025 14:04:20 +0200
 
 tlp (1.8.0-1) unstable; urgency=medium
 
