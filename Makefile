@@ -122,6 +122,7 @@ MANFILESRDW8 = \
 	tlp-rdw.8
 
 MANFILESPD8 = \
+	tlp-pd.8 \
 	tlp-pd.service.8
 
 SHFILES = \
