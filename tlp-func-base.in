@@ -1283,12 +1283,12 @@ notify_profile_daemon () {
     if [ -n "$1" ]; then
        if cmd_exists "$GDBUS"; then
            $GDBUS call -y -d $TLPPD_BUS_NAME -o $TLPPD_OBJECT_PATH -m "${TLPPD_INTERFACE_NAME}.SyncProfile" "$1" 2> /dev/null 1>&2
-           echo_debug "ps" "notify_profile_daemon.gdbus.call.SyncProfile($1): rc=$?"
+           echo_debug "run" "notify_profile_daemon.gdbus.call.SyncProfile($1): rc=$?"
        else
-           echo_debug "ps" "notify_profile_daemon($1).gdbus_missing"
+           echo_debug "run" "notify_profile_daemon($1).gdbus_missing"
        fi
     else
-        echo_debug "ps" "notify_profile_daemon($1).no_profile"
+        echo_debug "run" "notify_profile_daemon($1).no_profile"
     fi
 }
 
