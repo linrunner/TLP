@@ -382,19 +382,27 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # --- tlp-pd status
     if check_tlp_pd_installed; then
         tlp_pd_state="installed"
-        if check_service_state "$TLPPD_SERVICE" enabled; then
-            tlp_pd_state="enabled"
+        if check_systemd; then
+            if check_service_state "$TLPPD_SERVICE" enabled; then
+                tlp_pd_state="enabled"
+            else
+                tlp_pd_state="disabled"
+            fi
+            if check_service_state "$TLPPD_SERVICE" active; then
+                tlp_pd_state="${tlp_pd_state}, running"
+            else
+                tlp_pd_state="${tlp_pd_state}, not running"
+            fi
         else
-            tlp_pd_state="disabled"
+            if check_tlp_pd_running; then
+                tlp_pd_state="${tlp_pd_state}, running"
+            else
+                tlp_pd_state="${tlp_pd_state}, not running"
+            fi
         fi
-        if check_service_state "$TLPPD_SERVICE" active; then
-            tlp_pd_state="${tlp_pd_state}, running"
-        else
-            tlp_pd_state="${tlp_pd_state}, not running"
-        fi
-        printf "tlp-pd.service = %s\n" "$tlp_pd_state"
+        printf "tlp-pd         = %s\n" "$tlp_pd_state"
     else
-        printf "tlp-pd.service = not installed\n"
+        printf "tlp-pd         = not installed\n"
     fi
 
     # --- last invocation time
@@ -1110,19 +1118,21 @@ fi # show_psup
  if [ "$show_pddiag" = "1" ]; then
     printf "+++ tlp-pd Diagnostic\n"
     if check_tlp_pd_installed; then
-        echo_message "tlp-pd.service is installed." "success"
-        if check_service_state "$TLPPD_SERVICE" enabled; then
-            echo_message "tlp-pd.service is enabled." "success"
-        else
-            echo_message "tlp-pd.service is disabled." "err"
+        echo_message "tlp-pd is installed." "success"
+        if check_systemd; then
+            if check_service_state "$TLPPD_SERVICE" enabled; then
+                echo_message "tlp-pd.service is enabled." "success"
+            else
+                echo_message "tlp-pd.service is disabled." "err"
+            fi
         fi
-        if check_service_state "$TLPPD_SERVICE" active; then
-            echo_message "tlp-pd.service is running." "success"
+        if check_tlp_pd_running; then
+            echo_message "tlp-pd is running." "success"
         else
-            echo_message "tlp-pd.service is not running." "err"
+            echo_message "tlp-pd is not running." "err"
         fi
     else
-         echo_message "tlp-pd.service is not installed." "warning"
+         echo_message "tlp-pd is not installed." "warning"
     fi
 
     if cmd_exists "$GDBUS"; then
