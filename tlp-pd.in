@@ -121,6 +121,7 @@ class ProfilesDaemon(dbus.service.Object):
         # Remember bus for _check_polkit_auth()
         self._bus = bus
         self._logger = logger
+        self._active_iface = INTERFACE_NAME
 
         # Internal state
         self._active_profile = self._get_tlp_profile()  # Last profile applied by TLP
@@ -244,8 +245,9 @@ class ProfilesDaemon(dbus.service.Object):
         # Update active profile
         self._active_profile = profile
 
-        # Notify the desktop about the new profile using the signal
-        self.PropertiesChanged(INTERFACE_NAME, {"ActiveProfile": profile}, [])
+        # Notify the desktop about the new profile by signal.
+        # Use the interface that received GetAll last.
+        self.PropertiesChanged(self._active_iface, {"ActiveProfile": profile}, [])
 
     @dbus.service.signal(dbus_interface=INTERFACE_NAME, signature="u")
     # Exported on the interface org.freedesktop.UPower.PowerProfiles
@@ -347,6 +349,9 @@ class ProfilesDaemon(dbus.service.Object):
                 f"{_method}(): Unknown interface '{interface_name}'",
                 name="org.freedesktop.DBus.Error.UnknownInterface",
             )
+
+        # Remember receiving interface for PropertiesChanged signal
+        self._active_iface = interface_name
 
         return {
             f"{prop}": self._get_property(prop)
