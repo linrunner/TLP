@@ -382,21 +382,6 @@ check_tlp_enabled () {
     fi
 }
 
-check_rdw_installed () {
-    cmd_exists "$TLPRDW"
-}
-
-check_tlp_pd_installed () {
-    cmd_exists "$TLPPD"
-}
-
-check_tlp_pd_running () {
-    # check if power-profiles-daemon is running
-    # rc: 0=yes, 1=no
-    # shellcheck disable=SC2009
-    ps aux 2> /dev/null | grep -v "grep" | grep -q -E "/python.+$TLPPD"
-}
-
 check_systemd () {
     # check if systemd is the active init system (PID 1) and systemctl is installed
     # rc: 0=yes, 1=no
@@ -413,26 +398,6 @@ check_service_state () {
         enabled) $SYSTEMCTL is-enabled "$1" > /dev/null 2>&1 ;;
         masked)  $SYSTEMCTL is-enabled "$1" 2> /dev/null | grep -q 'masked' ;;
     esac
-}
-
-check_ppd_running () {
-    # check if power-profiles-daemon is running
-    # rc: 0=yes, 1=no
-    # shellcheck disable=SC2009
-    ps aux 2> /dev/null | grep -v "grep" | grep -q "/$PPD"
-}
-
-check_ppd_service () {
-    # check if power-profiles-daemon.service is active
-    # rc: 0=yes, 1=no
-    check_service_state "$PPD_SERVICE" active
-}
-
-check_tuned_ppd_running () {
-    # check if power-profiles-daemon is running
-    # rc: 0=yes, 1=no
-    # shellcheck disable=SC2009
-    ps aux 2> /dev/null | grep -v "grep" | grep -q "$TUNED"
 }
 
 check_services_activation_status () {

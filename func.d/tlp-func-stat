@@ -19,7 +19,7 @@ readonly RE_ATA_ERROR='ata[0-9]+: SError: {.*CommWake }'
 # ----------------------------------------------------------------------------
 # Functions
 
-# --- Checks
+# --- Service checks
 
 check_upstart () {
     # check if upstart is active init system (PID 1)
@@ -32,6 +32,44 @@ check_openrc () {
     # rc: 0=yes, 1=no
     [ -e /run/openrc/softlevel ]
 }
+
+check_rdw_installed () {
+    # check if tlp-rdw is installed
+    cmd_exists "$TLPRDW"
+}
+
+check_tlp_pd_installed () {
+    cmd_exists "$TLPPD"
+}
+
+check_tlp_pd_running () {
+    # check if power-profiles-daemon is running
+    # rc: 0=yes, 1=no
+    # shellcheck disable=SC2009
+    ps aux 2> /dev/null | grep -v "grep" | grep -q -E "/python.+$TLPPD"
+}
+
+check_ppd_running () {
+    # check if power-profiles-daemon is running
+    # rc: 0=yes, 1=no
+    # shellcheck disable=SC2009
+    ps aux 2> /dev/null | grep -v "grep" | grep -q "/$PPD"
+}
+
+check_ppd_service () {
+    # check if power-profiles-daemon.service is active
+    # rc: 0=yes, 1=no
+    check_service_state "$PPD_SERVICE" active
+}
+
+check_tuned_ppd_running () {
+    # check if power-profiles-daemon is running
+    # rc: 0=yes, 1=no
+    # shellcheck disable=SC2009
+    ps aux 2> /dev/null | grep -v "grep" | grep -q "$TUNED"
+}
+
+# -- Quirk checks
 
 check_ac_quirk () { # check for hardware known not to expose AC device
                     # $1: model string; rc: 0=yes, 1=no
