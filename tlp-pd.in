@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-# TLP Profiles Daemon (TLP-PD)
-# Implements the D-Bus interface org.freedesktop.UPower.PowerProfile
-# which is displayed in desktop environments as a power profile switch.
+# TLP Profiles Daemon (tlp-pd)
+# tlp-pd implements the D-Bus interface org.freedesktop.UPower.PowerProfile
+# which lets desktop environments show a power profile switch.
 # TLP is used as the backend to apply these profiles.
 #
 # Copyright (c) 2025 Thomas Koch <linrunner at gmx.net> and others.
