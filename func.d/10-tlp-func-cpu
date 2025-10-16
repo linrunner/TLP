@@ -272,7 +272,7 @@ set_cpu_perf_policy () {
         esac
 
         # don't apply EPP when power-profiles-daemon is running
-        if check_ppd_active ; then
+        if check_ppd_running ; then
             echo_message "Warning: CPU_ENERGY_PERF_POLICY_ON_AC/BAT/SAV is not set because power-profiles-daemon is running."
             echo_debug "pm" "set_cpu_perf_policy($1).epp.nop_ppd_active"
             return 0
@@ -416,7 +416,7 @@ set_cpu_boost_all () { # $1: PP_PRF, PP_BAL, PP_SAV
     fi
 
     if check_intel_pstate; then
-        if check_ppd_active; then
+        if check_ppd_running; then
             # do not apply no_turbo when power-profiles-daemon is running
             echo_message "Warning: CPU_BOOST_ON_BAT/BAT is not set because power-profiles-daemon is running."
             echo_debug "pm" "set_cpu_boost_all($1).intel_pstate.nop_ppd_active"
@@ -515,7 +515,7 @@ set_platform_profile () { # set platform profile
     fi
 
     if [ -f $FWACPID/platform_profile ]; then
-        if check_ppd_active; then
+        if check_ppd_running; then
             # do not apply platform profile when power-profiles-daemon is running
             echo_message "Warning: PLATFORM_PROFILE_ON_AC/BAT is not set because power-profiles-daemon is running."
             echo_debug "pm" "set_platform_profile($1).nop_ppd_active"

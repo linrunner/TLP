@@ -28,6 +28,7 @@ readonly LOGGER=logger
 readonly MKTEMP=mktemp
 readonly MODPRO=modprobe
 readonly MODINFO=modinfo
+readonly PPD=power-profiles-daemon
 readonly READCONFS=@TLP_TLIB@/tlp-readconfs
 readonly SYSTEMCTL=systemctl
 readonly TPACPIBAT=@TPACPIBAT@
@@ -406,8 +407,15 @@ check_service_state () {
     esac
 }
 
-check_ppd_active () {
-    # check if power-profiles-daemon.service is running
+check_ppd_running () {
+    # check if power-profiles-daemon is running
+    # rc: 0=yes, 1=no
+    # shellcheck disable=SC2009
+    ps aux 2> /dev/null | grep -v "grep" | grep -q "/$PPD"
+}
+
+check_ppd_service () {
+    # check if power-profiles-daemon.service is active
     # rc: 0=yes, 1=no
     check_service_state "$PPD_SERVICE" active
 }

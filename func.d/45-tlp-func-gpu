@@ -226,7 +226,7 @@ set_abm_level () {
                             # level does not change -> do not apply to prevent screen flicker
                             echo_debug "pm" "set_abm_level($1).amdgpu.no_change: pps=$pps level=${level} old_level=${old_level}"
                             return 0
-                        elif check_ppd_active ; then
+                        elif check_ppd_running ; then
                             # don't apply ABM when power-profiles-daemon is running
                             echo_message "Warning: AMDGPU_ABM_LEVEL_ON_AC/BAT is not set because power-profiles-daemon is running."
                             echo_debug "pm" "set_abm_level($1).amdgpu.nop_ppd_active"
