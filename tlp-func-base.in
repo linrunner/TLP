@@ -20,8 +20,8 @@ readonly CONF_USR=@TLP_CONFUSR@
 readonly CONF_OLD=@TLP_CONF@
 readonly CONF_RUN="$RUNDIR/run.conf"
 
-readonly BUSCTL=busctl
 readonly FLOCK=flock
+readonly GDBUS=gdbus
 readonly HDPARM=hdparm
 readonly LAPMODE=laptop_mode
 readonly LOGGER=logger
@@ -1258,12 +1258,11 @@ notify_profile_daemon () {
     # $1: profile id
 
     if [ -n "$1" ]; then
-       if cmd_exists "$BUSCTL"; then
-           $BUSCTL -q call $TLPPD_BUS_NAME $TLPPD_OBJECT_PATH $TLPPD_INTERFACE_NAME \
-                SyncProfile s "$1" 2> /dev/null
-           echo_debug "ps" "notify_profile_daemon.busctl.call.SyncProfile($1): rc=$?"
+       if cmd_exists "$GDBUS"; then
+           $GDBUS call -y -d $TLPPD_BUS_NAME -o $TLPPD_OBJECT_PATH -m "${TLPPD_INTERFACE_NAME}.SyncProfile" "$1" 2> /dev/null 1>&2
+           echo_debug "ps" "notify_profile_daemon.gdbus.call.SyncProfile($1): rc=$?"
        else
-           echo_debug "ps" "notify_profile_daemon($1).busctl_missing"
+           echo_debug "ps" "notify_profile_daemon($1).gdbus_missing"
        fi
     else
         echo_debug "ps" "notify_profile_daemon($1).no_profile"

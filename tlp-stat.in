@@ -17,7 +17,6 @@ readonly TLPUSB=@TLP_TLIB@/tlp-usblist
 readonly TLPPCI=@TLP_TLIB@/tlp-pcilist
 
 readonly DMIDECODE=dmidecode
-readonly GDBUS=gdbus
 readonly JOURNALCTL=journalctl
 readonly LSPCI=lspci
 readonly LSUSB=lsusb
@@ -1122,9 +1121,9 @@ fi # show_psup
          echo_message "tlp-pd.service is not installed." "warning"
     fi
 
-    if cmd_exists "$BUSCTL"; then
-        pd_version="$($BUSCTL call "$TLPPD_BUS_NAME" "$TLPPD_OBJECT_PATH" "$PROPERTY_INTERFACE_NAME" \
-            "Get" "ss" "$TLPPD_INTERFACE_NAME" "Version" 2> /dev/null | sed 's/v s "\(.*\)"/\1/')"
+    if cmd_exists "$GDBUS"; then
+        pd_version="$($GDBUS call -y -d "$TLPPD_BUS_NAME" -o "$TLPPD_OBJECT_PATH" -m "${PROPERTY_INTERFACE_NAME}.Get" \
+            "$TLPPD_INTERFACE_NAME" "Version" 2> /dev/null | sed -r "s/.*<'(.+)'>,.*/\1/")"
         printf "D-Bus Version: %s\n" "$pd_version"
         if [ "${pd_version#tlp-pd}" = "$pd_version" ]; then
             echo_message "Error: a foreign Power Profile D-Bus service is running, "`
@@ -1133,7 +1132,7 @@ fi # show_psup
             if cmd_exists "$GDBUS"; then
                 printf "D-Bus Properties:\n"
                 $GDBUS call -y -d "$TLPPD_BUS_NAME" -o "$TLPPD_OBJECT_PATH" -m  "${PROPERTY_INTERFACE_NAME}.GetAll" \
-                    "$TLPPD_INTERFACE_NAME"
+                    "$TLPPD_INTERFACE_NAME" 2> /dev/null | sed -r -e 's/},/\n },\n/g' -e 's/>,/>,\n  /g'
             fi
         fi
     fi
