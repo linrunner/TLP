@@ -26,6 +26,7 @@ check_profile_select () {
 
     local prof_seq
     local prof prof_save prof_xpect
+    local ps
     local mm_save mm_xpect
     local rc=0
     local errcnt=0
@@ -33,7 +34,7 @@ check_profile_select () {
     printf_msg "check_profile_select {{{\n"
 
     # save initial profile
-    prof_save="$(read_sysf "$LASTPWR")"
+    read prof_save ps < $LASTPWR
     mm_save="$(read_sysf "$MANUALMODE")"
 
     # iterate supported profiles, return to initial profile
@@ -43,48 +44,48 @@ check_profile_select () {
         "$PP_SAV") prof_seq="ac bat start auto performance balanced usb suspend resume power-saver" ;;
     esac
 
-    printf_msg " initial:      last_pwr/%s manual_mode/%s\n" "$prof_save" "$mm_save"
+    printf_msg " initial:      last_pwr/%s manual_mode/%s\n" "$prof_save $ps" "$mm_save"
 
     for prof in $prof_seq; do
         printf_msg " %-12s:" "$prof"
 
         case "$prof" in
             performance)
-                prof_xpect="$PP_PRF"
+                prof_xpect="$PP_PRF $ps"
                 mm_xpect=""
                 ;;
 
             ac)
-                prof_xpect="$PP_PRF"
-                mm_xpect="$prof_xpect"
+                prof_xpect="$PP_PRF $ps"
+                mm_xpect="$PP_PRF"
                 ;;
 
             balanced)
-                prof_xpect="$PP_BAL"
+                prof_xpect="$PP_BAL $ps"
                 mm_xpect=""
                 ;;
 
             bat)
-                prof_xpect="$PP_BAL"
-                mm_xpect="$prof_xpect"
+                prof_xpect="$PP_BAL $ps"
+                mm_xpect="$PP_BAL"
                 ;;
 
             power-saver)
-                prof_xpect="$PP_SAV"
+                prof_xpect="$PP_SAV $ps"
                 mm_xpect=""
                 ;;
 
             start|auto)
                 if on_ac; then
-                    prof_xpect="$PP_PRF"
+                    prof_xpect="$PP_PRF $ps"
                 else
-                    prof_xpect="$PP_BAL"
+                    prof_xpect="$PP_BAL $ps"
                 fi
                 mm_xpect=""
                 ;;
 
             usb|suspend|resume)
-                prof_xpect="$prof_save"
+                prof_xpect="$prof_save $ps"
                 mm_xpect=""
                 ;;
 
