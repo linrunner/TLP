@@ -1107,27 +1107,31 @@ pp2strx () { # convert power profile code to string plus config suffix
 }
 
 read_saved_power_profile () {
-    # print saved power profile
+    # get saved power profile
+    # retval: $_pp_last (PP_PRF=0, PP_BAL=1, PP_SAV=2)
+    #         $_ps_last (PS_AC=0, PS_BAT=1, PS_UNKNOWN=128)
 
-    local pp_saved
-
-    pp_saved=$(read_sysf $PWRRUNFILE)
+    read _pp_last _ps_last < $PWRRUNFILE
 
     # intercept invalid saved states
-    case "$pp_saved" in
-        "$PP_PRF"|"$PP_BAL"|"$PP_SAV")
-            ;; # valid
-
-        "")
-            ;; # nothing
-
+    case "$_pp_last" in
+        "$PP_PRF"|"$PP_BAL"|"$PP_SAV") ;; # valid
+        "") ;; # nothing
         *) # invalid
-            echo_debug "ps" "read_saved_power_profile.invalid: saved=$_pp_cur"
-            pp_saved=""
+            echo_debug "ps" "read_saved_power_profile.invalid_pp: saved=$_pp_last"
+            _pp_last=""
             ;;
     esac
 
-    printf "%s" "$pp_saved"
+    case "$_ps_last" in
+        "$PS_AC"|"$PS_BAT"|"$PS_UNKNOWN") ;; # valid
+        "") ;; # nothing
+        *) # invalid
+            echo_debug "ps" "read_saved_power_profile.invalid_ps: saved=$_ps_last"
+            _pp_last=""
+            ;;
+    esac
+
     return 0
 }
 
@@ -1137,7 +1141,7 @@ get_next_power_profile () {
     # - actual power source or
     # - default/persistence setting
     # $1: tlp command
-    # retval: $_pp_next, $_pp_cur (PP_PRF=0, PP_BAL=1, PP_SAV=2)
+    # retval: $_pp_next, $_pp_last (PP_PRF=0, PP_BAL=1, PP_SAV=2)
     # rc: same as $_pp_next
     # like get_sys_power_supply(), plus:
     # - maps unknown power source to TLP_DEFAULT_MODE
@@ -1145,11 +1149,11 @@ get_next_power_profile () {
     # - if TLP_DEFAULT_MODE is unconfigured and power source is unknown,
     #   returns PP_BAL for laptop / PP_PRF for desktop/other
 
-    local ps_cur tlp_cmd
+    local tlp_cmd
 
     tlp_cmd="$1"
 
-    _pp_cur="$(read_saved_power_profile)"
+    read_saved_power_profile
 
     # determine current power supply
     get_sys_power_supply "$tlp_cmd"
@@ -1236,7 +1240,7 @@ get_next_power_profile () {
 
     fi # non-persistent mode
 
-    echo_debug "ps" "get_next_power_profile($tlp_cmd): manual=$_manual_mode; persist=$_persist_mode; cur=$_pp_cur; next=$_pp_next"
+    echo_debug "ps" "get_next_power_profile($tlp_cmd): manual=$_manual_mode; persist=$_persist_mode; last=$_pp_last; next=$_pp_next"
 
     return "$_pp_next"
 }
@@ -1258,20 +1262,20 @@ notify_profile_daemon () {
 }
 
 has_power_profile_changed () {
-    # compare $_pp_next to $_pp_cur, save $_pp_next when different
+    # compare $_pp_next to $_pp_last, save $_pp_next when different
     # rc: 0=different, 1=equal
 
     # compare
-    if [ -z "$_pp_cur" ] || [ "$_pp_next" != "$_pp_cur" ]; then
+    if [ -z "$_pp_last" ] || [ "$_pp_next" != "$_pp_last" ]; then
         # saved state is nonexistent/empty or is different --> save new state
         create_rundir
-        write_sysf "$_pp_next" $PWRRUNFILE
-        echo_debug "ps" "has_power_profile_changed.different: cur=$_pp_cur; next=$_pp_next"
+        write_sysf "$_pp_next $_syspwr" $PWRRUNFILE
+        echo_debug "ps" "has_power_profile_changed.different: last=$_pp_last; next=$_pp_next; syspwr=$_syspwr"
         return 0
     else
         # touch file for last run
         touch $PWRRUNFILE
-        echo_debug "ps" "has_power_profile_changed.equal: next=$_pp_next"
+        echo_debug "ps" "has_power_profile_changed.equal: next=$_pp_next; syspwr=$_syspwr"
         return 1
     fi
 }

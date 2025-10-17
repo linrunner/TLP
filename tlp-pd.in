@@ -556,18 +556,20 @@ class ProfilesDaemon(dbus.service.Object):
 
         try:
             with open(TLP_LAST_PROFILE, "r") as f:
-                last_pwr = f.readline().strip()
+                # statefile may contain two space separated values, get the first one only
+                last = f.readline().strip().split()
+                last_pp = last[0] if len(last) > 0 else None
         except (FileNotFoundError, IOError) as errmsg:
             self._logger.info(
                 f"{_method}(): {errmsg} --> TLP may not have applied a profile yet."
             )
             return "balanced"
 
-        if last_pwr not in TLP_PROFILE_IDX:
-            self._logger.warning(f"{_method}(): Unknown TLP profile '{last_pwr}'")
+        if last_pp not in TLP_PROFILE_IDX:
+            self._logger.warning(f"{_method}(): Unknown TLP profile '{last_pp}'")
             return "balanced"
 
-        tlp_profile = AVAILABLE_PROFILES[int(last_pwr)]
+        tlp_profile = AVAILABLE_PROFILES[int(last_pp)]
         self._logger.info(f"Current TLP profile is '{tlp_profile}'")
 
         return tlp_profile

@@ -227,16 +227,16 @@ print_file_modtime_and_age () {
 
 print_saved_profile () {
     # read and print saved power profile
-    local saved_pp
 
-    saved_pp="$(read_saved_power_profile)"
-    printf "%s" "$(pp2strx "$saved_pp")"
+    read_saved_power_profile
+    # shellcheck disable=SC2154
+    printf "%s" "$(pp2strx "$_pp_last")"
 
     # check for manual and persistent default mode
     # shellcheck disable=SC2154
     if get_manual_mode; then
         printf " (manual)\n"
-    elif get_persist_mode && [ "$_persist_mode" = "$saved_pp" ]; then
+    elif get_persist_mode && [ "$_persist_mode" = "$_pp_last" ]; then
         printf " (persistent)\n"
     else
         printf "\n"
