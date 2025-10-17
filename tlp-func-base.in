@@ -382,6 +382,10 @@ check_tlp_enabled () {
     fi
 }
 
+check_tlp_pd_installed () {
+    cmd_exists "$TLPPD"
+}
+
 check_systemd () {
     # check if systemd is the active init system (PID 1) and systemctl is installed
     # rc: 0=yes, 1=no
@@ -447,6 +451,13 @@ check_services_activation_status () {
     fi
 
     return $rc
+}
+
+check_ppd_running () {
+    # check if power-profiles-daemon is running
+    # rc: 0=yes, 1=no
+    # shellcheck disable=SC2009
+    ps aux 2> /dev/null | grep -v "grep" | grep -q "/$PPD"
 }
 
 # --- Type and value checking
