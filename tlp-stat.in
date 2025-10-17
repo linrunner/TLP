@@ -348,22 +348,22 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     # --- TLP status
     echo "+++ TLP Status"
     if check_tlp_enabled; then
-        printf "State          = enabled\n"
+        printf "tlp            = enabled, last run: %s\n" "$(print_file_modtime_and_age "$PWRRUNFILE")"
     else
-        printf "State          = disabled\n"
+        printf "tlp            = disabled\n"
     fi
 
     # --- RDW status
     if check_rdw_installed; then
         if ! check_tlp_enabled; then
-            printf "RDW state      = disabled (TLP disabled)\n"
+            printf "tlp-rdw        = disabled (TLP disabled)\n"
         elif check_run_flag "$RDW_KILL"; then
-            printf "RDW state      = disabled\n"
+            printf "tlp-rdw        = disabled\n"
         else
-            printf "RDW state      = enabled\n"
+            printf "tlp-rdw        = enabled\n"
         fi
     else
-        printf "RDW state      = not installed\n"
+        printf "tlp-rdw            = not installed\n"
         if [ -n "$DEVICES_TO_DISABLE_ON_LAN_CONNECT" ] || \
            [ -n "$DEVICES_TO_DISABLE_ON_WIFI_CONNECT" ] || \
            [ -n "$DEVICES_TO_DISABLE_ON_WWAN_CONNECT" ] || \
@@ -404,9 +404,6 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     else
         printf "tlp-pd         = not installed\n"
     fi
-
-    # --- last invocation time
-    printf "Last run       = %s\n" "$(print_file_modtime_and_age "$PWRRUNFILE")"
 
     # --- actual power profile
     printf "Power profile  = %s\n" "$(print_saved_profile)"
