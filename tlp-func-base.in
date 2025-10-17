@@ -1184,13 +1184,29 @@ get_next_power_profile () {
                 clear_manual_mode
                 ;;
 
-            auto|resume)
+            auto)
                 if wordinlist "$_manual_mode" "$PP_VALID"; then
                     # use manual mode
                     _pp_next=$_manual_mode
                 else
-                    # use current power source
+                    # set next profile according to current power source
                     _pp_next=$_syspwr
+                fi
+                ;;
+
+            resume)
+                if wordinlist "$_manual_mode" "$PP_VALID"; then
+                    # use manual mode
+                    _pp_next=$_manual_mode
+                else
+                    if [ "$_ps_last" != "$_syspwr" ] || [ -z "$_pp_last" ]; then
+                        # power source changed during suspend OR last profile is unknown
+                        # --> set next profile according to current power source
+                        _pp_next=$_syspwr
+                    else
+                        # power source did *not* change during suspend --> keep profile
+                        _pp_next=$_pp_last
+                    fi
                 fi
                 ;;
 
@@ -1251,7 +1267,11 @@ get_next_power_profile () {
 
     fi # non-persistent mode
 
-    echo_debug "ps" "get_next_power_profile($tlp_cmd): manual=$_manual_mode; persist=$_persist_mode; last=$_pp_last; next=$_pp_next"
+    if [ "$_pp_next" != "$_pp_last" ]; then
+        echo_debug "ps" "get_next_power_profile($tlp_cmd).change: manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
+    else
+        echo_debug "ps" "get_next_power_profile($tlp_cmd).keep: manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
+    fi
 
     return "$_pp_next"
 }
@@ -1275,18 +1295,19 @@ notify_profile_daemon () {
 has_power_profile_changed () {
     # compare $_pp_next to $_pp_last, save $_pp_next when different
     # rc: 0=different, 1=equal
+    # global params: $_pp_last, $_pp_next, $_syspwr
 
     # compare
     if [ -z "$_pp_last" ] || [ "$_pp_next" != "$_pp_last" ]; then
         # saved state is nonexistent/empty or is different --> save new state
         create_rundir
         write_sysf "$_pp_next $_syspwr" $PWRRUNFILE
-        echo_debug "ps" "has_power_profile_changed.different: last=$_pp_last; next=$_pp_next; syspwr=$_syspwr"
+        echo_debug "ps" "has_power_profile_changed.yes: last=$_pp_last; next=$_pp_next; syspwr=$_syspwr"
         return 0
     else
         # touch file for last run
         touch $PWRRUNFILE
-        echo_debug "ps" "has_power_profile_changed.equal: next=$_pp_next; syspwr=$_syspwr"
+        echo_debug "ps" "has_power_profile_changed.no: next=$_pp_next; syspwr=$_syspwr"
         return 1
     fi
 }
