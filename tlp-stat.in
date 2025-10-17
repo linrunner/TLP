@@ -1152,7 +1152,9 @@ fi # show_psup
                 if cmd_exists "$GDBUS"; then
                     printf "D-Bus Properties:\n"
                     $GDBUS call -y -d "$TLPPD_BUS_NAME" -o "$TLPPD_OBJECT_PATH" -m  "${PROPERTY_INTERFACE_NAME}.GetAll" \
-                        "$TLPPD_INTERFACE_NAME" 2> /dev/null | sed -r -e 's/},/\n },\n/g' -e 's/>,/>,\n  /g'
+                        "$TLPPD_INTERFACE_NAME" 2> /dev/null | \
+                        # Hack: sed script is customized to the GetAll() output instead of doing proper XML rendering
+                        sed -r -e 's/\{/\{ /' -e 's/}, \{/\n },\n \{ /g' -e 's/>,/>,\n  /g' -e 's/<\[\{/<\[\n\ { /' -e 's/>\}\]>/\n \}\]>/'
                 fi
             fi
         fi
