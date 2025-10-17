@@ -14,6 +14,7 @@
     - TLP_DISABLE_DEFAULTS: deactivate all intrinsic defaults so that
       only settings that have been explicitly activated are applied;
       helpful to use only selected features
+    - tlp-stat -s: unified representation of tlp/tlp-rdw/tlp-pd's status
     - tlp-stat --trace-nm: show the journal entries for NetworkManager
       correlated with TLP's trace output
     - Response to invalid subcommands/options: output not only “Usage:”
