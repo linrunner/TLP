@@ -7,13 +7,20 @@ TLP’s default settings are already optimized for battery life, so you may just
 install and forget it. Nevertheless TLP is highly customizable to meet your specific
 requirements.
 
-Starting with version 1.9 (which hasn't been released yet), TLP will be supplemented
-by the *TLP profiles daemon* (TLP-PD).
-It provides the D-Bus interface, which lets desktop environments show a
-power profile switch with three options: *performance*, *balanced* and *power-saver*.
+Settings are organized into three customizable profiles *performance* (AC),
+*balanced* (BAT) and *power-saver* (SAV), allowing to adjust between savings
+and performance independently for battery and AC operation.
 
-Together with TLP as the backend for applying these profiles, TLP-PD **replaces the
-power-profiles-daemon**.
+Starting with version 1.9, TLP is supplemented by the *TLP profiles daemon* (tlp-pd).
+It provides the D-Bus interface, which lets desktop environments show a switch so you
+can choose from the three profiles. Together with TLP as the backend for applying the
+profiles, tlp-pd **replaces the power-profiles-daemon**.
+
+In addition TLP can enable or disable Bluetooth, NFC, Wi-Fi and WWAN radio
+devices on boot and when connecting/removing the LAN cable.
+
+For ThinkPads and other laptops it provides a unified way to configure
+charge thresholds and recalibrate the battery.
 
 Documentation
 -------------
