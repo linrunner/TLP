@@ -8,6 +8,7 @@ Type=dbus
 BusName=org.freedesktop.UPower.PowerProfiles
 BusName=net.hadess.PowerProfiles
 ExecStart=@TLP_SBIN@/tlp-pd
+Restart=on-failure
 
 [Install]
 WantedBy=graphical.target
