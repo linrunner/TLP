@@ -22,28 +22,28 @@ Description: Optimize laptop battery life
  Powertop’s recommendations out of the box. Moreover TLP is highly
  customizable to fulfil specific user requirements.
  .
- Settings are organized into two profiles, allowing to adjust between
- savings and performance independently for battery (BAT) and AC operation.
- In addition TLP can enable or disable Bluetooth, NFC, Wi-Fi and WWAN radio
- devices on boot.
+ Settings are organized into three customizable profiles performance (AC),
+ balanced (BAT) and power-saver, allowing to adjust between savings
+ and performance independently for battery and AC operation.
  .
- For ThinkPads and selected other laptops it provides a unified way
+ In addition TLP can enable or disable bluetooth, NFC, Wi-Fi and WWAN
+ devices on boot. For ThinkPads and other laptops it provides a unified way
  to configure charge thresholds and recalibrate the battery.
 
 Package: tlp-rdw
 Architecture: all
 Depends: network-manager, tlp, ${misc:Depends}
-Description: Radio device wizard
- Radio device wizard is an add-on to TLP. It provides event based
+Description: Switch Wi-Fi and Bluetooth on/off automatically
+ Radio device wizard is an add-on to TLP. It provides automated
  switching of bluetooth, NFC, Wi-Fi and WWAN radio devices on:
-  - network connect/disconnect
-  - dock/undock
+  - LAN cable connected/removed
+  - Laptop docked/undocked
 
 Package: tlp-pd
 Architecture: all
 Depends: tlp, polkitd, python3-dbus, python3-gi, ${misc:Depends}, ${python3:Depends}
-Description: Switch TLP power profiles from the desktop
+Description: Switch Power Profiles from the Desktop
  TLP profiles daemon is an add-on to TLP. It implements the D-Bus interface,
  which lets desktop environments show a power profile switch.
- Together with TLP as the backend for applying these profiles,
+ Together with TLP as the backend for applying the customizabe profiles,
  it replaces power-profiles-daemon.
