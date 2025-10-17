@@ -1122,7 +1122,7 @@ read_saved_power_profile () {
     # retval: $_pp_last (PP_PRF=0, PP_BAL=1, PP_SAV=2)
     #         $_ps_last (PS_AC=0, PS_BAT=1, PS_UNKNOWN=128)
 
-    read _pp_last _ps_last < $PWRRUNFILE
+    read -r _pp_last _ps_last < $PWRRUNFILE
 
     # intercept invalid saved states
     case "$_pp_last" in
@@ -1189,8 +1189,21 @@ get_next_power_profile () {
                     # use manual mode
                     _pp_next=$_manual_mode
                 else
-                    # set next profile according to current power source
-                    _pp_next=$_syspwr
+                    if [ -n "$_pp_last" ] \
+                            && [ "$TLP_SWITCH_MODE" = "0" ] \
+                           || { [ "$TLP_SWITCH_MODE" = "2" ] && [ "$_pp_last" != "$_ps_last" ]; }; then
+                        # 1. switching disabled
+                        #  OR
+                        # 2. smart switching and non-standard profile selected (by user)
+                        # --> keep profile
+                        _pp_next=$_pp_last
+                    else
+                        # 3. (plain old) auto switching
+                        #  OR
+                        # 4. last profile is unknown
+                        # --> set next profile according to current power source
+                        _pp_next=$_syspwr
+                    fi
                 fi
                 ;;
 
@@ -1264,7 +1277,6 @@ get_next_power_profile () {
                     ;;
             esac
         fi # unknown power source
-
     fi # non-persistent mode
 
     if [ "$_pp_next" != "$_pp_last" ]; then
@@ -1297,16 +1309,18 @@ has_power_profile_changed () {
     # rc: 0=different, 1=equal
     # global params: $_pp_last, $_pp_next, $_syspwr
 
-    # compare
+    # save new state to
+    # - record power source for smart switching decision
+    # - record time of last run
+    create_rundir
+    write_sysf "$_pp_next $_syspwr" $PWRRUNFILE
+
     if [ -z "$_pp_last" ] || [ "$_pp_next" != "$_pp_last" ]; then
-        # saved state is nonexistent/empty or is different --> save new state
-        create_rundir
-        write_sysf "$_pp_next $_syspwr" $PWRRUNFILE
+        # profile changes (including the edge case that previous profile is unknown)
         echo_debug "ps" "has_power_profile_changed.yes: last=$_pp_last; next=$_pp_next; syspwr=$_syspwr"
         return 0
     else
-        # touch file for last run
-        touch $PWRRUNFILE
+        # no profile change
         echo_debug "ps" "has_power_profile_changed.no: next=$_pp_next; syspwr=$_syspwr"
         return 1
     fi

@@ -80,6 +80,17 @@
 
 #TLP_MSG_COLORS="91 93 1 92"
 
+# Control automatic switching of the power profile
+# when connecting or removing the charger
+#   0=disabled - never switch
+#   1=auto - always switch
+#   2=smart - do not switch if a non-standard profile has been selected
+#      by the user, which means a profile other than performance on AC or
+#      other than balanced on battery power.
+# Default: 2
+
+#TLP_SWITCH_MODE=2
+
 # Power profile when no power supply is detected:
 # PRF=performance, BAL=balanced, SAV=power-saver.
 # Note: legacy values AC and BAT continue to work. They are mapped to PRF and BAL,
