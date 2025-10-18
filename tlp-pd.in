@@ -350,9 +350,6 @@ class ProfilesDaemon(dbus.service.Object):
                 name="org.freedesktop.DBus.Error.UnknownInterface",
             )
 
-        # Remember receiving interface for PropertiesChanged signal
-        self._active_iface = interface_name
-
         return {
             f"{prop}": self._get_property(prop)
             for prop in [
@@ -390,6 +387,9 @@ class ProfilesDaemon(dbus.service.Object):
                 f"{_method}(interface='{interface_name}')",
                 name="org.freedesktop.DBus.Error.UnknownInterface",
             )
+
+        # Remember receiving interface for PropertiesChanged signal
+        self._active_iface = interface_name
 
         self._set_property(property_name, value, sender)
 
@@ -464,9 +464,9 @@ class ProfilesDaemon(dbus.service.Object):
             )
             return
 
-        # Notify the desktop about the changed property
+        # Notify the desktop about the changed property (except ActiveProfile)
         if property_name != "ActiveProfile":
-            self.PropertiesChanged(INTERFACE_NAME, {f"{property_name}": value}, [])
+            self.PropertiesChanged(self._active_iface, {f"{property_name}": value}, [])
 
     def _update_profile_from_holds(self):
         # Change active profile to the last hold (highest cookie)
