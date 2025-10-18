@@ -1122,24 +1122,41 @@ read_saved_power_profile () {
     # retval: $_pp_last (PP_PRF=0, PP_BAL=1, PP_SAV=2)
     #         $_ps_last (PS_AC=0, PS_BAT=1, PS_UNKNOWN=128)
 
-    read -r _pp_last _ps_last < $PWRRUNFILE
+    # read last saved profile and power source from statefile
+    if ! read -r _pp_last _ps_last < $PWRRUNFILE 2> /dev/null; then
+        # file non-existent
+        _pp_last="$PS_UNKNOWN"
+        _ps_last="$PS_UNKNOWN"
+    fi
 
     # intercept invalid saved states
     case "$_pp_last" in
-        "$PP_PRF"|"$PP_BAL"|"$PP_SAV") ;; # valid
-        "") ;; # nothing
+        "$PP_PRF"|"$PP_BAL"|"$PP_SAV"|"$PS_UNKNOWN")
+            ;;
+
+        "") # nothing
+            echo_debug "ps" "read_saved_power_profile.no_pp"
+            _pp_last="$PS_UNKNOWN"
+            ;;
+
         *) # invalid
             echo_debug "ps" "read_saved_power_profile.invalid_pp: saved=$_pp_last"
-            _pp_last=""
+            _pp_last="$PS_UNKNOWN"
             ;;
     esac
 
     case "$_ps_last" in
-        "$PS_AC"|"$PS_BAT"|"$PS_UNKNOWN") ;; # valid
-        "") ;; # nothing
+        "$PS_AC"|"$PS_BAT"|"$PS_UNKNOWN")  # valid
+            ;;
+
+        "") # nothing
+             echo_debug "ps" "read_saved_power_profile.no_ps"
+            _ps_last="$PS_UNKNOWN"
+            ;;
+
         *) # invalid
             echo_debug "ps" "read_saved_power_profile.invalid_ps: saved=$_ps_last"
-            _pp_last=""
+            _ps_last="$PS_UNKNOWN"
             ;;
     esac
 
@@ -1189,12 +1206,11 @@ get_next_power_profile () {
                     # use manual mode
                     _pp_next=$_manual_mode
                 else
-                    if [ -n "$_pp_last" ] \
-                            && [ "$TLP_SWITCH_MODE" = "0" ] \
-                           || { [ "$TLP_SWITCH_MODE" = "2" ] && [ "$_pp_last" != "$_ps_last" ]; }; then
-                        # 1. switching disabled
+                    if     { [ "$TLP_SWITCH_MODE" = "0" ] && [ "$_pp_last" != "$PS_UNKNOWN" ]; } \
+                        || { [ "$TLP_SWITCH_MODE" = "2" ] && [ "$_pp_last" != "$_ps_last" ]; }; then
+                        # 1. switching disabled AND last profile is known
                         #  OR
-                        # 2. smart switching and non-standard profile selected (by user)
+                        # 2. smart switching AND non-standard profile selected (by user)
                         # --> keep profile
                         _pp_next=$_pp_last
                     else
@@ -1212,8 +1228,9 @@ get_next_power_profile () {
                     # use manual mode
                     _pp_next=$_manual_mode
                 else
-                    if [ "$_ps_last" != "$_syspwr" ] || [ -z "$_pp_last" ]; then
-                        # power source changed during suspend OR last profile is unknown
+                    if { [ "$TLP_SWITCH_MODE" != "0" ] && [ "$_ps_last" != "$_syspwr" ];  } || [ "$_pp_last" = "$PS_UNKNOWN" ]; then
+                        # power source changed during suspend AND switching is allowed
+                        # OR last profile is unknown
                         # --> set next profile according to current power source
                         _pp_next=$_syspwr
                     else
@@ -1249,20 +1266,20 @@ get_next_power_profile () {
                 ;;
 
             *)
-                # all other tlp commands that do not change the power profile, as well as tlp-usb-udev disk
+                # all other tlp commands and *tlp-usb-udev disk* that do not touch the power profile
                 if wordinlist "$_manual_mode" "$PP_VALID"; then
                     # use manual mode
                     _pp_next=$_manual_mode
                 else
                     # use current power source
-                    _pp_next=$_syspwr
+                    _pp_next=$_pp_last
                 fi
                 ;;
 
         esac # $tlp_cmd
 
         if [ "$_pp_next" -eq "$PS_UNKNOWN" ]; then
-            # unknown power source -> use configured default mode
+            # profile still undefined -> use configured default mode
             case $(toupper "$TLP_DEFAULT_MODE") in
                 AC|PRF)  _pp_next=$PP_PRF ;;
                 BAT|BAL) _pp_next=$PP_BAL ;;
@@ -1280,9 +1297,9 @@ get_next_power_profile () {
     fi # non-persistent mode
 
     if [ "$_pp_next" != "$_pp_last" ]; then
-        echo_debug "ps" "get_next_power_profile($tlp_cmd).change: manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
+        echo_debug "ps" "get_next_power_profile($tlp_cmd).change: sw=$TLP_SWITCH_MODE; manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
     else
-        echo_debug "ps" "get_next_power_profile($tlp_cmd).keep: manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
+        echo_debug "ps" "get_next_power_profile($tlp_cmd).keep: sw=$TLP_SWITCH_MODE; manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
     fi
 
     return "$_pp_next"

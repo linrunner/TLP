@@ -87,6 +87,7 @@
 #   2=smart - do not switch if a non-standard profile has been selected
 #      by the user, which means a profile other than performance on AC or
 #      other than balanced on battery power.
+# Note: this also applies if the charger was connected or removed during suspend.
 # Default: 2
 
 #TLP_SWITCH_MODE=2
