@@ -34,7 +34,10 @@ check_profile_select () {
     printf_msg "check_profile_select {{{\n"
 
     # save initial profile
-    read prof_save ps < $LASTPWR
+    if [ ! -f "$LASTPWR" ]; then
+        ${SUDO} ${TLP} start
+    fi
+    read -r prof_save ps < $LASTPWR
     mm_save="$(read_sysf "$MANUALMODE")"
 
     # iterate supported profiles, return to initial profile
