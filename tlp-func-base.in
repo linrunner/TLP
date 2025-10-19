@@ -1201,7 +1201,7 @@ get_next_power_profile () {
                 clear_manual_mode
                 ;;
 
-            auto)
+            auto|resume)
                 if wordinlist "$_manual_mode" "$PP_VALID"; then
                     # use manual mode
                     _pp_next=$_manual_mode
@@ -1219,23 +1219,6 @@ get_next_power_profile () {
                         # 4. last profile is unknown
                         # --> set next profile according to current power source
                         _pp_next=$_syspwr
-                    fi
-                fi
-                ;;
-
-            resume)
-                if wordinlist "$_manual_mode" "$PP_VALID"; then
-                    # use manual mode
-                    _pp_next=$_manual_mode
-                else
-                    if { [ "$TLP_AUTO_SWITCH" != "0" ] && [ "$_ps_last" != "$_syspwr" ];  } || [ "$_pp_last" = "$PS_UNKNOWN" ]; then
-                        # power source changed during suspend AND switching is allowed
-                        # OR last profile is unknown
-                        # --> set next profile according to current power source
-                        _pp_next=$_syspwr
-                    else
-                        # power source did *not* change during suspend --> keep profile
-                        _pp_next=$_pp_last
                     fi
                 fi
                 ;;
