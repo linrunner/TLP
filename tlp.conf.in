@@ -81,13 +81,13 @@
 #TLP_MSG_COLORS="91 93 1 92"
 
 # Control automatic switching of the power profile
-# when connecting or removing the charger
+# when connecting or removing the charger:
 #   0=disabled - never switch
 #   1=auto - always switch
-#   2=smart - do not switch if a non-standard profile has been selected
-#      by the user, which means a profile other than performance on AC or
-#      other than balanced on battery power.
-# Note: this also applies if the charger was connected or removed during suspend.
+#   2=smart - do not switch if the following profiles were active previously:
+#             power-saver or balanced on AC resp.
+#             power-saver or performance on battery power.
+# Note: the same applies if the charger was connected or removed during suspend.
 # Default: 2
 
 #TLP_AUTO_SWITCH=2
