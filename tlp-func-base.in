@@ -1206,8 +1206,8 @@ get_next_power_profile () {
                     # use manual mode
                     _pp_next=$_manual_mode
                 else
-                    if     { [ "$TLP_SWITCH_MODE" = "0" ] && [ "$_pp_last" != "$PS_UNKNOWN" ]; } \
-                        || { [ "$TLP_SWITCH_MODE" = "2" ] && [ "$_pp_last" != "$_ps_last" ]; }; then
+                    if     { [ "$TLP_AUTO_SWITCH" = "0" ] && [ "$_pp_last" != "$PS_UNKNOWN" ]; } \
+                        || { [ "$TLP_AUTO_SWITCH" = "2" ] && [ "$_pp_last" != "$_ps_last" ]; }; then
                         # 1. switching disabled AND last profile is known
                         #  OR
                         # 2. smart switching AND non-standard profile selected (by user)
@@ -1228,7 +1228,7 @@ get_next_power_profile () {
                     # use manual mode
                     _pp_next=$_manual_mode
                 else
-                    if { [ "$TLP_SWITCH_MODE" != "0" ] && [ "$_ps_last" != "$_syspwr" ];  } || [ "$_pp_last" = "$PS_UNKNOWN" ]; then
+                    if { [ "$TLP_AUTO_SWITCH" != "0" ] && [ "$_ps_last" != "$_syspwr" ];  } || [ "$_pp_last" = "$PS_UNKNOWN" ]; then
                         # power source changed during suspend AND switching is allowed
                         # OR last profile is unknown
                         # --> set next profile according to current power source
@@ -1297,9 +1297,9 @@ get_next_power_profile () {
     fi # non-persistent mode
 
     if [ "$_pp_next" != "$_pp_last" ]; then
-        echo_debug "ps" "get_next_power_profile($tlp_cmd).change: sw=$TLP_SWITCH_MODE; manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
+        echo_debug "ps" "get_next_power_profile($tlp_cmd).change: sw=$TLP_AUTO_SWITCH; manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
     else
-        echo_debug "ps" "get_next_power_profile($tlp_cmd).keep: sw=$TLP_SWITCH_MODE; manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
+        echo_debug "ps" "get_next_power_profile($tlp_cmd).keep: sw=$TLP_AUTO_SWITCH; manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
     fi
 
     return "$_pp_next"

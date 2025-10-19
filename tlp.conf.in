@@ -90,7 +90,7 @@
 # Note: this also applies if the charger was connected or removed during suspend.
 # Default: 2
 
-#TLP_SWITCH_MODE=2
+#TLP_AUTO_SWITCH=2
 
 # Power profile when no power supply is detected:
 # PRF=performance, BAL=balanced, SAV=power-saver.
