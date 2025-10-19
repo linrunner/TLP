@@ -152,6 +152,18 @@ print_nth_arg () {
     printf "%s" "$1"
 }
 
+read_saved_profile () {
+    # read saved profile and power source
+    # retval: $_prof, $_ps
+    read -r _prof _ps < "$LASTPWR" 2> /dev/null
+    if [ -z "$_prof" ]; then
+        printf_msg "*** Profile: missing or empty statefile.\n"
+    fi
+    if [ -z "$_ps" ]; then
+        printf_msg "*** Power source: missing or empty statefile.\n"
+    fi
+}
+
 on_ac () {
     # Detect AC power
     # rc: 0=AC/1=BAT
