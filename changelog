@@ -36,6 +36,10 @@
       - power-saver: parameters ending in _SAV are used when the new command
         'tlp power-saver' is run. If there is no _SAV parameter available
         for a feature, the _BAT parameter will be used instead.
+    - TLP_AUTO_SWITCH: controls the automatic switching of the power profile
+      when the charger is connected or removed (even during a suspend).
+      The Innovation (and new default) is a "smart" mode that can retain a
+      manually selected profile when the power source changes.
     - tlp: drop the commands 'false' and 'true', which have been superseded
       by 'ac' and 'bat' for ages
     - tlp-stat --pd-diag: show tlp-pd diagnostic
