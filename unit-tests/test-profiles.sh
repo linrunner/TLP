@@ -57,35 +57,43 @@ check_profile_select () {
             performance)
                 prof_xpect="$PP_PRF $ps_save"
                 mm_xpect=""
+                prof_save="$PP_PRF"
                 ;;
 
             ac)
                 prof_xpect="$PP_PRF $ps_save"
                 mm_xpect="$PP_PRF"
+                prof_save="$PP_PRF"
                 ;;
 
             balanced)
                 prof_xpect="$PP_BAL $ps_save"
                 mm_xpect=""
+                prof_save="$PP_BAL"
                 ;;
 
             bat)
                 prof_xpect="$PP_BAL $ps_save"
                 mm_xpect="$PP_BAL"
+                prof_save="$PP_BAL"
                 ;;
 
             power-saver)
                 prof_xpect="$PP_SAV $ps_save"
                 mm_xpect=""
+                prof_save="$PP_SAV"
                 ;;
 
             start|auto)
                 if on_ac; then
                     prof_xpect="$PP_PRF $ps_save"
+                    prof_save="$PP_PRF"
                 else
                     prof_xpect="$PP_BAL $ps_save"
+                    prof_save="$PP_BAL"
                 fi
                 mm_xpect=""
+
                 ;;
 
             usb|suspend|resume)
@@ -154,7 +162,7 @@ check_persistent_mode () {
     printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$prof_save $ps_save" "$mm_save"
 
     for prof in $prof_seq; do
-        printf_msg " TLP_PERSISTENT_DEFAULT=1 TLP_DEFAULT_MODE=%3s:" "$prof"
+        printf_msg " TLP_PERSISTENT_DEFAULT=1 TLP_DEFAULT_MODE=%-4s" "${prof}:"
 
         case "$prof" in
             PRF)
@@ -201,7 +209,7 @@ check_persistent_mode () {
 
     done # prof
 
-    read_saved_profil
+    read_saved_profile
     printf_msg " result: last_pwr/%s manual_mode/%s\n" "$_prof $_ps" "$(read_sysf "$MANUALMODE")"
 
     # print summary
@@ -239,7 +247,7 @@ check_power_supply () {
     printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$prof_save $ps_save" "$mm_save"
 
     for ps in $ps_seq; do
-        printf_msg " X_SIMULATE_PS=%s TLP_DEFAULT_MODE=SAV:" "$ps"
+        printf_msg " X_SIMULATE_PS=%-3s TLP_DEFAULT_MODE=SAV:" "$ps"
 
         case "$ps" in
             "$PS_AC")
@@ -278,7 +286,7 @@ check_power_supply () {
 
     done # prof
 
-    read_saved_profil
+    read_saved_profile
     printf_msg " result: last_pwr/%s manual_mode/%s\n" "$_prof $_ps" "$(read_sysf "$MANUALMODE")"
 
     # print summary
@@ -355,7 +363,7 @@ check_auto_switch () {
 
                         for prof in performance balanced power-saver; do
                             # prepare simulated active profile and power source
-                            printf_msg "  %-6s (prof=%-11s ps_now=%s) --> ps_next=%s: " "$mode" "$prof" "$ps_now" "$ps_next"
+                            printf_msg "  %-6s (prof=%-11s ps_now=%s) --> ps_next=%s:" "$mode" "$prof" "$ps_now" "$ps_next"
                             ${SUDO} ${TLP} "$prof" -- X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
 
                             # determine expected profile
