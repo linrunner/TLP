@@ -4,7 +4,7 @@ tlp (1.9.0~alpha.2-1) unstable; urgency=medium
 
   [ Thomas Koch ]
   * New sub-package tlp-pd
-  * Update lintian overrides
+  * Drop lintian overrides
   * Update descriptions
   * Cleanup copyright
 
