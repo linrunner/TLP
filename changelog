@@ -3,25 +3,6 @@
   * Development version
 
   * Features
-    Battery Care:
-    - Tuxedo laptops supported by the clevo_acpi out-of-tree driver from
-      tuxedo-drivers: start and stop threshold (Issue #803);
-      only models with a Clevo ODM chassis are compatible,
-      check the tlp-stat -b output to find out if yours is
-    - tlp-stat -b: advertise chargeonce, discharge, recalibrate features
-      individually
-    General:
-    - TLP_DISABLE_DEFAULTS: deactivate all intrinsic defaults so that
-      only settings that have been explicitly activated are applied;
-      helpful to use only selected features
-    - tlp-stat -s: unified representation of tlp/tlp-rdw/tlp-pd's status
-    - tlp-stat --trace-nm: show the journal entries for NetworkManager
-      correlated with TLP's trace output
-    - Response to invalid subcommands/options: output not only “Usage:”
-      but also “Error:”
-    Graphics:
-    - RADEON_POWER_PROFILE_ON_AC/BAT removed (deprecated since 1.8.0)
-    - tlp-stat -g -v: show power_state, pp_dpm_*clk of AMD GPUs
     Power Profiles:
     - tlp-pd: TLP Profiles Daemon is a new addition to TLP. It implements
       the D-Bus interface, which lets desktop environments show a
@@ -43,6 +24,25 @@
     - tlp: drop the commands 'false' and 'true', which have been superseded
       by 'ac' and 'bat' for ages
     - tlp-stat --pd-diag: show tlp-pd diagnostic
+    Battery Care:
+    - Tuxedo laptops supported by the clevo_acpi out-of-tree driver from
+      tuxedo-drivers: start and stop threshold (Issue #803);
+      only models with a Clevo ODM chassis are compatible,
+      check the tlp-stat -b output to find out if yours is
+    - tlp-stat -b: advertise chargeonce, discharge, recalibrate features
+      individually
+    General:
+    - TLP_DISABLE_DEFAULTS: deactivate all intrinsic defaults so that
+      only settings that have been explicitly activated are applied;
+      helpful to use only selected features
+    - tlp-stat -s: unified representation of tlp/tlp-rdw/tlp-pd's status
+    - tlp-stat --trace-nm: show the journal entries for NetworkManager
+      correlated with TLP's trace output
+    - Response to invalid subcommands/options: output not only “Usage:”
+      but also “Error:”
+    Graphics:
+    - RADEON_POWER_PROFILE_ON_AC/BAT removed (deprecated since 1.8.0)
+    - tlp-stat -g -v: show power_state, pp_dpm_*clk of AMD GPUs
     Processor:
     - PLATFORM_PROFILE_ON_AC/BAT/SAV: activated by default
     - New parameters for the power-saver profile:
