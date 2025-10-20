@@ -1208,10 +1208,14 @@ get_next_power_profile () {
                     _pp_next=$_manual_mode
                 else
                     if     { [ "$TLP_AUTO_SWITCH" = "0" ] && [ "$_pp_last" != "$PS_UNKNOWN" ]; } \
+                        || { [ "$TLP_AUTO_SWITCH" = "1" ] && [ "$_syspwr" = "$_ps_last" ]; } \
                         || { [ "$TLP_AUTO_SWITCH" = "2" ] && [ "$_pp_last" != "$_ps_last" ]; }; then
                         # 1. switching disabled AND last profile is known
                         #  OR
-                        # 2. smart switching AND non-standard profile selected (by user)
+                        # 2. switching enabled AND power source did not change
+                        #    (ignores meaningless power_supply events triggered by unplugging USB-C (disk) devices)
+                        #  OR
+                        # 3. smart switching AND non-standard profile selected (by user)
                         # --> keep profile
                         _pp_next=$_pp_last
                     else
