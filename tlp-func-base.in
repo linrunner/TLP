@@ -34,6 +34,7 @@ readonly SYSTEMCTL=systemctl
 readonly TPACPIBAT=@TPACPIBAT@
 readonly TUNEDPPD="tuned-ppd"
 readonly UDEVADM=udevadm
+readonly UDEVADM_TEST="udevadm test"
 
 readonly TLPRDW=tlp-rdw
 readonly TLPPD=tlp-pd

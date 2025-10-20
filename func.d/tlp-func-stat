@@ -873,8 +873,8 @@ check_udev_rule_ps () {
     # check if udev rule for power source changes draws
 
     if [  -n "$_psdev" ]; then
-        $UDEVADM -d test -a change "$_psdev" 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
-        if $UDEVADM test -a change "$_psdev" 2> /dev/null |  grep -E '(^run:|RUN{program} :) .*tlp auto'; then
+        $UDEVADM_TEST -a change "$_psdev" 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
+        if $UDEVADM_TEST -a change "$_psdev" 2> /dev/null |  grep -E '(^run:|RUN{program} :) .*tlp auto'; then
             printf "OK.\n\n"
         else
             cprintf "err" "Fatal Error: TLP's udev rule for power source changes (85-tlp.rules) is not active -- possible package bug.\n\n"
@@ -886,10 +886,10 @@ check_udev_rule_usb () {
     # check if udev rule for connecting USB device draws
     local ud
 
-    ud="$(glob_dirs '/usb[1-9]' /sys/bus/usb/devices/ 2> /dev/null | head -1)"
+    ud="$(glob_dirs '/usb[1-9]' /sys/bus/usb/devices 2> /dev/null | head -1)"
     if [ -n "$ud" ]; then
-        $UDEVADM -d test -a add "$ud" 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
-        if $UDEVADM test -a add "$ud" 2> /dev/null |  grep -E '(^run:|RUN{program} :) .*tlp-usb-udev usb'; then
+        $UDEVADM_TEST -a add "$ud" 2>&1 | grep -E '^Reading rules file: .*tlp.rules$'
+        if $UDEVADM_TEST -a add "$ud" 2> /dev/null | grep -E '(^run:|RUN{program} :) .*tlp-usb-udev usb'; then
             printf "OK.\n\n"
         else
             cprintf "err" "Fatal Error: TLP's udev rule for connecting USB devices (85-tlp.rules) is not active -- possible package bug.\n\n"
