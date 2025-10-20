@@ -4,6 +4,7 @@ tlp (1.9.0~alpha.2-1) unstable; urgency=medium
 
   [ Thomas Koch ]
   * New sub-package tlp-pd
+  * tlp-pd Conflicts: power-profiles-daemon, tuned-ppd
   * Drop lintian overrides
   * Update descriptions
   * Cleanup copyright
