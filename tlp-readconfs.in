@@ -46,9 +46,10 @@ my $renrex;               # compiled regex for renaming parameters
 my $do_rename = 0;        # enable renaming (when $renrex not empty)
 my %dprmsg    = ();       # hash: PARAMETER => deprecated message
 
-my $notrace = 0;
-my $debug   = 0;
-my $cdiff   = 0;
+my $notrace      = 0;
+my $trace2stderr = 0;
+my $debug        = 0;
+my $cdiff        = 0;
 
 my $outfile;
 
@@ -59,7 +60,9 @@ my $defsrc = basename(CONF_DEF);
 # Format and write debug message
 # @_: printf arguments including format string
 sub printf_debug {
-    if ( ! $notrace && $debug ) {
+    if ( $trace2stderr) {
+        printf STDERR @_;
+    } elsif ( ! $notrace && $debug ) {
         open (my $logpipe, "|-", "logger -p debug -t \"tlp\" --id=\$\$ --") || return 1;
         printf {$logpipe} @_;
         close ($logpipe);
@@ -101,19 +104,20 @@ sub store_name_value_source {
             $config_val[$config_idx{$name}][2] = $source;
         }
 
-        printf_debug ("tlp-readconfs.replace [%s]: %s=\"%s\" %s\n", $config_idx{$name}, $name, $value, $source);
+        printf_debug ("tlp-readconfs.replace [%s]: %s=\"%s\" %s def=\"%s\"\n", $config_idx{$name}, $name, $value, $source, $config_val[$config_idx{$name}][3]);
     } else {
         # new name --> store name, value, source and hash name
         if ( $is_def ) {
-            #save value as default
+            # save value as default
             push(@config_val, [$name, $value, $source, $value]);
+            printf_debug ("tlp-readconfs.insert  [%s]: %s=\"%s\" %s def=\"%s\"\n", $#config_val, $name, $value, $source, $value);
         } else {
             # save value as user config
             push(@config_val, [$name, $value, $source, ""]);
+            printf_debug ("tlp-readconfs.insert  [%s]: %s=\"%s\" %s def=\"\"\n", $#config_val, $name, $value, $source);
         }
         $config_idx{$name} = $#config_val;
 
-        printf_debug ("tlp-readconfs.insert  [%s]: %s=\"%s\" %s\n", $#config_val, $name, $value, $source);
     }
 
     return 0;
@@ -261,7 +265,13 @@ sub parse_dprfile {
 
 # --- MAIN
 # parse arguments
-GetOptions ('outfile=s' => \$outfile, 'skipdefs' => \$skip_defaults, 'notrace' => \$notrace, 'cdiff' => \$cdiff);
+GetOptions (
+    'outfile=s' => \$outfile,
+    'skipdefs' => \$skip_defaults,
+    'notrace' => \$notrace,
+    'trace2stderr' => \$trace2stderr,
+    'cdiff' => \$cdiff
+);
 
 # read parameter renaming rules
 parse_renfile (CONF_REN);
