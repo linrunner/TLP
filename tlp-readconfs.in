@@ -182,8 +182,8 @@ sub write_runconf {
     foreach ( @config_val ) {
         my ($name, $value, $source, $default) = @$_;
 
-        # skip default entries except TLP_ENABLE
-        next if ( $skip_defaults eq 1 and length $default and not ( $name =~ /TLP_ENABLE|TLP_WARN_LEVEL/ ) );
+        # skip entries matching default except essential ones
+        next if ( $skip_defaults and $value eq $default and not ( $name =~ /TLP_ENABLE|TLP_WARN_LEVEL/ ) );
 
         if ( $runconf eq *STDOUT ) {
             my $msg = "";
