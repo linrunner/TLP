@@ -324,7 +324,7 @@ class ProfilesDaemon(dbus.service.Object):
         property_name = _sanitize_input(property_name)
         _method = _method_name()
         self._logger.debug(
-            f"{_method}(interface='{interface_name}', property='{property_name})'"
+            f"{_method}(interface='{interface_name}', property='{property_name}')'"
         )
 
         if interface_name not in [INTERFACE_NAME, INTERFACE_NAME_LEGACY]:
@@ -375,7 +375,8 @@ class ProfilesDaemon(dbus.service.Object):
         # Set a property value
         interface_name = _sanitize_input(interface_name)
         property_name = _sanitize_input(property_name)
-        value = _sanitize_input(value)
+        if property_name != "BatteryAware":
+            value = _sanitize_input(value)
         sender = _sanitize_input(sender)
         _method = _method_name()
         self._logger.debug(
@@ -422,7 +423,7 @@ class ProfilesDaemon(dbus.service.Object):
         elif property_name == "Actions":
             return dbus.Array(self._actions, signature="s")
         elif property_name == "ActionsInfo":
-            return (dbus.Array(self._actions_info, signature="aa{sv}"),)
+            return dbus.Array(self._actions_info, signature="aa{sv}")
         elif property_name == "ActiveProfileHolds":
             return self._get_active_profile_holds()
         elif property_name == "Version":
@@ -439,6 +440,9 @@ class ProfilesDaemon(dbus.service.Object):
     def _set_property(self, property_name, value, sender):
         # Internal method to set property values
         _method = _method_name()
+        self._logger.debug(
+            f"{_method}(property_name= '{property_name}', value='{value}')"
+        )
 
         if property_name == "ActiveProfile":
             # Check authorization first
@@ -454,16 +458,16 @@ class ProfilesDaemon(dbus.service.Object):
             self._selected_profile = str(value)
 
         elif property_name == "BatteryAware":
-            if value == "true":
+            if str(value) == "1":
                 self._battery_aware = True
             else:
                 self._battery_aware = False
+
         else:
             raise dbus.exceptions.DBusException(
                 f"{_method}(): Property '{property_name}' is readonly",
                 name="org.freedesktop.DBus.Error.PropertyReadOnly",
             )
-            return
 
         # Notify the desktop about the changed property (except ActiveProfile)
         if property_name != "ActiveProfile":
