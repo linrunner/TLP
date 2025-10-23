@@ -24,12 +24,12 @@ use File::Basename;
 use Getopt::Long;
 
 # --- Constants
-use constant CONF_USR => "@TLP_CONFUSR@";
-use constant CONF_DIR => "@TLP_CONFDIR@";
-use constant CONF_DEF => "@TLP_CONFDEF@";
-use constant CONF_REN => "@TLP_CONFREN@";
-use constant CONF_DPR => "@TLP_CONFDPR@";
-use constant CONF_OLD => "@TLP_CONF@";
+use constant CONF_USR => '@TLP_CONFUSR@';
+use constant CONF_DIR => '@TLP_CONFDIR@';
+use constant CONF_DEF => '@TLP_CONFDEF@';
+use constant CONF_REN => '@TLP_CONFREN@';
+use constant CONF_DPR => '@TLP_CONFDPR@';
+use constant CONF_OLD => '@TLP_CONF@';
 
 # Exit codes
 use constant EXIT_TLPCONF => 5;
