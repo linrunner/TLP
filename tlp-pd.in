@@ -86,6 +86,10 @@ INTROSPECTION_FULL_XML = """
     <method name="ReleaseProfile">
       <arg type="u" name="cookie" direction="in"/>
     </method>
+    <method name="SetActionEnabled">
+        <arg name="action" type="s" direction="in"/>
+        <arg name="enabled" type="b" direction="in"/>
+    </method>
     <method name="SyncProfile">
       <arg type="s" name="profile" direction="in"/>
     </method>
@@ -223,6 +227,23 @@ class ProfilesDaemon(dbus.service.Object):
 
         # Update active profile based on remaining holds
         self._update_profile_from_holds()
+
+    @dbus.service.method(
+        dbus_interface=INTERFACE_NAME, in_signature="sb", out_signature=""
+    )
+    @dbus.service.method(
+        dbus_interface=INTERFACE_NAME_LEGACY, in_signature="sb", out_signature=""
+    )
+    def SetActionEnabled(self, action, enabled):
+        # Set a particular action to be enabled or disabled
+        # Not yet implemented by tlp-pd
+        action = _sanitize_input(action)
+        _method = _method_name()
+
+        raise dbus.exceptions.DBusException(
+            f"{_method}(): No such action '{action}'",
+            name="org.freedesktop.DBus.Error.InvalidArgs",
+        )
 
     @dbus.service.method(
         dbus_interface=INTERFACE_NAME, in_signature="s", out_signature=""
