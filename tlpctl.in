@@ -230,7 +230,7 @@ def _launch(args):
                 signal.signal(sig, signal.SIG_DFL)
 
     except FileNotFoundError as error:
-        sys.stderr.write(f"Error: command '{appid}' not found\n")
+        sys.stderr.write(f"Error: command '{appid}' not found\n{error}\n")
         sys.exit(1)
 
     proxy.ReleaseProfile("(u)", cookie)
