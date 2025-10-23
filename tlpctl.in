@@ -80,6 +80,15 @@ def set_profile(profile):
     )
 
 
+def list_profiles_brief():
+    profiles = get_profiles_property("Profiles")
+    active_profile = get_proxy().Get("(ss)", PD_INTERFACE_NAME, "ActiveProfile")
+
+    for profile in profiles:
+        marker = "*" if profile["Profile"] == active_profile else " "
+        print(f"{marker} {profile['Profile']}")
+
+
 # --- powerprofilessctl-compatible commands
 @command
 def _version(_args):
@@ -400,19 +409,21 @@ def check_unknown_args(args, unknown_args, cmd):
 def main():
     parser = get_parser()
     args, unknown = parser.parse_known_args()
-    # Default behavior is to run list if no command is given
+
     if not args.command:
-        args.func = _list
+        # Default behavior is to print a brief profile list if no command is given
+        list_profiles_brief()
+    else:
+        if check_unknown_args(sys.argv[1:], unknown, args.command):
+            args.arguments += unknown
+            unknown = []
 
-    if check_unknown_args(sys.argv[1:], unknown, args.command):
-        args.arguments += unknown
-        unknown = []
+        if unknown:
+            msg = argparse._("unrecognized arguments: %s")
+            parser.error(msg % " ".join(unknown))
 
-    if unknown:
-        msg = argparse._("unrecognized arguments: %s")
-        parser.error(msg % " ".join(unknown))
-
-    args.func(args)
+        # Run given command
+        args.func(args)
 
 
 if __name__ == "__main__":
