@@ -1,4 +1,5 @@
 usr/sbin/tlp-pd
+usr/bin/tlpctl
 usr/lib/systemd/system/tlp-pd.service
 usr/share/dbus-1/system-services/net.hadess.PowerProfiles.service
 usr/share/dbus-1/system-services/org.freedesktop.UPower.PowerProfiles.service
