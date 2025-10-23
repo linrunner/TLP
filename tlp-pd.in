@@ -532,7 +532,6 @@ class ProfilesDaemon(dbus.service.Object):
 
             # Emit ProfileReleased signal to the sender
             ### TODO: This is simplified; proper implementation would send to specific sender
-            ### Q: how to emit on both interfaces?
             self.ProfileReleased(dbus.UInt32(cookie))
 
     def _get_active_profile_holds(self):
