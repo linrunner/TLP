@@ -89,6 +89,7 @@ SED = sed \
 INFILES = \
 	tlp \
 	tlp.conf \
+	tlpctl \
 	tlp-func-base \
 	tlp-pd \
 	tlp-pd.service \
@@ -150,6 +151,7 @@ PLFILES = \
 	tlp-usblist
 
 PYFILES = \
+	tlpctl.in \
 	tlp-pd.in
 
 BATDRVFILES = $(foreach drv,$(wildcard bat.d/[0-9][0-9]-[a-z]*),$(drv)~)
@@ -248,6 +250,7 @@ endif
 install-pd: all
 	# Package tlp-pd
 	install -D -m 755 tlp-pd $(_SBIN)/tlp-pd
+	install -D -m 755 tlpctl $(_BIN)/tlpctl
 	install -D -m 644 tlp-pd.service $(_SYSD)/tlp-pd.service
 	install -D -m 644 tlp-pd.policy $(_POLKIT)/tlp-pd.policy
 	$(foreach BUS_NAME,org.freedesktop.UPower.PowerProfiles net.hadess.PowerProfiles, \
@@ -331,6 +334,7 @@ uninstall-rdw:
 
 uninstall-pd:
 	rm -f $(_SBIN)/tlp-pd
+	rm -f $(_BIN)/tlpctl
 	rm -f $(_POLKIT)/tlp-pd.policy
 	rm -f $(_DBCONF)/org.freedesktop.UPower.PowerProfiles.conf
 	rm -f $(_DBSVC)/org.freedesktop.UPower.PowerProfiles.service

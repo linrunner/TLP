@@ -1,0 +1,481 @@
+#!/usr/bin/python3
+# TLP Profiles Daemon (tlp-pd) control program
+# tlpctl is derived from powerprofilesctl, offers the same set of commands,
+# supplemented by TLP-specific shortcuts.
+#
+# Copyright (c) 2025 Thomas Koch <linrunner at gmx.net> and others.
+# SPDX-License-Identifier: GPL-3.0-only
+
+
+import argparse
+import os
+import signal
+import subprocess
+import sys
+from gi.repository import Gio, GLib
+
+# --- Constants
+PROGRAM_NAME = "tlpctl"
+PROGRAM_LONG = "TLP Profiles Control"
+PROGRAM_DESC = "Control TLP power profiles"
+DAEMON_LONG = "TLP Profiles Daemon"
+
+# --- D-Bus constants
+PD_BUS_NAME = "org.freedesktop.UPower.PowerProfiles"
+PD_INTERFACE_NAME = PD_BUS_NAME
+PD_OBJECT_PATH = "/org/freedesktop/UPower/PowerProfiles"
+PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
+
+
+# --- Helper functions
+def get_proxy():
+    # Call the daemon via proxy
+    bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+    return Gio.DBusProxy.new_sync(
+        bus,
+        Gio.DBusProxyFlags.NONE,
+        None,
+        PD_BUS_NAME,
+        PD_OBJECT_PATH,
+        PROPERTIES_IFACE,
+        None,
+    )
+
+
+def get_profiles_property(prop):
+    proxy = get_proxy()
+    return proxy.Get("(ss)", PD_INTERFACE_NAME, prop)
+
+
+def get_profile_choices():
+    try:
+        return [profile["Profile"] for profile in get_profiles_property("Profiles")]
+    except GLib.Error:
+        return []
+
+
+def command(func):
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except GLib.Error as error:
+            sys.stderr.write(f"Error: {error}\n")
+            sys.exit(1)
+        except ValueError as error:
+            sys.stderr.write(f"Error: {error}\n")
+            sys.exit(1)
+
+    return wrapper
+
+
+def set_profile(profile):
+    # Swirch profile
+    proxy = get_proxy()
+    proxy.Set(
+        "(ssv)",
+        PD_INTERFACE_NAME,
+        "ActiveProfile",
+        GLib.Variant.new_string(profile),
+    )
+
+
+# --- powerprofilessctl-compatible commands
+@command
+def _version(_args):
+    client_version = "@TLPVER@"
+    try:
+        proxy = get_proxy()
+        daemon_ver = proxy.Get("(ss)", PD_INTERFACE_NAME, "Version")
+    except GLib.Error:
+        daemon_ver = "unknown"
+    print(f"client: {client_version}\ndaemon: {daemon_ver}")
+
+
+@command
+def _set_profile(args):
+    print(args)  ### DEVEL
+    proxy = get_proxy()
+    proxy.Set(
+        "(ssv)",
+        PD_INTERFACE_NAME,
+        "ActiveProfile",
+        GLib.Variant.new_string(args.profile[0]),
+    )
+
+
+@command
+def _get(_args):
+    proxy = get_proxy()
+    profile = proxy.Get("(ss)", PD_INTERFACE_NAME, "ActiveProfile")
+    print(profile)
+
+
+@command
+def _configure_battery_aware(args):
+    enable = args.enable
+    disable = args.disable
+    if enable is False and disable is True:
+        raise ValueError("--enable or --disable is required.")
+    if enable is True and disable is False:
+        raise ValueError("can't set both --enable and --disable.")
+        sys.exit(1)
+    enable = enable if enable is not None else not disable
+    proxy = get_proxy()
+    proxy.Set(
+        "(ssv)", PD_INTERFACE_NAME, "BatteryAware", GLib.Variant.new_boolean(enable)
+    )
+
+
+@command
+def _list(_args):
+    profiles = get_profiles_property("Profiles")
+    reason = get_proxy().Get("(ss)", PD_INTERFACE_NAME, "PerformanceDegraded")
+    degraded = reason != ""
+    active_profile = get_proxy().Get("(ss)", PD_INTERFACE_NAME, "ActiveProfile")
+
+    for profile in profiles:
+        marker = "*" if profile["Profile"] == active_profile else " "
+        print(f"{marker} {profile['Profile']}:")
+        for driver in ["CpuDriver", "PlatformDriver"]:
+            if driver not in profile:
+                continue
+            value = profile[driver]
+            print("    %-15s: %s" % (driver, value))
+        if profile["Profile"] == "performance":
+            print(
+                "    %-15s: %s"
+                % (
+                    "Degraded",
+                    f"yes ({reason})" if degraded else "no",
+                )
+            )
+        if profile != profiles[-1]:
+            print("")
+
+
+@command
+def _list_holds(_args):
+    holds = get_profiles_property("ActiveProfileHolds")
+
+    index = 0
+    for hold in holds:
+        if index > 0:
+            print("")
+        print("Hold:")
+        print("  Profile:        ", hold["Profile"])
+        print("  Application ID: ", hold["ApplicationId"])
+        print("  Reason:         ", hold["Reason"])
+        index += 1
+
+
+@command
+def _launch(args):
+    reason = args.reason
+    profile = args.profile
+    appid = args.appid
+    if not args.arguments:
+        raise ValueError("No command to launch")
+    if not args.appid:
+        appid = args.arguments[0]
+    if not profile:
+        profile = "performance"
+    if not reason:
+        reason = f"Running {args.appid}"
+    ret = 0
+    bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+    proxy = Gio.DBusProxy.new_sync(
+        bus,
+        Gio.DBusProxyFlags.NONE,
+        None,
+        PD_BUS_NAME,
+        PD_OBJECT_PATH,
+        PD_INTERFACE_NAME,
+        None,
+    )
+    cookie = proxy.HoldProfile("(sss)", profile, reason, appid)
+
+    # print (f'Got {cookie} for {profile} hold')
+    try:
+        with subprocess.Popen(args.arguments) as launched_app:
+            # Redirect the same signal to the child
+            def receive_signal(signum, _stack):
+                launched_app.send_signal(signum)
+
+            redirected_signals = [
+                signal.SIGTERM,
+                signal.SIGINT,
+                signal.SIGABRT,
+            ]
+
+            for sig in redirected_signals:
+                signal.signal(sig, receive_signal)
+
+            try:
+                launched_app.wait()
+                ret = launched_app.returncode
+            except KeyboardInterrupt:
+                ret = launched_app.returncode
+
+            for sig in redirected_signals:
+                signal.signal(sig, signal.SIG_DFL)
+
+    except FileNotFoundError as error:
+        sys.stderr.write(f"Error: command '{appid}' not found\n")
+        sys.exit(1)
+
+    proxy.ReleaseProfile("(u)", cookie)
+
+    if ret < 0:
+        # Use standard POSIX signal exit code.
+        os.kill(os.getpid(), -ret)
+        return
+
+    sys.exit(ret)
+
+
+@command
+def _query_battery_aware(_args):
+    result = get_profiles_property("BatteryAware")
+    print(f"Dynamic changes from charger and battery events: {result}")
+
+
+@command
+def _list_actions(_args):
+    actions = get_profiles_property("ActionsInfo")
+    if len(actions) > 0:
+        for action in actions:
+            for key in action:
+                print(f"{key}: {action[key]}")
+            if action != actions[-1]:
+                print("")
+    else:
+        sys.stderr.write("There are no supported actions.")
+
+
+@command
+def _configure_action(args):
+    action = args.action[0]
+    enable = args.enable
+    disable = args.disable
+    if enable is False and disable is True:
+        raise ValueError("--enable or --disable is required.")
+    if enable is True and disable is False:
+        raise ValueError("can't set both --enable and --disable.")
+    print(f"action: {action}, enable: {enable}")
+    bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+    proxy = Gio.DBusProxy.new_sync(
+        bus,
+        Gio.DBusProxyFlags.NONE,
+        None,
+        PD_BUS_NAME,
+        PD_OBJECT_PATH,
+        PD_INTERFACE_NAME,
+        None,
+    )
+    proxy.SetActionEnabled("(sb)", action, enable)
+
+
+# --- TLP-specific commands
+@command
+def _performance(_args):
+    # Switch to performance
+    set_profile("performance")
+    print("Switched to performance profile")
+
+
+@command
+def _balanced(_args):
+    # Switch to balanced profile
+    set_profile("balanced")
+    print("Switched to balanced profile")
+
+
+@command
+def _power_saver(_args):
+    # Switch to power-saver profile
+    set_profile("power-saver")
+    print("Switched to power-saver profile")
+
+
+# --- Parse arguments
+def get_parser():
+    parser = argparse.ArgumentParser(
+        prog=f"{PROGRAM_NAME}",
+        description=f"{PROGRAM_DESC}",
+        epilog=f"Use '{PROGRAM_NAME} <command> --help' to get detailed help for individual commands",
+    )
+    subparsers = parser.add_subparsers(help="Individual command help", dest="command")
+
+    # --- TLP-specific profile commands (shortcuts)
+    parser_performance = subparsers.add_parser(
+        "performance",
+        help="Switch to performance profile (shortcut for 'set performance')",
+    )
+    parser_performance.set_defaults(func=_performance)
+
+    parser_balanced = subparsers.add_parser(
+        "balanced", help="Switch to balanced profile (shortcut for 'set balanced')"
+    )
+    parser_balanced.set_defaults(func=_balanced)
+
+    parser_power_saver = subparsers.add_parser(
+        "power-saver",
+        help="Switch to power-saver profile (shortcut for 'set power-saver')",
+    )
+    parser_power_saver.set_defaults(func=_power_saver)
+
+    # --- Original powerprofilesctl commands
+    parser_list = subparsers.add_parser("list", help="List available power profiles")
+    parser_list.set_defaults(func=_list)
+
+    # list-actiond
+    parser_list_holds = subparsers.add_parser(
+        "list-holds", help="List current power profile holds"
+    )
+    parser_list_holds.set_defaults(func=_list_holds)
+
+    # list-actions
+    parser_list_actions = subparsers.add_parser(
+        "list-actions", help="List available power profile actions"
+    )
+    parser_list_actions.set_defaults(func=_list_actions)
+
+    # get
+    parser_get = subparsers.add_parser(
+        "get", help="Print the currently active power profile"
+    )
+    parser_get.set_defaults(func=_get)
+
+    # profile
+    parser_set = subparsers.add_parser("set", help="Set the active power profile")
+    parser_set.add_argument(
+        "profile",
+        nargs=1,
+        help="Profile to use for set command",
+        choices=get_profile_choices(),
+    )
+    parser_set.set_defaults(func=_set_profile)
+
+    # configure-action
+    parser_set_action = subparsers.add_parser(
+        "configure-action", help="Configure the action to be taken for the profile"
+    )
+    parser_set_action.add_argument(
+        "action",
+        nargs=1,
+        help="action to change for configure-action",
+    )
+    parser_set_action.add_argument(
+        "--enable",
+        action="store_true",
+        help="enable action",
+    )
+    parser_set_action.add_argument(
+        "--disable",
+        action="store_false",
+        help="disable action",
+    )
+    parser_set_action.set_defaults(func=_configure_action)
+
+    # configure-battery-aware
+    parser_configure_battery_aware = subparsers.add_parser(
+        "configure-battery-aware",
+        help="Turn on or off dynamic changes from battery level or power adapter",
+    )
+    parser_configure_battery_aware.add_argument(
+        "--enable",
+        action="store_true",
+        help="enable battery aware",
+    )
+    parser_configure_battery_aware.add_argument(
+        "--disable",
+        action="store_false",
+        help="disable battery aware",
+    )
+    parser_configure_battery_aware.set_defaults(func=_configure_battery_aware)
+
+    # query-battery-aware
+    parser_query_battery_aware = subparsers.add_parser(
+        "query-battery-aware",
+        help="Query if dynamic changes from battery level or power adapter are enabled",
+    )
+    parser_query_battery_aware.set_defaults(func=_query_battery_aware)
+
+    # launch
+    parser_launch = subparsers.add_parser(
+        "launch",
+        help="Launch a command while holding a power profile",
+        description="Launch the command while holding a power profile. "
+        "See the list command for a list of available profiles.",
+    )
+    parser_launch.add_argument(
+        "arguments",
+        nargs="*",
+        help="Command to launch",
+    )
+    parser_launch.add_argument(
+        "--profile", "-p", required=False, help="Profile to use for launch command"
+    )
+    parser_launch.add_argument(
+        "--reason", "-r", required=False, help="Reason to use for launch command"
+    )
+    parser_launch.add_argument(
+        "--appid", "-i", required=False, help="AppID to use for launch command"
+    )
+    parser_launch.set_defaults(func=_launch)
+
+    # version
+    parser_version = subparsers.add_parser(
+        "version", aliases=["--version"], help="Print version information and exit"
+    )
+    parser_version.set_defaults(func=_version)
+
+    ### TODO: completions
+    # if not os.getenv("PPD_COMPLETIONS_GENERATION"):
+    #    return parser
+    #
+    # try:
+    #    import shtab  # pylint: disable=import-outside-toplevel
+    #
+    #    shtab.add_argument_to(parser, ["--print-completion"])  # magic!
+    # except ImportError:
+    #     pass
+    #
+    return parser
+
+
+def check_unknown_args(args, unknown_args, cmd):
+    if cmd != "launch":
+        return False
+
+    for idx, unknown_arg in enumerate(unknown_args):
+        arg = args[idx]
+        if arg == cmd:
+            return True
+        if unknown_arg == arg:
+            return False
+
+    return True
+
+
+# --- MAIN
+def main():
+    parser = get_parser()
+    args, unknown = parser.parse_known_args()
+    # Default behavior is to run list if no command is given
+    if not args.command:
+        args.func = _list
+
+    if check_unknown_args(sys.argv[1:], unknown, args.command):
+        args.arguments += unknown
+        unknown = []
+
+    if unknown:
+        msg = argparse._("unrecognized arguments: %s")
+        parser.error(msg % " ".join(unknown))
+
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()
