@@ -181,7 +181,7 @@ def _launch(args):
     if not profile:
         profile = "performance"
     if not reason:
-        reason = f"Running {args.appid}"
+        reason = f"Running {args.arguments}"
     ret = 0
     bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
     proxy = Gio.DBusProxy.new_sync(
