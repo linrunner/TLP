@@ -94,27 +94,43 @@ sub store_name_value_source {
 
     if ( defined $config_idx{$name} ) {
         # existing name
-        if ( $append ) {
+        if ( $append
+            and ! $is_def  # do not append in default.conf (for good measure only)
+            and ! $skip_defaults # do not append to stored default if TLP_DISABLE_DEFAULTS=1
+            and ! $config_val[$config_idx{$name}][3]
+        ) {
             # append value, source
             $config_val[$config_idx{$name}][1] .= " $value";
             $config_val[$config_idx{$name}][2] .= " & $source";
+            printf_debug ("tlp-readconfs.replace+ [%s]: %s=\"%s\" '%s' def='%s'\n",
+                $config_idx{$name},
+                $name,
+                $config_val[$config_idx{$name}][1],
+                $config_val[$config_idx{$name}][2],
+                $config_val[$config_idx{$name}][3]
+            );
         } else {
             # replace value, source
             $config_val[$config_idx{$name}][1] = $value;
             $config_val[$config_idx{$name}][2] = $source;
+            printf_debug ("tlp-readconfs.replace  [%s]: %s=\"%s\" '%s' def='%s'\n",
+                $config_idx{$name},
+                $name,
+                $value,
+                $source,
+                $config_val[$config_idx{$name}][3]
+            );
         }
-
-        printf_debug ("tlp-readconfs.replace [%s]: %s=\"%s\" %s def=\"%s\"\n", $config_idx{$name}, $name, $value, $source, $config_val[$config_idx{$name}][3]);
     } else {
         # new name --> store name, value, source and hash name
         if ( $is_def ) {
             # save value as default
             push(@config_val, [$name, $value, $source, $value]);
-            printf_debug ("tlp-readconfs.insert  [%s]: %s=\"%s\" %s def=\"%s\"\n", $#config_val, $name, $value, $source, $value);
+            printf_debug ("tlp-readconfs.ins-def  [%s]: %s=\"%s\" '%s' def='%s'\n", $#config_val, $name, $value, $source, $value);
         } else {
             # save value as user config
             push(@config_val, [$name, $value, $source, ""]);
-            printf_debug ("tlp-readconfs.insert  [%s]: %s=\"%s\" %s def=\"\"\n", $#config_val, $name, $value, $source);
+            printf_debug ("tlp-readconfs.insert   [%s]: %s=\"%s\" %s def='%s'\n", $#config_val, $name, $value, $source, "");
         }
         $config_idx{$name} = $#config_val;
 
@@ -186,8 +202,11 @@ sub write_runconf {
     foreach ( @config_val ) {
         my ($name, $value, $source, $default) = @$_;
 
-        # skip entries matching default except essential ones
-        next if ( $skip_defaults and $value eq $default and not ( $name =~ /TLP_ENABLE|TLP_WARN_LEVEL/ ) );
+        # skip default entries
+        next if ( $skip_defaults # if TLP_DISABLE_DEFAULTS=1
+            and $source =~ /^$defsrc/ # skip default-only or default-identical
+            and not ( $name =~ /TLP_ENABLE|TLP_WARN_LEVEL/ ) # do not skip essential
+        );
 
         if ( $runconf eq *STDOUT ) {
             my $msg = "";
