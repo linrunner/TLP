@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # TLP Profiles Daemon (tlp-pd) control program
-# tlpctl is derived from powerprofilesctl, offers the same set of commands,
+# tlpctl is an adaptation of powerprofilesctl,
+# offers a subset of its commands and is
 # supplemented by TLP-specific shortcuts.
 #
 # Copyright (c) 2025 Thomas Koch <linrunner at gmx.net> and others.
@@ -239,42 +240,6 @@ def _query_battery_aware(_args):
     print(f"Dynamic changes from charger and battery events: {result}")
 
 
-@command
-def _list_actions(_args):
-    actions = get_profiles_property("ActionsInfo")
-    if len(actions) > 0:
-        for action in actions:
-            for key in action:
-                print(f"{key}: {action[key]}")
-            if action != actions[-1]:
-                print("")
-    else:
-        sys.stderr.write("There are no supported actions.")
-
-
-@command
-def _configure_action(args):
-    action = args.action[0]
-    enable = args.enable
-    disable = args.disable
-    if enable is False and disable is True:
-        raise ValueError("--enable or --disable is required.")
-    if enable is True and disable is False:
-        raise ValueError("can't set both --enable and --disable.")
-    print(f"action: {action}, enable: {enable}")
-    bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
-    proxy = Gio.DBusProxy.new_sync(
-        bus,
-        Gio.DBusProxyFlags.NONE,
-        None,
-        PD_BUS_NAME,
-        PD_OBJECT_PATH,
-        PD_INTERFACE_NAME,
-        None,
-    )
-    proxy.SetActionEnabled("(sb)", action, enable)
-
-
 # --- TLP-specific commands
 @command
 def _performance(_args):
@@ -334,12 +299,6 @@ def get_parser():
     )
     parser_list_holds.set_defaults(func=_list_holds)
 
-    # list-actions
-    parser_list_actions = subparsers.add_parser(
-        "list-actions", help="List available power profile actions"
-    )
-    parser_list_actions.set_defaults(func=_list_actions)
-
     # get
     parser_get = subparsers.add_parser(
         "get", help="Print the currently active power profile"
@@ -355,27 +314,6 @@ def get_parser():
         choices=get_profile_choices(),
     )
     parser_set.set_defaults(func=_set_profile)
-
-    # configure-action
-    parser_set_action = subparsers.add_parser(
-        "configure-action", help="Configure the action to be taken for the profile"
-    )
-    parser_set_action.add_argument(
-        "action",
-        nargs=1,
-        help="action to change for configure-action",
-    )
-    parser_set_action.add_argument(
-        "--enable",
-        action="store_true",
-        help="enable action",
-    )
-    parser_set_action.add_argument(
-        "--disable",
-        action="store_false",
-        help="disable action",
-    )
-    parser_set_action.set_defaults(func=_configure_action)
 
     # configure-battery-aware
     parser_configure_battery_aware = subparsers.add_parser(
