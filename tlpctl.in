@@ -126,6 +126,7 @@ def _list(args):
     degraded = reason != ""
     active_profile = get_proxy().Get("(ss)", PD_INTERFACE_NAME, "ActiveProfile")
 
+    print("Available power profiles (* = active):\n")
     for profile in profiles:
         marker = "*" if profile["Profile"] == active_profile else " "
         print(f"{marker} {profile['Profile']}:")
@@ -142,8 +143,13 @@ def _list(args):
                     f"yes ({reason})" if degraded else "no",
                 )
             )
-        if profile != profiles[-1]:
-            print("")
+        print("")
+
+    print("Dynamic changes from charger and battery events: ", end="")
+    if get_profiles_property("BatteryAware"):
+        print("yes")
+    else:
+        print("no")
 
 
 @command
