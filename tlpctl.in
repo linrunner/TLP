@@ -91,7 +91,7 @@ def list_profiles_brief():
 
 # --- powerprofilessctl-compatible commands
 @command
-def _version(_args):
+def _version(args):
     client_version = "@TLPVER@"
     try:
         proxy = get_proxy()
@@ -103,7 +103,6 @@ def _version(_args):
 
 @command
 def _set_profile(args):
-    print(args)  ### DEVEL
     proxy = get_proxy()
     proxy.Set(
         "(ssv)",
@@ -114,7 +113,7 @@ def _set_profile(args):
 
 
 @command
-def _get(_args):
+def _get(args):
     proxy = get_proxy()
     profile = proxy.Get("(ss)", PD_INTERFACE_NAME, "ActiveProfile")
     print(profile)
@@ -137,7 +136,7 @@ def _configure_battery_aware(args):
 
 
 @command
-def _list(_args):
+def _list(args):
     profiles = get_profiles_property("Profiles")
     reason = get_proxy().Get("(ss)", PD_INTERFACE_NAME, "PerformanceDegraded")
     degraded = reason != ""
