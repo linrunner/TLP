@@ -120,22 +120,6 @@ def _get(args):
 
 
 @command
-def _configure_battery_aware(args):
-    enable = args.enable
-    disable = args.disable
-    if enable is False and disable is True:
-        raise ValueError("--enable or --disable is required.")
-    if enable is True and disable is False:
-        raise ValueError("can't set both --enable and --disable.")
-        sys.exit(1)
-    enable = enable if enable is not None else not disable
-    proxy = get_proxy()
-    proxy.Set(
-        "(ssv)", PD_INTERFACE_NAME, "BatteryAware", GLib.Variant.new_boolean(enable)
-    )
-
-
-@command
 def _list(args):
     profiles = get_profiles_property("Profiles")
     reason = get_proxy().Get("(ss)", PD_INTERFACE_NAME, "PerformanceDegraded")
@@ -242,12 +226,6 @@ def _launch(args):
     sys.exit(ret)
 
 
-@command
-def _query_battery_aware(_args):
-    result = get_profiles_property("BatteryAware")
-    print(f"Dynamic changes from charger and battery events: {result}")
-
-
 # --- TLP-specific commands
 @command
 def _performance(_args):
@@ -322,30 +300,6 @@ def get_parser():
         choices=get_profile_choices(),
     )
     parser_set.set_defaults(func=_set_profile)
-
-    # configure-battery-aware
-    parser_configure_battery_aware = subparsers.add_parser(
-        "configure-battery-aware",
-        help="Turn on or off dynamic changes from battery level or power adapter",
-    )
-    parser_configure_battery_aware.add_argument(
-        "--enable",
-        action="store_true",
-        help="enable battery aware",
-    )
-    parser_configure_battery_aware.add_argument(
-        "--disable",
-        action="store_false",
-        help="disable battery aware",
-    )
-    parser_configure_battery_aware.set_defaults(func=_configure_battery_aware)
-
-    # query-battery-aware
-    parser_query_battery_aware = subparsers.add_parser(
-        "query-battery-aware",
-        help="Query if dynamic changes from battery level or power adapter are enabled",
-    )
-    parser_query_battery_aware.set_defaults(func=_query_battery_aware)
 
     # launch
     parser_launch = subparsers.add_parser(
