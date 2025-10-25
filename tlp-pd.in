@@ -607,7 +607,7 @@ class ProfilesDaemon(dbus.service.Object):
             return "balanced"
 
         tlp_profile = AVAILABLE_PROFILES[int(last_pp)]
-        self._logger.info(f"Current TLP profile is '{tlp_profile}'")
+        self._logger.debug(f"{_method}(): Current TLP profile is '{tlp_profile}'")
 
         return tlp_profile
 
