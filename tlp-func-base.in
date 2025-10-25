@@ -1124,10 +1124,12 @@ read_saved_power_profile () {
     #         $_ps_last (PS_AC=0, PS_BAT=1, PS_UNKNOWN=128)
 
     # read last saved profile and power source from statefile
-    if ! read -r _pp_last _ps_last < $PWRRUNFILE 2> /dev/null; then
+    if [ ! -f $PWRRUNFILE ]; then
         # file non-existent
         _pp_last="$PS_UNKNOWN"
         _ps_last="$PS_UNKNOWN"
+    else
+        read -r _pp_last _ps_last < $PWRRUNFILE 2> /dev/null
     fi
 
     # intercept invalid saved states
