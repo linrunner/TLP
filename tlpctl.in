@@ -336,17 +336,20 @@ def get_parser():
     )
     parser_version.set_defaults(func=_version)
 
-    ### TODO: completions
-    # if not os.getenv("PPD_COMPLETIONS_GENERATION"):
-    #    return parser
-    #
-    # try:
-    #    import shtab  # pylint: disable=import-outside-toplevel
-    #
-    #    shtab.add_argument_to(parser, ["--print-completion"])  # magic!
-    # except ImportError:
-    #     pass
-    #
+    # /// shtab completion support --- enable for generation only
+    if False:
+        try:
+            import shtab
+
+            shtab.add_argument_to(parser, ["--print-completion"])
+
+        except ImportError:
+            print(
+                "Warning: shtab not installed. Install with: pip install shtab",
+                file=sys.stderr,
+            )
+    # \\\ shtab completion support --- enable for generation only
+
     return parser
 
 
