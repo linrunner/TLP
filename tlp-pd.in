@@ -248,9 +248,6 @@ class ProfilesDaemon(dbus.service.Object):
     @dbus.service.method(
         dbus_interface=INTERFACE_NAME, in_signature="s", out_signature=""
     )
-    @dbus.service.method(
-        dbus_interface=INTERFACE_NAME_LEGACY, in_signature="s", out_signature=""
-    )
     def SyncProfile(self, profile):
         # Callback for tlp after profile changes: update internal state only
         profile = _sanitize_input(profile)
