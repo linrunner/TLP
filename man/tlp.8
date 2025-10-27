@@ -1,4 +1,4 @@
-.TH tlp 8 2025-08-25 "TLP 1.9.0" "Power Management"
+.TH tlp 8 2025-10-27 "TLP 1.9.0" "Power Management"
 .
 .SH NAME
 tlp - apply laptop power saving settings
@@ -12,6 +12,7 @@ features.
 .
 .SH COMMANDS
 .
+.SS Profile Management
 .TP
 .B start
 Start \fBtlp\fR and apply the power profile for the actual power source.
@@ -43,17 +44,7 @@ Apply profile "battery" and enter manual mode.
 Manual mode means that changes to the power source will be ignored until the
 next reboot or \fBtlp start\fR is invoked to resume automatic mode.
 .
-.TP
-.B usb
-Enable autosuspend for all USB devices except those excluded by default or
-via configuration.
-.
-.TP
-.B bayoff
-Turn off optical drive in UltraBay/MediaBay.
-The drive may be re-enabled by pulling the eject lever or pushing the media
-eject button on newer models.
-.
+.SS Battery Care
 .TP
 .B setcharge\fR [\fIstart_threshold stop_threshold\fR] [\fIbattery\fR]
 Change battery charge thresholds temporarily.
@@ -86,6 +77,19 @@ battery and recharge to 100%. The latter is done by temporarily applying vendor
 presets to the thresholds. Configured thresholds will be restored at the next
 boot or by using \fBtlp setcharge\fR.
 .
+.SS Device Power Management
+.TP
+.B usb
+Enable autosuspend for all USB devices except those excluded by default or
+via configuration.
+.
+.TP
+.B bayoff
+Turn off optical drive in UltraBay/MediaBay.
+The drive may be re-enabled by pulling the eject lever or pushing the media
+eject button on newer models.
+.
+.SS Information
 .TP
 .B diskid
 Print disk ids for configured drives.
@@ -94,8 +98,9 @@ Print disk ids for configured drives.
 .B --version
 Print TLP version.
 .
+.SS Configuration
 .TP
-.B --\fR \fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
+.B --\fR \fICONFIG_PARAM\fR\fB="\fIvalue\fR" "..."
 Append configuration parameters to a command. These temporarily override
 the system configuration during execution of that command only and are not
 kept afterwards.
@@ -103,31 +108,55 @@ Disclaimer: this feature exists for the sole purpose of test automation
 during TLP's development. It is provided as is and there is no support
 whatsoever.
 .
-.SH NOTES
+.SH AUTHORIZATION
 .PP
-Availability of the above \fBbattery care\fR commands and the possible charge
+Almost all \fBtlp\fR commands require root privileges. To change the power profile
+without root, you may use \fBtplctl\fR.
+.
+.SH BATTERY CARE
+.PP
+Availability of the above battery care commands and the possible charge
 threshold values always depend on laptop vendor or brand, Linux kernel version
 and TLP version. Check for actual availability, threshold ranges and battery
 names with \fBtlp-stat -b\fR. Follow the link in the \fBSEE ALSO\fR section for
 details.
-
+.PP
 For laptops with two batteries, the secondary battery must be specified
 as a command parameter in order to select it. In many cases the main battery
 will be \fBBAT0\fR, the secondary battery \fBBAT1\fR. When in doubt, the output of
 \fBtlp-stat -b\fR, which lists all batteries, can help.
 .
+.SH POWER PROFILES
+.TP
+.B performance
+Optimizes the system for maximum performance at the cost of higher power
+consumption. Recommended for demanding workloads.
+TLP default when running on AC power.
+.TP
+.B balanced
+Provides a balance between performance and power consumption. Suitable for
+general-purpose use. TLP default when running on battery power.
+.TP
+.B power-saver
+Optimizes the system for maximum battery life at the cost of reduced
+performance. Recommended for maximizing battery runtime.
+.
 .SH EXAMPLES
+.TP
 Change thresholds of the main battery to 70 / 90% temporarily:
-.IP
+.EX
 tlp setcharge 70 90
-.PP
+.EE
+.TP
 Charge the secondary battery to full capacity:
-.IP
+.EX
 tlp fullcharge BAT1
-.PP
+.EE
+.TP
 Recalibrate the main battery:
-.IP
+.EX
 tlp recalibrate
+.EE
 .
 .SH FILES
 .I /etc/tlp.conf
@@ -153,27 +182,24 @@ Effective settings consolidated from all above files. DO NOT CHANGE this file,
 it is for reference only and regenerated on every invocation of TLP.
 .PP
 .RE
-.I /etc/default/tlp
-.RS
-Obsolete system-wide configuration file. DO NOT USE this file, it is
-evaluated only when /etc/tlp.conf is non-existent.
 .
 .SH EXIT STATUS
 On success, 0 is returned, a non-zero failure code otherwise.
 .
 .SH SEE ALSO
+.BR tlpctl (1),
 .BR tlp-stat (8),
 .BR bluetooth (1),
 .BR nfc (1),
 .BR wifi (1),
 .BR wwan (1).
+.IP \(bu 3
+TLP documentation: <https://linrunner.de/tlp>
+.IP \(bu 3
+Battery care specifics: <https://linrunner.de/tlp/settings/bc-vendors.html>
 .
-.PP
-.mso www.tmac
-.URL "https://linrunner.de/tlp" "Project homepage: "
-.PP
-.URL "https://linrunner.de/tlp/settings/bc-vendors.html" \
-  "Battery care: "
+.SH BUGS
+Report bugs to: <https://github.com/linrunner/TLP/issues>.
 .
 .SH AUTHOR
 (c) 2025 Thomas Koch <linrunner at gmx.net>

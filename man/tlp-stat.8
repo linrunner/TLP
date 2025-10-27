@@ -1,4 +1,4 @@
-.TH tlp-stat 8 2025-10-16 "TLP 1.9.0" "Power Management"
+.TH tlp-stat 8 2025-10-27 "TLP 1.9.0" "Power Management"
 .
 .SH NAME
 tlp-stat - view power saving status
@@ -12,10 +12,16 @@ data. Invocation without options shows all information categories.
 .
 .SH OPTIONS
 .
+.SS System Operation
 .TP
-.B -b, --battery
-View battery data. Add \fB-v\fR to see battery voltages (if available).
+.B -s, --system
+View system information and TLP status.
 .
+.TP
+.B -m, --mode
+Print currently active power profile.
+.
+.SS Configuration
 .TP
 .B -c, --config
 View active configuration.
@@ -24,6 +30,16 @@ View active configuration.
 .B --cdiff
 View the difference between defaults and user configuration.
 .
+.TP
+.B -- \fR\fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
+Append configuration parameters to a command. These temporarily override
+the system configuration during execution of that command only and are not
+kept afterwards.
+Disclaimer: this feature exists for the sole purpose of test automation
+during TLP's development. It is provided as is and there is no support
+whatsoever.
+.
+.SS Power Saving
 .TP
 .B -d, --disk
 View disk device information.
@@ -35,10 +51,6 @@ View PCIe device information. Add \fB-v\fR to see device runtime status.
 .TP
 .B -g, --graphics
 View graphics card information.
-.
-.TP
-.B -m, --mode
-Print current power mode.
 .
 .TP
 .B -p, --processor
@@ -55,10 +67,6 @@ Omit version header and show less information in the processor category.
 View radio device states.
 .
 .TP
-.B -s, --system
-View system information and TLP status.
-.
-.TP
 .B -t, --temp
 View temperatures and fan speed.
 Add \fB-v\fR to see all individual sensors.
@@ -67,6 +75,13 @@ Add \fB-v\fR to see all individual sensors.
 .B -u, --usb
 View USB device information. Add \fB-v\fR to see device runtime status.
 .
+.SS Battery Care
+.TP
+.B -b, --battery
+View battery data and battery care features supported by your hardware.
+Add \fB-v\fR to see battery voltages (if available).
+.
+.SS Information
 .TP
 .B -v, --verbose
 Show more information in the battery, PCIe, processor, temperature and USB categories.
@@ -75,9 +90,7 @@ Show more information in the battery, PCIe, processor, temperature and USB categ
 .B --version
 Print TLP version.
 .
-.PP
-Diagnostics and debugging:
-.
+.SS Diagnostics and debugging
 .TP
 .B --pd-diag
 View tlp-pd diagnostics.
@@ -107,14 +120,9 @@ are active.
 .B -w, --warn
 View warnings about SATA disks.
 .
-.TP
-.B -- \fR\fICONFIG_PARAM\fR\fB=\fIvalue\fR "..."
-Append configuration parameters to a command. These temporarily override
-the system configuration during execution of that command only and are not
-kept afterwards.
-Disclaimer: this feature exists for the sole purpose of test automation
-during TLP's development. It is provided as is and there is no support
-whatsoever.
+.SH AUTHORIZATION
+.PP
+Many (but not all) \fBtlp-stat\fR commands require root privileges.
 .
 .SH FILES
 .I /etc/tlp.conf
@@ -140,13 +148,17 @@ Effective settings consolidated from all above files. DO NOT CHANGE this file,
 it is for reference only and regenerated on every invocation of TLP.
 .PP
 .RE
-.I /etc/default/tlp
-.RS
-Obsolete system-wide configuration file. DO NOT USE this file, it is
-evaluated as fallback only when /etc/tlp.conf is non-existent.
 .
 .SH SEE ALSO
-.BR tlp (8).
+.BR tlp (8),
+.BR tlpctl (8).
+.IP \(bu 3
+TLP documentation: <https://linrunner.de/tlp>
+.IP \(bu 3
+Battery care specifics: <https://linrunner.de/tlp/settings/bc-vendors.html>
+.
+.SH BUGS
+Report bugs to: <https://github.com/linrunner/TLP/issues>.
 .
 .SH AUTHOR
 (c) 2025 Thomas Koch <linrunner at gmx.net>
