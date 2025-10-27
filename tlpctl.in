@@ -287,13 +287,13 @@ def get_parser():
 
     # list-actiond
     parser_list_holds = subparsers.add_parser(
-        "list-holds", help="List current power profile holds"
+        "list-holds", help="List current power profile holds (from launch command)"
     )
     parser_list_holds.set_defaults(func=_list_holds)
 
     # get
     parser_get = subparsers.add_parser(
-        "get", help="Print the currently active power profile"
+        "get", help="Print the currently active power profile", description=f"{help}."
     )
     parser_get.set_defaults(func=_get)
 
@@ -302,7 +302,7 @@ def get_parser():
     parser_set.add_argument(
         "profile",
         nargs=1,
-        help="Profile to use for set command",
+        help="Profile to activate",
         choices=get_profile_choices(),
     )
     parser_set.set_defaults(func=_set_profile)
@@ -310,9 +310,9 @@ def get_parser():
     # launch
     parser_launch = subparsers.add_parser(
         "launch",
-        help="Launch a command while holding a power profile",
-        description="Launch the command while holding a power profile. "
-        "See the list command for a list of available profiles.",
+        help="Start a command using a different power profile (hold)",
+        description="Applies the given power profile, runs the command, "
+        "and returns to the original profile.",
     )
     parser_launch.add_argument(
         "arguments",
@@ -320,13 +320,16 @@ def get_parser():
         help="Command to launch",
     )
     parser_launch.add_argument(
-        "--profile", "-p", required=False, help="Profile to use for launch command"
+        "--profile",
+        "-p",
+        required=False,
+        help="Profile that is kept in hold while the command is running",
     )
     parser_launch.add_argument(
-        "--reason", "-r", required=False, help="Reason to use for launch command"
+        "--reason", "-r", required=False, help="Reason to be noted on the hold"
     )
     parser_launch.add_argument(
-        "--appid", "-i", required=False, help="AppID to use for launch command"
+        "--appid", "-i", required=False, help="AppID to be noted on the hold"
     )
     parser_launch.set_defaults(func=_launch)
 
@@ -336,8 +339,8 @@ def get_parser():
     )
     parser_version.set_defaults(func=_version)
 
-    # /// shtab completion support --- enable for generation only
-    if False:
+    # shtab completion support (hide from help text)
+    if "--print-completion" in sys.argv:
         try:
             import shtab
 
@@ -345,10 +348,9 @@ def get_parser():
 
         except ImportError:
             print(
-                "Warning: shtab not installed. Install with: pip install shtab",
+                "Warning: shtab is not installed. Install with: pip install shtab",
                 file=sys.stderr,
             )
-    # \\\ shtab completion support --- enable for generation only
 
     return parser
 
