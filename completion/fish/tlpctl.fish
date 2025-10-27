@@ -39,7 +39,7 @@ complete -c tlpctl -n __fish_tlpctl_needs_command -a list -d "List available pow
 complete -c tlpctl -n __fish_tlpctl_needs_command -a list-holds -d "List current power profile holds"
 complete -c tlpctl -n __fish_tlpctl_needs_command -a get -d "Print the currently active power profile"
 complete -c tlpctl -n __fish_tlpctl_needs_command -a set -d "Set the active power profile"
-complete -c tlpctl -n __fish_tlpctl_needs_command -a launch -d "Launch a command while holding a power profile"
+complete -c tlpctl -n __fish_tlpctl_needs_command -a launch -d "Run a command using a specific power profile (hold)"
 complete -c tlpctl -n __fish_tlpctl_needs_command -a loglevel -d "Set the loglevel of the tlp-pd daemon"
 complete -c tlpctl -n __fish_tlpctl_needs_command -a version -d "Print version information and exit"
 
