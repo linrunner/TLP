@@ -28,7 +28,7 @@ self=${0##*/}
 
 case $self in
     bluetooth|nfc|wifi|wwan)
-        case $carg1 in
+        case "$carg1" in
             on)
                 device_switch "$self" on
                 # shellcheck disable=SC2154
@@ -50,7 +50,13 @@ case $self in
                 echo_device_state "$self" "$_devs"
                 device_switch "$self" toggle
                 echo_device_state "$self" "$_devs"
-            ;;
+                ;;
+
+            "")
+                get_devc "$self"
+                get_devs "$self"
+                echo_device_state "$self" "$_devs"
+                ;;
 
             *)
                 cecho "Error: invalid command \"$carg1\"." 1>&2

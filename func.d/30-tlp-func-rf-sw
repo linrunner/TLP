@@ -88,18 +88,37 @@ get_devc () { # get control device for radio type
 }
 
 get_devs () { # get radio device state -- $1: rftype; retval $_devs: 0=off/1=on
+              # prerequisite: get_devc()
+
+    local rfks
+
     if [ -n "$_devc" ]; then
-        _devs="$(read_sysf "$_devc")"
-        case "$_devs" in
-            0|1) # invert state when not a rfkill device
-                [ "$_rfkdev" = "0" ] && _devs=$((_devs ^ _devoff))
-                ;;
-            2) ;; # hard blocked device
-            *) _devs=3 # invalid state
-        esac
+        if check_nm && wordinlist "$1" "wifi wwan" && [ "$_rfkdev" = "1" ]; then
+            case "$($NMCLI radio "$1" 2> /dev/null)" in
+                enabled) _devs=1 ;;
+                disabled)
+                    rfks="$(read_sysf "$_devc")"
+                    case "$rfks" in
+                        0) _devs=0 ;; # soft blocked
+                        2) _devs=2 ;; # hard blocked device
+                    esac
+                    ;;
+                *) _devs=3 # unknown state
+            esac
+            echo_debug "rf" "get_devs.nmcli($1) = $_devs"
+        else
+            _devs="$(read_sysf "$_devc")"
+            case "$_devs" in
+                0|1) # invert state when not a rfkill device
+                    [ "$_rfkdev" = "0" ] && _devs=$((_devs ^ _devoff))
+                    ;;
+                2) ;; # hard blocked device
+                *) _devs=3 # unknown state
+            esac
+            echo_debug "rf" "get_devs.sysfs($1) = $_devs"
+        fi
     fi
 
-    echo_debug "rf" "get_devs($1) = $_devs"
 
     return 0
 }
@@ -258,6 +277,7 @@ device_switch () { # switch radio type state
 }
 
 echo_device_state () { # print radio type state -- $1: rftype, $2: state
+                       # prerequisite: get_devc(), get_devs()
     case "$1" in
         bluetooth)
             devstr="bluetooth"
