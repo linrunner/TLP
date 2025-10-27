@@ -1,4 +1,6 @@
 #compdef tlp-rdw
+
+# zsh completion for tlp-rdw
 # Copyright (c) 2022 Arvid Norlander and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 

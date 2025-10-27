@@ -1,4 +1,6 @@
 #compdef run-on-ac run-on-bat
+
+# zsh completion for run-on-ac, run-on-bat
 # Copyright (c) 2022 Arvid Norlander and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 

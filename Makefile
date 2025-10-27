@@ -258,6 +258,15 @@ install-pd: all
 		sed -e 's|@BUS_NAME@|$(BUS_NAME)|g' -i $(_DBCONF)/$(BUS_NAME).conf; \
 		install -D -m 644 tlp-pd.dbus.service $(_DBSVC)/$(BUS_NAME).service; \
 		sed -e 's|@BUS_NAME@|$(BUS_NAME)|g' -i $(_DBSVC)/$(BUS_NAME).service;)
+ifneq ($(TLP_NO_BASHCOMP),1)
+	install -D -m 644 completion/bash/tlpctl.bash_completion $(_SHCPL)/tlpctl
+endif
+ifneq ($(TLP_NO_ZSHCOMP),1)
+	install -D -m 644 completion/zsh/_tlpctl $(_ZSHCPL)/_tlpctl
+endif
+ifneq ($(TLP_NO_FISHCOMP),1)
+	install -D -m 644 completion/fish/tlpctl.fish $(_FISHCPL)/tlpctl.fish
+endif
 
 install-man-tlp:
 	# manpages
@@ -340,6 +349,9 @@ uninstall-pd:
 	rm -f $(_DBSVC)/org.freedesktop.UPower.PowerProfiles.service
 	rm -f $(_DBCONF)/net.hadess.PowerProfiles.conf
 	rm -f $(_DBSVC)/net.hadess.PowerProfiles.service
+	rm -f $(_SHCPL)/tlpctl
+	rm -f $(_ZSHCPL)/_tlpctl
+	rm -f  $(_FISHCPL)/tlpctl.fish
 
 uninstall-man-tlp:
 	# manpages

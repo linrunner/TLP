@@ -1,4 +1,6 @@
 #compdef tlp-stat
+
+# zsh completion for tlp-stat
 # Copyright (c) 2022 Arvid Norlander and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
