@@ -253,6 +253,25 @@ def _power_saver(_args):
     print("Switched to power-saver profile.")
 
 
+@command
+def _set_loglevel(args):
+    loglevel = args.loglevel[0]
+    if loglevel not in ["info", "debug"]:
+        sys.stderr.write(
+            f"Error: invalid loglevel '{loglevel}'. Must be 'info' or 'debug'.\n"
+        )
+        sys.exit(1)
+
+    proxy = get_proxy()
+    proxy.Set(
+        "(ssv)",
+        PD_INTERFACE_NAME,
+        "LogLevel",
+        GLib.Variant.new_string(loglevel),
+    )
+    print(f"tlp-pd loglevel set to '{loglevel}'.")
+
+
 # --- Parse arguments
 def get_parser():
     parser = argparse.ArgumentParser(
@@ -331,6 +350,17 @@ def get_parser():
         "--appid", "-i", required=False, help="AppID to be noted on the hold"
     )
     parser_launch.set_defaults(func=_launch)
+
+    # loglevel
+    parser_set = subparsers.add_parser(
+        "loglevel", help="Set the loglevel of the tlp-pd daemon"
+    )
+    parser_set.add_argument(
+        "loglevel",
+        nargs=1,
+        choices=["info", "debug"],
+    )
+    parser_set.set_defaults(func=_set_loglevel)
 
     # version
     parser_version = subparsers.add_parser(
