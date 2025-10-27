@@ -193,7 +193,6 @@ def _launch(args):
     )
     cookie = proxy.HoldProfile("(sss)", profile, reason, appid)
 
-    # print (f'Got {cookie} for {profile} hold')
     try:
         with subprocess.Popen(args.arguments) as launched_app:
             # Redirect the same signal to the child
@@ -237,21 +236,21 @@ def _launch(args):
 def _performance(_args):
     # Switch to performance
     set_profile("performance")
-    print("Switched to performance profile")
+    print("Switched to performance profile.")
 
 
 @command
 def _balanced(_args):
     # Switch to balanced profile
     set_profile("balanced")
-    print("Switched to balanced profile")
+    print("Switched to balanced profile.")
 
 
 @command
 def _power_saver(_args):
     # Switch to power-saver profile
     set_profile("power-saver")
-    print("Switched to power-saver profile")
+    print("Switched to power-saver profile.")
 
 
 # --- Parse arguments
@@ -297,7 +296,7 @@ def get_parser():
     )
     parser_get.set_defaults(func=_get)
 
-    # profile
+    # set
     parser_set = subparsers.add_parser("set", help="Set the active power profile")
     parser_set.add_argument(
         "profile",
