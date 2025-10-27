@@ -95,9 +95,9 @@ sub store_name_value_source {
     if ( defined $config_idx{$name} ) {
         # existing name
         if ( $append
-            and ! $is_def  # do not append in default.conf (for good measure only)
-            and ! $skip_defaults # do not append to stored default if TLP_DISABLE_DEFAULTS=1
-            and ! $config_val[$config_idx{$name}][3]
+            and not $is_def  # do not append in default.conf (for good measure only)
+            and not $skip_defaults # do not append to stored default if TLP_DISABLE_DEFAULTS=1
+            and not $config_val[$config_idx{$name}][3]
         ) {
             # append value, source
             $config_val[$config_idx{$name}][1] .= " $value";
