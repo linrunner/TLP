@@ -488,6 +488,15 @@ class ProfilesDaemon(dbus.service.Object):
             self._selected_profile = str(value)
 
         elif property_name == "BatteryAware":
+            # Check authorization first
+            if not self._check_polkit_auth(
+                sender, f"{BUS_NAME}.configure-battery-aware"
+            ):
+                raise dbus.exceptions.DBusException(
+                    f"{_method}(): Not authorized to configure battery aware",
+                    name="org.freedesktop.PolicyKit1.Error.NotAuthorized",
+                )
+
             if str(value) == "1":
                 self._battery_aware = True
             else:
