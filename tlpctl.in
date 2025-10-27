@@ -328,7 +328,7 @@ def get_parser():
     # launch
     parser_launch = subparsers.add_parser(
         "launch",
-        help="Start a command using a different power profile (hold)",
+        help="Run a command using a specific power profile (hold)",
         description="Applies the given power profile, runs the command, "
         "and returns to the original profile.",
     )
