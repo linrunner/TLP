@@ -78,6 +78,9 @@
         - Fix X13s Gen 1 ARM data read out (Issue #807)
         - Do not wrongly recommend kernel 5.17 if coreboot is detected,
           as coreboot does not implement discharge anyway
+    Radio Devices:
+      - Ensure that TLP's and NetworkManager's wifi and wwan states are in sync
+      - bluetooth/nfc/wifi/wwan: restore device status display
 
 +++ 1.8.0 --- 13.02.2025 +++
 
