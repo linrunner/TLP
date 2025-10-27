@@ -318,7 +318,7 @@ def get_parser():
     # set
     parser_set = subparsers.add_parser("set", help="Set the active power profile")
     parser_set.add_argument(
-        "profile",
+        "PROFILE",
         nargs=1,
         help="Profile to activate",
         choices=get_profile_choices(),
@@ -356,7 +356,7 @@ def get_parser():
         "loglevel", help="Set the loglevel of the tlp-pd daemon"
     )
     parser_set.add_argument(
-        "loglevel",
+        "LOGLEVEL",
         nargs=1,
         choices=["info", "debug"],
     )
