@@ -117,7 +117,7 @@ INTROSPECTION_PROPERTIES_XML = """
 
 # --- D-Bus service implementing the power-profiles-daemon API
 class ProfilesDaemon(dbus.service.Object):
-    def __init__(self, bus, logger):
+    def __init__(self, bus, logger, loglevel):
         dbus.service.Object.__init__(self, bus, OBJECT_PATH)
         # Export on the legacy interface net.hadess.PowerProfiles and legacy path too
         self.SUPPORTS_MULTIPLE_OBJECT_PATHS = True
@@ -125,6 +125,7 @@ class ProfilesDaemon(dbus.service.Object):
         # Remember bus for _check_polkit_auth()
         self._bus = bus
         self._logger = logger
+        self._loglevel = loglevel
         self._ifaces_seen = set()
 
         # Internal state
@@ -389,8 +390,9 @@ class ProfilesDaemon(dbus.service.Object):
                 "Actions",
                 "ActionsInfo",
                 "ActiveProfileHolds",
-                "Version",
                 "BatteryAware",
+                "LogLevel",
+                "Version",
             ]
         }
 
@@ -460,6 +462,8 @@ class ProfilesDaemon(dbus.service.Object):
             return self._version
         elif property_name == "BatteryAware":
             return self._battery_aware
+        elif property_name == "LogLevel":
+            return self._loglevel
         else:
             _method = _method_name()
             raise dbus.exceptions.DBusException(
@@ -501,6 +505,21 @@ class ProfilesDaemon(dbus.service.Object):
                 self._battery_aware = True
             else:
                 self._battery_aware = False
+
+        elif property_name == "LogLevel":
+            # Check authorization first
+            if not self._check_polkit_auth(sender, f"{BUS_NAME}.set-loglevel"):
+                raise dbus.exceptions.DBusException(
+                    f"{_method}(): Not authorized to set loglevel",
+                    name="org.freedesktop.PolicyKit1.Error.NotAuthorized",
+                )
+
+            if str(value) == "debug":
+                self._logger.setLevel(logging.DEBUG)
+                self._loglevel = "debug"
+            else:
+                self._logger.setLevel(logging.INFO)
+                self._loglevel = "info"
 
         else:
             raise dbus.exceptions.DBusException(
@@ -732,8 +751,10 @@ def main():
     # Set syslog level
     if args.debug:
         logger.setLevel(logging.DEBUG)
+        loglevel = "debug"
     else:
         logger.setLevel(logging.INFO)
+        loglevel = "info"
 
     # --- Initialize D-Bus
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -748,11 +769,12 @@ def main():
     bus_name_legacy = dbus.service.BusName(BUS_NAME_LEGACY, bus)  # noqa: F841
 
     # --- Create daemon instance
-    daemon = ProfilesDaemon(bus, logger)
+    daemon = ProfilesDaemon(bus, logger, loglevel)
     logger.info(f"{DAEMON_NAME} started.")
     logger.info(f"Interfaces: {BUS_NAME}, {BUS_NAME_LEGACY}")
     logger.info(f"Object path: {OBJECT_PATH}")
     logger.info(f"Arguments: {vars(args)}")
+    logger.info(f"Loglevel: {loglevel}")
     logger.info(f"Initial profile: {daemon.Get(INTERFACE_NAME, 'ActiveProfile')}")
 
     # --- Run main loop
