@@ -193,7 +193,7 @@ class ProfilesDaemon(dbus.service.Object):
             "sender": sender,
         }
 
-        self._logger.info(
+        self._logger.debug(
             f"{_method}(profile='{profile}', reason='{reason}', appid='{application_id}'): cookie: '{cookie}'"
         )
 
@@ -222,7 +222,7 @@ class ProfilesDaemon(dbus.service.Object):
             )
 
         hold_rel = self._holds.pop(cookie)
-        self._logger.info(
+        self._logger.debug(
             f"{_method}(cookie='{cookie}'): hold: '{hold_rel['profile']}', appid: '{hold_rel['application_id']}'"
         )
 
@@ -550,12 +550,12 @@ class ProfilesDaemon(dbus.service.Object):
             old_profile = self._active_profile
             if new_profile != old_profile:
                 self._logger.info(
-                    f"Changing active profile: from hold '{old_profile}' to '{new_profile}' (appid: '{new_appid}', cookie: '{last_cookie_key})'"
+                    f"Changing active profile: from hold '{old_profile}' to '{new_profile}' (appid: '{new_appid}')'"
                 )
                 self._apply_profile_with_tlp(new_profile)
             else:
                 self._logger.info(
-                    f"Keeping active profile: hold '{new_profile}' (appid: '{new_appid}', cookie: '{last_cookie_key}')"
+                    f"Keeping active profile: hold '{new_profile}' (appid: '{new_appid}')"
                 )
 
     def _drop_all_holds(self):
@@ -567,7 +567,7 @@ class ProfilesDaemon(dbus.service.Object):
         for cookie in cookies2release:
             hold2release = self._holds.pop(cookie)
             self._logger.info(
-                f"Auto-releasing hold: profile '{hold2release['profile']}' (appid: '{hold2release['application_id']}', cookie: '{cookie})'"
+                f"Auto-releasing hold: profile '{hold2release['profile']}' (appid: '{hold2release['application_id']}')'"
             )
 
             # Emit ProfileReleased signal to the sender
