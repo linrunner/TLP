@@ -22,6 +22,7 @@ import string
 import subprocess
 import sys
 from syslog import LOG_DAEMON
+import xml.etree.ElementTree as Xtree
 
 # --- Constants
 DAEMON_NAME = "TLP Profiles Daemon"
@@ -76,7 +77,7 @@ INTROSPECTION_FULL_XML = """
       <arg type="s" name="xml_data" direction="out"/>
     </method>
   </interface>
-  <interface name="@PD_INTERFACE@">
+  <interface name="{INTERFACE_NAME}">
     <method name="HoldProfile">
       <arg type="s" name="profile" direction="in"/>
       <arg type="s" name="reason" direction="in"/>
@@ -96,7 +97,7 @@ INTROSPECTION_FULL_XML = """
     <signal name="ProfileReleased">
       <arg type="u" name="cookie"/>
     </signal>
-    <!-- INSERT HERE -->
+    <!-- PROPERTIES INSERTED HERE -->
   </interface>
 </node>
 """
@@ -110,8 +111,9 @@ INTROSPECTION_PROPERTIES_XML = """
     <property type="as" name="Actions" access="read"/>
     <property type="aa{sv}" name="ActionsInfo" access="read"/>
     <property type="aa{sv}" name="ActiveProfileHolds" access="read"/>
-    <property type="s" name="Version" access="read"/>
     <property type="b" name="BatteryAware" access="readwrite"/>
+    <property type="s" name="LogLevel" access="readwrite"/>
+    <property type="s" name="Version" access="read"/>
 """
 
 
@@ -318,22 +320,31 @@ class ProfilesDaemon(dbus.service.Object):
         )
 
         # Get 'dbus' introspection XML in a string
-        intro_xml = super().Introspect(object_path, connection)
+        intro_xml_str = super().Introspect(object_path, connection)
+        iface = INTERFACE_NAME
         if object_path == OBJECT_PATH_LEGACY:
-            # Inject legacy interface
-            intro_xml = intro_xml.replace(INTERFACE_NAME, INTERFACE_NAME_LEGACY)
+            # Inject legacy interface name
+            intro_xml_str = intro_xml_str.replace(INTERFACE_NAME, INTERFACE_NAME_LEGACY)
+            iface = INTERFACE_NAME_LEGACY
         elif object_path != OBJECT_PATH:
             raise dbus.exceptions.DBusException(
                 f"{_method}(): No such object path '{object_path}'",
                 name="org.freedesktop.DBus.Error.UnknownObject",
             )
-        # Convert to list/array and insert properties
-        xml_linewise = intro_xml.splitlines()
-        # Return as string
-        xml_linewise[-2:0] = INTROSPECTION_PROPERTIES_XML.splitlines()
 
-        # Return as a string
-        return "\n".join(xml_linewise)
+        # Parse string to XML
+        xml_root = Xtree.fromstring(intro_xml_str)
+        # Find the <interface name="iface"> element
+        xml_interface = xml_root.find(f".//interface[@name='{iface}']")
+        # Parse properties-to-be-inserted to XML
+        xml_properties = Xtree.fromstring(
+            f"<root>{INTROSPECTION_PROPERTIES_XML}</root>"
+        )
+        # Append properties to the interface element
+        for prop in xml_properties:
+            xml_interface.append(prop)
+        # Return XML as a string
+        return Xtree.tostring(xml_root, encoding="unicode")
 
     # --- Interface org.freedesktop.DBus.Properties
     # Note: this interface section must be the last one, or the primitive Introspect()
