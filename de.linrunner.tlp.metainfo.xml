@@ -1,31 +1,44 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
+<?xml version="1.0" encoding="UTF-8" ?>
 <component>
-
   <id>de.linrunner.tlp</id>
   <metadata_license>MIT</metadata_license>
   <name>TLP</name>
+  <project_license>GPL-2.0-or-later AND GPL-3.0</project_license>
+  <summary>Optimize laptop battery life</summary>
+  <url type="homepage">https://linrunner.de/tlp</url>
+  <developer id="de.linrunner">
+     <name>Thomas Koch</name>
+  </developer>
 
-  <summary>Save battery power on laptops</summary>
   <description>
     <p>
-      TLP is an advanced power management tool for Linux. It comes with a
-      default configuration already optimized for battery life. At the same
-      time it is highly customizable to fulfil specific user requirements.
+        TLP is a feature-rich command-line utility, saving laptop battery power
+        without the need to delve deeper into technical details.
     </p>
     <p>
-      TLP supplies separate settings profiles for AC and battery power and can
-      enable or disable bluetooth, WiFi and WWAN radio devices upon system
-      startup.
+        TLP’s default settings are already optimized for battery life and implement
+        Powertop’s recommendations out of the box. Moreover TLP is highly
+        customizable to fulfil specific user requirements.
     </p>
     <p>
-      For ThinkPads it provides a unified way to configure charging thresholds
-      and recalibrate the battery for all models which support it (via tp-smapi
-      or acpi-call).
+        Settings are organized into the three customizable profiles performance (AC),
+        balanced (BAT) and power-saver (SAV), allowing to adjust between savings
+        and performance independently for battery and AC operation.
     </p>
     <p>
-      TLP is a pure command line tool with automated background tasks, it does
-      not contain a GUI.
+        The optional TLP Profiles Daemon (tlp-pd) implements the D-Bus interface,
+        which lets desktop environments show a power profile switch.
+        Together with TLP as the backend for applying the customizable profiles,
+        it replaces power-profiles-daemon.
+    </p>
+    <p>
+        In addition TLP can enable or disable Bluetooth, NFC, Wi-Fi and WWAN
+        devices at boot time, as well as automated switching when a LAN cable is
+        connected or removed, or when the laptop is docked or undocked.
+    </p>
+    <p>
+        For ThinkPads and may other laptop brands it provides a unified way
+        to configure charge thresholds and recalibrate the battery.
     </p>
   </description>
 
@@ -35,11 +48,6 @@
 
   <!-- Do we want software centers to automatically launch TLP ? -->
   <!-- <launchable type="service">tlp</launchable> -->
-
-  <project_license>GPL-2.0+</project_license>
-  <developer_name>Thomas Koch</developer_name>
-  <url type="homepage">https://linrunner.de/tlp</url>
-
   <provides>
     <!-- Match "Portable" chassis type -->
     <modalias>dmi:*:ct8:*</modalias>
@@ -50,5 +58,4 @@
     <!-- Match "battery" kernel module -->
     <modalias>acpi:PNP0C0A:*</modalias>
   </provides>
-
 </component>
