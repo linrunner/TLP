@@ -342,7 +342,7 @@ class ProfilesDaemon(dbus.service.Object):
         )
         # Append properties to the interface element
         for prop in xml_properties:
-            xml_interface.append(prop)
+            xml_interface.append(prop)  # pyright: ignore[reportOptionalMemberAccess]
         # Return XML as a string
         return Xtree.tostring(xml_root, encoding="unicode")
 
