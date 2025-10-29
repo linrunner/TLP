@@ -53,8 +53,7 @@ case $self in
                 ;;
 
             "")
-                get_devc "$self"
-                get_devs "$self"
+                get_rf_dev_state "$self"
                 echo_device_state "$self" "$_devs"
                 ;;
 

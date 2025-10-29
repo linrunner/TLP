@@ -814,8 +814,7 @@ fi # show_graf
 if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
     echo "+++ Wireless"
     for i in bluetooth nfc wifi wwan; do
-        get_devc $i
-        get_devs $i
+        get_rf_dev_state $i
         # shellcheck disable=SC2154
         echo_device_state "$i" "$_devs"
     done
