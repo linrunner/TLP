@@ -151,7 +151,7 @@ device_switch () {
     #     2=hard blocked/3=invalid state/4=no change
     # retval $_devc, $_devs: 0=off/1=on
 
-    local curst newst devn
+    local curst devn newst nmrc
 
     echo_debug "rf" "device_switch($1, $2, $3, $4)"
 
@@ -200,11 +200,16 @@ device_switch () {
         if check_nm && wordinlist "$1" "wifi wwan"; then
             # switch device with NetworkManager
             case "$newst" in
-                1) invoke_nmcli "$1" on  ;;
-                0) invoke_nmcli "$1" off ;;
+                1) invoke_nmcli "$1" on;  nmrc=$? ;;
+                0) invoke_nmcli "$1" off; nmrc=$? ;;
             esac
             # record device state after nmcli
             get_rf_dev_state "$1"
+
+            # interactive command only: check if failed due to missing privileges
+            if [ -z "$3" ] && [ "$nmrc" = "1" ] && ! test_root; then
+                err_no_root_priv "device_switch($1, $2).nmcli"
+            fi
 
         elif cmd_exists $RFKILL ; then
             # switch device with rfkill
