@@ -41,7 +41,8 @@
       helpful to use only selected features
     - tlp-stat -s: unified representation of tlp/tlp-rdw/tlp-pd's status
     - tlp-stat --trace-nm: show the journal entries for NetworkManager
-      correlated with TLP's trace output
+      correlated with TLP's trace output, supplemented with device details
+      for NetworkManager and rfkill
     - Response to invalid subcommands/options: output not only “Usage:”
       but also “Error:”
     Graphics:
@@ -66,6 +67,7 @@
     - DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE: Fix the disabling of nfc
       (Issue #808)
     - tlp-stat -s: warn if RDW is configured but tlp-rdw is not installed
+    - tlp-stat -r -v: show device details for NetworkManager and rfkill
 
   * Bugfixes
     Battery Care:
