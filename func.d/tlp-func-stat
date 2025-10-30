@@ -867,6 +867,28 @@ print_battery_cycle_count () {
     return 0
 }
 
+# --- Radio Devices
+#
+print_nm_rfkill_states () {
+    # print radio devices states as seen by NetworkManager and rfkill
+
+    # shellcheck disable=SC2086
+    if cmd_exists $NMCLI; then
+        echo "NetworkManager details:"
+        $NMCLI radio
+        echo
+
+    fi
+    # shellcheck disable=SC2086
+    if cmd_exists $RFKILL; then
+        echo "rfkill details:"
+        $RFKILL
+        echo
+    fi
+
+    return 0
+}
+
 # -- udev diagnostic
 
 check_udev_rule_ps () {

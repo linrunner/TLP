@@ -893,6 +893,8 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
         fi
     done
     [ "$ifshown" = "1" ] && echo
+
+    [ "$show_verbose" = "1" ] && print_nm_rfkill_states
 fi # show_rfkill
 
 # --- show sound power mode
@@ -1209,6 +1211,11 @@ if [ "$show_trace" = "1" ]; then
             echo "and restart the rsyslog daemon." 1>&2
             echo 1>&2
         fi
+    fi
+
+    if [ "$show_trace_nm" = "1" ]; then
+        echo
+        print_nm_rfkill_states
     fi
 fi # show_trace
 
