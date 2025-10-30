@@ -1,4 +1,4 @@
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # /etc/tlp.conf - TLP user configuration (version @TLPVER@)
 # See full explanation: https://linrunner.de/tlp/settings
 #
@@ -41,7 +41,7 @@
 #   missing or the line has a leading #'.
 # - Default <none>: do nothing or use kernel/hardware defaults.
 #
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # tlp - Parameters for power saving
 
 # Set to 0 to disable, 1 to enable TLP.
@@ -59,9 +59,9 @@
 #TLP_DISABLE_DEFAULTS=1
 
 # Control how warnings about invalid settings are issued:
-#   0=disabled,
-#   1=background tasks (boot, resume, change of power source) report to syslog,
-#   2=shell commands report to the terminal (stderr),
+#   0=disabled
+#   1=background tasks (boot, resume, change of power source) report to syslog
+#   2=shell commands report to the terminal (stderr)
 #   3=combination of 1 and 2
 # Default: 3
 
@@ -73,7 +73,8 @@
 #   96=cyan, 97=white.
 # Other colors are possible, refer to:
 #   https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
-# Colors must be specified in the order "<error> <warning> <notice> <success>".
+# Colors must be specified in the order
+#   "<error> <warning> <notice> <success>".
 # By default, errors are shown in red, warnings in yellow, notices in bold
 # and success in green.
 # Default: "91 93 1 92"
@@ -87,15 +88,15 @@
 #   2=smart - do not switch if the following profiles were active previously:
 #             power-saver or balanced on AC resp.
 #             power-saver or performance on battery power.
-# Note: the same applies if the charger was connected or removed during suspend.
+# Note: the same applies if the charger was connected/removed during suspend.
 # Default: 2
 
 #TLP_AUTO_SWITCH=2
 
 # Power profile when no power supply is detected:
 # PRF=performance, BAL=balanced, SAV=power-saver.
-# Note: legacy values AC and BAT continue to work. They are mapped to PRF and BAL,
-# respectively.
+# Note: legacy values AC and BAT continue to work. They are mapped to
+# PRF and BAL, respectively.
 # Concerns some desktop and embedded hardware only.
 # Default: <none>
 
@@ -107,15 +108,16 @@
 
 #TLP_PERSISTENT_DEFAULT=0
 
-# Power supply classes to ignore when determining operation mode: AC, USB, BAT.
+# Power supply classes to ignore when determining operation mode:
+#  AC, USB, BAT.
 # Separate multiple classes with spaces.
 # Note: try on laptops where operation mode AC/BAT is incorrectly detected.
 # Default: <none>
 
 #TLP_PS_IGNORE="BAT"
 
-# Seconds laptop mode has to wait after the disk goes idle before doing a sync.
-# Non-zero value enables, zero disables laptop mode.
+# Seconds laptop mode has to wait after the disk goes idle before doing a
+# sync. Non-zero value enables, zero disables laptop mode.
 # Default: 0 (AC), 2 (BAT)
 
 #DISK_IDLE_SECS_ON_AC=0
@@ -144,7 +146,7 @@
 # Intel CPU with intel_pstate driver in passive mode ('intel_cpufreq') or
 # AMD CPU with amd-pstate driver in passive or guided mode ('amd-pstate') or
 # Intel, AMD and other CPU brands with acpi-cpufreq driver:
-#   conservative, ondemand(*), userspace, powersave, performance, schedutil(*).
+#   conservative, ondemand(*), userspace, powersave, performance, schedutil(*)
 # Use tlp-stat -p to show the active driver and available governors.
 # Important:
 #   Governors marked (*) above are power efficient for *almost all* workloads
@@ -199,9 +201,9 @@
 #CPU_MIN_PERF_ON_AC=0
 #CPU_MAX_PERF_ON_AC=100
 #CPU_MIN_PERF_ON_BAT=0
-#CPU_MAX_PERF_ON_BAT=70
+#CPU_MAX_PERF_ON_BAT=80
 #CPU_MIN_PERF_ON_SAV=0
-#CPU_MAX_PERF_ON_SAV=30
+#CPU_MAX_PERF_ON_SAV=60
 
 # Set the CPU "turbo boost" (Intel) or "core performance boost" (AMD) feature:
 #   0=disable, 1=allow.
@@ -218,7 +220,8 @@
 #   0=disable, 1=enable.
 # Improve performance by increasing minimum P-state limit dynamically
 # whenever a task previously waiting on I/O is selected to run.
-# Requires Intel Core i  6th gen. or newer CPU: intel_pstate driver in active mode.
+# Requires Intel Core i  6th gen. or newer CPU with intel_pstate driver
+# in active mode.
 # Note: AMD CPUs currently have no tunable for this.
 # Default: <none>
 
@@ -332,8 +335,8 @@
 # Runtime Power Management for NVMe, SATA, ATA and USB disks
 # as well as SATA ports:
 #   on=disable, auto=enable.
-# Note: SATA controllers are PCIe bus devices and handled by RUNTIME_PM further
-# down.
+# Note: SATA controllers are PCIe bus devices and handled by RUNTIME_PM
+# further down.
 
 # Default: on (AC), auto (BAT)
 
@@ -396,7 +399,7 @@
 # Default: 0 (AC), 1 (BAT)
 
 #AMDGPU_ABM_LEVEL_ON_AC=0
-#AMDGPU_ABM_LEVEL_ON_BAT=3
+#AMDGPU_ABM_LEVEL_ON_BAT=1
 
 # Wi-Fi power saving mode: on=enable, off=disable.
 # Default: off (AC), on (BAT)
@@ -590,7 +593,7 @@
 
 #RESTORE_THRESHOLDS_ON_BAT=1
 
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # tlp-rdw - Radio Device Wizard
 # Note: requires installation of the optional package tlp-rdw.
 
@@ -611,9 +614,9 @@
 #DEVICES_TO_ENABLE_ON_WWAN_DISCONNECT=""
 
 # Radio devices to enable/disable when docked.
-# Note: not all docks can be recognized, especially USB-C docks. If a LAN cable
-# is connected to the dock, use DEVICES_TO_DISABLE_ON_LAN_CONNECT and
-# DEVICES_TO_ENABLE_ON_LAN_DISCONNECT instead.
+# Note: not all docks can be recognized, especially USB-C docks. If a LAN
+# cable is connected to the dock, use DEVICES_TO_DISABLE_ON_LAN_CONNECT
+# and DEVICES_TO_ENABLE_ON_LAN_DISCONNECT instead.
 
 #DEVICES_TO_ENABLE_ON_DOCK=""
 #DEVICES_TO_DISABLE_ON_DOCK=""
