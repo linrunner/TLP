@@ -122,6 +122,9 @@ MANFILES8 = \
 MANFILESRDW8 = \
 	tlp-rdw.8
 
+MANFILESPD1 = \
+	tlpctl.1
+
 MANFILESPD8 = \
 	tlp-pd.8 \
 	tlp-pd.service.8
@@ -282,6 +285,8 @@ install-man-rdw:
 
 install-man-pd:
 	# manpages
+	install -d -m 755 $(_MAN)/man1
+	cd man-pd && install -m 644 $(MANFILESPD1) $(_MAN)/man1/
 	install -d -m 755 $(_MAN)/man8
 	cd man-pd && install -m 644 $(MANFILESPD8) $(_MAN)/man8/
 
@@ -364,6 +369,7 @@ uninstall-man-rdw:
 
 uninstall-man-pd:
 	# manpages
+	cd $(_MAN)/man1 && rm -f $(MANFILESPD1)
 	cd $(_MAN)/man8 && rm -f $(MANFILESPD8)
 
 uninstall: uninstall-tlp uninstall-rdw uninstall-pd
