@@ -1,4 +1,4 @@
-.TH tlpctl 1 2025-10-27 "TLP 1.9.0" "Power Management"
+.TH tlpctl 1 2025-10-31 "TLP 1.9.0" "Power Management"
 .
 .SH NAME
 tlpctl \- control TLP power profiles
@@ -75,6 +75,10 @@ Multiple holds can be active simultaneously.
 .B list-holds
 List current power profile holds (from launch command), showing the profile name,
 application ID, and reason for each hold.
+.TP
+.BI "loglevel " \fIlevel\fR
+Set the loglevel of the TLP Profiles Daemon (tlp-pd). Valid levels are:
+.BR info " and " debug "."
 .
 .SS Information
 .TP
@@ -86,6 +90,11 @@ Display version information for both the tlpctl client and the TLP Profiles Daem
 .BR \-h ", " \-\-help
 Show a help message and exit. Can be used with any command to show
 command-specific help.
+.
+.SH AUTHORIZATION
+.PP
+An active, unlocked session is required to perform actions.
+Changing the \fBloglevel\fR requires root privilege.
 .
 .SH POWER PROFILES
 .TP
@@ -147,8 +156,8 @@ When using \fBlaunch\fR, the exit status of the launched command is returned.
 .
 .SH SEE ALSO
 .BR tlp (8),
-.BR tlp-stat(8),
-.BR tlp-pd(8).
+.BR tlp-stat (8),
+.BR tlp-pd (8).
 .PP
 TLP documentation: <https://linrunner.de/tlp>
 .
