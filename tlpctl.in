@@ -55,6 +55,11 @@ def get_profile_choices():
         return []
 
 
+def get_loglevel_property():
+    proxy = get_proxy()
+    return proxy.Get("(ss)", PD_INTERFACE_NAME, "LogLevel")
+
+
 def command(func):
     def wrapper(*args, **kwargs):
         try:
@@ -150,6 +155,8 @@ def _list(args):
         print("yes")
     else:
         print("no")
+
+    print(f"tlp-pd LogLevel: {get_loglevel_property()}")
 
 
 @command
@@ -358,7 +365,7 @@ def get_parser():
     parser_set.add_argument(
         "loglevel",
         nargs=1,
-        choices=["info", "debug"],
+        choices=["info", "debug", ""],
     )
     parser_set.set_defaults(func=_set_loglevel)
 
