@@ -356,7 +356,7 @@ def get_parser():
         "loglevel", help="Set the loglevel of the tlp-pd daemon"
     )
     parser_set.add_argument(
-        "LOGLEVEL",
+        "loglevel",
         nargs=1,
         choices=["info", "debug"],
     )
