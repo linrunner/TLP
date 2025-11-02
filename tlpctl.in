@@ -9,6 +9,7 @@
 
 
 import argparse
+import errno
 import os
 import signal
 import subprocess
@@ -216,7 +217,7 @@ def _launch(args):
 
     except FileNotFoundError as error:
         sys.stderr.write(f"Error: command '{appid}' not found\n{error}\n")
-        sys.exit(1)
+        ret = errno.ENOENT
 
     proxy.ReleaseProfile("(u)", cookie)
 
