@@ -29,7 +29,7 @@ PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
 
 
 # --- Helper functions
-def get_proxy():
+def get_proxy(interface):
     # Call the daemon via proxy
     bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
     return Gio.DBusProxy.new_sync(
@@ -38,29 +38,48 @@ def get_proxy():
         None,
         PD_BUS_NAME,
         PD_OBJECT_PATH,
-        PROPERTIES_IFACE,
+        interface,
         None,
     )
 
 
-def get_profiles_property(prop):
-    proxy = get_proxy()
+def get_pd_property(prop):
+    # Get tlp-pd property
+    proxy = get_proxy(PROPERTIES_IFACE)
     return proxy.Get("(ss)", PD_INTERFACE_NAME, prop)
 
 
 def get_profile_choices():
+    # Get supported profiles
     try:
-        return [profile["Profile"] for profile in get_profiles_property("Profiles")]
+        return [profile["Profile"] for profile in get_pd_property("Profiles")]
     except GLib.Error:
         return []
 
 
-def get_loglevel_property():
-    proxy = get_proxy()
-    return proxy.Get("(ss)", PD_INTERFACE_NAME, "LogLevel")
+def list_profiles_brief():
+    # Print a brief list of available profiles, active profile marked with '*'
+    profiles = get_pd_property("Profiles")
+    active_profile = get_pd_property("ActiveProfile")
+
+    for profile in profiles:
+        marker = "*" if profile["Profile"] == active_profile else " "
+        print(f"{marker} {profile['Profile']}")
+
+
+def set_profile(profile):
+    # Switch TLP profile via tlp-pd
+    proxy = get_proxy(PROPERTIES_IFACE)
+    proxy.Set(
+        "(ssv)",
+        PD_INTERFACE_NAME,
+        "ActiveProfile",
+        GLib.Variant.new_string(profile),
+    )
 
 
 def command(func):
+    # Execute a tlpctl command
     def wrapper(*args, **kwargs):
         try:
             func(*args, **kwargs)
@@ -74,33 +93,12 @@ def command(func):
     return wrapper
 
 
-def set_profile(profile):
-    # Swirch profile
-    proxy = get_proxy()
-    proxy.Set(
-        "(ssv)",
-        PD_INTERFACE_NAME,
-        "ActiveProfile",
-        GLib.Variant.new_string(profile),
-    )
-
-
-def list_profiles_brief():
-    profiles = get_profiles_property("Profiles")
-    active_profile = get_proxy().Get("(ss)", PD_INTERFACE_NAME, "ActiveProfile")
-
-    for profile in profiles:
-        marker = "*" if profile["Profile"] == active_profile else " "
-        print(f"{marker} {profile['Profile']}")
-
-
 # --- powerprofilessctl-compatible commands
 @command
 def _version(args):
     client_version = "@TLPVER@"
     try:
-        proxy = get_proxy()
-        daemon_ver = proxy.Get("(ss)", PD_INTERFACE_NAME, "Version")
+        daemon_ver = get_pd_property("Version")
     except GLib.Error:
         daemon_ver = "unknown"
     print(f"client: {client_version}\ndaemon: {daemon_ver}")
@@ -108,28 +106,25 @@ def _version(args):
 
 @command
 def _set_profile(args):
-    proxy = get_proxy()
-    proxy.Set(
-        "(ssv)",
-        PD_INTERFACE_NAME,
-        "ActiveProfile",
-        GLib.Variant.new_string(args.profile[0]),
-    )
+    # Set active profile
+    set_profile(args.profile[0])
 
 
 @command
 def _get(args):
-    proxy = get_proxy()
-    profile = proxy.Get("(ss)", PD_INTERFACE_NAME, "ActiveProfile")
-    print(profile)
+    # Get active profile
+    print(get_pd_property("ActiveProfile"))
 
 
 @command
 def _list(args):
-    profiles = get_profiles_property("Profiles")
-    reason = get_proxy().Get("(ss)", PD_INTERFACE_NAME, "PerformanceDegraded")
+    # Print a list of profiles with associateddrivers,
+    # active profile marked with '*',
+    # followed by BatteryAware and LogLevel properties
+    profiles = get_pd_property("Profiles")
+    reason = get_pd_property("PerformanceDegraded")
     degraded = reason != ""
-    active_profile = get_proxy().Get("(ss)", PD_INTERFACE_NAME, "ActiveProfile")
+    active_profile = get_pd_property("ActiveProfile")
 
     print("Available power profiles (* = active):\n")
     for profile in profiles:
@@ -151,17 +146,18 @@ def _list(args):
         print("")
 
     print("Dynamic changes from charger and battery events: ", end="")
-    if get_profiles_property("BatteryAware"):
+    if get_pd_property("BatteryAware"):
         print("yes")
     else:
         print("no")
 
-    print(f"tlp-pd LogLevel: {get_loglevel_property()}")
+    print(f"tlp-pd LogLevel: {get_pd_property('LogLevel')}")
 
 
 @command
 def _list_holds(_args):
-    holds = get_profiles_property("ActiveProfileHolds")
+    # List active profile holds with command and reason
+    holds = get_pd_property("ActiveProfileHolds")
 
     index = 0
     for hold in holds:
@@ -176,6 +172,7 @@ def _list_holds(_args):
 
 @command
 def _launch(args):
+    # Run a command using a specific power profile (hold)
     reason = args.reason
     profile = args.profile
     appid = args.appid
@@ -188,18 +185,11 @@ def _launch(args):
     if not reason:
         reason = f"Running {args.arguments}"
     ret = 0
-    bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
-    proxy = Gio.DBusProxy.new_sync(
-        bus,
-        Gio.DBusProxyFlags.NONE,
-        None,
-        PD_BUS_NAME,
-        PD_OBJECT_PATH,
-        PD_INTERFACE_NAME,
-        None,
-    )
+
+    proxy = get_proxy(PD_INTERFACE_NAME)
     cookie = proxy.HoldProfile("(sss)", profile, reason, appid)
 
+    # Run the command
     try:
         with subprocess.Popen(args.arguments) as launched_app:
             # Redirect the same signal to the child
@@ -241,7 +231,7 @@ def _launch(args):
 # --- TLP-specific commands
 @command
 def _performance(_args):
-    # Switch to performance
+    # Switch to performance profile
     set_profile("performance")
     print("Switched to performance profile.")
 
@@ -262,6 +252,7 @@ def _power_saver(_args):
 
 @command
 def _set_loglevel(args):
+    # Set tlp-pd loglevel
     loglevel = args.loglevel[0]
     if loglevel not in ["info", "debug"]:
         sys.stderr.write(
@@ -269,7 +260,7 @@ def _set_loglevel(args):
         )
         sys.exit(1)
 
-    proxy = get_proxy()
+    proxy = get_proxy(PROPERTIES_IFACE)
     proxy.Set(
         "(ssv)",
         PD_INTERFACE_NAME,
@@ -325,7 +316,7 @@ def get_parser():
     # set
     parser_set = subparsers.add_parser("set", help="Set the active power profile")
     parser_set.add_argument(
-        "PROFILE",
+        "profile",
         nargs=1,
         help="Profile to activate",
         choices=get_profile_choices(),
