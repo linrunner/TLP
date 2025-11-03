@@ -10,7 +10,9 @@ spath="${0%/*}"
 cache_root_cred
 start_report
 
-"$spath/test-pm_all.sh"
-"$spath/test-bc_all.sh"
+"$spath/test-profiles.sh"
+"$spath/test-cpufreq.sh"
+"$spath/test-gpufreq.sh"
+"$spath/test-rf-switch.sh"
 
 print_report
