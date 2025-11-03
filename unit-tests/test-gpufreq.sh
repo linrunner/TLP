@@ -21,8 +21,7 @@ readonly SUDO="sudo"
 
 readonly GPUGLOB='/sys/class/drm/card[0-9]'
 
-# --- Functions
-
+# --- Tests
 check_intel_gpu_freq () {
     # apply Intel gpu min/max/boost frequencies
     # global param: $_gpu_base, $_testcnt, $_failcnt
@@ -413,8 +412,7 @@ _failcnt=0
 
 report_test "$_basename"
 
-# --- Iterate GPUs
-
+# --- TEST: iterate GPUs
 for _gpu_base in $GPUGLOB; do
     [ -d "$_gpu_base" ] || break
 

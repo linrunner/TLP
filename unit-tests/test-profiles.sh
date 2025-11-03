@@ -17,8 +17,7 @@ readonly SUDO="sudo"
 readonly LASTPWR='/run/tlp/last_pwr'
 readonly MANUALMODE='/run/tlp/manual_mode'
 
-# --- Functions
-
+# --- Tests
 check_profile_select () {
     # select performance/balanced/power-saver profiles as well as ac/bat manual mode
     # global param: $_testcnt, $_failcnt
@@ -470,6 +469,7 @@ report_test "$_basename"
 # initialize statefile
 ${SUDO} ${TLP} start > /dev/null
 
+# --- TEST
 [ "$do_profile" = "1" ] && check_profile_select
 [ "$do_persist" = "1" ] && check_persistent_mode
 [ "$do_power" = "1" ] && check_power_supply
