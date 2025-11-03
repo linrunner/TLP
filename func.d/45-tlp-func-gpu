@@ -213,8 +213,9 @@ set_abm_level () {
                 for pps in "$gpu/${card}-eDP"*; do
                     if [ -f "$pps/amdgpu/panel_power_savings" ]; then
                         case "$1" in
-                            "$PP_PRF")           level="${AMDGPU_ABM_LEVEL_ON_AC:-}" ;;
-                            "$PP_BAL"|"$PP_SAV") level="${AMDGPU_ABM_LEVEL_ON_BAT:-}" ;;
+                            "$PP_PRF") level="${AMDGPU_ABM_LEVEL_ON_AC:-}" ;;
+                            "$PP_BAL") level="${AMDGPU_ABM_LEVEL_ON_BAT:-}" ;;
+                            "$PP_SAV") level="${AMDGPU_ABM_LEVEL_ON_SAV:-$AMDGPU_ABM_LEVEL_ON_BAT}" ;;
                         esac
                         if [ -z "$level" ]; then
                             # do nothing if unconfigured

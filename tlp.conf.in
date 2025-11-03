@@ -396,10 +396,11 @@
 # Notes:
 # - Requires AMD Vega or newer GPU with amdgpu driver as of kernel 6.9
 # - Savings are made at the expense of color balance
-# Default: 0 (AC), 1 (BAT)
+# Default: 0 (AC), 1 (BAT), 3 (SAV)
 
 #AMDGPU_ABM_LEVEL_ON_AC=0
 #AMDGPU_ABM_LEVEL_ON_BAT=1
+#AMDGPU_ABM_LEVEL_ON_SAV=3
 
 # Wi-Fi power saving mode: on=enable, off=disable.
 # Default: off (AC), on (BAT)
