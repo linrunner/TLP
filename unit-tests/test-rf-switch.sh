@@ -19,7 +19,7 @@
 read_rf_state () {
     # $1: radio type: bluetooth/wifi/wwan/nfc
     if wordinlist "$1" "bluetooth nfc wifi wwan"; then
-        state="$($1 | sed -r 's/'$1'.+= (on|off|none).*/\1/')"
+        state="$($1 | sed -r 's/'"$1"'.+= (on|off|none).*/\1/')"
         if wordinlist "$state" "on off none"; then
             printf "%s" "$state"
             return 0

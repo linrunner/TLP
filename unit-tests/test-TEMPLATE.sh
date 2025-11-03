@@ -118,7 +118,7 @@ _failcnt=0
 report_test "$_basename"
 
 # initialize TLP
-${SUDO} ${TLP} start > /dev/null
+${SUDO} "${TLP}" start > /dev/null
 
 [ "$do_feature_one" = "1" ] && check_feature_one
 [ "$do_feature_two" = "1" ] && check_feature_two
