@@ -46,8 +46,9 @@
     - Response to invalid subcommands/options: output not only “Usage:”
       but also “Error:”
     Graphics:
-    - RADEON_POWER_PROFILE_ON_AC/BAT removed (deprecated since 1.8.0)
+    - New parameter for the power-saver profile: AMDGPU_ABM_LEVEL_ON_SAV
     - tlp-stat -g -v: show power_state, pp_dpm_*clk of AMD GPUs
+    - RADEON_POWER_PROFILE_ON_AC/BAT removed (deprecated since 1.8.0)
     Processor:
     - PLATFORM_PROFILE_ON_AC/BAT/SAV: activated by default
     - New parameters for the power-saver profile:
