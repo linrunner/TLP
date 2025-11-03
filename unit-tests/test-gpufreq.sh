@@ -66,7 +66,7 @@ check_intel_gpu_freq () {
                                         INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
                     BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
                                         INTEL_GPU_MAX_FREQ_ON_BAT="$max"    INTEL_GPU_MAX_FREQ_ON_AC="" \
-                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                                        INTEL_GPU_BOOST_FREQ_ON_BAT="$boost"  INTEL_GPU_BOOST_FREQ_ON_AC="" > /dev/null 2>&1 ;;
                 esac
 
                 # expect change
@@ -102,7 +102,7 @@ check_intel_gpu_freq () {
                                         INTEL_GPU_BOOST_FREQ_ON_AC="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
                     BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min_save"    INTEL_GPU_MIN_FREQ_ON_AC="" \
                                         INTEL_GPU_MAX_FREQ_ON_BAT="$max_save"    INTEL_GPU_MAX_FREQ_ON_AC="" \
-                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                                        INTEL_GPU_BOOST_FREQ_ON_BAT="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_AC="" > /dev/null 2>&1 ;;
                 esac
 
                 # expect initial frequencies
@@ -141,7 +141,7 @@ check_intel_gpu_freq () {
                                         INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
                     BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
                                         INTEL_GPU_MAX_FREQ_ON_BAT="$max"    INTEL_GPU_MAX_FREQ_ON_AC="" \
-                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                                        INTEL_GPU_BOOST_FREQ_ON_BAT="$boost"  INTEL_GPU_BOOST_FREQ_ON_AC="" > /dev/null 2>&1 ;;
                 esac
 
                 # do not expect change
