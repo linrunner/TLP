@@ -32,7 +32,22 @@ readonly AMDPSD="/sys/devices/system/cpu/amd_pstate"
 readonly FWACPID="/sys/firmware/acpi"
 
 # --- Functions
+print_nth_arg () {
+    # Get n-th argument
+    # $1: n
+    # $2..$m: arguments
+    local n="$1"
+    [ "$1" -gt 0 ] || return
 
+    until [ "$n" -eq 0 ] || [ $# -eq 0 ]; do
+        shift
+        n=$((n - 1))
+    done
+    printf "%s" "$1"
+}
+
+
+# --- Tests
 check_cpu_driver_opmode () {
     # apply cpu driver operation mode
 
@@ -1097,7 +1112,7 @@ report_test "$_basename"
 
 printf_msg "+++ %s --- cpu_driver: %s\n\n" "${0##*/}" "$_cpu_driver"
 
-# --- Checks
+# --- TEST
 check_cpu_driver_opmode
 check_cpu_scaling_governor
 check_cpu_scaling_freq
