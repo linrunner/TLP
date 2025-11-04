@@ -4,6 +4,7 @@
 # - invoke persistent mode
 #
 # Tested parameters:
+# - TLP_AUTO_SWITCH
 # - TLP_DEFAULT_MODE
 # - TLP_PERSISTENT_DEFAULT
 #
@@ -133,8 +134,93 @@ check_profile_select () {
     return $errcnt
 }
 
+check_default_mode () {
+    # invoke default mode PRF/BAL/SAV/AC/BAT
+    # global param: $_testcnt, $_failcnt
+    # retval: $_testcnt++, $_failcnt++
+
+    local prof_seq
+    local prof prof_save prof_xpect
+    local ps_save
+    local mm_save mm_xpect
+    local rc=0
+    local errcnt=0
+
+    printf_msg "check_default_mode {{{\n"
+
+    # save initial profile, power source and manual mode
+    read_saved_profile; prof_save="$_prof"; ps_save="$_ps"
+    mm_save="$(read_sysf "$MANUALMODE")"
+
+   # iterate supported profiles, return to initial profile
+    case "$prof_save" in
+        "$PP_PRF") prof_seq="BAL SAV AC BAT PRF" ;;
+        "$PP_BAL") prof_seq="SAV AC BAT PRF BAL" ;;
+        "$PP_SAV") prof_seq="AC BAT PRF BAL SAV" ;;
+    esac
+
+    printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$prof_save $ps_save" "$mm_save"
+
+    for prof in $prof_seq; do
+        printf_msg " TLP_AUTO_SWITCH=0 TLP_DEFAULT_MODE=%-4s" "${prof}:"
+
+        case "$prof" in
+            PRF)
+                prof_xpect="$PP_PRF $ps_save"
+                ;;
+
+            AC)
+                prof_xpect="$PP_PRF $ps_save"
+                ;;
+
+            BAL)
+                prof_xpect="$PP_BAL $ps_save"
+                ;;
+
+            BAT)
+                prof_xpect="$PP_BAL $ps_save"
+                ;;
+
+            SAV)
+                prof_xpect="$PP_SAV $ps_save"
+                ;;
+        esac
+
+        ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=0 TLP_DEFAULT_MODE="$prof" > /dev/null 2>&1
+
+        # expect changing profiles
+        compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
+        if [ "$rc" -eq 0 ]; then
+            printf_msg " last_pwr/%s=ok" "$prof_xpect"
+        else
+            printf_msg " last_pwr/%s=err(%s)" "$prof_xpect" "$rc"
+            errcnt=$((errcnt + 1))
+        fi
+        # do not expect manual mode
+        mm_xpect=""
+        compare_sysf "$mm_xpect" "$MANUALMODE"; rc=$?
+        if [ "$rc" -eq 0 ]; then
+            printf_msg " manual_mode/%s=ok" "$mm_xpect"
+        else
+            printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
+            errcnt=$((errcnt + 1))
+        fi
+        printf "\n"
+
+    done # prof
+
+    read_saved_profile
+    printf_msg " result: last_pwr/%s manual_mode/%s\n" "$_prof $_ps" "$(read_sysf "$MANUALMODE")"
+
+    # print summary
+    printf_msg "}}} errcnt=%s\n\n" "$errcnt"
+    _testcnt=$((_testcnt + 1))
+    [ "$errcnt" -gt 0 ] && _failcnt=$((_failcnt + 1))
+    return $errcnt
+}
+
 check_persistent_mode () {
-    # invoke perstent mode PRF/BAL/SAV/AC/BAT
+    # invoke persistent mode PRF/BAL/SAV/AC/BAT
     # global param: $_testcnt, $_failcnt
     # retval: $_testcnt++, $_failcnt++
 
@@ -438,11 +524,13 @@ if [ $# -eq 0 ]; then
     do_profile="1"
     do_persist="1"
     do_power="1"
+    do_default="1"
     do_switch="1"
 else
     while [ $# -gt 0 ]; do
         case "$1" in
             profile)  do_profile="1" ;;
+            default)  do_default="1" ;;
             persist)  do_persist="1" ;;
             power)    do_power="1" ;;
             switch)   do_switch="1" ;;
@@ -471,6 +559,7 @@ ${SUDO} ${TLP} start > /dev/null
 
 # --- TEST
 [ "$do_profile" = "1" ] && check_profile_select
+[ "$do_default" = "1" ] && check_default_mode
 [ "$do_persist" = "1" ] && check_persistent_mode
 [ "$do_power" = "1" ] && check_power_supply
 [ "$do_switch" = "1" ] && check_auto_switch
