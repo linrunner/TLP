@@ -221,12 +221,15 @@ print_saved_profile () {
     # shellcheck disable=SC2154
     printf "%s" "$(pp2strx "$_pp_last")"
 
-    # check for manual and persistent default mode
+    # check for manual and default/persistent mode
     # shellcheck disable=SC2154
-    if get_manual_mode; then
+    get_manual_mode
+    get_default_mode
+    # shellcheck disable=SC2154
+    if [ "$_manual_mode" != "$MPM_OFF" ]; then
         printf " (manual)\n"
-    elif get_persist_mode && [ "$_persist_mode" = "$_pp_last" ]; then
-        printf " (persistent)\n"
+    elif [ "$_default_mode" = "$_pp_last" ]; then
+        printf " (default)\n"
     else
         printf "\n"
     fi

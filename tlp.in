@@ -365,7 +365,7 @@ case "$_cmd" in
             save_runconf
             unlock_tlp
 
-            echo_started_profile "$_pp_next"
+            echo_started_profile "$_pp_next" "start"
         else
             echo_tlp_locked
         fi

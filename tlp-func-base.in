@@ -78,7 +78,7 @@ readonly PP_SAV=2
 readonly PP_SUS=3
 readonly PP_VALID="0 1 2"
 
-# manual/persistent mode exceptional cases
+# default/manual/persistent mode exceptional cases
 readonly MPM_UNKNOWN=128
 readonly MPM_OFF=255
 
@@ -1017,24 +1017,31 @@ check_ac_power () { # check if ac power connected -- $1: function
     return 0
 }
 
-# --- Persist and Manual Modes
+# --- Default, Persistent and Manual Profiles
 
-get_persist_mode () { # get persistent power profile
-    # rc: 0=persistent/1=not persistent
-    # retval: $_persist_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, MPM_OFF=255)
-    local rc=1
+get_default_mode () { # get default and persistent power profile
+    # retval: $_default_mode, $_persist_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, MPM_OFF=255)
+
+    _default_mode=$MPM_OFF
     _persist_mode=$MPM_OFF
 
-    if [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then
-        # persistent mode = configured default mode
-        case $(toupper "$TLP_DEFAULT_MODE") in
-            AC|PRF)  _persist_mode=$PP_PRF; rc=0 ;;
-            BAT|BAL) _persist_mode=$PP_BAL; rc=0 ;;
-            SAV)     _persist_mode=$PP_SAV; rc=0 ;;
+    if [ "$TLP_AUTO_SWITCH" = "0" ]; then
+        # auto switching disabled, return default profile
+        case "$(toupper "$TLP_DEFAULT_MODE")" in
+            PRF|AC)  _default_mode="$PP_PRF" ;;
+            BAL|BAT) _default_mode="$PP_BAL" ;;
+            SAV)     _default_mode="$PP_SAV" ;;
         esac
     fi
 
-    return $rc
+    if [ "$TLP_PERSISTENT_DEFAULT" = "1" ]; then
+        # persistent profile
+        case "$(toupper "$TLP_DEFAULT_MODE")" in
+            PRF|AC)  _persist_mode="$PP_PRF" ;;
+            BAL|BAT) _persist_mode="$PP_BAL" ;;
+            SAV)     _persist_mode="$PP_SAV" ;;
+        esac
+    fi
 }
 
 set_manual_mode () { # set manual profile
@@ -1172,7 +1179,8 @@ get_next_power_profile () {
     # - actual power source or
     # - default/persistence setting
     # $1: tlp command
-    # retval: $_pp_next, $_pp_last (PP_PRF=0, PP_BAL=1, PP_SAV=2)
+    # retval: $_pp_next, $_pp_last (PP_PRF=0, PP_BAL=1, PP_SAV=2),
+    #         $_default_mode, $persist_mode (PP_PRF=0, PP_BAL=1, PP_SAV=2, MPM_OFF=255)
     # rc: same as $_pp_next
     # like get_sys_power_supply(), plus:
     # - maps unknown power source to TLP_DEFAULT_MODE
@@ -1189,18 +1197,24 @@ get_next_power_profile () {
     # determine current power supply
     get_sys_power_supply "$tlp_cmd"
     get_manual_mode
+    get_default_mode
     _pp_next="$PS_UNKNOWN"
 
     # determine next power profile based on command
-    if get_persist_mode; then
+    if [ "$_persist_mode" != "$MPM_OFF" ]; then
         # persistent mode
         _pp_next=$_persist_mode
     else
         # non-persistent mode
         case "$tlp_cmd" in
             init|start)
-                # use current power source
-                _pp_next=$_syspwr
+                if [ "$_default_mode" != "$MPM_OFF" ]; then
+                    # use default profile
+                    _pp_next="$_default_mode"
+                else
+                    # use profile for power source
+                    _pp_next=$_syspwr
+                fi
                 clear_manual_mode
                 ;;
 
@@ -1214,7 +1228,7 @@ get_next_power_profile () {
                         || { [ "$TLP_AUTO_SWITCH" = "2" ] && [ "$_pp_last" != "$_ps_last" ]; }; then
                         # 1. switching disabled AND last profile is known
                         #  OR
-                        # 2. switching enabled AND power source did not change
+                        # 2. auto switching AND power source did not change
                         #    (ignores meaningless power_supply events triggered by unplugging USB-C (disk) devices)
                         #  OR
                         # 3. smart switching AND non-standard profile selected (by user)
@@ -1224,8 +1238,14 @@ get_next_power_profile () {
                         # 3. (plain old) auto switching
                         #  OR
                         # 4. last profile is unknown
-                        # --> set next profile according to current power source
-                        _pp_next=$_syspwr
+                        # --> set next profile according to default or current power source
+                        if [ "$_default_mode" != "$MPM_OFF" ]; then
+                            # use default profile
+                            _pp_next="$_default_mode"
+                        else
+                            # use profile for power source
+                            _pp_next=$_syspwr
+                        fi
                     fi
                 fi
                 ;;
@@ -1287,9 +1307,9 @@ get_next_power_profile () {
     fi # non-persistent mode
 
     if [ "$_pp_next" != "$_pp_last" ]; then
-        echo_debug "ps" "get_next_power_profile($tlp_cmd).change: sw=$TLP_AUTO_SWITCH; manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
+        echo_debug "ps" "get_next_power_profile($tlp_cmd).change: sw=$TLP_AUTO_SWITCH; def=$_default_mode; man=$_manual_mode; pers=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
     else
-        echo_debug "ps" "get_next_power_profile($tlp_cmd).keep: sw=$TLP_AUTO_SWITCH; manual=$_manual_mode; persist=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
+        echo_debug "ps" "get_next_power_profile($tlp_cmd).keep: sw=$TLP_AUTO_SWITCH; def=$_default_mode; man=$_manual_mode; pers=$_persist_mode; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
     fi
 
     return "$_pp_next"
@@ -1343,13 +1363,18 @@ clear_saved_power_profile () {
 
 echo_started_profile () { # announce power profile and auto/manual mode after start
     # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
+    # $2: tlp command
 
     printf "TLP started using profile %s" "$(pp2strx "$1")"
 
     if [ "$_manual_mode" != "$MPM_OFF" ]; then
         printf " (manual).\n"
-    else
+    elif [ "$_default_mode" = "$1" ]; then
+        printf " (default).\n"
+    elif [ "$2" = "start" ]; then
         printf " (auto).\n"
+    else
+        printf ".\n"
     fi
 
     return 0

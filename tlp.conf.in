@@ -81,10 +81,11 @@
 
 #TLP_MSG_COLORS="91 93 1 92"
 
-# Control automatic switching of the power profile
-# when connecting or removing the charger:
-#   0=disabled - never switch
-#   1=auto - always switch
+# Control automatic switching of the power profile when connecting or removing
+# the charger, when booting the system or when executing 'tlp start':
+#   0=disabled - never switch, use TLP_DEFAULT_MODE if configured
+#   1=auto  - always switch, select performance on AC and
+#             balanced on battery power.
 #   2=smart - do not switch if the following profiles were active previously:
 #             power-saver or balanced on AC resp.
 #             power-saver or performance on battery power.
@@ -93,22 +94,24 @@
 
 #TLP_AUTO_SWITCH=2
 
-# Power profile when no power supply is detected:
-# PRF=performance, BAL=balanced, SAV=power-saver.
+# Power profile to use when automatic switching is disabled
+# (TLP_AUTO_SWITCH=0), profile is locked (TLP_PERSISTENT_DEFAULT=1)
+# or no power supply is detected:
+#   PRF=performance, BAL=balanced, SAV=power-saver.
 # Note: legacy values AC and BAT continue to work. They are mapped to
 # PRF and BAL, respectively.
-# Concerns some desktop and embedded hardware only.
 # Default: <none>
 
 #TLP_DEFAULT_MODE=AC
 
-# Operation mode select: 0=depend on power source, 1=always use TLP_DEFAULT_MODE
-# Note: use in conjunction with TLP_DEFAULT_MODE=BAT for BAT settings on AC.
+# Lock power profile:
+#   0=profile depends on automatic switching,
+    1=profile is locked to TLP_DEFAULT_MODE.
 # Default: 0
 
 #TLP_PERSISTENT_DEFAULT=0
 
-# Power supply classes to ignore when determining operation mode:
+# Power supply classes to ignore when determining power profile:
 #  AC, USB, BAT.
 # Separate multiple classes with spaces.
 # Note: try on laptops where operation mode AC/BAT is incorrectly detected.
