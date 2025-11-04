@@ -25,6 +25,7 @@
       when the charger is connected or removed (even during a suspend).
       The Innovation (and new default) is a "smart" mode that can retain a
       manually selected profile when the power source changes.
+    - Use the TLP_DEFAULT_MODE profile when automatic switching is disabled.
     - tlp-stat --pd-diag: show tlp-pd diagnostic
     - tlp: drop the commands 'false' and 'true', which have been superseded
       by 'ac' and 'bat' for ages
