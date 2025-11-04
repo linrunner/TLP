@@ -61,12 +61,14 @@ check_intel_gpu_freq () {
                 max=$((max_save - 200))
                 boost=$((boost_save - 100))
                 case "$psfx" in
-                    AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
-                                        INTEL_GPU_MAX_FREQ_ON_AC="$max"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
-                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                    BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
-                                        INTEL_GPU_MAX_FREQ_ON_BAT="$max"    INTEL_GPU_MAX_FREQ_ON_AC="" \
-                                        INTEL_GPU_BOOST_FREQ_ON_BAT="$boost"  INTEL_GPU_BOOST_FREQ_ON_AC="" > /dev/null 2>&1 ;;
+                    AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        INTEL_GPU_MIN_FREQ_ON_AC="$min"      INTEL_GPU_MIN_FREQ_ON_BAT="" \
+                        INTEL_GPU_MAX_FREQ_ON_AC="$max"      INTEL_GPU_MAX_FREQ_ON_BAT="" \
+                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                    BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        INTEL_GPU_MIN_FREQ_ON_BAT="$min"     INTEL_GPU_MIN_FREQ_ON_AC="" \
+                        INTEL_GPU_MAX_FREQ_ON_BAT="$max"     INTEL_GPU_MAX_FREQ_ON_AC="" \
+                        INTEL_GPU_BOOST_FREQ_ON_BAT="$boost" INTEL_GPU_BOOST_FREQ_ON_AC="" > /dev/null 2>&1 ;;
                 esac
 
                 # expect change
@@ -97,12 +99,14 @@ check_intel_gpu_freq () {
 
                 # revert to initial frequencies
                 case "$psfx" in
-                    AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min_save"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
-                                        INTEL_GPU_MAX_FREQ_ON_AC="$max_save"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
-                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                    BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min_save"    INTEL_GPU_MIN_FREQ_ON_AC="" \
-                                        INTEL_GPU_MAX_FREQ_ON_BAT="$max_save"    INTEL_GPU_MAX_FREQ_ON_AC="" \
-                                        INTEL_GPU_BOOST_FREQ_ON_BAT="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_AC="" > /dev/null 2>&1 ;;
+                    AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        INTEL_GPU_MIN_FREQ_ON_AC="$min_save"      INTEL_GPU_MIN_FREQ_ON_BAT="" \
+                        INTEL_GPU_MAX_FREQ_ON_AC="$max_save"      INTEL_GPU_MAX_FREQ_ON_BAT="" \
+                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost_save"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                    BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        INTEL_GPU_MIN_FREQ_ON_BAT="$min_save"     INTEL_GPU_MIN_FREQ_ON_AC="" \
+                        INTEL_GPU_MAX_FREQ_ON_BAT="$max_save"     INTEL_GPU_MAX_FREQ_ON_AC="" \
+                        INTEL_GPU_BOOST_FREQ_ON_BAT="$boost_save" INTEL_GPU_BOOST_FREQ_ON_AC="" > /dev/null 2>&1 ;;
                 esac
 
                 # expect initial frequencies
@@ -136,12 +140,14 @@ check_intel_gpu_freq () {
 
                 # try increased min, decreased max frequency again (from above)
                 case "$psfx" in
-                    AC)  ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_AC="$min"     INTEL_GPU_MIN_FREQ_ON_BAT="" \
-                                        INTEL_GPU_MAX_FREQ_ON_AC="$max"     INTEL_GPU_MAX_FREQ_ON_BAT="" \
-                                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                    BAT) ${SUDO} ${TLP} start -- INTEL_GPU_MIN_FREQ_ON_BAT="$min"    INTEL_GPU_MIN_FREQ_ON_AC="" \
-                                        INTEL_GPU_MAX_FREQ_ON_BAT="$max"    INTEL_GPU_MAX_FREQ_ON_AC="" \
-                                        INTEL_GPU_BOOST_FREQ_ON_BAT="$boost"  INTEL_GPU_BOOST_FREQ_ON_AC="" > /dev/null 2>&1 ;;
+                    AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        INTEL_GPU_MIN_FREQ_ON_AC="$min"      INTEL_GPU_MIN_FREQ_ON_BAT="" \
+                        INTEL_GPU_MAX_FREQ_ON_AC="$max"      INTEL_GPU_MAX_FREQ_ON_BAT="" \
+                        INTEL_GPU_BOOST_FREQ_ON_AC="$boost"  INTEL_GPU_BOOST_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                    BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        INTEL_GPU_MIN_FREQ_ON_BAT="$min"     INTEL_GPU_MIN_FREQ_ON_AC="" \
+                        INTEL_GPU_MAX_FREQ_ON_BAT="$max"     INTEL_GPU_MAX_FREQ_ON_AC="" \
+                        INTEL_GPU_BOOST_FREQ_ON_BAT="$boost" INTEL_GPU_BOOST_FREQ_ON_AC="" > /dev/null 2>&1 ;;
                 esac
 
                 # do not expect change
@@ -227,8 +233,10 @@ check_amd_gpu_dpm_level () {
 
             for dpm in $dpm_seq; do
                 case "$psfx" in
-                    AC)  ${SUDO} ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_AC="$dpm" RADEON_DPM_PERF_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
-                    BAT) ${SUDO} ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_BAT="$dpm" RADEON_DPM_PERF_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
+                    AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        RADEON_DPM_PERF_LEVEL_ON_AC="$dpm" RADEON_DPM_PERF_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
+                    BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        RADEON_DPM_PERF_LEVEL_ON_BAT="$dpm" RADEON_DPM_PERF_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
                 esac
 
                 # expect change
@@ -256,8 +264,10 @@ check_amd_gpu_dpm_level () {
             esac
 
             case "$psfx" in
-                AC)  ${SUDO} ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_AC="$dpm" RADEON_DPM_PERF_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
-                BAT) ${SUDO} ${TLP} start -- RADEON_DPM_PERF_LEVEL_ON_BAT="$dpm" RADEON_DPM_PERF_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
+                AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                    RADEON_DPM_PERF_LEVEL_ON_AC="$dpm" RADEON_DPM_PERF_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
+                BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                    RADEON_DPM_PERF_LEVEL_ON_BAT="$dpm" RADEON_DPM_PERF_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
             esac
 
             # do not expect change
@@ -331,8 +341,10 @@ check_amd_gpu_abm_level () {
 
             for abm in $abm_seq; do
                 case "$psfx" in
-                    AC)  ${SUDO} ${TLP} start -- AMDGPU_ABM_LEVEL_ON_AC="$abm" AMDGPU_ABM_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
-                    BAT) ${SUDO} ${TLP} start -- AMDGPU_ABM_LEVEL_ON_BAT="$abm" AMDGPU_ABM_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
+                    AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        AMDGPU_ABM_LEVEL_ON_AC="$abm" AMDGPU_ABM_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
+                    BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        AMDGPU_ABM_LEVEL_ON_BAT="$abm" AMDGPU_ABM_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
                 esac
 
                 # expect change
@@ -361,8 +373,10 @@ check_amd_gpu_abm_level () {
             esac
 
             case "$psfx" in
-                AC)  ${SUDO} ${TLP} start -- AMDGPU_ABM_LEVEL_ON_AC="$abm" AMDGPU_ABM_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
-                BAT) ${SUDO} ${TLP} start -- AMDGPU_ABM_LEVEL_ON_BAT="$abm" AMDGPU_ABM_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
+                AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                    AMDGPU_ABM_LEVEL_ON_AC="$abm" AMDGPU_ABM_LEVEL_ON_BAT="" > /dev/null 2>&1 ;;
+                BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                    AMDGPU_ABM_LEVEL_ON_BAT="$abm" AMDGPU_ABM_LEVEL_ON_AC="" > /dev/null 2>&1 ;;
             esac
 
             # do not expect change

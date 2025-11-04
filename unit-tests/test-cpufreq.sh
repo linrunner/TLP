@@ -87,8 +87,10 @@ check_cpu_driver_opmode () {
 
                     for opm in $opm_seq; do
                         case "$psfx" in
-                            AC)  ${SUDO} ${TLP} start -- CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
-                            BAT) ${SUDO} ${TLP} start -- CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
+                            AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
                         esac
 
                         # expect change
@@ -115,8 +117,10 @@ check_cpu_driver_opmode () {
                         passive) opm="active" ;;
                     esac
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
                     esac
 
                     # do not expect change
@@ -152,8 +156,10 @@ check_cpu_driver_opmode () {
 
                     for opm in $opm_seq; do
                         case "$psfx" in
-                            AC)  ${SUDO} ${TLP} start -- CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
-                            BAT) ${SUDO} ${TLP} start -- CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
+                            AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
                         esac
 
                         # expect change
@@ -179,8 +185,10 @@ check_cpu_driver_opmode () {
                         passive) opm="active" ;;
                     esac
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_DRIVER_OPMODE_ON_AC="$opm" CPU_DRIVER_OPMODE_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_AC="" > /dev/null 2>&1 ;;
                     esac
 
                     # do not expect change
@@ -249,8 +257,10 @@ check_cpu_scaling_governor () {
                     esac
                     for gov in $gov_seq; do
                         case "$psfx" in
-                            AC)  ${SUDO} ${TLP} start -- CPU_SCALING_GOVERNOR_ON_AC="$gov"  CPU_SCALING_GOVERNOR_ON_BAT="" > /dev/null 2>&1 ;;
-                            BAT) ${SUDO} ${TLP} start -- CPU_SCALING_GOVERNOR_ON_BAT="$gov" CPU_SCALING_GOVERNOR_ON_AC=""  > /dev/null 2>&1 ;;
+                            AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_SCALING_GOVERNOR_ON_AC="$gov"  CPU_SCALING_GOVERNOR_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_SCALING_GOVERNOR_ON_BAT="$gov" CPU_SCALING_GOVERNOR_ON_AC=""  > /dev/null 2>&1 ;;
                         esac
 
                         # expect change
@@ -276,8 +286,10 @@ check_cpu_scaling_governor () {
                         performance) gov="powersave" ;;
                     esac
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_SCALING_GOVERNOR_ON_AC="$gov"  CPU_SCALING_GOVERNOR_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_SCALING_GOVERNOR_ON_BAT="$gov" CPU_SCALING_GOVERNOR_ON_AC=""  > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_SCALING_GOVERNOR_ON_AC="$gov"  CPU_SCALING_GOVERNOR_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_SCALING_GOVERNOR_ON_BAT="$gov" CPU_SCALING_GOVERNOR_ON_AC=""  > /dev/null 2>&1 ;;
                     esac
 
                     # do not expect change
@@ -315,8 +327,10 @@ check_cpu_scaling_governor () {
                     esac
                     for gov in $gov_seq; do
                         case "$psfx" in
-                            AC)  ${SUDO} ${TLP} start -- CPU_SCALING_GOVERNOR_ON_AC="$gov"  CPU_SCALING_GOVERNOR_ON_BAT="" > /dev/null 2>&1 ;;
-                            BAT) ${SUDO} ${TLP} start -- CPU_SCALING_GOVERNOR_ON_BAT="$gov" CPU_SCALING_GOVERNOR_ON_AC=""  > /dev/null 2>&1 ;;
+                            AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_SCALING_GOVERNOR_ON_AC="$gov"  CPU_SCALING_GOVERNOR_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_SCALING_GOVERNOR_ON_BAT="$gov" CPU_SCALING_GOVERNOR_ON_AC=""  > /dev/null 2>&1 ;;
                         esac
 
                         # expect change
@@ -342,8 +356,10 @@ check_cpu_scaling_governor () {
                         *)         gov="schedutil" ;;
                     esac
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_SCALING_GOVERNOR_ON_AC="$gov"  CPU_SCALING_GOVERNOR_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_SCALING_GOVERNOR_ON_BAT="$gov" CPU_SCALING_GOVERNOR_ON_AC=""  > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_SCALING_GOVERNOR_ON_AC="$gov"  CPU_SCALING_GOVERNOR_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_SCALING_GOVERNOR_ON_BAT="$gov" CPU_SCALING_GOVERNOR_ON_AC=""  > /dev/null 2>&1 ;;
                     esac
 
                     # do not expect change
@@ -416,10 +432,12 @@ check_cpu_scaling_freq () {
                         max=$((max_save - 100000))
                     fi
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_SCALING_MIN_FREQ_ON_AC="$min"  CPU_SCALING_MIN_FREQ_ON_BAT="" \
-                                             CPU_SCALING_MAX_FREQ_ON_AC="$max"  CPU_SCALING_MAX_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_SCALING_MIN_FREQ_ON_BAT="$min" CPU_SCALING_MIN_FREQ_ON_AC=""  \
-                                             CPU_SCALING_MAX_FREQ_ON_BAT="$max" CPU_SCALING_MAX_FREQ_ON_AC=""  > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_SCALING_MIN_FREQ_ON_AC="$min"  CPU_SCALING_MIN_FREQ_ON_BAT="" \
+                            CPU_SCALING_MAX_FREQ_ON_AC="$max"  CPU_SCALING_MAX_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_SCALING_MIN_FREQ_ON_BAT="$min" CPU_SCALING_MIN_FREQ_ON_AC=""  \
+                            CPU_SCALING_MAX_FREQ_ON_BAT="$max" CPU_SCALING_MAX_FREQ_ON_AC=""  > /dev/null 2>&1 ;;
                     esac
 
                     # expect change
@@ -442,10 +460,12 @@ check_cpu_scaling_freq () {
 
                     # revert to initial frequencies
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_SCALING_MIN_FREQ_ON_AC="$min_save"  CPU_SCALING_MIN_FREQ_ON_BAT="" \
-                                             CPU_SCALING_MAX_FREQ_ON_AC="$max_save"  CPU_SCALING_MAX_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_SCALING_MIN_FREQ_ON_BAT="$min_save" CPU_SCALING_MIN_FREQ_ON_AC=""  \
-                                             CPU_SCALING_MAX_FREQ_ON_BAT="$max_save" CPU_SCALING_MAX_FREQ_ON_AC=""  > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_SCALING_MIN_FREQ_ON_AC="$min_save"  CPU_SCALING_MIN_FREQ_ON_BAT="" \
+                            CPU_SCALING_MAX_FREQ_ON_AC="$max_save"  CPU_SCALING_MAX_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_SCALING_MIN_FREQ_ON_BAT="$min_save" CPU_SCALING_MIN_FREQ_ON_AC=""  \
+                            CPU_SCALING_MAX_FREQ_ON_BAT="$max_save" CPU_SCALING_MAX_FREQ_ON_AC=""  > /dev/null 2>&1 ;;
                     esac
 
                     # expect initial frequencies
@@ -471,10 +491,12 @@ check_cpu_scaling_freq () {
 
                     # try increased min, decreased max frequency again (from above)
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_SCALING_MIN_FREQ_ON_AC="$min"  CPU_SCALING_MIN_FREQ_ON_BAT="" \
-                                             CPU_SCALING_MAX_FREQ_ON_AC="$max"  CPU_SCALING_MAX_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_SCALING_MIN_FREQ_ON_BAT="$min" CPU_SCALING_MIN_FREQ_ON_AC=""  \
-                                             CPU_SCALING_MAX_FREQ_ON_BAT="$max" CPU_SCALING_MAX_FREQ_ON_AC=""  > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_SCALING_MIN_FREQ_ON_AC="$min"  CPU_SCALING_MIN_FREQ_ON_BAT="" \
+                            CPU_SCALING_MAX_FREQ_ON_AC="$max"  CPU_SCALING_MAX_FREQ_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_SCALING_MIN_FREQ_ON_BAT="$min" CPU_SCALING_MIN_FREQ_ON_AC=""  \
+                            CPU_SCALING_MAX_FREQ_ON_BAT="$max" CPU_SCALING_MAX_FREQ_ON_AC=""  > /dev/null 2>&1 ;;
                     esac
 
                     # do not expect change
@@ -556,8 +578,10 @@ check_cpu_epp () {
 
                         for pol in $pol_seq; do
                             case "$psfx" in
-                                AC)  ${SUDO} ${TLP} start -- CPU_ENERGY_PERF_POLICY_ON_AC="$pol" CPU_ENERGY_PERF_POLICY_ON_BAT="" > /dev/null 2>&1 ;;
-                                BAT) ${SUDO} ${TLP} start -- CPU_ENERGY_PERF_POLICY_ON_BAT="$pol" CPU_ENERGY_PERF_POLICY_ON_AC="" > /dev/null 2>&1 ;;
+                                AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                    CPU_ENERGY_PERF_POLICY_ON_AC="$pol" CPU_ENERGY_PERF_POLICY_ON_BAT="" > /dev/null 2>&1 ;;
+                                BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                    CPU_ENERGY_PERF_POLICY_ON_BAT="$pol" CPU_ENERGY_PERF_POLICY_ON_AC="" > /dev/null 2>&1 ;;
                             esac
 
                             # expect change
@@ -585,8 +609,10 @@ check_cpu_epp () {
                             power)               pol="performance" ;;
                         esac
                         case "$psfx" in
-                            AC)  ${SUDO} ${TLP} start -- CPU_ENERGY_PERF_POLICY_ON_AC="$pol" CPU_ENERGY_PERF_POLICY_ON_BAT="" > /dev/null 2>&1 ;;
-                            BAT) ${SUDO} ${TLP} start -- CPU_ENERGY_PERF_POLICY_ON_BAT="$pol" CPU_ENERGY_PERF_POLICY_ON_AC="" > /dev/null 2>&1 ;;
+                            AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_ENERGY_PERF_POLICY_ON_AC="$pol" CPU_ENERGY_PERF_POLICY_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_ENERGY_PERF_POLICY_ON_BAT="$pol" CPU_ENERGY_PERF_POLICY_ON_AC="" > /dev/null 2>&1 ;;
                         esac
 
                         # do not expect change
@@ -657,10 +683,12 @@ check_cpu_perf_pct () {
                     min=$((min_save + 10))
                     max=$((max_save - 10))
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_MIN_PERF_ON_AC="$min" CPU_MIN_PERF_ON_BAT="" \
-                                             CPU_MAX_PERF_ON_AC="$max" CPU_MAX_PERF_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_MIN_PERF_ON_BAT="$min" CPU_MIN_PERF_ON_AC="" \
-                                             CPU_MAX_PERF_ON_BAT="$max" CPU_MAX_PERF_ON_AC="" > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_MIN_PERF_ON_AC="$min" CPU_MIN_PERF_ON_BAT="" \
+                            CPU_MAX_PERF_ON_AC="$max" CPU_MAX_PERF_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_MIN_PERF_ON_BAT="$min" CPU_MIN_PERF_ON_AC="" \
+                            CPU_MAX_PERF_ON_BAT="$max" CPU_MAX_PERF_ON_AC="" > /dev/null 2>&1 ;;
                     esac
 
                     # expect change
@@ -683,10 +711,12 @@ check_cpu_perf_pct () {
 
                     # revert to initial min/max performance
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_MIN_PERF_ON_AC="$min_save" CPU_MIN_PERF_ON_BAT="" \
-                                             CPU_MAX_PERF_ON_AC="$max_save" CPU_MAX_PERF_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_MIN_PERF_ON_BAT="$min_save" CPU_MIN_PERF_ON_AC="" \
-                                             CPU_MAX_PERF_ON_BAT="$max_save" CPU_MAX_PERF_ON_AC="" > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_MIN_PERF_ON_AC="$min_save" CPU_MIN_PERF_ON_BAT="" \
+                            CPU_MAX_PERF_ON_AC="$max_save" CPU_MAX_PERF_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_MIN_PERF_ON_BAT="$min_save" CPU_MIN_PERF_ON_AC="" \
+                            CPU_MAX_PERF_ON_BAT="$max_save" CPU_MAX_PERF_ON_AC="" > /dev/null 2>&1 ;;
                     esac
 
                     # expect initial performance
@@ -712,10 +742,12 @@ check_cpu_perf_pct () {
 
                     # try increased min, decreased max performance again (from above)
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_MIN_PERF_ON_AC="$min" CPU_MIN_PERF_ON_BAT="" \
-                                             CPU_MAX_PERF_ON_AC="$max" CPU_MAX_PERF_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_MIN_PERF_ON_BAT="$min" CPU_MIN_PERF_ON_AC="" \
-                                             CPU_MAX_PERF_ON_BAT="$max" CPU_MAX_PERF_ON_AC="" > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_MIN_PERF_ON_AC="$min" CPU_MIN_PERF_ON_BAT="" \
+                            CPU_MAX_PERF_ON_AC="$max" CPU_MAX_PERF_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_MIN_PERF_ON_BAT="$min" CPU_MIN_PERF_ON_AC="" \
+                            CPU_MAX_PERF_ON_BAT="$max" CPU_MAX_PERF_ON_AC="" > /dev/null 2>&1 ;;
                     esac
 
                     # do not expect change
@@ -797,8 +829,10 @@ check_cpu_boost () {
                     no_turbo="$((no_turbo_save ^ 1))"
                     # note: CPU_BOOST_ON_AC/BAT is the inverse of no_turbo
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$((no_turbo ^ 1))" CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_BOOST_ON_BAT="$((no_turbo ^ 1))" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_BOOST_ON_AC="$((no_turbo ^ 1))" CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_BOOST_ON_BAT="$((no_turbo ^ 1))" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
                     esac
 
                     # expect change
@@ -814,8 +848,10 @@ check_cpu_boost () {
                     # revert to initial turbo state
                     # note: CPU_BOOST_ON_AC/BAT is the inverse of no_turbo
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$((no_turbo_save ^ 1))" CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_BOOST_ON_BAT="$((no_turbo_save ^ 1))" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_BOOST_ON_AC="$((no_turbo_save ^ 1))" CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_BOOST_ON_BAT="$((no_turbo_save ^ 1))" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
                     esac
 
                     # expect change
@@ -832,8 +868,10 @@ check_cpu_boost () {
                         # invert dyn boost state
                         dyn_boost="$((dyn_boost_save ^ 1))"
                         case "$psfx" in
-                            AC)  ${SUDO} ${TLP} start -- CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost"  CPU_HWP_DYN_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
-                            BAT) ${SUDO} ${TLP} start -- CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost" CPU_HWP_DYN_BOOST_ON_AC="" > /dev/null 2>&1 ;;
+                            AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost"  CPU_HWP_DYN_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost" CPU_HWP_DYN_BOOST_ON_AC="" > /dev/null 2>&1 ;;
                         esac
 
                         # expect change
@@ -848,8 +886,10 @@ check_cpu_boost () {
 
                         # revert to initial dyn boost state
                         case "$psfx" in
-                            AC)  ${SUDO} ${TLP} start -- CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost_save"  CPU_HWP_DYN_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
-                            BAT) ${SUDO} ${TLP} start -- CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost_save" CPU_HWP_DYN_BOOST_ON_AC="" > /dev/null 2>&1 ;;
+                            AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost_save"  CPU_HWP_DYN_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start --TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost_save" CPU_HWP_DYN_BOOST_ON_AC="" > /dev/null 2>&1 ;;
                         esac
 
                         # expect change
@@ -872,8 +912,10 @@ check_cpu_boost () {
                     no_turbo="$((no_turbo_save ^ 1))"
                     # note: CPU_BOOST_ON_AC/BAT is the inverse of no_turbo
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$((no_turbo ^ 1))"  CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- CPU_BOOST_ON_BAT="$((no_turbo ^ 1))" CPU_BOOST_ON_AC=""  > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_BOOST_ON_AC="$((no_turbo ^ 1))"  CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_BOOST_ON_BAT="$((no_turbo ^ 1))" CPU_BOOST_ON_AC=""  > /dev/null 2>&1 ;;
                     esac
 
                     # do not expect change
@@ -890,8 +932,10 @@ check_cpu_boost () {
                         # try to invert dyn boost state
                         dyn_boost="$((dyn_boost_save ^ 1))"
                         case "$psfx" in
-                            AC)  ${SUDO} ${TLP} start -- CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost"  CPU_HWP_DYN_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
-                            BAT) ${SUDO} ${TLP} start -- CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost" CPU_HWP_DYN_BOOST_ON_AC="" > /dev/null 2>&1 ;;
+                            AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost"  CPU_HWP_DYN_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost" CPU_HWP_DYN_BOOST_ON_AC="" > /dev/null 2>&1 ;;
                         esac
 
                         # do not expect change
@@ -927,8 +971,10 @@ check_cpu_boost () {
                         # invert boost state
                         boost="$((boost_save ^ 1))"
                         case "$psfx" in
-                            AC)  ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$boost"  CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
-                            BAT) ${SUDO} ${TLP} start -- CPU_BOOST_ON_BAT="$boost" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
+                            AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_BOOST_ON_AC="$boost"  CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_BOOST_ON_BAT="$boost" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
                         esac
 
                         # expect change
@@ -942,7 +988,8 @@ check_cpu_boost () {
                         fi
 
                         # revert to initial boost state
-                        ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$boost_save" CPU_BOOST_ON_BAT="$boost_save" > /dev/null 2>&1
+                        ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            CPU_BOOST_ON_AC="$boost_save" CPU_BOOST_ON_BAT="$boost_save" > /dev/null 2>&1
                         compare_sysf "$boost_save" "${CPUD}/cpufreq/boost"
                         rc=$?
                         if [ "$rc" -eq 0 ]; then
@@ -958,8 +1005,10 @@ check_cpu_boost () {
                         # try to invert boost state
                         boost="$((boost_save ^ 1))"
                         case "$psfx" in
-                            AC)  ${SUDO} ${TLP} start -- CPU_BOOST_ON_AC="$boost"  CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
-                            BAT) ${SUDO} ${TLP} start -- CPU_BOOST_ON_BAT="$boost" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
+                            AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_BOOST_ON_AC="$boost"  CPU_BOOST_ON_BAT="" > /dev/null 2>&1 ;;
+                            BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                                CPU_BOOST_ON_BAT="$boost" CPU_BOOST_ON_AC="" > /dev/null 2>&1 ;;
                         esac
 
                         # do not expect change
@@ -1027,8 +1076,10 @@ check_platform_profile () {
                 prof_list="$(echo "$prof_list" | sed -r 's/'"$prof_save"'//') $prof_save"
                 for prof in $prof_list; do
                     case "$psfx" in
-                        AC)  ${SUDO} ${TLP} start -- PLATFORM_PROFILE_ON_AC="$prof" PLATFORM_PROFILE_ON_BAT="" > /dev/null 2>&1 ;;
-                        BAT) ${SUDO} ${TLP} start -- PLATFORM_PROFILE_ON_BAT="$prof" PLATFORM_PROFILE_ON_AC="" > /dev/null 2>&1 ;;
+                        AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            PLATFORM_PROFILE_ON_AC="$prof" PLATFORM_PROFILE_ON_BAT="" > /dev/null 2>&1 ;;
+                        BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                            PLATFORM_PROFILE_ON_BAT="$prof" PLATFORM_PROFILE_ON_AC="" > /dev/null 2>&1 ;;
                     esac
 
                     # expect change
@@ -1052,8 +1103,10 @@ check_platform_profile () {
                     performance) prof="low-power" ;;
                 esac
                 case "$psfx" in
-                    AC)  ${SUDO} ${TLP} start -- PLATFORM_PROFILE_ON_AC="$prof" PLATFORM_PROFILE_ON_BAT="" > /dev/null 2>&1 ;;
-                    BAT) ${SUDO} ${TLP} start -- PLATFORM_PROFILE_ON_BAT="$prof" PLATFORM_PROFILE_ON_AC="" > /dev/null 2>&1 ;;
+                    AC)  ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        PLATFORM_PROFILE_ON_AC="$prof" PLATFORM_PROFILE_ON_BAT="" > /dev/null 2>&1 ;;
+                    BAT) ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" \
+                        PLATFORM_PROFILE_ON_BAT="$prof" PLATFORM_PROFILE_ON_AC="" > /dev/null 2>&1 ;;
                 esac
 
                 # do not expect change

@@ -103,7 +103,7 @@ check_profile_select () {
 
         esac
 
-        ${SUDO} ${TLP} "$prof" > /dev/null 2>&1
+        ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" > /dev/null 2>&1
 
         # check expect results
         compare_sysf "$prof_xpect" "$LASTPWR";  rc=$?
@@ -186,7 +186,7 @@ check_default_mode () {
                 ;;
         esac
 
-        ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=0 TLP_DEFAULT_MODE="$prof" > /dev/null 2>&1
+        ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=0 TLP_DEFAULT_MODE="$prof" TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
 
         # expect changing profiles
         compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
@@ -348,7 +348,8 @@ check_power_supply () {
                 ;;
         esac
 
-        ${SUDO} ${TLP} start -- X_SIMULATE_PS="$ps" TLP_DEFAULT_MODE=SAV > /dev/null 2>&1
+        ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE=SAV TLP_PERSISTENT_DEFAULT=0 \
+            X_SIMULATE_PS="$ps" > /dev/null 2>&1
 
         # expect changing profiles
         compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
@@ -402,7 +403,7 @@ check_auto_switch () {
         # iterate auto switch modes
 
         # reset profile
-        ${SUDO} ${TLP} start > /dev/null
+        ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" TLP_PERSISTENT_DEFAULT=0 > /dev/null
 
         # save current profile and power source
         read_saved_profile; prof_save="$_prof"
@@ -413,7 +414,8 @@ check_auto_switch () {
                 for ps_now in 0 1; do
                     for mode in auto resume; do
                         printf_msg "  %-6s X_SIMULATE_PS=%s:" "$mode" "$ps_now"
-                        ${SUDO} ${TLP} "$mode" -- TLP_AUTO_SWITCH="$as" X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
+                        ${SUDO} ${TLP} "$mode" -- TLP_AUTO_SWITCH="$as" TLP_DEFAULT_MODE="" TLP_PERSISTENT_DEFAULT=0 \
+                            X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
                         # do not expect profile change
                         case "$as" in
                             0) prof_xpect="$prof_save $ps_now" ;;
@@ -449,7 +451,8 @@ check_auto_switch () {
                         for prof in performance balanced power-saver; do
                             # prepare simulated active profile and power source
                             printf_msg "  %-6s (prof=%-11s ps_now=%s) --> ps_next=%s:" "$mode" "$prof" "$ps_now" "$ps_next"
-                            ${SUDO} ${TLP} "$prof" -- X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
+                            ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PERSISTENT_DEFAULT=0 \
+                                X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
 
                             # determine expected profile
                             case "$ps_now" in
@@ -471,7 +474,8 @@ check_auto_switch () {
                             esac
 
                             # check auto/resume on opposite power source
-                            ${SUDO} ${TLP} "$mode" -- TLP_AUTO_SWITCH="$as" X_SIMULATE_PS="$ps_next" > /dev/null 2>&1
+                            ${SUDO} ${TLP} "$mode" -- TLP_AUTO_SWITCH="$as" TLP_PERSISTENT_DEFAULT=0 \
+                                X_SIMULATE_PS="$ps_next" > /dev/null 2>&1
 
                             # check against expectations
                             compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
