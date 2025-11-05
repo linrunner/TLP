@@ -22,22 +22,24 @@ Description: Optimize laptop battery life
  Powertop’s recommendations out of the box. Moreover TLP is highly
  customizable to fulfil specific user requirements.
  .
- Settings are organized into two profiles, allowing to adjust between
- savings and performance independently for battery (BAT) and AC operation.
- In addition TLP can enable or disable Bluetooth, NFC, Wi-Fi and WWAN radio
+ Settings are organized into the three customizable profiles performance (AC),
+ balanced (BAT) and power-saver (SAV), allowing to adjust between savings
+ and performance independently for battery and AC operation.
+ .
+ In addition TLP can enable or disable bluetooth, NFC, Wi-Fi and WWAN
  devices on boot.
  .
- For ThinkPads and selected other laptops it provides a unified way
- to configure charge thresholds and recalibrate the battery.
+ For ThinkPads and many other laptop brands it provides a unified way to
+ configure charge thresholds and recalibrate the battery.
 
 Package: tlp-rdw
 Architecture: all
 Depends: network-manager, tlp, ${misc:Depends}
-Description: Radio device wizard
- Radio device wizard is an add-on to TLP. It provides event based
- switching of bluetooth, NFC, Wi-Fi and WWAN radio devices on:
-  - network connect/disconnect
-  - dock/undock
+Description: Switch Wi-Fi and Bluetooth on/off automatically
+ Radio device wizard is an add-on to TLP. It provides automated
+ switching of Bluetooth, NFC, Wi-Fi and WWAN radio devices when:
+  - a LAN cable is connected or removed
+  - the laptop is docked or undocked
 
 Package: tlp-pd
 Architecture: all
