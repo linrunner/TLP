@@ -1,6 +1,6 @@
-+++ 1.9.0-alpha.3 --- <unreleased> +++
++++ 1.9.0-beta.1 --- 05.11.2025 +++
 
-  * Development version
+  * Beta Release
 
   * Features
     Power Profiles:
@@ -83,7 +83,8 @@
         - Do not wrongly recommend kernel 5.17 if coreboot is detected,
           as coreboot does not implement discharge anyway
     Radio Devices:
-      - Ensure that TLP's and NetworkManager's wifi and wwan states are in sync
+      - Ensure clean wifi/wwan switching by keeping the status of
+        NetworkManager and TLP in sync
       - bluetooth/nfc/wifi/wwan: restore device status display
 
 +++ 1.8.0 --- 13.02.2025 +++
