@@ -6,12 +6,6 @@ Source: https://github.com/linrunner/TLP/
 Files: *
 Copyright: 2025 Thomas Koch, André Erdmann, Pali Rohár
 License: GPL-2+
-Comment:
-  Some code and descriptions were adapted from:
- - laptop-mode-tools
-     Copyright (c) 2004 by Bart Samwel, Kiko Piris, Micha Feigin,
-     Andrew Morton, Herve Eychenne, Dax Kelson, Jan Topinski
- - http://thinkwiki.org
 
 Files: de.linrunner.tlp.metainfo.xml
 Copyright: 2025 Raphaël Halimi, Thomas Koch
