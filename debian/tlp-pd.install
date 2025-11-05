@@ -1,0 +1,11 @@
+usr/sbin/tlp-pd
+usr/bin/tlpctl
+usr/lib/systemd/system/tlp-pd.service
+usr/share/dbus-1/system-services/net.hadess.PowerProfiles.service
+usr/share/dbus-1/system-services/org.freedesktop.UPower.PowerProfiles.service
+usr/share/dbus-1/system.d/net.hadess.PowerProfiles.conf
+usr/share/dbus-1/system.d/org.freedesktop.UPower.PowerProfiles.conf
+usr/share/polkit-1/actions/tlp-pd.policy
+usr/share/bash-completion/completions/tlpctl
+usr/share/zsh/vendor-completions/_tlpctl
+usr/share/fish/vendor_completions.d/tlpctl.fish
