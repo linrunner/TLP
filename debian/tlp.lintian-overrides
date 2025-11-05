@@ -1,5 +1,0 @@
-# This is actually a command for udevadm, not a call to shell builtin "test"
-tlp: bash-term-in-posix-shell 'test -a' [usr/share/tlp/func.d/tlp-func-stat:811]
-tlp: bash-term-in-posix-shell 'test -a' [usr/share/tlp/func.d/tlp-func-stat:812]
-tlp: bash-term-in-posix-shell 'test -a' [usr/share/tlp/func.d/tlp-func-stat:826]
-tlp: bash-term-in-posix-shell 'test -a' [usr/share/tlp/func.d/tlp-func-stat:827]
