@@ -2,7 +2,7 @@ Source: tlp
 Maintainer: Raphaël Halimi <raphael.halimi@gmail.com>
 Section: utils
 Priority: optional
-Build-Depends: debhelper-compat (= 13)
+Build-Depends: debhelper-compat (= 13), dh-python, python3
 Standards-Version: 4.7.0
 Vcs-Browser: https://salsa.debian.org/moonsweep/tlp
 Vcs-Git: https://salsa.debian.org/moonsweep/tlp.git
@@ -12,7 +12,7 @@ Package: tlp
 Architecture: all
 Depends: hdparm, iw, pciutils, rfkill, usbutils, ${misc:Depends}
 Recommends: tlp-rdw, ethtool
-Suggests: tp-smapi-dkms, smartmontools, ${dist:Suggests}
+Suggests: tlp-pd, tp-smapi-dkms, smartmontools, ${dist:Suggests}
 Conflicts: laptop-mode-tools, power-profiles-daemon, tuned
 Description: Optimize laptop battery life
  TLP is a feature-rich command-line utility, saving laptop battery power
@@ -38,3 +38,13 @@ Description: Radio device wizard
  switching of bluetooth, NFC, Wi-Fi and WWAN radio devices on:
   - network connect/disconnect
   - dock/undock
+
+Package: tlp-pd
+Architecture: all
+Depends: tlp, polkitd, python3-dbus, python3-gi, ${misc:Depends}, ${python3:Depends}
+Conflicts: power-profiles-daemon, tuned-ppd
+Description: Switch Power Profiles from the Desktop
+ TLP Profiles Daemon (tlp-pd) is an add-on to TLP. It implements the D-Bus
+ interface, which lets desktop environments show a power profile switch.
+ Together with TLP as the backend for applying the customizable profiles,
+ it replaces power-profiles-daemon.
