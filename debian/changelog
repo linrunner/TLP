@@ -1,3 +1,15 @@
+tlp (1.9.0~beta.1-1) unstable; urgency=medium
+
+  * New upstream version 1.9.0-beta.1
+
+  [ Thomas Koch ]
+  * New sub-package tlp-pd
+  * Drop lintian overrides
+  * Update descriptions
+  * Cleanup copyright
+
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 05 Nov 2025 10:13:42 +0100
+
 tlp (1.8.0-1) unstable; urgency=medium
 
   * New upstream version 1.8.0
