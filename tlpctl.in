@@ -47,15 +47,16 @@ def get_proxy(interface):
 def get_pd_property(prop):
     # Get tlp-pd property
     proxy = get_proxy(PROPERTIES_IFACE)
-    return proxy.Get("(ss)", PD_INTERFACE_NAME, prop)
+    try:
+        return proxy.Get("(ss)", PD_INTERFACE_NAME, prop)
+    except GLib.Error as error:
+        sys.stderr.write(f"{error}\n")
+        sys.exit(1)
 
 
 def get_profile_choices():
     # Get supported profiles
-    try:
-        return [profile["Profile"] for profile in get_pd_property("Profiles")]
-    except GLib.Error:
-        return []
+    return [profile["Profile"] for profile in get_pd_property("Profiles")]
 
 
 def list_profiles_brief():
@@ -98,11 +99,9 @@ def command(func):
 @command
 def _version(args):
     client_version = "@TLPVER@"
-    try:
-        daemon_ver = get_pd_property("Version")
-    except GLib.Error:
-        daemon_ver = "unknown"
-    print(f"client: {client_version}\ndaemon: {daemon_ver}")
+    daemon_ver = get_pd_property("Version")
+    print(f"Client: {client_version}")
+    print(f"Daemon: {daemon_ver}")
 
 
 @command
