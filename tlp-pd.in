@@ -196,7 +196,7 @@ class ProfilesDaemon(dbus.service.Object):
         }
 
         self._logger.debug(
-            f"{_method}(profile='{profile}', reason='{reason}', appid='{application_id}'): cookie: '{cookie}'"
+            f"{_method}(profile='{profile}', reason='{reason}', appid='{application_id}', sender='{sender}'): cookie: '{cookie}'"
         )
 
         # Update active profile based on holds
@@ -205,16 +205,23 @@ class ProfilesDaemon(dbus.service.Object):
         return dbus.UInt32(cookie)
 
     @dbus.service.method(
-        dbus_interface=INTERFACE_NAME, in_signature="u", out_signature=""
+        dbus_interface=INTERFACE_NAME,
+        in_signature="u",
+        out_signature="",
+        sender_keyword="sender",
     )
     @dbus.service.method(
-        dbus_interface=INTERFACE_NAME_LEGACY, in_signature="u", out_signature=""
+        dbus_interface=INTERFACE_NAME_LEGACY,
+        in_signature="u",
+        out_signature="",
+        sender_keyword="sender",
     )
-    def ReleaseProfile(self, cookie):
+    def ReleaseProfile(self, cookie, sender=None):
         # Release a profile hold and revert to:
         # - either the previous held profile
         # - or the last profile selected by the user
         cookie = int(cookie)
+        sender = _sanitize_input(sender)
         _method = _method_name()
 
         if cookie not in self._holds:
@@ -225,7 +232,7 @@ class ProfilesDaemon(dbus.service.Object):
 
         hold_rel = self._holds.pop(cookie)
         self._logger.debug(
-            f"{_method}(cookie='{cookie}'): hold: '{hold_rel['profile']}', appid: '{hold_rel['application_id']}'"
+            f"{_method}(cookie='{cookie}', sender='{sender}'): hold: '{hold_rel['profile']}', appid: '{hold_rel['application_id']}'"
         )
 
         # Update active profile based on remaining holds
@@ -235,7 +242,9 @@ class ProfilesDaemon(dbus.service.Object):
         dbus_interface=INTERFACE_NAME, in_signature="sb", out_signature=""
     )
     @dbus.service.method(
-        dbus_interface=INTERFACE_NAME_LEGACY, in_signature="sb", out_signature=""
+        dbus_interface=INTERFACE_NAME_LEGACY,
+        in_signature="sb",
+        out_signature="",
     )
     def SetActionEnabled(self, action, enabled):
         # Set a particular action to be enabled or disabled
@@ -249,13 +258,17 @@ class ProfilesDaemon(dbus.service.Object):
         )
 
     @dbus.service.method(
-        dbus_interface=INTERFACE_NAME, in_signature="s", out_signature=""
+        dbus_interface=INTERFACE_NAME,
+        in_signature="s",
+        out_signature="",
+        sender_keyword="sender",
     )
-    def SyncProfile(self, profile):
+    def SyncProfile(self, profile, sender=None):
         # Callback for tlp after profile changes: update internal state only
         profile = _sanitize_input(profile)
+        sender = _sanitize_input(sender)
         _method = _method_name()
-        self._logger.debug(f"{_method}(profile='{profile}')")
+        self._logger.debug(f"{_method}(profile='{profile}', sender='{sender}')")
 
         if profile not in AVAILABLE_PROFILES:
             raise dbus.exceptions.DBusException(
@@ -351,16 +364,16 @@ class ProfilesDaemon(dbus.service.Object):
     # property XML insertion will not work!
 
     @dbus.service.method(
-        dbus_interface=dbus.PROPERTIES_IFACE, in_signature="ss", out_signature="v"
+        dbus_interface=dbus.PROPERTIES_IFACE,
+        in_signature="ss",
+        out_signature="v",
+        sender_keyword="sender",
     )
-    def Get(self, interface_name, property_name):
+    def Get(self, interface_name, property_name, sender=None):
         # Get a property value
         interface_name = _sanitize_input(interface_name)
         property_name = _sanitize_input(property_name)
         _method = _method_name()
-        self._logger.debug(
-            f"{_method}(interface='{interface_name}', property='{property_name}')'"
-        )
 
         if interface_name not in [INTERFACE_NAME, INTERFACE_NAME_LEGACY]:
             raise dbus.exceptions.DBusException(
@@ -368,19 +381,24 @@ class ProfilesDaemon(dbus.service.Object):
                 name="org.freedesktop.DBus.Error.UnknownInterface",
             )
 
+        self._logger.debug(
+            f"{_method}(interface='{interface_name}', property='{property_name}', sender='{sender}')"
+        )
         # Remember receiving interface for later use with PropertiesChanged signal
         self._ifaces_seen.add(interface_name)
 
         return self._get_property(property_name)
 
     @dbus.service.method(
-        dbus_interface=dbus.PROPERTIES_IFACE, in_signature="s", out_signature="a{sv}"
+        dbus_interface=dbus.PROPERTIES_IFACE,
+        in_signature="s",
+        out_signature="a{sv}",
+        sender_keyword="sender",
     )
-    def GetAll(self, interface_name):
+    def GetAll(self, interface_name, sender=None):
         # Get all properties
         interface_name = _sanitize_input(interface_name)
         _method = _method_name()
-        self._logger.debug(f"{_method}(interface='{interface_name}')")
 
         if interface_name not in [INTERFACE_NAME, INTERFACE_NAME_LEGACY]:
             raise dbus.exceptions.DBusException(
@@ -388,6 +406,9 @@ class ProfilesDaemon(dbus.service.Object):
                 name="org.freedesktop.DBus.Error.UnknownInterface",
             )
 
+        self._logger.debug(
+            f"{_method}(interface='{interface_name}', sender='{sender}')"
+        )
         # Remember receiving interface for later use with PropertiesChanged signal
         self._ifaces_seen.add(interface_name)
 
@@ -413,7 +434,7 @@ class ProfilesDaemon(dbus.service.Object):
         out_signature="",
         sender_keyword="sender",
     )
-    def Set(self, interface_name, property_name, value, sender=None):
+    def Set(self, interface_name, property_name, value, sender):
         # Set a property value
         interface_name = _sanitize_input(interface_name)
         property_name = _sanitize_input(property_name)
@@ -421,18 +442,18 @@ class ProfilesDaemon(dbus.service.Object):
             value = _sanitize_input(value)
         sender = _sanitize_input(sender)
         _method = _method_name()
-        self._logger.debug(
-            f"{_method}(interface='{interface_name}', property='{property_name}', value='{value}')"
-        )
-
-        # Remember receiving interface for later use with PropertiesChanged signal
-        self._ifaces_seen.add(interface_name)
 
         if interface_name not in [INTERFACE_NAME, INTERFACE_NAME_LEGACY]:
             raise dbus.exceptions.DBusException(
                 f"{_method}(interface='{interface_name}')",
                 name="org.freedesktop.DBus.Error.UnknownInterface",
             )
+
+        self._logger.debug(
+            f"{_method}(interface='{interface_name}', property='{property_name}', value='{value}', sender='{sender}')"
+        )
+        # Remember receiving interface for later use with PropertiesChanged signal
+        self._ifaces_seen.add(interface_name)
 
         self._set_property(property_name, value, sender)
 
@@ -786,7 +807,7 @@ def main():
     logger.info(f"Object path: {OBJECT_PATH}")
     logger.info(f"Arguments: {vars(args)}")
     logger.info(f"Loglevel: {loglevel}")
-    logger.info(f"Initial profile: {daemon.Get(INTERFACE_NAME, 'ActiveProfile')}")
+    logger.info(f"Initial profile: {daemon._active_profile}")
 
     # --- Run main loop
     try:
