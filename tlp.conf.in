@@ -102,7 +102,7 @@
 # PRF and BAL, respectively.
 # Default: <none>
 
-#TLP_DEFAULT_MODE=AC
+#TLP_DEFAULT_MODE=BAL
 
 # Lock power profile:
 #   0=profile depends on automatic switching,
