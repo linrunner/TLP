@@ -5,6 +5,8 @@ debian
 *.log
 PKGBUILD*
 pkg
+__pycache__/
+*.py[cod]
 research*
 .ropeproject
 src
