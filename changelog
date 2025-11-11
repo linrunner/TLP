@@ -1,3 +1,9 @@
++++ 1.9.0 --- <unreleased> +++
+
+* Features since 1.9.0-beta.1
+    Power Profiles:
+    - tlp-stat --pd-diag: display active desktop session
+
 +++ 1.9.0-beta.1 --- 05.11.2025 +++
 
   * Beta Release
