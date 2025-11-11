@@ -14,9 +14,11 @@
 # --- Constants
 readonly TLP="tlp"
 readonly SUDO="sudo"
+readonly UDEVADM="udevadm"
 
 readonly LASTPWR='/run/tlp/last_pwr'
 readonly MANUALMODE='/run/tlp/manual_mode'
+readonly TEMPCONF='/etc/tlp.d/99-unit-test.conf'
 
 # --- Tests
 check_profile_select () {
@@ -382,6 +384,7 @@ check_power_supply () {
     return $errcnt
 }
 
+
 check_auto_switch () {
     # test TLP_AUTO_SWITCH=0/1/2
     # global param: $_testcnt, $_failcnt
@@ -513,6 +516,84 @@ check_auto_switch () {
 
 }
 
+check_ps_udev_no_switch () {
+    # cover special case of USB-C disk unplug:
+    # 1. configure TLP_AUTO_SWITCH=1
+    # 2. apply power-saver profile
+    # 3. simulate udev power_supply change event
+    # 4. check if logic works properly and power-saver profile doesn't change
+    # Refer to:
+    # - https://thinkpad-forum.de/threads/tlp-1-9-alpha-testergebnisse.244864/page-3#post-2451309
+    # - 7eec753, 61ac2ea
+    # global param: $_testcnt, $_failcnt
+    # retval: $_testcnt++, $_failcnt++
+
+    local prof_save prof_xpect
+    local ps ppi
+    local rc=0
+    local errcnt=0
+
+    printf_msg "check_ps_udev_no_switch {{{\n"
+
+    # save initial profile
+    read_saved_profile; prof_save="$_prof"; ps="$_ps"
+    printf_msg " initial: last_pwr/%s\n" "$prof_save $ps"
+
+    # 1. create temp config
+    echo "TLP_AUTO_SWITCH=1" | ${SUDO} tee $TEMPCONF > /dev/null
+
+    # 2. apply power-saver profile
+    printf_msg " Apply power-saver:"
+    ${SUDO} ${TLP} power-saver -- TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
+    # expect power-saver
+    prof_xpect="2"
+    compare_sysf "$prof_xpect $ps" "$LASTPWR"; rc=$?
+    if [ "$rc" -eq 0 ]; then
+        printf_msg " last_pwr/%s=ok" "$prof_xpect $ps"
+    else
+        printf_msg " last_pwr/%s=err(%s)" "$prof_xpect $ps" "$rc"
+        errcnt=$((errcnt + 1))
+    fi
+    printf_msg "\n"
+
+    # 3. simulate udev power_supply change event
+    printf_msg " Simulate PS udev event w/TLP_AUTO_SWITCH=1:"
+    ${SUDO} ${UDEVADM} trigger --type=all --action=change --subsystem-match=power_supply --sysname-match=AC
+    # wait for tlp processing
+    sleep 2
+
+    # 4. check if logic works properly and power-saver profile didnt't change
+    compare_sysf "$prof_xpect $ps" "$LASTPWR"; rc=$?
+    if [ "$rc" -eq 0 ]; then
+        printf_msg " last_pwr/%s=ok" "$prof_xpect $ps"
+    else
+        printf_msg " last_pwr/%s=err(%s)" "$prof_xpect $ps" "$rc"
+        errcnt=$((errcnt + 1))
+    fi
+    printf_msg "\n"
+
+    # restore initial profile
+    case "$prof_save" in
+        "$PP_PRF") ppi="performance" ;;
+        "$PP_BAL") ppi="balanced" ;;
+        "$PP_SAV") ppi="power-saver" ;;
+    esac
+    ${SUDO} ${TLP} ${ppi} -- TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
+
+    read_saved_profile
+    printf_msg " result: last_pwr/%s\n" "$_prof $_ps"
+
+    # remove temp config
+    ${SUDO} rm -f $TEMPCONF
+
+    # print summary
+    printf_msg "}}} errcnt=%s\n\n" "$errcnt"
+    _testcnt=$((_testcnt + 1))
+    [ "$errcnt" -gt 0 ] && _failcnt=$((_failcnt + 1))
+    return $errcnt
+}
+
+
 # --- MAIN
 # source library
 readonly TESTLIB="test-func"
@@ -528,6 +609,7 @@ if [ $# -eq 0 ]; then
     do_profile="1"
     do_persist="1"
     do_power="1"
+    do_psudev="1"
     do_default="1"
     do_switch="1"
 else
@@ -537,6 +619,7 @@ else
             default)  do_default="1" ;;
             persist)  do_persist="1" ;;
             power)    do_power="1" ;;
+            psudev)   do_psudev="1" ;;
             switch)   do_switch="1" ;;
         esac
 
@@ -567,6 +650,7 @@ ${SUDO} ${TLP} start > /dev/null
 [ "$do_persist" = "1" ] && check_persistent_mode
 [ "$do_power" = "1" ] && check_power_supply
 [ "$do_switch" = "1" ] && check_auto_switch
+[ "$do_psudev" = "1" ] && check_ps_udev_no_switch
 
 report_result "$_testcnt" "$_failcnt"
 
