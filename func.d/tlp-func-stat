@@ -871,7 +871,7 @@ print_battery_cycle_count () {
 }
 
 # --- Radio Devices
-#
+
 print_nm_rfkill_states () {
     # print radio devices states as seen by NetworkManager and rfkill
 
@@ -892,6 +892,40 @@ print_nm_rfkill_states () {
     return 0
 }
 
+# -- Desktop Environment
+
+print_desktop_session () {
+    # print DE, version, wayland/x11
+
+    local session stype version
+
+    session="${XDG_SESSION_DESKTOP:-unknown}"
+    stype="$XDG_SESSION_TYPE"
+    case "$session" in
+        gnome) version="$(gnome-shell --version 2> /dev/null)" ;;
+        plasma) version="$(plasmashell --version 2> /dev/null)" ;;
+        cinnamon) version="$(cinnamon --version 2> /dev/null)" ;;
+        lxqt) version="$(lxqt-session --version 2> /dev/null | grep "session")" ;;
+    esac
+
+    if [ "$session" = "unknown" ]; then
+        if [ "$stype" = "tty" ]; then
+            printf "Desktop session = none (tty)\n"
+        else
+            printf "Desktop session = unknown (%s)\n" "$stype"
+        fi
+        return 1
+    fi
+
+    [ -n "$version" ] && session="$version"
+    if [ -n "$stype" ]; then
+        printf "Desktop session = %s (%s)\n" "$session" "$stype"
+    else
+        printf "Desktop session = %s\n" "$session"
+    fi
+
+    return 0
+}
 # -- udev diagnostic
 
 check_udev_rule_ps () {

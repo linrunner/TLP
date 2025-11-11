@@ -1115,6 +1115,10 @@ fi # show_psup
 # --- show tlp-pd diagnostic
  if [ "$show_pddiag" = "1" ]; then
     printf "+++ tlp-pd Diagnostic\n"
+    if [ "$(id -u)" = "0" ];  then
+        echo_message "Notice: Please do not run 'tlp-stat --pd-diag' as root or with sudo"
+    fi
+    print_desktop_session
     if check_tlp_pd_installed; then
         echo_message "tlp-pd is installed." "success"
         if check_systemd; then
