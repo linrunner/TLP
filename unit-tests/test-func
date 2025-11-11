@@ -199,7 +199,7 @@ printf_msg () {
     local fmt="$1"
     shift
     # shellcheck disable=SC2154,SC2059
-    printf "$fmt" "$@" | tee "${_logfile:-/dev/null}" 1>&2
+    printf "$fmt" "$@" | tee -a "${_logfile:-/dev/null}" 1>&2
 }
 
 start_report () {

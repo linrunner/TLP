@@ -122,7 +122,7 @@ check_profile_select () {
             printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
             errcnt=$((errcnt + 1))
         fi
-        printf "\n"
+        printf_msg "\n"
 
     done # prof
 
@@ -207,7 +207,7 @@ check_default_mode () {
             printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
             errcnt=$((errcnt + 1))
         fi
-        printf "\n"
+        printf_msg "\n"
 
     done # prof
 
@@ -292,7 +292,7 @@ check_persistent_mode () {
             printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
             errcnt=$((errcnt + 1))
         fi
-        printf "\n"
+        printf_msg "\n"
 
     done # prof
 
@@ -370,7 +370,7 @@ check_power_supply () {
             printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
             errcnt=$((errcnt + 1))
         fi
-        printf "\n"
+        printf_msg "\n"
 
     done # prof
 
@@ -440,7 +440,7 @@ check_auto_switch () {
                             printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
                             errcnt=$((errcnt + 1))
                         fi
-                        printf "\n"
+                        printf_msg "\n"
                     done # auto/resume
                 done # ps_now
                 ;; # disabled|enabled
@@ -496,9 +496,9 @@ check_auto_switch () {
                                 printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
                                 errcnt=$((errcnt + 1))
                             fi
-                            printf "\n"
+                            printf_msg "\n"
                         done # prof
-                        printf "\n"
+                        printf_msg "\n"
                     done # ps_now
                 done # auto/resume
                 ;; # smart

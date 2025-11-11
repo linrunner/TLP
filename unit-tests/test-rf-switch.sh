@@ -73,13 +73,13 @@ check_radio () {
                 for next_state in $rf_seq; do
                     # shellcheck disable=SC2086
                     $SUDO $rf_cmd "$next_state" 1> /dev/null
-                    printf " %s%s %-3s -> " "$SUDO" "$rf_cmd" "$next_state"
+                    printf_msg " %s%s %-3s -> " "$SUDO" "$rf_cmd" "$next_state"
                     new_state="$(read_rf_state "$rf_cmd")"
 
                     if [ "$new_state" = "$next_state" ]; then
-                        printf "%-3s (ok)\n" "$new_state"
+                        printf_msg "%-3s (ok)\n" "$new_state"
                     else
-                        printf "Deviation: %-3s (act) != %-3s (exp)\n" "$new_state" "$next_state"
+                        printf_msg "Deviation: %-3s (act) != %-3s (exp)\n" "$new_state" "$next_state"
                         errcnt=$((errcnt + 1))
                     fi
                 done
