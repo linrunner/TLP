@@ -903,6 +903,7 @@ print_desktop_session () {
     stype="$XDG_SESSION_TYPE"
     case "$session" in
         gnome) version="$(gnome-shell --version 2> /dev/null)" ;;
+        ubuntu) version="Ubuntu/$(gnome-shell --version 2> /dev/null)" ;;
         plasma) version="$(plasmashell --version 2> /dev/null)" ;;
         cinnamon) version="$(cinnamon --version 2> /dev/null)" ;;
         lxqt) version="$(lxqt-session --version 2> /dev/null | grep "session")" ;;
