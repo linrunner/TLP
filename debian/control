@@ -11,9 +11,9 @@ Homepage: https://linrunner.de/tlp
 Package: tlp
 Architecture: all
 Depends: hdparm, iw, pciutils, rfkill, usbutils, ${misc:Depends}
-Recommends: tlp-rdw, ethtool
-Suggests: tlp-pd, tp-smapi-dkms, smartmontools, ${dist:Suggests}
-Conflicts: laptop-mode-tools, power-profiles-daemon, tuned
+Recommends: tlp-pd, tlp-rdw, ethtool
+Suggests: tp-smapi-dkms, smartmontools, ${dist:Suggests}
+Conflicts: laptop-mode-tools, tuned
 Description: Optimize laptop battery life
  TLP is a feature-rich command-line utility, saving laptop battery power
  without the need to delve deeper into technical details.
@@ -45,6 +45,7 @@ Package: tlp-pd
 Architecture: all
 Depends: tlp, polkitd, python3-dbus, python3-gi, ${misc:Depends}, ${python3:Depends}
 Conflicts: power-profiles-daemon, tuned-ppd
+Provides: power-profiles-daemon
 Description: Switch Power Profiles from the Desktop
  TLP Profiles Daemon (tlp-pd) is an add-on to TLP. It implements the D-Bus
  interface, which lets desktop environments show a power profile switch.
