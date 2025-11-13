@@ -1,10 +1,5 @@
-# Watch control file for uscan.
-# See uscan(1) for format.
-
-# Compulsory line, this is a version 4 file.
-version=4
-
-# GitHub hosted projects.
-opts="filenamemangle=s%(?:.*?)?v?(@ANY_VERSION@@ARCHIVE_EXT@)%@PACKAGE@-$1%" \
-    https://github.com/linrunner/TLP/tags \
-    (?:.*?/)v?(\d[\d.]*)@ARCHIVE_EXT@
+# Watch file for TLP
+Version: 5
+Template: Github
+Owner: linrunner
+Project: TLP
