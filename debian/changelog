@@ -1,6 +1,6 @@
-tlp (1.9.0~beta.1-1) unstable; urgency=medium
+tlp (1.9.0-1) unstable; urgency=medium
 
-  * New upstream version 1.9.0-beta.1
+  * New upstream version 1.9.0
 
   [ Thomas Koch ]
   * New sub-package tlp-pd
@@ -8,7 +8,11 @@ tlp (1.9.0~beta.1-1) unstable; urgency=medium
   * Update descriptions
   * Cleanup copyright
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 05 Nov 2025 10:13:42 +0100
+  [ Raphaël Halimi ]
+  * Bump Standards-Version to 4.7.2
+  * debian/watch: update to v5 format
+
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 01 Dec 2025 08:18:24 +0100
 
 tlp (1.8.0-1) unstable; urgency=medium
 
