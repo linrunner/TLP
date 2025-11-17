@@ -1,4 +1,4 @@
-.TH tlp-stat 8 2025-10-27 "TLP 1.9.0" "Power Management"
+.TH tlp-stat 8 2025-11-17 "TLP 1.9.0" "Power Management"
 .
 .SH NAME
 tlp-stat - view power saving status
@@ -42,38 +42,31 @@ whatsoever.
 .SS Power Saving
 .TP
 .B -d, --disk
-View disk device information.
+View disk device tunables.
 .
 .TP
 .B -e, --pcie
-View PCIe device information. Add \fB-v\fR to see device runtime status.
+View PCIe device tunables. Add \fB-v\fR to see device runtime status.
 .
 .TP
 .B -g, --graphics
-View graphics card information.
+View graphics card tunables. Add \fB-v\fR to see power state
+and clocks of AMD GPUs.
 .
 .TP
 .B -p, --processor
-View processor information. For clarity the standard output shows only cpu0.
+View processor tunables. For clarity the standard output shows only cpu0.
 Add \fB-v\fR to see all cpus.
 Add \fB-q\fR to see cpu driver state only.
 .
 .TP
-.B -q, --quiet
-Omit version header and show less information in the processor category.
-.
-.TP
 .B -r, --rfkill
-View radio device states.
-.
-.TP
-.B -t, --temp
-View temperatures and fan speed.
-Add \fB-v\fR to see all individual sensors.
+View radio device states and tunables.
+Add \fB-v\fR to see NetworkManager and rfkill details.
 .
 .TP
 .B -u, --usb
-View USB device information. Add \fB-v\fR to see device runtime status.
+View USB device tunables. Add \fB-v\fR to see device runtime status.
 .
 .SS Battery Care
 .TP
@@ -83,8 +76,18 @@ Add \fB-v\fR to see battery voltages (if available).
 .
 .SS Information
 .TP
+.B -q, --quiet
+Omit version header and show less information in the processor category.
+.
+.TP
+.B -t, --temp
+View temperatures and fan speed.
+Add \fB-v\fR to see all individual sensors.
+.
+.TP
 .B -v, --verbose
-Show more information in the battery, PCIe, processor, temperature and USB categories.
+Show more information in the battery, graphics, PCIe, processor, temperature,
+wireless and USB categories.
 .
 .TP
 .B --version
