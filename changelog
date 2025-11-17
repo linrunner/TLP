@@ -54,7 +54,7 @@
       but also “Error:”
     Graphics:
     - New parameter for the power-saver profile: AMDGPU_ABM_LEVEL_ON_SAV
-    - tlp-stat -g -v: show power_state, pp_dpm_*clk of AMD GPUs
+    - tlp-stat -g -v: show power state and clocks of AMD GPUs
     - RADEON_POWER_PROFILE_ON_AC/BAT removed (deprecated since 1.8.0)
     Processor:
     - PLATFORM_PROFILE_ON_AC/BAT/SAV: activated by default
