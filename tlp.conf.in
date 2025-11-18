@@ -106,7 +106,7 @@
 
 # Lock power profile:
 #   0=profile depends on automatic switching,
-#   1=profile is locked to TLP_DEFAULT_MODE.
+#   1=profile is locked to TLP_DEFAULT_MODE (TLP_AUTO_SWITCH is ignored).
 # Default: 0
 
 #TLP_PERSISTENT_DEFAULT=0
