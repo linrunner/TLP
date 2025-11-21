@@ -45,9 +45,9 @@ check_profile_select () {
 
     # iterate supported profiles, return to initial profile
     case "$prof_save" in
-        "$PP_PRF") prof_seq="balanced power-saver ac bat start auto usb suspend resume performance" ;;
-        "$PP_BAL") prof_seq="power-saver ac bat start auto performance usb suspend resume balanced" ;;
-        "$PP_SAV") prof_seq="ac bat start auto performance balanced usb suspend resume power-saver" ;;
+        "$PP_PRF") prof_seq="balanced power-saver ac bat start auto suspend resume0 resume usb usb0 performance" ;;
+        "$PP_BAL") prof_seq="power-saver ac bat start auto performance suspend resume0 resume usb usb0 balanced" ;;
+        "$PP_SAV") prof_seq="ac bat start auto performance balanced suspend resume0 resume usb usb0  power-saver" ;;
     esac
 
     printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$prof_save $ps_save" "$mm_save"
@@ -84,6 +84,7 @@ check_profile_select () {
                 prof_xpect="$PP_SAV $ps_save"
                 mm_xpect=""
                 prof_save="$PP_SAV"
+                remove_saved_profile
                 ;;
 
             start|auto)
@@ -95,12 +96,36 @@ check_profile_select () {
                     prof_save="$PP_BAL"
                 fi
                 mm_xpect=""
-
+                remove_saved_profile
                 ;;
 
-            usb|suspend|resume)
+            usb)
+                prof_xpect="$ps_save $ps_save"
+                mm_xpect=""
+                ;;
+
+            usb0)
+                prof="usb"
+                prof_xpect=""
+                mm_xpect=""
+                remove_saved_profile
+                ;;
+
+            suspend)
                 prof_xpect="$prof_save $ps_save"
                 mm_xpect=""
+                ;;
+
+            resume)
+                prof_xpect="$ps_save $ps_save"
+                mm_xpect=""
+                ;;
+
+            resume0)
+                prof="resume"
+                prof_xpect="$ps_save $ps_save"
+                mm_xpect=""
+                remove_saved_profile
                 ;;
 
         esac
@@ -108,14 +133,14 @@ check_profile_select () {
         ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" > /dev/null 2>&1
 
         # check expect results
-        compare_sysf "$prof_xpect" "$LASTPWR";  rc=$?
+        compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
         if [ "$rc" -eq 0 ]; then
             printf_msg " last_pwr/%s=ok" "$prof_xpect"
         else
             printf_msg " last_pwr/%s=err(%s)" "$prof_xpect" "$rc"
             errcnt=$((errcnt + 1))
         fi
-        compare_sysf "$mm_xpect" "$MANUALMODE";rc=$?
+        compare_sysf "$mm_xpect" "$MANUALMODE"; rc=$?
         if [ "$rc" -eq 0 ]; then
             printf_msg " manual_mode/%s=ok" "$mm_xpect"
         else
@@ -640,9 +665,6 @@ _testcnt=0
 _failcnt=0
 
 report_test "$_basename"
-
-# initialize statefile
-${SUDO} ${TLP} start > /dev/null
 
 # --- TEST
 [ "$do_profile" = "1" ] && check_profile_select

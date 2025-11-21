@@ -170,6 +170,11 @@ read_saved_profile () {
     fi
 }
 
+remove_saved_profile () {
+    # delete saved profile and power source
+    sudo rm -f "$LASTPWR"
+}
+
 # --- Run
 cache_root_cred () {
     # cache user credentials before actual testing
