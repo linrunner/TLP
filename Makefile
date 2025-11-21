@@ -347,8 +347,9 @@ uninstall-rdw:
 	rm -f $(_FISHCPL)/tlp-rdw.fish
 
 uninstall-pd:
-	rm -f $(_SBIN)/tlp-pd
-	rm -f $(_BIN)/tlpctl
+	rm $(_SBIN)/tlp-pd
+	rm $(_BIN)/tlpctl
+	rm -f $(_SYSD)/tlp-pd.service
 	rm -f $(_POLKIT)/tlp-pd.policy
 	rm -f $(_DBCONF)/org.freedesktop.UPower.PowerProfiles.conf
 	rm -f $(_DBSVC)/org.freedesktop.UPower.PowerProfiles.service
