@@ -10,5 +10,5 @@ ACTION=="change", SUBSYSTEM=="power_supply", KERNEL!="hidpp_battery*", RUN+="@TL
 ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ENV{DEVTYPE}=="usb_device", RUN+="@TLP_ULIB@/tlp-usb-udev usb %p"
 
 # handle added usb disk devices (exclude partitions via ENV{DEVTYPE}=="disk")
-ACTION=="add", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ENV{ID_BUS}=="usb",       RUN+="@TLP_ULIB@/tlp-usb-udev disk %p"
-ACTION=="add", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ENV{ID_USB_TYPE}=="disk", RUN+="@TLP_ULIB@/tlp-usb-udev disk %p"
+ACTION=="add", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ENV{ID_BUS}=="usb", RUN+="@TLP_ULIB@/tlp-usb-udev disk %p"
+ACTION=="add", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ENV{ID_BUS}=="ata", RUN+="@TLP_ULIB@/tlp-usb-udev disk %p"
