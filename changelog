@@ -4,6 +4,10 @@
     Power Profiles:
     - tlp-stat --pd-diag: display active desktop session
 
+* Bugfixes since 1.9.0-beta.1
+    Disks:
+    - Fix double processing of plugged USB disks
+
 +++ 1.9.0-beta.1 --- 05.11.2025 +++
 
   * Beta Release
