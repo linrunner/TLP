@@ -245,6 +245,10 @@ set_disk_apm_level () { # set disk apm level
             # shellcheck disable=SC2086
             set -- $DISK_APM_LEVEL_ON_BAT
             ;;
+
+        *)
+            set --
+            ;;
     esac
 
     # quit if empty apmlist
@@ -316,6 +320,10 @@ set_disk_spindown_timeout () { # set disk spindown timeout
         "$PP_BAL"|"$PP_SAV")
             # shellcheck disable=SC2086
             set -- $DISK_SPINDOWN_TIMEOUT_ON_BAT
+            ;;
+
+        *)
+            set --
             ;;
     esac
 

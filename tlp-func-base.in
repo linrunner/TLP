@@ -1188,9 +1188,10 @@ get_next_power_profile () {
     # - if TLP_DEFAULT_MODE is unconfigured and power source is unknown,
     #   returns PP_BAL for laptop / PP_PRF for desktop/other
 
-    local tlp_cmd
+    local neutral tlp_cmd
 
     tlp_cmd="$1"
+    neutral=0
 
     read_saved_power_profile
 
@@ -1277,19 +1278,22 @@ get_next_power_profile () {
 
             *)
                 # all other tlp commands and *tlp-usb-udev disk* that do not touch the power profile
+                neutral=1
                 if wordinlist "$_manual_mode" "$PP_VALID"; then
                     # use manual mode
                     _pp_next=$_manual_mode
                 else
-                    # use current power source
+                    # use previous profile
+                    # note: this can even be $PS_UNKNOWN if 'tlp init start' has not yet been run,
+                    # i.e. no last_pwr exists
                     _pp_next=$_pp_last
                 fi
                 ;;
 
         esac # $tlp_cmd
 
-        if [ "$_pp_next" -eq "$PS_UNKNOWN" ]; then
-            # profile still undefined -> use configured default mode
+        if [ "$neutral" != "1" ] && [ "$_pp_next" -eq "$PS_UNKNOWN" ]; then
+            # non-neutral command and profile still undefined -> use configured default mode
             case $(toupper "$TLP_DEFAULT_MODE") in
                 AC|PRF)  _pp_next=$PP_PRF ;;
                 BAT|BAL) _pp_next=$PP_BAL ;;
