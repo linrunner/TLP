@@ -377,23 +377,33 @@ print_nvme_temp () {
     return 0
 }
 
-anonymize_disk_id () {
+anonymize_disk_ids () {
     # replace disk serial number with asterisks
-    # $1: disk id
-    if [ "$1" = "${1%_*}" ]; then
-        printf "%s" "$1"
-    else
-        echo "$1" | \
-            awk '{
-                s = $1
+    # $@: space separated list of disk ids
+    set -- "$@"
+
+    while [ $# -gt 0 ]; do
+        echo "$1" | awk '{
+            s = $1
+            if (s ~ /_/) {
                 i = length(s)
                 while (substr(s, i, 1) != "_" && i > 0) {
                     s = substr(s, 1, i-1) "*" substr(s, i+1)
                     i--
                 }
-                print s
-            }'
-    fi
+            } else if (s ~ /^nvme-nvme\./) {
+                for (i = 1; i <= length(s); i++) {
+                    if (i > 24 && substr(s, i, 1) != "-") {
+                        s = substr(s, 1, i-1) "*" substr(s, i+1)
+                    }
+                }
+            }
+            printf("%s", s)
+        }'
+
+        shift
+        [ $# -gt 0 ] && printf " "
+    done
 }
 
 show_disk_data () {
@@ -414,7 +424,7 @@ show_disk_data () {
         nvme) # NVMe disk
             printf     "\n%s:\n" "/dev/$_disk_dev"
             printf     "  Type       = NVMe\n"
-            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" "$(anonymize_disk_id "$_disk_id")"
+            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" "$(anonymize_disk_ids "$_disk_id")"
             print_sysf "  Model      = %s\n" "/sys/block/$_disk_dev/device/model"
             print_sysf "  Firmware   = %s\n" "/sys/block/$_disk_dev/device/firmware_rev"
             print_nvme_temp "$_disk_dev"
@@ -424,7 +434,7 @@ show_disk_data () {
             # ATA/USB/IEEE1394 disk
             printf     "\n%s:\n" "/dev/$_disk_dev"
             printf     "  Type       = %s\n" "$(toupper "$_disk_type")"
-            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" "$(anonymize_disk_id "$_disk_id")"
+            [ -n "$_disk_id" ] && printf "  Disk ID    = %s\n" "$(anonymize_disk_ids "$_disk_id")"
 
             # save spindle state
             get_disk_state "$_disk_dev"
