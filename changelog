@@ -7,6 +7,7 @@
 * Bugfixes since 1.9.0-beta.1
     Disks:
     - Fix double processing of plugged USB disks
+    - tlp-stat -d: fix anonymization of newish NVMe disk ids
 
 +++ 1.9.0-beta.1 --- 05.11.2025 +++
 
