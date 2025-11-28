@@ -28,15 +28,21 @@ shift
 
 case $self in
     run-on-ac)
-        if get_next_power_profile; then
-            $cmd "$@"
-        fi
+        get_sys_power_supply
+        case "$_syspwr" in
+            "$PS_AC") $cmd "$@" ;;
+            "$PS_BAT") ;;
+            "$PS_UNKNOWN") cecho "Error: power source unknown." 1>&2 ;;
+        esac
         ;;
 
     run-on-bat)
-        if ! get_next_power_profile; then
-            $cmd "$@"
-        fi
+        get_sys_power_supply
+        case "$_syspwr" in
+            "$PS_AC") ;;
+            "$PS_BAT") $cmd "$@" ;;
+            "$PS_UNKNOWN") cecho "Error: power source unknown." 1>&2 ;;
+        esac
         ;;
 
     *)
