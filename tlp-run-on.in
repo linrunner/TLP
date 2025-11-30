@@ -29,6 +29,7 @@ shift
 case $self in
     run-on-ac)
         get_sys_power_supply
+        # shellcheck disable=SC2154
         case "$_syspwr" in
             "$PS_AC") $cmd "$@" ;;
             "$PS_BAT") ;;
