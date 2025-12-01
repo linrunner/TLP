@@ -377,7 +377,7 @@ uninstall: uninstall-tlp uninstall-rdw uninstall-pd
 
 uninstall-man: uninstall-man-tlp uninstall-man-rdw uninstall-man-pd
 
-checkall: checkbashisms shellcheck perlcritic checkdupconst checkbatdrv checkwip
+checkall: checkbashisms shellcheck perlcritic checkdupconst checkman checkbatdrv checkwip
 
 checkbashisms:
 	@echo "*** checkbashisms ***************************************************************************"
@@ -394,6 +394,10 @@ perlcritic:
 checkdupconst:
 	@echo "*** checkdupconst ***************************************************************************"
 	@{ sed -n -r -e 's,^.*readonly\s+([A-Za-z_][A-Za-z_0-9]*)=.*$$,\1,p' $(SHFILES) | sort | uniq -d; } || true
+
+checkman:
+	@echo "*** checkman ********************************************************************************"
+	@grep '.TH ' man/* man-pd/* man-rdw/*
 
 checkwip:
 	@echo "*** checkwip ********************************************************************************"
