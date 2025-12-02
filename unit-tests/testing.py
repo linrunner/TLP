@@ -6,7 +6,7 @@ import os
 import subprocess
 import sys
 import tempfile
-from typing import List, Optional, Callable
+from typing import Callable, List, Optional
 
 
 # --- Testing functions ---
@@ -213,9 +213,8 @@ class TestReport:
         print(line)
         try:
             self._report_file.write(f"{line}\n")
-        finally:
-            # ignore write errors
-            return
+        except IOError:
+            pass  # Ignore write errors
 
     def print_result(self):
         # Write test result to terminal and report file,
