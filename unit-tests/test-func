@@ -30,6 +30,9 @@ readonly PP_VALID="0 1 2"
 readonly MPM_UNKNOWN=128
 readonly MPM_OFF=255
 
+# statefile
+readonly LASTPWR='/run/tlp/last_pwr'
+
 # ----------------------------------------------------------------------------
 # Functions
 
