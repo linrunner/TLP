@@ -63,7 +63,7 @@ sub printf_debug {
     if ( $trace2stderr) {
         printf STDERR @_;
     } elsif ( ! $notrace && $debug ) {
-        open (my $logpipe, "|-", "logger -p debug -t \"tlp\" --id=\$\$ --") || return 1;
+        open (my $logpipe, "|-", "logger -p daemon.debug -t \"tlp\" --id=\$\$ --") || return 1;
         printf {$logpipe} @_;
         close ($logpipe);
     }
