@@ -341,11 +341,14 @@ case "$_cmd" in
                 notify_profile_daemon "$(pp2str "$_pp_next")"
                 poweroff_drivebay "$_pp_next" 0
                 set_radio_device_states "$_pp_next"
-                if [ "$RESTORE_THRESHOLDS_ON_BAT" = "1" ] \
-                    && [ "$_pp_next" = "1" ]; then
-                    init_batteries_thresholds
-                fi
                 save_runconf
+            fi
+            # shellcheck disable=SC2154
+            if [ "$RESTORE_THRESHOLDS_ON_BAT" = "1" ] \
+                && [ "$_syspwr" = "$PS_BAT" ] \
+                && [ "$_syspwr" != "$_ps_last" ]; then
+                # Power source has changed to battery -> apply thresholds
+                init_batteries_thresholds
             fi
             unlock_tlp
         fi
@@ -426,7 +429,16 @@ case "$_cmd" in
             apply_common_settings "$_pp_next"
             notify_profile_daemon "$(pp2str "$_pp_next")"
             resume_drivebay "$_pp_next"
-            init_batteries_thresholds "asus huawei lg lg-legacy"
+            # shellcheck disable=SC2154
+            if [ "$RESTORE_THRESHOLDS_ON_BAT" = "1" ] \
+                && [ "$_syspwr" = "$PS_BAT" ] \
+                && [ "$_syspwr" != "$_ps_last" ]; then
+                # Power source has changed to battery -> apply thresholds
+                init_batteries_thresholds
+            else
+                # Specific hardware which resets the EC when resuming -> apply thresholds
+                init_batteries_thresholds "asus huawei lg lg-legacy"
+            fi
             save_runconf
             unlock_tlp
         fi
