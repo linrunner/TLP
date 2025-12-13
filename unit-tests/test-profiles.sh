@@ -16,7 +16,6 @@ readonly TLP="tlp"
 readonly SUDO="sudo"
 readonly UDEVADM="udevadm"
 
-readonly LASTPWR='/run/tlp/last_pwr'
 readonly MANUALMODE='/run/tlp/manual_mode'
 readonly TEMPCONF='/etc/tlp.d/99-unit-test.conf'
 
@@ -559,6 +558,9 @@ check_ps_udev_no_switch () {
     local errcnt=0
 
     printf_msg "check_ps_udev_no_switch {{{\n"
+
+    # reset profile
+    ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_DEFAULT_MODE="" TLP_PERSISTENT_DEFAULT=0 > /dev/null
 
     # save initial profile
     read_saved_profile; prof_save="$_prof"; ps="$_ps"

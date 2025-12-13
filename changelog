@@ -1,3 +1,18 @@
+++++ 1.10.0-alpha.0 --- <unreleased> +++
+
+  * Development version
+
+  * Features
+    General:
+    - Use 'daemon' facility for logging and trace
+
+  * Bugfixes
+    Battery Care:
+    - Fix RESTORE_THRESHOLDS_ON_BAT
+
+For information regarding packaging, please refer to:
+https://linrunner.de/tlp/developers/packaging.html
+
 +++ 1.9.0 --- 01.12.2025 +++
 
 * Features since 1.9.0-beta.1

@@ -43,8 +43,10 @@ init_batteries_thresholds () {
     # apply thresholds
     # shellcheck disable=SC2154
     if [ -z "$1" ]; then
+        # Apply thresholds unconditionally
         batdrv_apply_configured_thresholds; rc=$?
     elif wordinlist "$_batdrv_plugin" "$1"; then
+        # Specific hardware which resets the EC when resuming -> apply thresholds
         batdrv_apply_configured_thresholds; rc=$?
     fi
 

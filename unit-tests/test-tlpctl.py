@@ -6,15 +6,16 @@
 # - tlpctl list
 # - tlpctl loglevel
 
-from testing import TestReport, run_executable, test_executable
 import re
 import time
 from typing import List
 
+from testing import TestReport, run_executable, test_executable
+
 # --- Constants
 TLPCTL = "tlpctl"
 AVAILABLE_PROFILES = ["performance", "balanced", "power-saver"]
-WAIT_PROFILE_ACTIVATION = 1
+WAIT_PROFILE_ACTIVATION = 1.5
 
 
 # --- Helper functions
