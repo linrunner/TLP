@@ -480,27 +480,19 @@ batdrv_show_battery_data () {
     # -- show battery data
     local bat
     local bcnt=0
-    local _bat_efsum=0
-    local _bat_ensum=0
 
     for bat in $_batteries; do # iterate batteries
         batdrv_select_battery "$bat"
 
         printf "+++ Battery Status: %s\n" "$bat"
 
-        printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
-        printparm "%-59s = ##%s##" "$_bd_read/model_name"
-
-        print_battery_cycle_count "$_bd_read/cycle_count" "$(read_sysf "$_bd_read/cycle_count")"
-
+        print_bat_make
+        print_bat_cycle_count "$_bd_read/cycle_count"
         print_bat_energy
-
-        print_batstate "$_bd_read/status"
+        print_bat_state "$_bd_read/status"
         printf "\n"
-
         if [ "$verbose" -eq 1 ]; then
-            printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_min_design" "" 000
-            printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_now" "" 000
+            print_bat_voltages
             printf "\n"
         fi
 
