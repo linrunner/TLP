@@ -503,7 +503,7 @@ batdrv_show_battery_data () {
     # global params: $_batdrv_plugin, $_batteries, $_batdrv_kmod, $_bm_thresh, $_bd_read, $_bf_start, $_bf_stop, $_bf_dischg
     # prerequisite: batdrv_init()
 
-    local verbose=${1:-0}
+    local verbose="${1:-0}"
 
     printf "+++ Battery Care\n"
     printf "Plugin: %s\n" "$_batdrv_plugin"
@@ -533,9 +533,8 @@ batdrv_show_battery_data () {
     # -- show battery data
     local bat
     local bcnt=0
-    local ed ef en
-    local efsum=0
-    local ensum=0
+    local _bat_efsum=0
+    local _bat_ensum=0
 
     for bat in $_batteries; do # iterate batteries
         batdrv_select_battery "$bat"
@@ -547,37 +546,7 @@ batdrv_show_battery_data () {
 
         print_battery_cycle_count "$_bd_read/cycle_count" "$(read_sysf "$_bd_read/cycle_count")"
 
-        if [ -f "$_bd_read/energy_full" ]; then
-            printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full_design" "" 000
-            printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full" "" 000
-            printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_now" "" 000
-            printparm "%-59s = ##%6d## [mW]" "$_bd_read/power_now" "" 000
-
-            # store values for charge / capacity calculation below
-            ed=$(read_sysval "$_bd_read/energy_full_design")
-            ef=$(read_sysval "$_bd_read/energy_full")
-            en=$(read_sysval "$_bd_read/energy_now")
-            efsum=$((efsum + ef))
-            ensum=$((ensum + en))
-
-        elif [ -f "$_bd_read/charge_full" ]; then
-            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full_design" "" 000
-            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full" "" 000
-            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_now" "" 000
-            printparm "%-59s = ##%6d## [mA]" "$_bd_read/current_now" "" 000
-
-            # store values for charge / capacity calculation below
-            ed=$(read_sysval "$_bd_read/charge_full_design")
-            ef=$(read_sysval "$_bd_read/charge_full")
-            en=$(read_sysval "$_bd_read/charge_now")
-            efsum=$((efsum + ef))
-            ensum=$((ensum + en))
-
-        else
-            ed=0
-            ef=0
-            en=0
-        fi
+        print_bat_energy
 
         print_batstate "$_bd_read/status"
         printf "\n"
@@ -596,26 +565,13 @@ batdrv_show_battery_data () {
         fi
 
         # --- show charge level (SOC) and capacity
-        lf=0
-        if [ "$ef" -ne 0 ]; then
-            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
-            lf=1
-        fi
-        if [ "$ed" -ne 0 ]; then
-            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '"$ef"' / '"$ed"');'
-            lf=1
-        fi
-        [ "$lf" -gt 0 ] && printf "\n"
+        print_bat_level
 
         bcnt=$((bcnt+1))
 
     done # for bat
 
-    if [ $bcnt -gt 1 ] && [ $efsum -ne 0 ]; then
-        # more than one battery detected --> show charge total
-        perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '"$ensum"' / '"$efsum"');'
-        printf "\n"
-    fi
+   [ $bcnt -gt 1 ] && print_bat_level_total
 
     return 0
 }
