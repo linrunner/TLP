@@ -671,59 +671,47 @@ class ProfilesDaemon(dbus.service.Object):
 
         return tlp_profile
 
-    # --- PolicyKit helpers
+    # --- PolicyKit helper
     def _check_polkit_auth(self, sender, action_id):
-        # Check if the D-Bus sender is authorized for the given PolicyKit action.
+        # Check if the D-Bus sender is authorized for the PolicyKit action_id.
         # Args:
         # - sender: D-Bus sender string (e.g., ":1.234")
         # - action_id: PolicyKit action identifier (e.g., "org.freedesktop.UPower.PowerProfiles.switch-profile")
         # Returns: bool: True if authorized, False otherwise
+        _method = _method_name()
         sender = _sanitize_input(sender)
         action_id = _sanitize_input(action_id)
 
-        # Get PolicyKit authority interface
-        polkit = self._bus.get_object(
+        # Get PolicyKit D-Bus authority interface
+        proxy = self._bus.get_object(
             "org.freedesktop.PolicyKit1", "/org/freedesktop/PolicyKit1/Authority"
         )
         authority = dbus.Interface(
-            polkit, dbus_interface="org.freedesktop.PolicyKit1.Authority"
+            proxy, dbus_interface="org.freedesktop.PolicyKit1.Authority"
         )
+        subject = ("system-bus-name", {"name": dbus.String(sender, variant_level=1)})
+        details = {}
+        flags = dbus.UInt32(
+            0x1
+        )  # flag: AllowUserInteraction (show auth dialog if needed)
+        cancellation_id = ""  # none
 
-        # Get the process ID and start time for the sender
-        dbus_obj = self._bus.get_object("org.freedesktop.DBus", "/org/freedesktop/DBus")
-        dbus_iface = dbus.Interface(dbus_obj, dbus_interface="org.freedesktop.DBus")
-        pid = dbus_iface.GetConnectionUnixProcessID(sender)
-
-        # Build the subject for PolicyKit check
-        # Subject type: unix-process with PID and start-time
-        subject = (
-            "unix-process",
-            {
-                "pid": dbus.UInt32(pid),
-                "start-time": dbus.UInt64(0),  # 0 means "don't check start time"
-            },
-        )
-
-        # Check authorization
+        # Verify that sender is authorized for the PolicyKit action_id
         try:
             result = authority.CheckAuthorization(
-                subject,
-                action_id,
-                {},  # details
-                dbus.UInt32(
-                    0x1
-                ),  # flags: AllowUserInteraction (show auth dialog if needed)
-                "",  # cancellation_id
+                subject, action_id, details, flags, cancellation_id
             )
             # result is a tuple: (is_authorized, is_challenge, details)
-
             is_authorized = result[0]
+            self._logger.debug(
+                f"{_method}(subject='{subject}', action_id='{action_id}'): {is_authorized}"
+            )
             return bool(is_authorized)
 
         except dbus.exceptions.DBusException as errmsg:
             _method = _method_name()
             self._logger.error(
-                f"{_method}(): PolicyKit authorization check failed: {errmsg}"
+                f"{_method}(subject='{subject}', action_id='{action_id}'): PolicyKit error: {errmsg}"
             )
             return False
 
