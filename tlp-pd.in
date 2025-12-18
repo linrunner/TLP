@@ -7,7 +7,7 @@
 # Copyright (c) 2025 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-import dbus
+import dbus  # noqa: I001
 import dbus.service
 import dbus.mainloop.glib
 from gi.repository import GLib
@@ -232,6 +232,13 @@ class ProfilesDaemon(dbus.service.Object):
         sender = _sanitize_input(sender)
         _method = _method_name()
 
+        # Check authorization first
+        if not self._check_polkit_auth(sender, f"{BUS_NAME}.release-profile"):
+            raise dbus.exceptions.DBusException(
+                f"{_method}(): Not authorized to release power profile",
+                name="org.freedesktop.PolicyKit1.Error.NotAuthorized",
+            )
+
         scookie = _sanitize_uint32(str(cookie))
         if scookie < 0 or scookie not in self._holds:
             raise dbus.exceptions.DBusException(
@@ -283,6 +290,12 @@ class ProfilesDaemon(dbus.service.Object):
             raise dbus.exceptions.DBusException(
                 f"{_method}(): Invalid profile '{profile}'",
                 name="org.freedesktop.DBus.Error.InvalidArgs",
+            )
+
+        if not self._check_polkit_auth(sender, f"{BUS_NAME}.sync-profile"):
+            raise dbus.exceptions.DBusException(
+                f"{_method}(): Not authorized to sync power profile",
+                name="org.freedesktop.PolicyKit1.Error.NotAuthorized",
             )
 
         # Update active profile
