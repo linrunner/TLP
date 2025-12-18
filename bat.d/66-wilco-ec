@@ -108,25 +108,24 @@ batdrv_init () {
     if [ -z "$_batteries" ]; then
         echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
         return 2
-    else
-        if [ "$NATACPI_ENABLE" = "0" ]; then
-            # natacpi disabled in configuration --> skip actual detection
-            _natacpi=32
-        else
-            sysf="$ACPIBATDIR/wilco-charger"
+    fi
 
-            if readable_sysf "$sysf/charge_control_start_threshold" \
-                && readable_sysf "$sysf/charge_control_end_threshold"; then
-                # threshold sysfiles exist and are actually readable
-                _bf_start="$sysf/charge_control_start_threshold"
-                _bf_stop="$sysf/charge_control_end_threshold"
-                _bf_chtype="$sysf/charge_type"
-                _bm_thresh="natacpi"
-                _natacpi=0
-            else
-                # laptop model not supported by the driver
-                _natacpi=254
-            fi
+    if [ "$NATACPI_ENABLE" = "0" ]; then
+        # natacpi disabled in configuration --> skip actual detection
+        _natacpi=32
+    else
+        sysf="$ACPIBATDIR/wilco-charger"
+        if readable_sysf "$sysf/charge_control_start_threshold" \
+            && readable_sysf "$sysf/charge_control_end_threshold"; then
+            # threshold sysfiles exist and are actually readable
+            _bf_start="$sysf/charge_control_start_threshold"
+            _bf_stop="$sysf/charge_control_end_threshold"
+            _bf_chtype="$sysf/charge_type"
+            _bm_thresh="natacpi"
+            _natacpi=0
+        else
+            # laptop model not supported by the driver
+            _natacpi=254
         fi
     fi
 
@@ -597,7 +596,7 @@ batdrv_show_battery_data () {
     if [ "$_bm_thresh" = "natacpi" ]; then
         printf "%-59s = %s [%%]\n" "$_bf_start" "$(batdrv_read_threshold start 1)"
         printf "%-59s = %s [%%]\n" "$_bf_stop"  "$(batdrv_read_threshold stop 1)"
-        printparm "%-59s = ##%s##" "$ACPIBATDIR/wilco-charger/charge_type" "not available"
+        printparm "%-59s = ##%s##" "$_bf_chtype" "not available"
         printf "\n"
     fi
 
