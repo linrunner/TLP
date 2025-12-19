@@ -363,7 +363,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
             printf "tlp-rdw        = enabled\n"
         fi
     else
-        printf "tlp-rdw            = not installed\n"
+        printf "tlp-rdw        = not installed\n"
         if [ -n "$DEVICES_TO_DISABLE_ON_LAN_CONNECT" ] || \
            [ -n "$DEVICES_TO_DISABLE_ON_WIFI_CONNECT" ] || \
            [ -n "$DEVICES_TO_DISABLE_ON_WWAN_CONNECT" ] || \
