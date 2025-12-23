@@ -28,6 +28,7 @@ import xml.etree.ElementTree as Xtree
 # --- Constants
 DAEMON_NAME = "TLP Profiles Daemon"
 AVAILABLE_PROFILES = ["performance", "balanced", "power-saver"]
+MAX_HOLDS = 16
 COOKIE_ATTEMPTS = 10
 MAX_UINT32 = 0xFFFFFFFF
 
@@ -184,6 +185,12 @@ class ProfilesDaemon(dbus.service.Object):
             raise dbus.exceptions.DBusException(
                 f"{_method}(): Not authorized to hold power profile",
                 name="org.freedesktop.PolicyKit1.Error.NotAuthorized",
+            )
+
+        if len(self._holds) >= MAX_HOLDS:
+            raise dbus.exceptions.DBusException(
+                f"{_method}(): Maximum number of simultaneous holds ({MAX_HOLDS}) is used up.",
+                name="org.freedesktop.DBus.Error.Failed",
             )
 
         # Create unique uint32 cookie (fail after 10 attempts)
