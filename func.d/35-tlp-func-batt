@@ -313,3 +313,39 @@ soc_gt_stop_recommendation () {
 
     return 0
 }
+
+init_batteries_charge_mode() {
+    # apply charge mode from configuration to all batteries
+    # - called from bg tasks tlp init [re]start/auto and tlp start
+    # rc: 0=ok/
+    #     1=battery not present/
+    #     2=charge_type not supported
+    #     3=read error/
+    #     4=write error/
+    #     255=no charge_types api
+    local rc
+    local bat
+    new_mode="${CHARGE_MODE:-}"
+    if [ -z "$new_mode" ]; then
+        return 0
+    fi
+    for bat in /sys/class/power_supply/*[Bb][Aa][Tt]*/ ; do
+        if [ ! -d $bat ]; then
+            return 1
+        elif supported_modes=$(read_sysf "$bat/charge_types"); then
+            if [[ "$supported_modes" == *"$new_mode"* ]]; then
+            old_chtype="$(echo "$supported_modes" | sed -r 's/.*\[([A-Z][a-z]+)\].*/\1/')"
+                if [ "$new_mode" != "$old_chtype" ]; then
+                    write_sysf "$new_mode" "$bat/charge_types" || return 4
+                fi
+            else
+                return 2
+            fi
+        else
+            return 3
+        fi
+    done
+
+
+    return 0
+}
