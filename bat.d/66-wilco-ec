@@ -366,19 +366,17 @@ batdrv_write_thresholds () {
     fi
 
     # prerequisite: check charge type and change to 'Custom' if necessary
-    if [ "$X_THRESH_SIMULATE_LOCKEDBIOS" = "1" ] || [ "$_batdrv_sim" = "0" ]; then
-        old_chtype="$(read_sysf "$_bf_chtype" | sed -r 's/.*\[([A-Z][a-z]+)\].*/\1/')"
-        if [ "$X_THRESH_SIMULATE_LOCKEDBIOS" = "1" ] || [ "$old_chtype" != "Custom" ] && ! write_sysf "Custom" "$_bf_chtype" ; then
+    if [ "$_batdrv_sim" = "0" ]; then
+        old_chtype="$(read_sysf "$_bf_chtype")"
+        if [ "$old_chtype" != "Custom" ] && ! write_sysf "Custom" "$_bf_chtype" ; then
             # changing to 'Custom' failed
             case $verb in
                 1)
-                    echo_message "Error: failed to set 'Custom' charge type for battery $_bat_str. Battery skipped."
-                    cecho "Remove the BIOS Admin password to allow the thresholds to be set." "notice" 1>&2
+                    echo_message "Error: failed to set 'Custom' charge type for battery $_bat_str. Skipped."
                     ;;
 
                 2)
                     cprintf "" "Error: failed to set 'Custom' charge type for battery %s. Aborted.\n" "$_bat_str" 1>&2
-                    cecho "Remove the BIOS Admin password to allow the thresholds to be set." "notice" 1>&2
                     ;;
             esac
             echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).chtype_error: bat=$_bat_str; cfg=$_bt_cfg_bat; old_chtype=$old_chtype; rc=6"
@@ -432,10 +430,6 @@ batdrv_write_thresholds () {
             fi
         fi
     done # for step
-
-    if [ $rc -eq 5 ] && [ "$verb" -gt 0 ]; then
-        cecho "Remove the BIOS Admin password to allow the thresholds to be set." "notice" 1>&2
-    fi
 
     echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).complete: bat=$_bat_str; cfg=$_bt_cfg_bat; rc=$rc"
     return $rc
