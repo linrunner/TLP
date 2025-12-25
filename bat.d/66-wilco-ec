@@ -1,7 +1,9 @@
 #!/bin/sh
-# 66-wilco-ec - Battery Plugin for Dell laptops using Wilco EC
+# 66-wilco-ec - Battery Plugin for laptops with Wilco EC:
+# 1. Dell Chromebooks modded with custom UEFI firmware from MrChromebox.tech
+# 2. Possibly other laptops/Chromebooks
 #
-# Requires the wilco_charger module as of Linux 5.2 providing the following sysfs nodes:
+# Requires the wilco_charger module as of Linux 5.9 providing the following sysfs nodes:
 # * /sys/class/power_supply/wilco-charger/charge_control_start_threshold: 50..95
 # * /sys/class/power_supply/wilco-charger/charge_control_end_threshold: 55..100
 # Condition:  charge_control_start_threshold + 5 <= charge_control_end_threshold
@@ -15,7 +17,7 @@
 
 readonly BATDRV_WILCOC_MD=/sys/module/wilco_charger
 
-batdrv_is_dell () {
+batdrv_is_wilco () {
     # check if kernel module is loaded
     # rc: 0=ok, 1=other hardware
     [ -d $BATDRV_WILCOC_MD ]
@@ -71,7 +73,7 @@ batdrv_init () {
         return 1
     else
         # check if hardware matches
-        if ! batdrv_is_dell; then
+        if ! batdrv_is_wilco; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match"
             return 1
         fi
