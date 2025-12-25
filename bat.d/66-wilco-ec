@@ -44,7 +44,7 @@ batdrv_init () {
     # 3. define sysfile basenames for natacpi
     #    start threshold                        --> retval $_bf_start,
     #    stop threshold                         --> retval $_bf_stop,
-    #    charge type (Dell specific)            --> retval $_bf_chtype
+    #    charge type                            --> retval $_bf_chtype
     #
     # 4. determine present batteries
     #    list of batteries (space separated)    --> retval $_batteries;
@@ -91,7 +91,6 @@ batdrv_init () {
 
     # iterate batteries and check for native kernel ACPI
     local bd bs
-    local done=0
     for bd in "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf "$bd/present")" = "1" ]; then
             # record detected batteries and directories
@@ -255,9 +254,9 @@ batdrv_write_thresholds () {
     #     5=threshold write error/
     #     6=charge type write error
     # prerequisite: batdrv_init(), batdrv_select_battery()
-    local new_start=${1:-}
-    local new_stop=${2:-}
-    local verb=${3:-0}
+    local new_start="${1:-}"
+    local new_stop="${2:-}"
+    local verb="${3:-0}"
     local old_start old_stop old_chtype
 
     # insert defaults
@@ -565,7 +564,7 @@ batdrv_show_battery_data () {
     # global params: $_batdrv_plugin, $_batteries, $_batdrv_kmod, $_bd_read, $_bf_start, $_bf_stop
     # prerequisite: batdrv_init()
 
-    local verbose=${1:-0}
+    local verbose="${1:-0}"
 
     printf "+++ Battery Care\n"
     printf "Plugin: %s\n" "$_batdrv_plugin"
@@ -587,8 +586,8 @@ batdrv_show_battery_data () {
     esac
     if [ "$_bm_thresh" != "none" ]; then
         printf "Parameter value ranges:\n"
-        printf "* START_CHARGE_THRESH_BAT0/1:  50..95(default)\n"
-        printf "* STOP_CHARGE_THRESH_BAT0/1:   55..100(default)\n"
+        printf "* START_CHARGE_THRESH_BAT0:  50..95(default)\n"
+        printf "* STOP_CHARGE_THRESH_BAT0:   55..100(default)\n"
     fi
     printf "\n"
 
@@ -603,82 +602,31 @@ batdrv_show_battery_data () {
     # -- show battery data
     local bat
     local bcnt=0
-    local ed ef en
-    local efsum=0
-    local ensum=0
 
     for bat in $_batteries; do # iterate batteries
         batdrv_select_battery "$bat"
 
         printf "+++ Battery Status: %s\n" "$bat"
 
-        printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
-        printparm "%-59s = ##%s##" "$_bd_read/model_name"
-
-        print_battery_cycle_count "$_bd_read/cycle_count" "$(read_sysf "$_bd_read/cycle_count")"
-
-        if [ -f "$_bd_read/energy_full" ]; then
-            printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full_design" "" 000
-            printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full" "" 000
-            printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_now" "" 000
-            printparm "%-59s = ##%6d## [mW]" "$_bd_read/power_now" "" 000
-
-            # store values for charge / capacity calculation below
-            ed=$(read_sysval "$_bd_read/energy_full_design")
-            ef=$(read_sysval "$_bd_read/energy_full")
-            en=$(read_sysval "$_bd_read/energy_now")
-            efsum=$((efsum + ef))
-            ensum=$((ensum + en))
-
-        elif [ -f "$_bd_read/charge_full" ]; then
-            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full_design" "" 000
-            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full" "" 000
-            printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_now" "" 000
-            printparm "%-59s = ##%6d## [mA]" "$_bd_read/current_now" "" 000
-
-            # store values for charge / capacity calculation below
-            ed=$(read_sysval "$_bd_read/charge_full_design")
-            ef=$(read_sysval "$_bd_read/charge_full")
-            en=$(read_sysval "$_bd_read/charge_now")
-            efsum=$((efsum + ef))
-            ensum=$((ensum + en))
-
-        else
-            ed=0
-            ef=0
-            en=0
-        fi
-
-        print_batstate "$_bd_read/status"
+        print_bat_make
+        print_bat_cycle_count "$_bd_read/cycle_count"
+        print_bat_energy
+        print_bat_state "$_bd_read/status"
         printf "\n"
-
         if [ "$verbose" -eq 1 ]; then
-            printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_min_design" "" 000
-            printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_now" "" 000
+            print_bat_voltages
             printf "\n"
         fi
 
+
         # --- show charge level (SOC) and capacity
-        lf=0
-        if [ "$ef" -ne 0 ]; then
-            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
-            lf=1
-        fi
-        if [ "$ed" -ne 0 ]; then
-            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '"$ef"' / '"$ed"');'
-            lf=1
-        fi
-        [ "$lf" -gt 0 ] && printf "\n"
+        print_bat_level
 
         bcnt=$((bcnt+1))
 
     done # for bat
 
-    if [ $bcnt -gt 1 ] && [ $efsum -ne 0 ]; then
-        # more than one battery detected --> show charge total
-        perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '"$ensum"' / '"$efsum"');'
-        printf "\n"
-    fi
+    [ $bcnt -gt 1 ] && print_bat_level_total
 
     return 0
 }
