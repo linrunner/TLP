@@ -318,7 +318,6 @@ set_batteries_charge_mode() {
     # apply charge mode from configuration to all batteries
     # - called from bg tasks tlp init [re]start/auto and tlp start
 
-    local rc
     local bat
     new_mode="${CHARGE_MODE:-}"
 
@@ -328,25 +327,28 @@ set_batteries_charge_mode() {
     fi
 
     for bat in /sys/class/power_supply/*[Bb][Aa][Tt]*/ ; do
-        if [ ! -d $bat ]; then
+        if [ ! -d "$bat" ]; then
             echo_debug "bat" "set_batteries_charge_mode.battery_not_present"
             return 0
         elif supported_modes=$(read_sysf "$bat/charge_types"); then
-            if [[ "$supported_modes" == *"$new_mode"* ]]; then
-            old_chtype="$(echo "$supported_modes" | sed -r 's/.*\[([A-Z][a-z]+)\].*/\1/')"
-                if [ "$new_mode" != "$old_chtype" ]; then
-                    if write_sysf "$new_mode" "$bat/charge_types"; then
-                        echo_debug "bat" "set_batteries_charge_mode: $new_mode"
-                    else
-                        echo_debug "bat" "set_batteries_charge_mode.write_error"
-                        return 0
+            case $supported_modes in
+                *"$new_mode"*)
+                    old_chtype="$(echo "$supported_modes" | sed -r 's/.*\[([A-Z][a-z]+)\].*/\1/')"
+                    if [ "$new_mode" != "$old_chtype" ]; then
+                        if write_sysf "$new_mode" "$bat/charge_types"; then
+                            echo_debug "bat" "set_batteries_charge_mode: $new_mode"
+                        else
+                            echo_debug "bat" "set_batteries_charge_mode.write_error"
+                            return 0
+                        fi
                     fi
-                fi
-            else
-                echo_message "Charge mode $new_mode not supported on system"
-                echo_debug "bat" "set_batteries_charge_mode.charge_mode_not_supported"
-                return 0
-            fi
+                    ;;
+                *)
+                    echo_message "Charge mode $new_mode not supported on system"
+                    echo_debug "bat" "set_batteries_charge_mode.charge_mode_not_supported"
+                    return 0
+                    ;;
+            esac
         else
             echo_debug "bat" "set_batteries_charge_mode.read_error"
             return 0
