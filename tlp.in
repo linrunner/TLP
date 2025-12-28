@@ -281,7 +281,7 @@ case "$_cmd" in
                 # apply battery settings
                 printf "Applying battery settings..."
                 init_batteries_thresholds
-                init_batteries_charge_mode
+                set_batteries_charge_mode
                 echo "done."
 
                 # apply radio states
@@ -301,7 +301,7 @@ case "$_cmd" in
                 # apply battery settings
                 printf "Applying battery settings..."
                 init_batteries_thresholds
-                init_batteries_charge_mode
+                set_batteries_charge_mode
                 echo "done."
                 ;;
 
@@ -366,7 +366,7 @@ case "$_cmd" in
             poweroff_drivebay "$_pp_next" 0
             set_usb_suspend 0 auto
             init_batteries_thresholds
-            init_batteries_charge_mode
+            set_batteries_charge_mode
             set_radio_device_states "$_pp_next"
             save_runconf
             unlock_tlp
