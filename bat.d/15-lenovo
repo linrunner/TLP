@@ -481,7 +481,7 @@ batdrv_show_battery_data () {
         if [ "$_bm_thresh" = "natacpi" ] && [ "$_natacpi" = "0" ]; then
             local th sfx=
             printf "\nParameter value range:\n"
-            printf "* STOP_CHARGE_THRESH_$bat: 0(off), 1(on) -- battery long life mode\n\n"
+            printf "* STOP_CHARGE_THRESH_%s: 0(off), 1(on) -- battery long life mode\n\n" "$bat"
             if th=$(batdrv_read_threshold stop 1); then
                 case $th in
                     0) sfx=" (off)" ;;
