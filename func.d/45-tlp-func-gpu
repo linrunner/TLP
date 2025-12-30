@@ -144,8 +144,9 @@ set_amdgpu_profile () {
                 if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
                     # Use amdgpu dynamic power management method (DPM)
                     case "$1" in
-                        "$PP_PRF")           level=${RADEON_DPM_PERF_LEVEL_ON_AC:-} ;;
-                        "$PP_BAL"|"$PP_SAV") level="${RADEON_DPM_PERF_LEVEL_ON_BAT:-}" ;;
+                        "$PP_PRF")           level="${RADEON_DPM_PERF_LEVEL_ON_AC:-}" ;;
+                        "$PP_BAL")           level="${RADEON_DPM_PERF_LEVEL_ON_BAT:-}" ;;
+                        "$PP_SAV")           level="${RADEON_DPM_PERF_LEVEL_ON_SAV:-$RADEON_DPM_PERF_LEVEL_ON_BAT}" ;;
                     esac
 
                     if [ -z "$level" ]; then
@@ -169,9 +170,14 @@ set_amdgpu_profile () {
                             pwr="${RADEON_DPM_STATE_ON_AC:-}"
                             ;;
 
-                        "$PP_BAL"|"$PP_SAV")
+                        "$PP_BAL")
                             level="${RADEON_DPM_PERF_LEVEL_ON_BAT:-}"
                             pwr="${RADEON_DPM_STATE_ON_BAT:-}"
+                            ;;
+
+                        "$PP_SAV")
+                            level="${RADEON_DPM_PERF_LEVEL_ON_SAV:-$RADEON_DPM_PERF_LEVEL_ON_BAT}"
+                            pwr="${RADEON_DPM_STATE_ON_SAV:-$RADEON_DPM_STATE_ON_BAT}"
                             ;;
                     esac
 
