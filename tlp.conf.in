@@ -379,7 +379,7 @@
 #INTEL_GPU_BOOST_FREQ_ON_BAT=0
 
 # AMD GPU power management.
-# Performance level (DPM): auto, low, high; auto is recommended.
+# Performance level (DPM): high, auto, low; auto is recommended.
 # Note: requires amdgpu or radeon driver.
 # Default: auto
 
@@ -387,12 +387,12 @@
 #RADEON_DPM_PERF_LEVEL_ON_BAT=auto
 #RADEON_DPM_PERF_LEVEL_ON_SAV=low
 
-# Dynamic power management method (DPM): balanced, battery, performance.
+# Dynamic power management method (DPM): performance, balanced, battery.
 # Note: radeon driver only.
 # Default: <none>
 
 #RADEON_DPM_STATE_ON_AC=performance
-#RADEON_DPM_STATE_ON_BAT=battery
+#RADEON_DPM_STATE_ON_BAT=balanced
 #RADEON_DPM_STATE_ON_SAV=battery
 
 # Display panel adaptive backlight modulation (ABM) level: 0(off), 1..4.
