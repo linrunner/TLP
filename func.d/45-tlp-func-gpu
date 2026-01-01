@@ -55,11 +55,18 @@ set_intel_gpu_min_max_boost_freq () {
             suffix="AC"
             ;;
 
-        "$PP_BAL"|"$PP_SAV")
+        "$PP_BAL")
             new_min=${INTEL_GPU_MIN_FREQ_ON_BAT:-}
             new_max=${INTEL_GPU_MAX_FREQ_ON_BAT:-}
             new_boost=${INTEL_GPU_BOOST_FREQ_ON_BAT:-}
             suffix="BAT"
+            ;;
+
+        "$PP_SAV")
+            new_min=${INTEL_GPU_MIN_FREQ_ON_SAV:-INTEL_GPU_MIN_FREQ_ON_BAT}
+            new_max=${INTEL_GPU_MAX_FREQ_ON_SAV:-INTEL_GPU_MAX_FREQ_ON_BAT}
+            new_boost=${INTEL_GPU_BOOST_FREQ_ON_SAV:-INTEL_GPU_BOOST_FREQ_ON_BAT}
+            suffix="SAV"
             ;;
     esac
 
