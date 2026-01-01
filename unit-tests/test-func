@@ -83,6 +83,18 @@ bat_present () {
     [ "$(read_sysf "/sys/class/power_supply/$1/present")" = "1" ]
 }
 
+pp2str () {
+    # Convert power profile code to string
+    # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
+
+    case "$1" in
+        "$PP_PRF")  printf "performance" ;;
+        "$PP_BAL")  printf "balanced" ;;
+        "$PP_SAV")  printf "power-saver" ;;
+        *)          printf "unknown" ;;
+    esac
+}
+
 # --- sysfs
 read_sysf () {
     # read and print contents of a sysfile
