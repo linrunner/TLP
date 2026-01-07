@@ -6,6 +6,11 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
   * Development version
 
   * Features
+    Battery Care:
+    - Laptops with Wilco EC (like Dell Chromebooks modded with custom UEFI
+      firmware from MrChromebox.tech): start and stop threshold (Issue #838)
+    - tlp-stat -b: on laptops that provide battery metrics in mA(h), calculate
+      the equivalent in mW(h) and display it adjacent
     General:
     - Use 'daemon' facility for logging and trace
 
