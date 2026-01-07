@@ -2,7 +2,7 @@
 # Test charge thresholds for laptops with Wilco EC
 # Requirements:
 # * Software: kernel module wilco_charger (Linux 5.9+)
-# Copyright (c) 2025 Thomas Koch <linrunner at gmx.net>.
+# Copyright (c) 2026 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ laptops with Wilco EC +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

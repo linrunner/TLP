@@ -2,7 +2,7 @@
 # lg-legacy - Battery Plugin for LG laptops w/ lg_laptop driver provided
 # by kernel 5.17 or older (see plugin 'lg' for newer kernels)
 #
-# Copyright (c) 2025 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2026 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat, 35-lg

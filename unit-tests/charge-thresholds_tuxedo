@@ -3,7 +3,7 @@
 # Requirements:
 # * Hardware: Tuxedo Laptop (Clevo OEM chassis)
 # * Software: kernel module clevo_acpi (out-of-tree)
-# Copyright (c) 2025 Thomas Koch <linrunner at gmx.net>.
+# Copyright (c) 2026 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ Tuxedo laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

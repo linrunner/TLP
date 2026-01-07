@@ -5,7 +5,7 @@
 # * Kernel: >= 5.17
 # * Batteries: BAT1 + (optional) BAT0
 # * Power source AC
-# Copyright (c) 2025 Thomas Koch <linrunner at gmx.net>.
+# Copyright (c) 2026 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ ThinkPad (BAT1) +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

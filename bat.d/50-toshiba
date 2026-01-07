@@ -2,7 +2,7 @@
 # 50-toshiba - Battery Plugin for Toshiba (now Dynabook) laptops
 # w/ toshiba_acpi driver
 #
-# Copyright (c) 2025 Thomas Koch <linrunner at gmx.net> and others.
+# Copyright (c) 2026 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat

@@ -7,7 +7,7 @@
 # * Software:
 #   1.,2.: cros_charge-control (Linux 6.12.8/6.13+)
 #   2.: out-of-tree kernel module framework_laptop
-# Copyright (c) 2025 Thomas Koch <linrunner at gmx.net>.
+# Copyright (c) 2026 Thomas Koch <linrunner at gmx.net>.
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 $ # +++ ChromeOS EC (cmd v2) laptops +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
