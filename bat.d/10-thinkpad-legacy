@@ -892,7 +892,7 @@ batdrv_show_battery_data () {
     printf "Driver usage:\n"
     # ThinkPad-specific battery API
     case $_tpsmapi in
-        0)   cprintf "success" "* tp-smapi (%s) = active (%s)\n" "$_batdrv_kmod" "$(print_methods_per_driver "tpsmapi")" ;;
+        0)   cprintf "success" "* tp-smapi (%s) = active (%s)\n" "$_batdrv_kmod" "$(print_bat_methods_per_driver "tpsmapi")" ;;
         32)  cprintf "notice"  "* tp-smapi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
         64)  cprintf "err"     "* tp-smapi (%s) = inactive (kernel module '%s' load error)\n" "$_batdrv_kmod" "$_batdrv_kmod" ;;
         128) cprintf "err"     "* tp-smapi (%s) = inactive (kernel module '%s' not installed)\n" "$_batdrv_kmod" "$_batdrv_kmod" ;;
@@ -909,9 +909,6 @@ batdrv_show_battery_data () {
 
     local bat
     local bcnt=0
-    local ed ef en
-    local efsum=0
-    local ensum=0
 
     for bat in $_batteries; do # iterate detected batteries
         batdrv_select_battery "$bat"
@@ -925,51 +922,13 @@ batdrv_show_battery_data () {
         # --- show basic data
         case $_bm_read in
             natacpi) # no tp-smapi --> use ACPI data
-                printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
-                printparm "%-59s = ##%s##" "$_bd_read/model_name"
-
-                print_battery_cycle_count "$_bd_read/cycle_count" "$(read_sysf "$_bd_read/cycle_count")"
-
-                if [ -f "$_bd_read/energy_full" ]; then
-                    printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full_design" "" 000
-                    printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_full" "" 000
-                    printparm "%-59s = ##%6d## [mWh]" "$_bd_read/energy_now" "" 000
-                    printparm "%-59s = ##%6d## [mW]"  "$_bd_read/power_now" "" 000
-
-                    # store values for charge / capacity calculation below
-                    ed=$(read_sysval "$_bd_read/energy_full_design")
-                    ef=$(read_sysval "$_bd_read/energy_full")
-                    en=$(read_sysval "$_bd_read/energy_now")
-                    efsum=$((efsum + ef))
-                    ensum=$((ensum + en))
-
-                elif [ -f "$_bd_read/charge_full" ]; then
-                    # special case, observed with X201. the values are actually in mA(h)
-                    # refer to https://github.com/linrunner/TLP/issues/793#issuecomment-2727452395
-                    printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full_design" "" 000
-                    printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_full" "" 000
-                    printparm "%-59s = ##%6d## [mAh]" "$_bd_read/charge_now" "" 000
-                    printparm "%-59s = ##%6d## [mA]" "$_bd_read/current_now" "" 000
-
-                    # store values for charge / capacity calculation below
-                    ed=$(read_sysval "$_bd_read/charge_full_design")
-                    ef=$(read_sysval "$_bd_read/charge_full")
-                    en=$(read_sysval "$_bd_read/charge_now")
-                    efsum=$((efsum + ef))
-                    ensum=$((ensum + en))
-
-                else
-                    ed=0
-                    ef=0
-                    en=0
-                fi
-
-                print_batstate "$_bd_read/status"
+                print_bat_make
+                print_bat_cycle_count "$_bd_read/cycle_count"
+                print_bat_energy
+                print_bat_state "$_bd_read/status"
                 printf "\n"
-
                 if [ "$verbose" -eq 1 ]; then
-                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_min_design" "" 000
-                    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_now" "" 000
+                    print_bat_voltages
                     printf "\n"
                 fi
                 ;; # natacpi
@@ -996,7 +955,7 @@ batdrv_show_battery_data () {
                 printparm "%-59s = ##%6s## [min]" "$_bd_readsm/remaining_charging_time"
                 printparm "%-59s = ##%6d## [mW]" "$_bd_readsm/power_now"
                 printparm "%-59s = ##%6d## [mW]" "$_bd_readsm/power_avg"
-                print_batstate "$_bd_readsm/state"
+                print_bat_state "$_bd_readsm/state"
                 printf "\n"
                 if [ "$verbose" -eq 1 ]; then
                     printparm "%-59s = ##%6s## [mV]" "$_bd_readsm/design_voltage"
@@ -1009,11 +968,11 @@ batdrv_show_battery_data () {
                 fi
 
                 # store values for charge / capacity calculation below
-                ed=$(read_sysval "$_bd_readsm/design_capacity")
-                ef=$(read_sysval "$_bd_readsm/last_full_capacity")
-                en=$(read_sysval "$_bd_readsm/remaining_capacity")
-                efsum=$((efsum + ef))
-                ensum=$((ensum + en))
+                _bat_ed=$(read_sysval "$_bd_readsm/design_capacity")
+                _bat_ef=$(read_sysval "$_bd_readsm/last_full_capacity")
+                _bat_en=$(read_sysval "$_bd_readsm/remaining_capacity")
+                _bat_efsum=$((_bat_efsum + _bat_ef))
+                _bat_ensum=$((_bat_ensum + _bat_en))
                 ;; # tp-smapi
 
         esac # $_bm_read
@@ -1032,26 +991,13 @@ batdrv_show_battery_data () {
         [ $lf -gt 0 ] && printf "\n"
 
         # --- show charge level (SOC) and capacity
-        lf=0
-        if [ "$ef" -ne 0 ]; then
-            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$en"' / '"$ef"');'
-            lf=1
-        fi
-        if [ "$ed" -ne 0 ]; then
-            perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '"$ef"' / '"$ed"');'
-            lf=1
-        fi
-        [ "$lf" -gt 0 ] && printf "\n"
+        print_bat_level
 
         bcnt=$((bcnt+1))
 
     done # for bat
 
-    if [ $bcnt -gt 1 ] && [ $efsum -ne 0 ]; then
-        # more than one battery detected --> show charge total
-        perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '"$ensum"' / '"$efsum"');'
-        printf "\n"
-    fi
+    [ $bcnt -gt 1 ] && print_bat_level_total
 
     return 0
 }

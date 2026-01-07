@@ -807,7 +807,7 @@ show_gpu_data () {
 
 # --- Battery
 
-print_methods_per_driver () {
+print_bat_methods_per_driver () {
     # show features provided by a Thinkpad battery plugin
     # $1: driver = natacpi, tpacpi, tpsmapi
     local bm m mlist=""
@@ -838,7 +838,19 @@ print_methods_per_driver () {
     return 0
 }
 
-print_batstate () {
+print_bat_make () {
+    # print battery manufacturer and mode name
+    # global param: $_bd_rea
+    # prerequisite: batdrv_init(), batdrv_select_battery
+
+    # shellcheck disable=SC2154
+    printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
+    printparm "%-59s = ##%s##" "$_bd_read/model_name"
+
+    return 0
+}
+
+print_bat_state () {
     # print battery charging state with
     # an explanation when a threshold inhibits charging
     # $1: sysfile
@@ -867,15 +879,139 @@ print_batstate () {
     return 0
 }
 
-print_battery_cycle_count () {
+print_bat_cycle_count () {
     # print battery cycle count, explain special case of 0
-    # $1: sysfile
-    # $2: cycle count
-    case "$2" in
-        0) printf "%-59s = %6d (or not supported)\n" "$1" "$2" ;;
+    # $1: cycle count sysfile
+    local cc
+
+    cc="$(read_sysf "$1")"
+    case "$cc" in
+        0) printf "%-59s = %6d (or not supported)\n" "$1" "$cc" ;;
         "")  printf "%-59s = (not supported)\n" "$1" ;;
-        *)   printf "%-59s = %6d\n" "$1" "$2" ;;
+        *)   printf "%-59s = %6d\n" "$1" "$cc" ;;
     esac
+
+    return 0
+}
+
+print_bat_energy () {
+    # print and sum up battery energy or charge data
+    # global param: $_bd_read
+    # global vars/retvals:
+    #   $_bat_ed    - design capacity (mWh or mAh)
+    #   $_bat_ef    - last fully charged level (mWh or mAh)
+    #   $_bat_en    - current charge level (mWh or mAh)
+    #   $_bat_efsum - accumulated fully charged level
+    #   $_bat_ensum - accumulated current charge level
+    # prerequisite: batdrv_init(), batdrv_select_battery
+
+    local ed ef en pn pwr volt
+
+    # initialize accumulation
+    _bat_efsum="${_bat_efsum:-0}"
+    _bat_ensum="${_bat_ensum:-0}"
+
+    # shellcheck disable=SC2154
+    if [ -f "$_bd_read/energy_full" ]; then
+        # battery exposes mW(h) Units
+        # store data for battery charge level / capacity calculation
+        _bat_ed="$(perl -e 'printf "%.0f", '"$(read_sysval "$_bd_read/energy_full_design")"' / 1000.0')"
+        _bat_ef="$(perl -e 'printf "%.0f", '"$(read_sysval "$_bd_read/energy_full")"' / 1000.0')"
+        _bat_en="$(perl -e 'printf "%.0f", '"$(read_sysval "$_bd_read/energy_now")"' / 1000.0')"
+        pwr="$(perl -e 'printf "%.0f", '"$(read_sysval "$_bd_read/power_now")"' / 1000.0')"
+
+        # accumulate data for total charge level calculation
+        _bat_efsum=$((_bat_efsum + _bat_ef))
+        _bat_ensum=$((_bat_ensum + _bat_en))
+
+        printf "%-59s = %6d [mWh]\n" "$_bd_read/energy_full_design" "$_bat_ed"
+        printf "%-59s = %6d [mWh]\n" "$_bd_read/energy_full" "$_bat_ef"
+        printf "%-59s = %6d [mWh]\n" "$_bd_read/energy_now" "$_bat_en"
+        printf "%-59s = %6d [mW]\n"  "$_bd_read/power_now" "$pwr"
+
+    elif [ -f "$_bd_read/charge_full" ]; then
+        # battery exposes mA(h) Units
+        # store data for battery charge level / capacity calculation
+        _bat_ed="$(perl -e 'printf "%.0f", '"$(read_sysval "$_bd_read/charge_full_design")"' / 1000.0')"
+        _bat_ef="$(perl -e 'printf "%.0f", '"$(read_sysval "$_bd_read/charge_full")"' / 1000.0')"
+        _bat_en="$(perl -e 'printf "%.0f", '"$(read_sysval "$_bd_read/charge_now")"' / 1000.0')"
+
+        # accumulate data for total charge level calculation
+        _bat_efsum=$((_bat_efsum + _bat_ef))
+        _bat_ensum=$((_bat_ensum + _bat_en))
+
+        pwr="$(perl -e 'printf "%.0f", '"$(read_sysval "$_bd_read/current_now")"' / 1000.0')"
+        volt="$(read_sysval "$_bd_read/voltage_now")"
+
+        if [ "$volt" -gt 0 ]; then
+            # voltage is valid -> display mA(h) and mW(h) units side by side
+            # convert mA(h) to mW(h) units
+            volt="$(perl -e 'printf "%.3f", '"$volt"' / 1000000.0')"
+            ed="$(perl -e 'printf "%.0f\n", '"$_bat_ed"' * '"$volt"'')"
+            ef="$(perl -e 'printf "%.0f\n", '"$_bat_ef"' * '"$volt"'')"
+            en="$(perl -e 'printf "%.0f\n", '"$_bat_en"' * '"$volt"'')"
+            pn="$(perl -e 'printf "%.0f\n", '"$pwr"' * '"$volt"'')"
+
+            printf "%-59s = %6d [mAh] (%6d mWh)\n" "$_bd_read/charge_full_design" "$_bat_ed" "$ed"
+            printf "%-59s = %6d [mAh] (%6d mWh)\n" "$_bd_read/charge_full" "$_bat_ef" "$ef"
+            printf "%-59s = %6d [mAh] (%6d mWh)\n" "$_bd_read/charge_now" "$_bat_en" "$en"
+            printf "%-59s = %6d [mA]  (%6d mW)\n"  "$_bd_read/current_now" "$pwr" "$pn"
+        else
+            # voltage is not available or invalid -> display mA(h) units only
+            printf "%-59s = %6d [mAh]\n" "$_bd_read/charge_full_design" "$_bat_ed"
+            printf "%-59s = %6d [mAh]\n" "$_bd_read/charge_full" "$_bat_ef"
+            printf "%-59s = %6d [mAh]\n" "$_bd_read/charge_now" "$_bat_en"
+            printf "%-59s = %6d [mA]\n"  "$_bd_read/current_now" "$pwr"
+        fi
+
+    else
+        _bat_ed=0
+        _bat_ef=0
+        _bat_en=0
+    fi
+
+    return 0
+}
+
+print_bat_level () {
+    # print battery charge level (SOC) and capacity in percent
+    # global params: $_bat_ed, $_bat_ef, $_bat_en
+
+    local lf=0
+
+    if [ "$_bat_ef" -ne 0 ]; then
+        perl -e 'printf ("%-59s = %6.1f [%%]\n", "Charge",   100.0 * '"$_bat_en"' / '"$_bat_ef"');'
+        lf=1
+    fi
+    if [ "$_bat_ed" -ne 0 ]; then
+        perl -e 'printf ("%-59s = %6.1f [%%]\n", "Capacity", 100.0 * '"$_bat_ef"' / '"$_bat_ed"');'
+        lf=1
+    fi
+    [ "$lf" -gt 0 ] && printf "\n"
+
+    return 0
+}
+
+print_bat_level_total () {
+    # print total charge level (SOC) in percent (accumulated over all batteries)
+    # global vars: $_bat_efsum, $_bat_ensum
+
+    if [ "$_bat_efsum" -ne 0 ]; then
+        # more than one battery detected --> show charge total
+        perl -e 'printf ("%-59s = %6.1f [%%]\n", "+++ Charge total",   100.0 * '"$_bat_ensum"' / '"$_bat_efsum"');'
+        printf "\n"
+    fi
+
+    return 0
+}
+
+print_bat_voltages () {
+    # print battery voltages
+    # global param: $_bd_read
+    # prerequisite: batdrv_init(), batdrv_select_battery
+
+    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_min_design" "" 000
+    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_now" "" 000
 
     return 0
 }
