@@ -3,6 +3,7 @@ debian
 *.geany
 .idea
 *.log
+*.patch
 PKGBUILD*
 pkg
 __pycache__/
