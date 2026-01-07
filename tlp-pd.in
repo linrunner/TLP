@@ -7,7 +7,7 @@
 # Copyright (c) 2025 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-import dbus
+import dbus  # noqa: I001
 import dbus.service
 import dbus.mainloop.glib
 from gi.repository import GLib
@@ -17,6 +17,7 @@ import inspect
 import logging
 import logging.handlers
 import os
+import secrets
 import signal
 import string
 import subprocess
@@ -27,6 +28,9 @@ import xml.etree.ElementTree as Xtree
 # --- Constants
 DAEMON_NAME = "TLP Profiles Daemon"
 AVAILABLE_PROFILES = ["performance", "balanced", "power-saver"]
+MAX_HOLDS = 16
+COOKIE_ATTEMPTS = 10
+MAX_UINT32 = 0xFFFFFFFF
 
 # --- D-Bus constants
 BUS_NAME = "org.freedesktop.UPower.PowerProfiles"
@@ -144,7 +148,6 @@ class ProfilesDaemon(dbus.service.Object):
         self._actions_info = []
         self._version = "tlp-pd @TLPVER@"
         self._battery_aware = False
-        self._cookie_counter = 0
         self._holds = {}  # cookie -> {profile, reason, application_id, sender}
 
     # --- Interfaces org.freedesktop.UPower.PowerProfiles and net.hadess.PowerProfiles (legacy)
@@ -184,16 +187,29 @@ class ProfilesDaemon(dbus.service.Object):
                 name="org.freedesktop.PolicyKit1.Error.NotAuthorized",
             )
 
-        self._cookie_counter += 1
-        cookie = self._cookie_counter
+        if len(self._holds) >= MAX_HOLDS:
+            raise dbus.exceptions.DBusException(
+                f"{_method}(): Maximum number of simultaneous holds ({MAX_HOLDS}) is used up.",
+                name="org.freedesktop.DBus.Error.Failed",
+            )
 
-        # Store hold
-        self._holds[cookie] = {
-            "profile": profile,
-            "reason": reason,
-            "application_id": application_id,
-            "sender": sender,
-        }
+        # Create unique uint32 cookie (fail after 10 attempts)
+        for _ in range(1, COOKIE_ATTEMPTS):
+            cookie = secrets.randbits(32)
+            if cookie not in self._holds:
+                # Store hold
+                self._holds[cookie] = {
+                    "profile": profile,
+                    "reason": reason,
+                    "application_id": application_id,
+                    "sender": sender,
+                }
+                break
+        else:
+            raise dbus.exceptions.DBusException(
+                f"{_method}(): Failed to create random cookie after {COOKIE_ATTEMPTS} attempts",
+                name="org.freedesktop.DBus.Error.Failed",
+            )
 
         self._logger.debug(
             f"{_method}(profile='{profile}', reason='{reason}', appid='{application_id}', sender='{sender}'): cookie: '{cookie}'"
@@ -220,19 +236,26 @@ class ProfilesDaemon(dbus.service.Object):
         # Release a profile hold and revert to:
         # - either the previous held profile
         # - or the last profile selected by the user
-        cookie = int(cookie)
         sender = _sanitize_input(sender)
         _method = _method_name()
 
-        if cookie not in self._holds:
+        # Check authorization first
+        if not self._check_polkit_auth(sender, f"{BUS_NAME}.release-profile"):
+            raise dbus.exceptions.DBusException(
+                f"{_method}(): Not authorized to release power profile",
+                name="org.freedesktop.PolicyKit1.Error.NotAuthorized",
+            )
+
+        scookie = _sanitize_uint32(str(cookie))
+        if scookie < 0 or scookie not in self._holds:
             raise dbus.exceptions.DBusException(
                 f"{_method}(): Invalid cookie '{cookie}'",
                 name="org.freedesktop.DBus.Error.InvalidArgs",
             )
 
-        hold_rel = self._holds.pop(cookie)
+        hold_rel = self._holds.pop(scookie)
         self._logger.debug(
-            f"{_method}(cookie='{cookie}', sender='{sender}'): hold: '{hold_rel['profile']}', appid: '{hold_rel['application_id']}'"
+            f"{_method}(cookie='{scookie}', sender='{sender}'): hold: '{hold_rel['profile']}', appid: '{hold_rel['application_id']}'"
         )
 
         # Update active profile based on remaining holds
@@ -274,6 +297,12 @@ class ProfilesDaemon(dbus.service.Object):
             raise dbus.exceptions.DBusException(
                 f"{_method}(): Invalid profile '{profile}'",
                 name="org.freedesktop.DBus.Error.InvalidArgs",
+            )
+
+        if not self._check_polkit_auth(sender, f"{BUS_NAME}.sync-profile"):
+            raise dbus.exceptions.DBusException(
+                f"{_method}(): Not authorized to sync power profile",
+                name="org.freedesktop.PolicyKit1.Error.NotAuthorized",
             )
 
         # Update active profile
@@ -671,59 +700,47 @@ class ProfilesDaemon(dbus.service.Object):
 
         return tlp_profile
 
-    # --- PolicyKit helpers
+    # --- PolicyKit helper
     def _check_polkit_auth(self, sender, action_id):
-        # Check if the D-Bus sender is authorized for the given PolicyKit action.
+        # Check if the D-Bus sender is authorized for the PolicyKit action_id.
         # Args:
         # - sender: D-Bus sender string (e.g., ":1.234")
         # - action_id: PolicyKit action identifier (e.g., "org.freedesktop.UPower.PowerProfiles.switch-profile")
         # Returns: bool: True if authorized, False otherwise
+        _method = _method_name()
         sender = _sanitize_input(sender)
         action_id = _sanitize_input(action_id)
 
-        # Get PolicyKit authority interface
-        polkit = self._bus.get_object(
+        # Get PolicyKit D-Bus authority interface
+        proxy = self._bus.get_object(
             "org.freedesktop.PolicyKit1", "/org/freedesktop/PolicyKit1/Authority"
         )
         authority = dbus.Interface(
-            polkit, dbus_interface="org.freedesktop.PolicyKit1.Authority"
+            proxy, dbus_interface="org.freedesktop.PolicyKit1.Authority"
         )
+        subject = ("system-bus-name", {"name": dbus.String(sender, variant_level=1)})
+        details = {}
+        flags = dbus.UInt32(
+            0x1
+        )  # flag: AllowUserInteraction (show auth dialog if needed)
+        cancellation_id = ""  # none
 
-        # Get the process ID and start time for the sender
-        dbus_obj = self._bus.get_object("org.freedesktop.DBus", "/org/freedesktop/DBus")
-        dbus_iface = dbus.Interface(dbus_obj, dbus_interface="org.freedesktop.DBus")
-        pid = dbus_iface.GetConnectionUnixProcessID(sender)
-
-        # Build the subject for PolicyKit check
-        # Subject type: unix-process with PID and start-time
-        subject = (
-            "unix-process",
-            {
-                "pid": dbus.UInt32(pid),
-                "start-time": dbus.UInt64(0),  # 0 means "don't check start time"
-            },
-        )
-
-        # Check authorization
+        # Verify that sender is authorized for the PolicyKit action_id
         try:
             result = authority.CheckAuthorization(
-                subject,
-                action_id,
-                {},  # details
-                dbus.UInt32(
-                    0x1
-                ),  # flags: AllowUserInteraction (show auth dialog if needed)
-                "",  # cancellation_id
+                subject, action_id, details, flags, cancellation_id
             )
             # result is a tuple: (is_authorized, is_challenge, details)
-
             is_authorized = result[0]
+            self._logger.debug(
+                f"{_method}(subject='{subject}', action_id='{action_id}'): {is_authorized}"
+            )
             return bool(is_authorized)
 
         except dbus.exceptions.DBusException as errmsg:
             _method = _method_name()
             self._logger.error(
-                f"{_method}(): PolicyKit authorization check failed: {errmsg}"
+                f"{_method}(subject='{subject}', action_id='{action_id}'): PolicyKit error: {errmsg}"
             )
             return False
 
@@ -749,6 +766,17 @@ def _sanitize_input(input_str, sani_ch="¿"):
         else:
             result_str += sani_ch
     return result_str
+
+
+def _sanitize_uint32(input):
+    if not input.isdigit():
+        return -1
+
+    input = int(input)
+    if input > MAX_UINT32:
+        return -1
+
+    return input
 
 
 # --- MAIN

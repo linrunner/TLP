@@ -1,7 +1,7 @@
-For information regarding packaging, please refer to:
-https://linrunner.de/tlp/developers/packaging.html
+This is the user-oriented changelog. For information regarding packaging,
+please refer to: https://linrunner.de/tlp/developers/packaging.html
 
-++++ 1.10.0-alpha.0 --- <unreleased> +++
++++ 1.10.0-alpha.0 --- <unreleased> +++
 
   * Development version
 
@@ -9,9 +9,19 @@ https://linrunner.de/tlp/developers/packaging.html
     General:
     - Use 'daemon' facility for logging and trace
 
-  * Bugfixes
-    Battery Care:
-    - Fix RESTORE_THRESHOLDS_ON_BAT
++++ 1.9.1 --- 07.01.2026 +++
+
+* Bugfix Release
+  Power Profiles (tlp-pd):
+  - Fix polkit authentication bypass concerning profile and loglevel changes.
+    Resolves CVE-2025-67859: only 1.9.0 is vulnerable, 1.8.0 and older
+    versions are not affected.
+  - Tighten polkit authentication.
+  - Limit the number of stacked profile holds (tlpctl launch) to 16.
+
+  Battery:
+  - Fix RESTORE_THRESHOLDS_ON_BAT: consider the change to battery power,
+    not the profile. Ensure even after suspension.
 
 +++ 1.9.0 --- 01.12.2025 +++
 
