@@ -2,7 +2,10 @@ tlp (1.10.0~alpha.0-1) unstable; urgency=medium
 
   * New upstream version 1.10.0-alpha.0
 
- -- Thomas Koch <linrunner@gmx.net>  Wed, 07 Jan 2026 12:00:00 +0100
+  [ Raphaël Halimi ]
+  * debian/copyright: update copyright years
+
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 08 Jan 2026 18:24:00 +0100
 
 tlp (1.9.1-1) unstable; urgency=high
 
