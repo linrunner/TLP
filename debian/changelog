@@ -1,3 +1,12 @@
+tlp (1.10.0~alpha.0-1~bookworm) bookworm; urgency=medium
+
+  * New upstream version 1.10.0-alpha.0
+
+  [ Raphaël Halimi ]
+  * debian/copyright: update copyright years
+
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 08 Jan 2026 18:24:00 +0100
+
 tlp (1.9.1-1~bookworm) bookworm; urgency=high
 
   * New upstream version 1.9.1
