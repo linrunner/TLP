@@ -17,12 +17,16 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
 +++ 1.9.1 --- 07.01.2026 +++
 
 * Bugfix Release
-  Power Profiles (tlp-pd):
-  - Fix polkit authentication bypass concerning profile and loglevel changes.
-    Resolves CVE-2025-67859: only 1.9.0 is vulnerable, 1.8.0 and older
-    versions are not affected.
-  - Tighten polkit authentication.
-  - Limit the number of stacked profile holds (tlpctl launch) to 16.
+  Power Profiles (tlp-pd)
+  - Fix Polkit Authentication Bypass in Profiles Daemon in Version 1.9.0
+    (CVE-2025-67859)
+    - https://security.opensuse.org/2026/01/07/tlp-polkit-authentication-bypass.html
+    - Version 1.8.0 and older are not affected
+    - Ensure that all processes that change the power profile or the daemon's log level
+      are authenticated, either by a desktop user session or as root
+    - Limit the number of stacked profile holds (tlpctl launch) to 16
+    - Make profile hold cookies unpredictable, to prevent unrelated users
+      from releasing an active profile hold
 
   Battery:
   - Fix RESTORE_THRESHOLDS_ON_BAT: consider the change to battery power,
