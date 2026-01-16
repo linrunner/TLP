@@ -170,7 +170,7 @@ sub parse_configfile {
         # strip trailing spaces
         $line =~ s/\s+$//;
         # select lines with format 'PARAMETER=value' or 'PARAMETER="value"'
-        if ( $line =~ /^(?<name>[A-Z_]+[0-9]*)(?<op>(=|\+=))(?:(?<val_bare>[-0-9a-zA-Z _.:]*)|"(?<val_dquoted>[-0-9a-zA-Z _.:]*)")\s*$/ ) {
+        if ( $line =~ /^(?<name>[A-Z_]+[0-9]*)(?<op>(=|\+=))(?:(?<val_bare>[][0-9a-zA-Z _.:-]*)|"(?<val_dquoted>[][0-9a-zA-Z _.:-]*)")\s*$/ ) {
             my $name = $+{name};
             if ( $do_ren ) {
                 # rename PARAMETER

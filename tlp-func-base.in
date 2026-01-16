@@ -54,7 +54,7 @@ readonly DMID=/sys/devices/virtual/dmi/id/
 readonly NETD=/sys/class/net
 readonly TPACPID=/sys/devices/platform/thinkpad_acpi
 
-readonly RE_PARAM='^[A-Z_]+[0-9]*=[-0-9a-zA-Z _.:]*$'
+readonly RE_PARAM='^[A-Z_]+[0-9]*=[][0-9a-zA-Z _.:-]*$'
 
 # power supplies: ignore MacBook Pro 2017 sbs-charger, ThinkPad X13s ARM qcom-battmgr-ac, hid devices, game controllers
 readonly RE_PS_IGNORE='sbs-charger|qcom-battmgr-ac|hidpp_battery|hid-|controller-battery-|controller_battery_'
