@@ -14,6 +14,9 @@ export VWRITE_SLEEP=2
 export xinc="X_BAT_PLUGIN_SIMULATE=dell"
 echo "        # xinc=${xinc}" 1>&2
 run_clitest "$spath/charge-thresholds_dell" "" "$1"
-sudo tlp setcharge BAT0  > /dev/null 2>&1 # reset test machine to configured thresholds
+
+# reset test machine to configured thresholds
+sleep $VWRITE_SLEEP
+sudo tlp setcharge BAT0  > /dev/null 2>&1
 
 print_report

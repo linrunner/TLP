@@ -40,6 +40,8 @@ sudo tlp setcharge ${bata} 35 100 > /dev/null 2>&1 # preset start threshold for 
 export xinc="X_BAT_PLUGIN_SIMULATE=cros-ec"
 "$spath/test-bc_cros-ec-v3.sh"
 
+# reset test machine to configured thresholds
+sleep $VWRITE_SLEEP
 sudo tlp setcharge ${bata}  > /dev/null 2>&1 # reset test machine to configured thresholds
 
 print_report
