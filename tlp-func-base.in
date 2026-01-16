@@ -251,6 +251,12 @@ wordinlist () { # test if word in list
     return 1 # no match
 }
 
+get_listitem () {
+    # print the active list item, which is the one enclosed in []
+    # $1: list
+    printf "%s" "$(echo "$1" | sed -r 's/.*\[([A-Za-z0-9_]+)\].*/\1/')"
+}
+
 # --- Sysfiles
 
 read_sysf () {
