@@ -310,7 +310,7 @@ check_cpu_scaling_freq () {
                 fcnt="$(echo "$favail" | wc -w)"
                 # shellcheck disable=SC2086
                 min=$(print_nth_arg $((fcnt - 1)) $favail)
-                max=$(print_nth_arg 2 $favail)
+                max=$(print_nth_arg 2 "$favail")
             else
                 min=$((min_save + 100000))
                 max=$((max_save - 100000))
@@ -413,7 +413,7 @@ check_cpu_scaling_freq () {
 check_cpu_epp () {
     # apply cpu energy vs. performance policy
 
-    local pol pol_save pol_seq pol_cur
+    local pol pol_save pol_seq
     local prof
     local rc=0
     local errcnt=0
