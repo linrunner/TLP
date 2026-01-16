@@ -1,0 +1,455 @@
+#!/bin/sh
+# 16-lenovo-legacy - Battery Plugin for Lenovo laptops:
+# 1. Non-ThinkPad series
+# 2. ThinkBook series
+# Requires the ideapad_laptop river providing
+# /sys/bus/platform/drivers/ideapad_acpi/VPC2004:00/conservation_mode
+#
+# Copyright (c) 2026 Thomas Koch <linrunner at gmx.net> and others.
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+# Needs: tlp-func-base, 35-tlp-func-batt, tlp-func-stat
+
+# --- Plugin API functions
+
+readonly BATDRV_LENOVO_CMODE="${BATDRV_LENOVO_MD}/VPC2004:00/conservation_mode"
+
+batdrv_init () {
+    # detect hardware and initialize driver
+    # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
+    # retval: $_batdrv_plugin, $batdrv_kmod
+    #
+    # 1. check for vendor specific kernel api (Linux 4.14 or higher required)
+    #    --> retval $_natacpi:
+    #       0=thresholds/
+    #       32=disabled/
+    #       128=no kernel support/
+    #       254=laptop not supported
+    #
+    # 2. determine method for
+    #    reading battery data                   --> retval $_bm_read,
+    #    reading/writing charging thresholds    --> retval $_bm_thresh,
+    #    reading/writing force discharge        --> retval $_bm_dischg:
+    #       none/natacpi
+    #
+    # 3. determine present batteries
+    #    list of batteries (space separated)    --> retval $_batteries;
+    #
+    # 4. define conservation mode config, sysfile and default
+    #    config suffix (BAT0)                   --> retval $_bt_cfg_bat,
+    #    sysfile                                --> retval $_bf_stop,
+    #    default                                --> retval $_bt_def_stop;
+
+    _batdrv_plugin="lenovo-legacy"
+    _batdrv_kmod="ideapad_laptop" # kernel module for natacpi
+
+    # check plugin simulation override and denylist
+    if [ -n "$X_BAT_PLUGIN_SIMULATE" ]; then
+        if [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
+            echo_debug "bat" "batdrv_init.${_batdrv_plugin}.simulate"
+        else
+            echo_debug "bat" "batdrv_init.${_batdrv_plugin}.simulate_skip"
+            return 1
+        fi
+    elif wordinlist "$_batdrv_plugin" "$X_BAT_PLUGIN_DENYLIST"; then
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.denylist"
+        return 1
+    else
+        # check if hardware matches
+        if ! batdrv_is_ideapad; then
+            echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_match"
+            return 1
+        fi
+    fi
+
+    # presume no features at all
+    _natacpi=128
+    _bm_read="natacpi"
+    _bm_thresh="none"
+    _bm_dischg="none"
+    _batteries=""
+    _bt_cfg_bat="BAT0" # all batteries share the BAT0 config parameter
+    _bf_stop=""
+    _bt_def_stop=0
+
+    # iterate batteries
+    local bd bs
+    for bd in "$ACPIBATDIR"/BAT[01]; do
+        if [ "$(read_sysf "$bd/present")" = "1" ]; then
+            # record detected batteries and directories
+            bs=${bd##/*/}
+            if [ -n "$_batteries" ]; then
+                _batteries="$_batteries $bs"
+            else
+                _batteries="$bs"
+            fi
+        fi
+    done
+
+    # check for vendor specific kernel api
+    if [ "$NATACPI_ENABLE" = "0" ]; then
+        # natacpi disabled in configuration --> skip actual detection
+        _natacpi=32
+    elif [ -f "$BATDRV_LENOVO_CMODE" ] && readable_sysf "$BATDRV_LENOVO_CMODE"; then
+        # sysfile exists and is actually readable
+        _natacpi=0
+        _bm_thresh="natacpi"
+        _bf_stop="$BATDRV_LENOVO_CMODE"
+    elif [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
+        # simulate api
+        _natacpi=0
+        _bm_thresh="natacpi"
+        _bf_stop="$BATDRV_LENOVO_CMODE"
+    else
+        # nothing detected
+        _natacpi=254
+    fi
+
+    # shellcheck disable=SC2034
+    _batdrv_selected=$_batdrv_plugin
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bf_stop=$_bf_stop"
+    return 0
+}
+
+batdrv_select_battery () {
+    # determine battery acpidir
+    # $1: BAT0/BAT1/DEF
+    # global params: $_batdrv_plugin, $_batteries
+    # rc: 0=bat exists/1=bat non-existent
+    # retval: $_bat_str:    BAT0/BAT1;
+    #         $_bd_read:    directory with battery data sysfiles;
+    # prerequisite: batdrv_init()
+
+    # defaults
+    _bat_str=""    # no bat
+    _bd_read=""    # no directory
+
+    local bat="$1"
+
+    # convert battery param to uppercase
+    bat="$(printf '%s' "$bat" | tr "[:lower:]" "[:upper:]")"
+
+    # validate battery param
+    case "$bat" in
+        DEF) # 1st battery is default
+            _bat_str="${_batteries%% *}"
+            ;;
+
+        *)
+            if wordinlist "$bat" "$_batteries"; then
+                _bat_str="$bat"
+            else
+                # battery not present --> quit
+                echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1).not_present"
+                return 1
+            fi
+            ;;
+    esac
+
+    # determine natacpi sysfiles
+    _bd_read="$ACPIBATDIR/$_bat_str"
+
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.select_battery($1): bat_str=$_bat_str; cfg=$_bt_cfg_bat; bd_read=$_bd_read;"
+    return 0
+}
+
+batdrv_read_threshold () {
+    # read and print charge threshold (stop only)
+    # $1: start/stop - unused dummy for plugin api compatibility
+    # $2: 0=api/1=tlp-stat output - unused dummy for plugin api compatibility
+    # global params: $_batdrv_plugin, $_bf_stop
+    # out: threshold 0/1/"" on error
+    # rc: 0=ok/4=read error/255=no api
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local out="" rc=0
+
+    out="$X_THRESH_SIMULATE_STOP"
+    if [ -n "$out" ]; then
+        printf "%s" "$out"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold.simulate: bf_stop=$_bf_stop; out=$out; rc=$rc"
+        return 0
+    fi
+
+    if [ "$_bm_thresh" = "natacpi" ]; then
+        out=$(read_sysf "$_bf_stop") || rc=4
+    else
+        # no threshold api
+        rc=255
+    fi
+
+    # "return" threshold
+    if [ "$X_THRESH_SIMULATE_READERR" != "1" ]; then
+        printf "%s" "$out"
+    else
+        rc=4
+    fi
+
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_threshold: bf_stop=$_bf_stop; out=$out; rc=$rc"
+    return $rc
+}
+
+batdrv_write_thresholds () {
+    # write charge thresholds for a battery
+    # use pre-determined method and sysfiles from global parms
+    # $1: new start threshold -- unused dummy for plugin api compatibility
+    # $2: new stop threshold 0/1/DEF(default)
+    # $3: 0=quiet/1=output parameter errors/2=output progress and errors
+    # $4: non-empty string indicates thresholds stem from configuration
+    # global params: $_batdrv_plugin, $_bat_str, $_bt_cfg_bat, $_bf_stop
+    # rc: 0=ok/
+    #     1=not configured/
+    #     2=threshold out of range or non-numeric/
+    #     4=threshold read error/
+    #     5=threshold write error
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+    local new_stop="${2:-}"
+    local verb="${3:-0}"
+    local old_stop
+
+    # insert defaults
+    [ "$new_stop" = "DEF" ] && new_stop=$_bt_def_stop
+
+    # --- validate thresholds
+    local rc
+
+    if [ -n "$4" ] && [ -z "$new_stop" ]; then
+        # do nothing if unconfigured
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).not_configured: bat=$_bat_str; cfg=$_bt_cfg_bat"
+        return 1
+    fi
+
+    # stop: check for 3 digits max, ensure 0 or 1
+    if ! is_uint "$new_stop" 3 || \
+       ! is_within_bounds "$new_stop" 0 1; then
+        # threshold out of range
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop.  bat=$_bat_str; cfg=$_bt_cfg_bat"
+        case $verb in
+            1)
+                if [ -n "$4" ]; then
+                    echo_message "Error in configuration at STOP_CHARGE_THRESH_${_bt_cfg_bat}=\"${new_stop}\": conservation mode not specified or invalid (must be 0 or 1). Skipped."
+                fi
+                ;;
+
+            2)
+                if [ -n "$4" ]; then
+                    cprintf "" "Error in configuration at STOP_CHARGE_THRESH_%s=\"%s\": conservation mode not specified or invalid (must be 0 or 1). Aborted.\n" "$_bt_cfg_bat" "$new_stop" 1>&2
+                else
+                    cprintf "" "Error: conservation mode (%s) not specified or invalid (must be 0 or 1). Aborted.\n" "$new_stop" 1>&2
+                fi
+                ;;
+        esac
+        return 2
+    fi
+
+    # read active stop threshold value
+    if ! old_stop=$(batdrv_read_threshold stop 0); then
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat"
+        case $verb in
+            1) echo_message "Error: could not read current conservation mode. Skipped." ;;
+            2) cprintf "" "Error: could not read current conservation mode. Aborted.\n" 1>&2 ;;
+        esac
+        return 4
+    fi
+
+    # write new threshold
+    if [ "$verb" = "2" ]; then
+        printf "Setting temporary charge threshold for all batteries:\n" 1>&2
+    fi
+
+    local rc=0
+    if [ "$old_stop" != "$new_stop" ]; then
+        # new threshold differs from effective one --> write it
+        write_sysf "$new_stop" "$_bf_stop" || rc=5
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).write: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_stop; new=$new_stop; rc=$rc"
+        case $verb in
+            2)
+                if [ $rc -eq 0 ]; then
+                    printf "  conservation mode = %d\n" "$new_stop" 1>&2
+                else
+                    cprintf "err" "  conservation mode = %d (Error: write failed)\n" "$new_stop" 1>&2
+                fi
+                ;;
+            1)
+                if [ $rc -gt 0 ]; then
+                    echo_message "Error: writing conservation mode failed."
+                fi
+                ;;
+        esac
+    else
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).no_change: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_stop; new=$new_stop"
+        if [ "$verb" = "2" ]; then
+                printf "  conservation mode = %d (no change)\n" "$new_stop" 1>&2
+        fi
+    fi
+
+    return $rc
+}
+
+batdrv_calc_soc () {
+    # function not implemented as not required
+    return 255
+}
+
+batdrv_chargeonce () {
+    # function not implemented for Lenovo laptops
+    # global param: $_batdrv_plugin
+    # prerequisite: batdrv_init()
+
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.charge_once.not_implemented"
+    return 255
+}
+
+batdrv_apply_configured_thresholds () {
+    # apply configured conservation mode from configuration to all batteries
+    # - called for bg tasks tlp init [re]start/auto and tlp start
+    # output parameter errors only
+    # prerequisite: batdrv_init()
+
+    local stop_thresh
+
+    if batdrv_select_battery "DEF"; then
+        eval stop_thresh="\$STOP_CHARGE_THRESH_${_bt_cfg_bat}"
+        batdrv_write_thresholds "DEF" "$stop_thresh" 1 1
+    fi
+
+    return 0
+}
+
+batdrv_read_force_discharge () {
+    # function not implemented for Lenovo laptops
+    # global param: $_batdrv_plugin
+    # prerequisite: batdrv_init()
+
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge.not_implemented"
+    return 255
+}
+
+batdrv_write_force_discharge () {
+    # function not implemented for Lenovo laptops
+    # global param: $_batdrv_plugin
+    # prerequisite: batdrv_init()
+
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_force_discharge.not_implemented"
+    return 255
+}
+
+batdrv_cancel_force_discharge () {
+    # function not implemented for Lenovo laptops
+    # global param: $_batdrv_plugin
+    # prerequisite: batdrv_init()
+
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.cancel_force_discharge.not_implemented"
+    return 255
+}
+
+batdrv_force_discharge_active () {
+    # function not implemented for Lenovo laptops
+    # global param: $_batdrv_plugin
+    # prerequisite: batdrv_init()
+
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge_active.not_implemented"
+    return 255
+}
+
+batdrv_discharge_safetylock () {
+    # check safety lock - force-discharge not implemented for Lenovo laptops
+    # $1: discharge/recalibrate
+    # rc: 0=engaged/1=disengaged
+
+    return 1
+}
+
+batdrv_discharge () {
+    # function not implemented for Lenovo laptops
+    # global param: $_batdrv_plugin
+    # prerequisite: batdrv_init()
+
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_implemented"
+    return 255
+}
+
+batdrv_show_battery_data () {
+    # output battery status
+    # $1: 1=verbose
+    # global params: $_batdrv_plugin, $_batteries, $_batdrv_kmod, $_natacpi, $_bm_thresh, $_bd_read, $_bf_stop
+    # prerequisite: batdrv_init()
+    local verbose="${1:-0}"
+
+    printf "+++ Battery Care\n"
+    printf "Plugin: %s\n" "$_batdrv_plugin"
+
+    if [ "$_bm_thresh" = "natacpi" ]; then
+        cprintf "success" "Supported features: charge threshold\n"
+    else
+        cprintf "warning" "Supported features: none available\n"
+    fi
+
+    printf "Driver usage:\n"
+    # vendor specific kernel api
+    case $_natacpi in
+        0)   cprintf "success" "* vendor (%s) = active (charge threshold)\n" "$_batdrv_kmod" ;;
+        32)  cprintf "notice"  "* vendor (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
+        128) cprintf "err"     "* vendor (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
+        254) cprintf "warning" "* vendor (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
+        *)   cprintf "err"     "* vendor (%s) = unknown status\n" "$_batdrv_kmod" ;;
+    esac
+
+    if [ "$_bm_thresh" = "natacpi" ]; then
+        local th sfx=
+        printf "Parameter value range:\n"
+        printf "* STOP_CHARGE_THRESH_BAT0: 0(off), 1(on) -- battery conservation mode\n\n"
+        if th=$(batdrv_read_threshold stop 1); then
+            case $th in
+                0) sfx=" (off)" ;;
+                1) sfx=" (on)" ;;
+                *) sfx=" (invalid)" ;;
+            esac
+            printf "%-59s = %d%s\n" "$_bf_stop" "$th" "$sfx"
+        else
+            printf "%-59s = %s\n" "$_bf_stop" "(not available)"
+        fi
+    fi
+    printf "\n"
+
+    # -- show battery data
+    local bat
+    local bcnt=0
+
+    for bat in $_batteries; do # iterate batteries
+        batdrv_select_battery "$bat"
+
+        printf "+++ Battery Status: %s\n" "$bat"
+
+        print_bat_make
+        print_bat_cycle_count "$_bd_read/cycle_count"
+        print_bat_energy
+        print_bat_state "$_bd_read/status"
+        printf "\n"
+        if [ "$verbose" -eq 1 ]; then
+            print_bat_voltages
+            printf "\n"
+        fi
+        print_bat_level
+
+        bcnt=$((bcnt+1))
+
+    done # for bat
+
+    [ $bcnt -gt 1 ] && print_bat_level_total
+
+    return 0
+}
+
+batdrv_check_soc_gt_stop () {
+    # function not implemented for Lenovo laptops
+    # note: the actual discrete threshold value varies depending on the model and cannot be read in userspace
+
+    return 1
+}
+
+batdrv_recommendations () {
+     # no recommendations for Lenovo laptops
+
+    return 0
+}
