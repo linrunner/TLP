@@ -11,6 +11,7 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
       firmware from MrChromebox.tech): start and stop threshold (Issue #838)
     - tlp-stat -b: on laptops that provide battery metrics in mA(h), calculate
       the equivalent in mW(h) and display it adjacent
+    - tlp-stat -b -v: show serial number
     General:
     - Use 'daemon' facility for logging and trace
 
