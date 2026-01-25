@@ -486,15 +486,12 @@ batdrv_show_battery_data () {
 
         printf "+++ Battery Status: %s\n" "$bat"
 
-        print_bat_make
+        print_bat_make "$verbose"
         print_bat_cycle_count "$_bd_read/cycle_count"
         print_bat_energy
         print_bat_state "$_bd_read/status"
         printf "\n"
-        if [ "$verbose" -eq 1 ]; then
-            print_bat_voltages
-            printf "\n"
-        fi
+        print_bat_voltages "$verbose"
 
         # --- show battery features: thresholds
         if [ "$_bm_thresh" = "natacpi" ]; then

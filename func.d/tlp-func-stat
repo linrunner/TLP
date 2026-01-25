@@ -845,8 +845,11 @@ print_bat_methods_per_driver () {
 
 print_bat_make () {
     # print battery manufacturer and mode name
-    # global param: $_bd_rea
-    # prerequisite: batdrv_init(), batdrv_select_battery
+    # $1: verbose
+    # global param: $_bd_read
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local verbose="${1:-0}"
 
     # shellcheck disable=SC2154
     printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
@@ -863,6 +866,7 @@ print_bat_state () {
     # an explanation when a threshold inhibits charging
     # $1: sysfile
     # global params: $_bm_thresh, $_syspwr
+
     local sysf val
 
     # check if bat state sysfile exists
@@ -890,6 +894,7 @@ print_bat_state () {
 print_bat_cycle_count () {
     # print battery cycle count, explain special case of 0
     # $1: cycle count sysfile
+
     local cc
 
     cc="$(read_sysf "$1")"
@@ -911,7 +916,7 @@ print_bat_energy () {
     #   $_bat_en    - current charge level (mWh or mAh)
     #   $_bat_efsum - accumulated fully charged level
     #   $_bat_ensum - accumulated current charge level
-    # prerequisite: batdrv_init(), batdrv_select_battery
+    # prerequisite: batdrv_init(), batdrv_select_battery()
 
     local ed ef en pn pwr volt
 
@@ -1015,11 +1020,17 @@ print_bat_level_total () {
 
 print_bat_voltages () {
     # print battery voltages
+    # $1: verbose
     # global param: $_bd_read
-    # prerequisite: batdrv_init(), batdrv_select_battery
+    # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_min_design" "" 000
-    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_now" "" 000
+    local verbose="${1:-0}"
+
+    if [ "$verbose" = "1" ]; then
+        printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_min_design" "" 000
+        printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_now" "" 000
+        printf "\n"
+    fi
 
     return 0
 }

@@ -922,15 +922,12 @@ batdrv_show_battery_data () {
         # --- show basic data
         case $_bm_read in
             natacpi) # no tp-smapi --> use ACPI data
-                print_bat_make
+                print_bat_make "$verbose"
                 print_bat_cycle_count "$_bd_read/cycle_count"
                 print_bat_energy
                 print_bat_state "$_bd_read/status"
                 printf "\n"
-                if [ "$verbose" -eq 1 ]; then
-                    print_bat_voltages
-                    printf "\n"
-                fi
+                print_bat_voltages "$verbose"
                 ;; # natacpi
 
             tpsmapi) # tp-smapi active
