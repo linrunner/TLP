@@ -20,7 +20,15 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     - tlp-stat -b -v: show serial number
     General:
     - Remove backward compatibility with /etc/default/tlp
+    - tlp-stat -s:
+      - "Power profile" renamed to "TLP profile" to distinguish it
+        from similarly sounding kernel tunables
+      - OS Release: fix parsing of Gentoo's /etc/os-release with '' quoting
     - Use 'daemon' facility for logging and trace
+    Graphics:
+    - tlp-stat -g: show power_state for AMD and Nvidia GPUs
+    Processor:
+    - tlp-stat -p: section "+++ Platform profile" renamed to '+++ Platform"
 
 +++ 1.9.1 --- 07.01.2026 +++
 
