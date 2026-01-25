@@ -17,7 +17,6 @@ readonly VARDIR=@TLP_VAR@
 readonly CONF_DEF=@TLP_CONFDEF@
 readonly CONF_DIR=@TLP_CONFDIR@
 readonly CONF_USR=@TLP_CONFUSR@
-readonly CONF_OLD=@TLP_CONF@
 readonly CONF_RUN="$RUNDIR/run.conf"
 
 readonly FLOCK=flock
@@ -756,7 +755,7 @@ read_config () { # read all config files and write temporary runconf file
 
     if [ $rc -ne 0 ]; then
         case $rc in
-            5) cecho "Error: cannot read user configuration from $CONF_USR or $CONF_OLD." 1>&2 ;;
+            5) cecho "Error: cannot read user configuration from $CONF_USR." 1>&2 ;;
             6) cecho "Error: cannot read default configuration from $CONF_DEF." 1>&2 ;;
             7) cecho "Error: cannot write runtime configuration to $_conf_tmp." 1>&2 ;;
         esac

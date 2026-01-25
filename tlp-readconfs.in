@@ -29,7 +29,6 @@ use constant CONF_DIR => '@TLP_CONFDIR@';
 use constant CONF_DEF => '@TLP_CONFDEF@';
 use constant CONF_REN => '@TLP_CONFREN@';
 use constant CONF_DPR => '@TLP_CONFDPR@';
-use constant CONF_OLD => '@TLP_CONF@';
 
 # Exit codes
 use constant EXIT_TLPCONF => 5;
@@ -308,8 +307,7 @@ foreach my $conffile ( grep { -f } glob CONF_DIR . "/*.conf" ) {
 }
 
 # 3. read user settings (with renaming)
-parse_configfile (CONF_USR, $do_rename) == 0
-    || parse_configfile (CONF_OLD, $do_rename) == 0 || exit EXIT_TLPCONF;
+parse_configfile (CONF_USR, $do_rename) == 0 || exit EXIT_TLPCONF;
 
 # save result
 write_runconf ($outfile);

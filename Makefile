@@ -25,7 +25,6 @@ TLP_CONFDIR ?= /etc/tlp.d
 TLP_CONFDEF ?= /usr/share/tlp/defaults.conf
 TLP_CONFREN ?= /usr/share/tlp/rename.conf
 TLP_CONFDPR ?= /usr/share/tlp/deprecated.conf
-TLP_CONF    ?= /etc/default/tlp
 TLP_SYSD    ?= /usr/lib/systemd/system
 TLP_SDSL    ?= /usr/lib/systemd/system-sleep
 TLP_SYSV    ?= /etc/init.d
@@ -54,7 +53,6 @@ _CONFDIR = $(DESTDIR)$(TLP_CONFDIR)
 _CONFDEF = $(DESTDIR)$(TLP_CONFDEF)
 _CONFREN = $(DESTDIR)$(TLP_CONFREN)
 _CONFDPR = $(DESTDIR)$(TLP_CONFDPR)
-_CONF    = $(DESTDIR)$(TLP_CONF)
 _SYSD    = $(DESTDIR)$(TLP_SYSD)
 _SDSL    = $(DESTDIR)$(TLP_SDSL)
 _SYSV    = $(DESTDIR)$(TLP_SYSV)
@@ -82,7 +80,6 @@ SED = sed \
 	-e "s|@TLP_CONFDEF@|$(TLP_CONFDEF)|g" \
 	-e "s|@TLP_CONFREN@|$(TLP_CONFREN)|g" \
 	-e "s|@TLP_CONFDPR@|$(TLP_CONFDPR)|g" \
-	-e "s|@TLP_CONF@|$(TLP_CONF)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"   \
 	-e "s|@TLP_VAR@|$(TLP_VAR)|g"
 
