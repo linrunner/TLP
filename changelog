@@ -12,7 +12,11 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     - tlp-stat -b: on laptops that provide battery metrics in mA(h), calculate
       the equivalent in mW(h) and display it adjacent
     General:
+    - tlp-stat -s: "Power profile" renamed to "TLP profile" to distinguish it
+      from similarly sounding kernel tunables
     - Use 'daemon' facility for logging and trace
+    Processor:
+    - tlp-stat -p: section "+++ Platform profile" renamed to '+++ Platform"
 
 +++ 1.9.1 --- 07.01.2026 +++
 
