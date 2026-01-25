@@ -230,6 +230,10 @@ print_version () {
 
 # --- Strings
 
+trim () { # remove leading and trailing whitespace -- $1: string
+    printf "%s" "$1" | sed -r -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'
+}
+
 tolower () { # print string in lowercase -- $1: string
     printf "%s" "$1" | tr "[:upper:]" "[:lower:]"
 }

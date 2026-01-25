@@ -936,6 +936,9 @@ batdrv_show_battery_data () {
             tpsmapi) # tp-smapi active
                 printparm "%-59s = ##%s##" "$_bd_readsm/manufacturer"
                 printparm "%-59s = ##%s##" "$_bd_readsm/model"
+                if [ "$verbose" = "1" ]; then
+                    printparm "%-59s = ##%s##" "$_bd_readsm/serial" "" "" 1
+                fi
                 printparm "%-59s = ##%s##" "$_bd_readsm/manufacture_date"
                 printparm "%-59s = ##%s##" "$_bd_readsm/first_use_date"
                 printparm "%-59s = ##%6d##" "$_bd_readsm/cycle_count"
