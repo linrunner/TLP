@@ -562,11 +562,11 @@
 #DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE="bluetooth nfc wifi wwan"
 
 # Battery Care -- Charge thresholds
-# Charging starts when the charger is connected and the charge level
-# is below the start threshold. Charging stops when the charge level
-# is above the stop threshold.
+# Charging will start once the charger is connected and the battery level
+# is below the start threshold. Charging stops when the battery level
+# reaches or exceeds the stop threshold.
 # Required hardware: Lenovo ThinkPads and other laptop brands are driven
-#   via specific plugins:
+# via specific plugins:
 # - Use the tlp-stat -b command to see if a plugin for your hardware is
 #   active and to look up vendor-specific threshold values. Some
 #   laptops support only 1 (on)/0 (off) instead of a percentage level.
@@ -584,17 +584,17 @@
 # BAT0: Main battery
 # Default: <none>
 
-# Battery charge level below which charging will begin.
+# Charging starts once the battery level is below this threshold.
 #START_CHARGE_THRESH_BAT0=75
-# Battery charge level above which charging will stop.
+# Charging stops when the battery level reaches or exceeds this threshold.
 #STOP_CHARGE_THRESH_BAT0=80
 
 # BAT1: Secondary battery (primary on some laptops)
 # Default: <none>
 
-# Battery charge level below which charging will begin.
+# Charging starts once the battery level is below this threshold.
 #START_CHARGE_THRESH_BAT1=75
-# Battery charge level above which charging will stop.
+# Charging stops when the battery level reaches or exceeds this threshold.
 #STOP_CHARGE_THRESH_BAT1=80
 
 # Restore charge thresholds when AC is unplugged: 0=disable, 1=enable.
