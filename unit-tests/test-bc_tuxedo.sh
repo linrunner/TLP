@@ -8,6 +8,7 @@ spath="${0%/*}"
 }
 
 cache_root_cred
+set_threshold_trap
 start_report
 
 if bat_present BAT0; then
@@ -31,3 +32,4 @@ run_clitest "$spath/charge-thresholds_tuxedo"
 sudo tlp setcharge ${bata}  > /dev/null 2>&1 # reset test machine to configured thresholds
 
 print_report
+reset_threshold_trap

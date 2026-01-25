@@ -8,9 +8,11 @@ spath="${0%/*}"
 }
 
 cache_root_cred
+set_threshold_trap
 start_report
 
 "$spath/test-bc_thinkpad.sh"
 "$spath/test-bc_all-simulate.sh"
 
 print_report
+reset_threshold_trap
