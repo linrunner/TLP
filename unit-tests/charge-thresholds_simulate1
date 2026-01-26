@@ -317,55 +317,6 @@ $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lg | grep "BAT0/charge_control_end_t
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lg X_THRESH_SIMULATE_READERR=1 | grep "BAT0/charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
 $ #
-$ # ---
-$ # Old kernel API
-$ # --- tlp start
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg-legacy START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
-TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg-legacy START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
-Error in configuration at STOP_CHARGE_THRESH_BAT0="24": care limit not specified or invalid (must be 80 or 100). Skipped.
-TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg-legacy START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" X_THRESH_SIMULATE_STOP="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
-Error: writing care limit failed.
-TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg-legacy START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_STOP="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
-TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg-legacy NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
-TLP started
-$ #
-$ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg-legacy START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
-Error in configuration at STOP_CHARGE_THRESH_BAT0="24": care limit not specified or invalid (must be 80 or 100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg-legacy START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="XYZZY"
-Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": care limit not specified or invalid (must be 80 or 100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg-legacy START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-Error: could not read current care limit. Aborted.
-$ #
-$ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=lg-legacy
-Error: care limit (24) not specified or invalid (must be 80 or 100). Aborted.
-$ sudo tlp setcharge 42 100 -- X_BAT_PLUGIN_SIMULATE=lg-legacy  X_THRESH_SIMULATE_STOP="80"
-Setting temporary charge threshold for all batteries:
-  care limit = 100 (Error: write failed)
-$ sudo tlp setcharge 42 80 -- X_BAT_PLUGIN_SIMULATE=lg-legacy  X_THRESH_SIMULATE_STOP="80" X_SOC_CHECK=0
-Setting temporary charge threshold for all batteries:
-  care limit =  80 (no change)
-$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=lg-legacy  X_THRESH_SIMULATE_STOP="100"
-Setting temporary charge threshold for all batteries:
-  care limit = 100 (no change)
-$ sudo tlp setcharge ABCDE XYZZY -- X_BAT_PLUGIN_SIMULATE=lg-legacy
-Error: care limit (XYZZY) not specified or invalid (must be 80 or 100). Aborted.
-$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=lg-legacy X_THRESH_SIMULATE_READERR="1"
-Error: could not read current care limit. Aborted.
-$ sudo tlp setcharge 42 80 BAT2 -- X_BAT_PLUGIN_SIMULATE=lg-legacy
-Error: battery BAT2 not present.
-$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=lg-legacy
-Error: battery BAT2 not present.
-$ #
-$ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lg-legacy | grep "battery_care_limit"
-/sys/devices/platform/lg-laptop/battery_care_limit          = (not available)
-$ #
 $ # --- Reset test machine to configured thresholds
 $ sudo tlp setcharge BAT0  > /dev/null 2>&1
 $ #
