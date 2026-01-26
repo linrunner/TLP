@@ -156,6 +156,8 @@ PYFILES = \
 
 BATDRVFILES = $(foreach drv,$(wildcard bat.d/[0-9][0-9]-[a-z]*),$(drv)~)
 
+EXCLUDECHECKWIP = research*
+
 # Make targets
 all: $(INFILES)
 
@@ -398,7 +400,7 @@ checkman:
 
 checkwip:
 	@echo "*** checkwip ********************************************************************************"
-	@grep -E -n "### (DEBUG|DEVEL|FIXME|TODO|WIP)" $(SHFILES) $(UTSHFILES) $(PLFILES) $(PYFILES) || true
+	@grep -E -n --exclude=$(EXCLUDECHECKWIP) "### (DEBUG|DEVEL|FIXME|TODO|WIP)" $(SHFILES) $(UTSHFILES) $(PLFILES) $(PYFILES) || true
 
 bat.d/TEMPLATE~: bat.d/TEMPLATE
 	@awk '/^batdrv_[a-z_]+ ()/ { print $$1; }' $< | grep -v 'batdrv_is' | sort > $@
