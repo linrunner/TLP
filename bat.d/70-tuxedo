@@ -647,9 +647,15 @@ batdrv_show_battery_data () {
         print_bat_voltages "$verbose"
 
         # --- show battery features: thresholds
-        printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_start_threshold" "not available"
-        printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_end_threshold" "not available"
-        printparm "%-59s = ##%6s##" "$_bd_read/charge_type" "not available"
+        if [ "$X_THRESH_SIMULATE_READERR" != "1" ]; then
+            printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_start_threshold" "not available"
+            printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_end_threshold" "not available"
+            printparm "%-59s = ##%6s##" "$_bd_read/charge_type" "not available"
+        else
+            printf "%-59s = %s [%%]\n" "$_bd_read/charge_control_start_threshold" "(not available)"
+            printf "%-59s = %s [%%]\n" "$_bd_read/charge_control_end_threshold" "(not available)"
+            printf "%-59s = %s\n" "$_bd_read/charge_type" "(not available)"
+        fi
         printf "\n"
 
         # --- show charge level (SOC) and capacity
