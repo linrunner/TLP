@@ -2,7 +2,7 @@
 # 16-lenovo-legacy - Battery Plugin for Lenovo laptops:
 # 1. Non-ThinkPad series
 # 2. ThinkBook series
-# Requires the ideapad_laptop river providing
+# Requires the ideapad_laptop driver as of kernel 4.14 providing
 # /sys/bus/platform/drivers/ideapad_acpi/VPC2004:00/conservation_mode
 #
 # Copyright (c) 2026 Thomas Koch <linrunner at gmx.net> and others.
@@ -19,7 +19,7 @@ batdrv_init () {
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
     # retval: $_batdrv_plugin, $batdrv_kmod
     #
-    # 1. check for vendor specific kernel api (Linux 4.14 or higher required)
+    # 1. check for vendor specific legacy kernel api
     #    --> retval $_natacpi:
     #       0=thresholds/
     #       32=disabled/
@@ -91,7 +91,7 @@ batdrv_init () {
         # natacpi disabled in configuration --> skip actual detection
         _natacpi=32
     elif [ -f "$BATDRV_LENOVO_CMODE" ] && readable_sysf "$BATDRV_LENOVO_CMODE"; then
-        # sysfile exists and is actually readable
+        # conservation_mode sysfile exists and is actually readable
         _natacpi=0
         _bm_thresh="natacpi"
         _bf_stop="$BATDRV_LENOVO_CMODE"
@@ -101,7 +101,7 @@ batdrv_init () {
         _bm_thresh="natacpi"
         _bf_stop="$BATDRV_LENOVO_CMODE"
     else
-        # nothing detected
+        # conservation_mode sysfile not present -> laptop not supported
         _natacpi=254
     fi
 

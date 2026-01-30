@@ -27,12 +27,11 @@ batdrv_init () {
     # rc: 0=matching hardware detected/1=not detected/2=no batteries detected
     # retval: $_batdrv_plugin, $_batdrv_kmod, $_batdrv_sim
     #
-    # 1. check for vendor specific kernel api (Linux 4.14 or higher required)
+    # 1. check for charge_types kernel api
     #    --> retval $_natacpi:
     #       0=thresholds/
     #       32=disabled/
-    #       128=no kernel support/
-    #       254=laptop not supported
+    #       128=no kernel support
     #
     # 2. determine method for
     #    reading battery data                   --> retval $_bm_read,
@@ -47,7 +46,7 @@ batdrv_init () {
     #    list of batteries (space separated)    --> retval $_batteries;
     #
     # 5. define charge threshold defaults
-    #    stop threshold                         --> retval $_bt_def_stop; ### WIP
+    #    stop threshold                         --> retval $_bt_def_stop;
 
     _batdrv_plugin="lenovo"
     _batdrv_kmod="ideapad_laptop" # kernel module for natacpi
@@ -82,10 +81,9 @@ batdrv_init () {
     _bn_stop=""
     _bt_def_stop=0
 
-    # iterate batteries and check for native kernel ACPI
+    # iterate batteries and check for charge_types kernel api
     local bd bs
     local done=0
-    # TEMPLATE: customize battery names if necessary
     for bd in "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf "$bd/present")" = "1" ]; then
             # record detected batteries and directories
@@ -106,13 +104,14 @@ batdrv_init () {
             fi
 
             if readable_sysf "$bd/charge_types" || [ "$_batdrv_sim" = "1" ] ; then
-                # threshold sysfile is actually readable (or simulated)
+                # charge_types sysfile is actually readable (or simulated)
                 _natacpi=0
                 _bm_thresh="natacpi"
                 _bn_stop="charge_types"
             else
-                # nothing detected
-                _natacpi=254
+                # charge_types sysfile not present --> no kernel support
+                _natacpi=128
+                continue
             fi
         fi
     done
@@ -121,6 +120,13 @@ batdrv_init () {
     if [ -z "$_batteries" ]; then
         echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
         return 2
+    fi
+
+    # consider legacy kernels < 6.17
+    if [ $_natacpi -eq 128 ]; then
+        # kernel module detected but charge_types not present --> try 16-lenovo-legacy next
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_charge_types: batteries=$_batteries; natacpi=$_natacpi"
+        return 1
     fi
 
     # shellcheck disable=SC2034
