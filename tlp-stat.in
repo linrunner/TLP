@@ -314,7 +314,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
 
     # --- release & kernel info
     printf "OS Release     = "
-    if ! sed -rn 's/PRETTY_NAME="(.*)"/\1/p' $OSRELEASE 2> /dev/null; then
+    if ! sed -rn "s/PRETTY_NAME=[\"'](.*)[\"']/\1/p" $OSRELEASE 2> /dev/null; then
         echo "unknown"
     fi
     echo "Kernel         = $(uname -r -m -v)"
