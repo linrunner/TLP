@@ -406,7 +406,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     fi
 
     # --- actual power profile
-    printf "Power profile  = %s\n" "$(print_saved_profile)"
+    printf "TLP profile    = %s\n" "$(print_saved_profile)"
 
     # ---- actual power source
     get_sys_power_supply
@@ -611,7 +611,7 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- platform profile
     if [ "$quiet" = "0" ] || [ "$show_all" = "1" ] ; then
-        printf "\n+++ Platform Profile\n"
+        printf "\n+++ Platform\n"
     fi
     printparm "%-54s = ##%s##" "$FWACPID/platform_profile"
     printparm "%-54s = ##%s##" "$FWACPID/platform_profile_choices"
