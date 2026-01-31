@@ -1045,7 +1045,7 @@ if [ "$show_bat" = "1" ] || [ "$show_system" = "1" ] || [ "$show_all" = "1" ]; t
     if [ "$show_system" = "1" ] || [ "$show_all" = "1" ]; then
         if check_ppd_running; then
             if check_systemd; then
-                reout="${reout}Uninstall power-profiles-daemon or invoke 'systemctl mask $PPD_SERVICE' to ensure the full functionality of TLP\n"
+                reout="${reout}Uninstall power-profiles-daemon or run 'systemctl mask $PPD_SERVICE' to ensure the full functionality of TLP\n"
             else
                 reout="${reout}Uninstall power-profiles-daemon to ensure the full functionality of TLP\n"
             fi
