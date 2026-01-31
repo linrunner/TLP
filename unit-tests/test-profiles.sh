@@ -1,7 +1,7 @@
 #!/bin/sh
 # Test:
 # - select power profiles: performance, balance, power-saver, ac (manual mode), bat (manual mode)
-# - invoke persistent mode
+# - run persistent mode
 #
 # Tested parameters:
 # - TLP_AUTO_SWITCH
@@ -161,7 +161,7 @@ check_profile_select () {
 }
 
 check_default_mode () {
-    # invoke default mode PRF/BAL/SAV/AC/BAT
+    # run default mode PRF/BAL/SAV/AC/BAT
     # global param: $_testcnt, $_failcnt
     # retval: $_testcnt++, $_failcnt++
 
@@ -246,7 +246,7 @@ check_default_mode () {
 }
 
 check_persistent_mode () {
-    # invoke persistent mode PRF/BAL/SAV/AC/BAT
+    # run persistent mode PRF/BAL/SAV/AC/BAT
     # global param: $_testcnt, $_failcnt
     # retval: $_testcnt++, $_failcnt++
 

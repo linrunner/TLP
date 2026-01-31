@@ -8,15 +8,10 @@ spath="${0%/*}"
 }
 
 cache_root_cred
+set_threshold_trap
 start_report
 
-"$spath/test-profiles.sh"
-"$spath/test-cpufreq.sh"
-"$spath/test-gpufreq.sh"
-"$spath/test-rf-switch.sh"
-"$spath/test-service-warnings.sh"
-
-# shellcheck disable=SC2154
-TLP_TEST_REPORT="$_report_file" "$spath/test-tlpctl.py"
+run_clitest "$spath/service-warnings"
 
 print_report
+reset_threshold_trap
