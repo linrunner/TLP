@@ -706,7 +706,7 @@ show_gpu_data () {
                     printf "+++ Intel Graphics\n"
                     hdr="i915"
                 fi
-                printf "%-44s = %s\n\n" "$gpu/device/driver" "$driver"
+                printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
 
                 # shellcheck disable=SC2154
                 printparm_i915 "$gpu/power/rc6_enable" "$_intel_gpu_parm/enable_rc6" "$_intel_gpu_parm/i915_enable_rc6"
@@ -739,7 +739,8 @@ show_gpu_data () {
                     printf "+++ AMD Radeon Graphics\n"
                     hdr="amdgpu"
                 fi
-                printf "%-65s = %s\n\n" "$gpu/device/driver" "$driver"
+                printf "%-65s = %s\n" "$gpu/device/driver" "$driver"
+                printparm "%-65s = ##%s##" "$gpu/device/power_state"
 
                 lc=0
                 if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
@@ -772,7 +773,8 @@ show_gpu_data () {
                     printf "+++ AMD Radeon Graphics\n"
                     hdr="radeon"
                 fi
-                printf "%-65s = %s\n\n" "$gpu/device/driver" "$driver"
+                printf "%-65s = %s\n" "$gpu/device/driver" "$driver"
+                printparm "%-65s = ##%s##" "$gpu/device/power_state"
 
                 if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
                     # AMD hardware
@@ -793,7 +795,9 @@ show_gpu_data () {
                     printf "+++ Nvidia Graphics\n"
                     hdr="$driver"
                 fi
-                printf "%-44s = %s\n\n" "$gpu/device/driver" "$driver"
+                printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                printparm "%-44s = ##%s##" "$gpu/device/power_state"
+
                 ;;
 
             *) # Other GPU
@@ -801,7 +805,8 @@ show_gpu_data () {
                     printf "+++ Other Graphics\n"
                     hdr="$driver"
                 fi
-                printf "%-44s = %s\n\n" "$gpu/device/driver" "$driver"
+                printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                printparm "%-44s = ##%s##" "$gpu/device/power_state"
                 ;;
         esac
     done
