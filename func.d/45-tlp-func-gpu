@@ -13,6 +13,7 @@ readonly BASE_MODD=/sys/module
 readonly BASE_DRMD=/sys/class/drm
 readonly BASE_DEBUGD=/sys/kernel/debug/dri
 
+# Intel i915 driver
 readonly IGPU_MIN_FREQ=gt_min_freq_mhz
 readonly IGPU_MAX_FREQ=gt_max_freq_mhz
 readonly IGPU_BOOST_FREQ=gt_boost_freq_mhz
@@ -21,20 +22,51 @@ readonly IGPU_RPN_FREQ=gt_RPn_freq_mhz
 # shellcheck disable=SC2034
 readonly IGPU_RP0_FREQ=gt_RP0_freq_mhz
 
+# Intel xe driver
+readonly IGPU_XE_MIN_FREQ=min_freq
+readonly IGPU_XE_MAX_FREQ=max_freq
+# shellcheck disable=SC2034
+readonly IGPU_XE_RPN_FREQ=rpn_freq
+# shellcheck disable=SC2034
+readonly IGPU_XE_RP0_FREQ=rp0_freq
+
 # ----------------------------------------------------------------------------
 # Functions
 
-# --- Intel GPU
+get_gpu_driver_parms () {
+    # determine GPU driver and parameter locations
+    # $1: drm card dir
+    # retval: $_gpu_driver: kernel driver
+    #         $_gpu_freqs   frequency control dir (list) - Intel only
+    #         $_gpu_parm:   parameter sysdir - Intel only
+    #         $_gpu_dbg:    debug parameter sysdir - Intel only
 
-get_intel_gpu_sysdirs () {
-    # determine Intel GPU sysdirs
-    # $1: drm sysdir, $2: driver
-    # retval: $_intel_gpu_parm: parameter sysdir;
-    #         $_intel_gpu_dbg:  debug sysdir
+    local carddir="$1"
+    local gtfd
 
-    _intel_gpu_parm=${BASE_MODD}/$2/parameters
-    _intel_gpu_dbg=${BASE_DEBUGD}/${1##"${BASE_DRMD}/card"}
-    echo_debug "pm" "get_intel_gpu_sysdirs: gpu=$1 driver=$2; parm=$_intel_gpu_parm; dbg=$_intel_gpu_dbg"
+    _gpu_driver="$(readlink "${carddir}/device/driver")"
+    _gpu_driver="${_gpu_driver##*/}"
+    _gpu_freqs=""
+    _gpu_parm=""
+    _gpu_dbg=""
+
+    case "$_gpu_driver" in
+        i915*) # Intel GPU
+            _gpu_freqs="$carddir"
+            _gpu_parm=${BASE_MODD}/${_gpu_driver}/parameters
+            _gpu_dbg=${BASE_DEBUGD}/${carddir##"${BASE_DRMD}/card"}
+            ;;
+
+        xe) # Intel GPU: new driver (Tiger Lake integrated graphics and newer, or discrete graphics card)
+            # iterate and concat all GT instances to cover multi-tile devices
+            # see: https://docs.kernel.org/gpu/xe/xe_tile.html
+            for gtfd in "$carddir"/device/tile*/gt*/freq*; do
+                [ -d "$gtfd" ] || break
+                _gpu_freqs="${_gpu_freqs}${_gpu_freqs:+ }$gtfd"
+            done
+            ;;
+    esac # driver
+    echo_debug "pm" "get_gpu_driver_parms: card=$carddir; driver=$_gpu_driver; freqs=$_gpu_freqs; parm=$_gpu_parm; dbg=$_gpu_dbg"
 
     return 0
 }

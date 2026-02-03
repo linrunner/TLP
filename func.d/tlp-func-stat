@@ -689,49 +689,83 @@ show_gpu_data () {
     # show GPU data for all drivers
     # $1: 1=verbose (default: 0)
     local verbose="${1:-0}"
-    local card clk driver gpu lc pps sysout
+    local card clk gpu gtnum lc odir sysout
     local hdr=
 
     for gpu in "${BASE_DRMD}"/card?; do
         [ -d "$gpu" ] || continue
+        get_gpu_driver_parms "$gpu"
 
-        driver=$(readlink "${gpu}/device/driver")
-        driver=${driver##*/}
-        case "$driver" in
+        # shellcheck disable=SC2154
+        case "$_gpu_driver" in
             i915*) # Intel GPU
-                get_intel_gpu_sysdirs "$gpu" "$driver"
-
                 # power management data
                 if [ "$hdr" != "i915" ]; then
                     printf "+++ Intel Graphics\n"
                     hdr="i915"
                 fi
-                printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                printf "%-44s = %s\n" "$gpu/device/driver" "$_gpu_driver"
 
                 # shellcheck disable=SC2154
-                printparm_i915 "$gpu/power/rc6_enable" "$_intel_gpu_parm/enable_rc6" "$_intel_gpu_parm/i915_enable_rc6"
+                printparm_i915 "$gpu/power/rc6_enable" "$_gpu_parm/enable_rc6" "$_gpu_parm/i915_enable_rc6"
                 # shellcheck disable=SC2154
-                if sysout=$(grep '^FBC ' "$_intel_gpu_dbg/i915_fbc_status" 2> /dev/null); then
-                    printf "%-44s = %s\n" "$_intel_gpu_dbg/i915_fbc_status" "$sysout"
+                if sysout=$(grep '^FBC ' "$_gpu_dbg/i915_fbc_status" 2> /dev/null); then
+                    printf "%-44s = %s\n" "$_gpu_dbg/i915_fbc_status" "$sysout"
                 else
-                    printparm_i915 "$_intel_gpu_parm/enable_fbc" "$_intel_gpu_parm/i915_enable_fbc"
+                    printparm_i915 "$_gpu_parm/enable_fbc" "$_gpu_parm/i915_enable_fbc"
                 fi
-                if sysout=$(grep '^PSR mode:' "$_intel_gpu_dbg/i915_edp_psr_status" 2> /dev/null); then
-                    printf "%-44s = %s\n" "$_intel_gpu_dbg/i915_edp_psr_status" "$sysout"
+                if sysout=$(grep '^PSR mode:' "$_gpu_dbg/i915_edp_psr_status" 2> /dev/null); then
+                    printf "%-44s = %s\n" "$_gpu_dbg/i915_edp_psr_status" "$sysout"
                 else
-                    printparm_i915 "$_intel_gpu_parm/enable_psr"
+                    printparm_i915 "$_gpu_parm/enable_psr"
                 fi
                 printf "\n"
 
                 # frequency parameters
-                if readable_sysf "$gpu/$IGPU_MIN_FREQ"; then
-                    printparm "%-44s = ##%5d## [MHz]" "$gpu/$IGPU_MIN_FREQ"
-                    printparm "%-44s = ##%5d## [MHz]" "$gpu/$IGPU_MAX_FREQ"
-                    printparm "%-44s = ##%5d## [MHz]" "$gpu/$IGPU_BOOST_FREQ"
-                    printparm "%-44s = ##%5d## [MHz] (GPU min)" "$gpu/$IGPU_RPN_FREQ"
-                    printparm "%-44s = ##%5d## [MHz] (GPU max)" "$gpu/$IGPU_RP0_FREQ"
+                if readable_sysf "$_gpu_freqs//$IGPU_MIN_FREQ"; then
+                    printparm "%-44s = ##%5d## [MHz]" "$_gpu_freqs/$IGPU_MIN_FREQ"
+                    printparm "%-44s = ##%5d## [MHz]" "$_gpu_freqs/$IGPU_MAX_FREQ"
+                    printparm "%-44s = ##%5d## [MHz]" "$_gpu_freqs/$IGPU_BOOST_FREQ"
+                    printparm "%-44s = ##%5d## [MHz] (GPU min)" "$_gpu_freqs/$IGPU_RPN_FREQ"
+                    printparm "%-44s = ##%5d## [MHz] (GPU max)" "$_gpu_freqs/$IGPU_RP0_FREQ"
                     printf "\n"
                 fi
+                ;;
+
+            xe) # Intel GPU: new driver (Tiger Lake integrated graphics and newer, or discrete graphics card)
+                if [ "$hdr" != "xe" ]; then
+                    printf "+++ Intel Graphics\n"
+                    hdr="xe"
+                fi
+                printf "%-60s = %s\n" "$gpu/device/driver" "$_gpu_driver"
+                printparm "%-60s = ##%s##" "$gpu/device/power_state"
+
+                # iterate GT instances to cover multi-tile devices
+                gtnum="$(echo "$_gpu_freqs" | wc -w)"
+                lc=0
+                for gtfd in $_gpu_freqs; do
+                    printparm "%-60s = ##%s##" "$gtfd/power_profile"
+                    printparm "%-60s = ##%6d## [MHz]" "$gtfd/$IGPU_XE_MIN_FREQ"
+                    printparm "%-60s = ##%6d## [MHz]" "$gtfd/$IGPU_XE_MAX_FREQ"
+                    if [ "$verbose" = "1" ]; then
+                        printparm "%-60s = ##%6d## [MHz]" "$gtfd/cur_freq"
+                        printparm "%-60s = ##%6d## [MHz]" "$gtfd/act_freq"
+                    fi
+                    printparm "%-60s = ##%6d## [MHz] (GPU min)" "$gtfd/$IGPU_XE_RPN_FREQ"
+                    printparm "%-60s = ##%6d## [MHz] (GPU efficient)" "$gtfd/rpe_freq"
+                    printparm "%-60s = ##%6d## [MHz] (GPU max)" "$gtfd/$IGPU_XE_MIN_FREQ"
+                    if [ "$verbose" = "1" ]; then
+                        printparm "%-60s = ##%6d##" "$gtfd/rpa_freq"
+                    fi
+                    lc=$((lc + 1))
+
+                    [ "$verbose" = "1" ] || break # print only first instance if non-verbose
+                done
+                if [ "$lc" -lt "$gtnum" ]; then
+                    printf "Remaining GTs omitted for clarity, use -v to show all.\n"
+                fi
+                [ "$lc" -gt 0 ] && printf "\n"
+
                 ;;
 
             amdgpu) # AMD GPU
@@ -739,7 +773,7 @@ show_gpu_data () {
                     printf "+++ AMD Radeon Graphics\n"
                     hdr="amdgpu"
                 fi
-                printf "%-65s = %s\n" "$gpu/device/driver" "$driver"
+                printf "%-65s = %s\n" "$gpu/device/driver" "$_gpu_driver"
                 printparm "%-65s = ##%s##" "$gpu/device/power_state"
 
                 lc=0
@@ -748,8 +782,8 @@ show_gpu_data () {
                     lc=1
                 fi
                 card="${gpu##/*/}"
-                for pps in "$gpu/${card}-eDP"*; do
-                    printparm "%-65s = ##%s##" "$pps/amdgpu/panel_power_savings" "not available"
+                for odir in "$gpu/${card}-eDP"*; do
+                    printparm "%-65s = ##%s##" "$odir/amdgpu/panel_power_savings" "not available"
                     lc=1
                 done
                 if [ "$lc" -eq "1" ]; then
@@ -759,7 +793,7 @@ show_gpu_data () {
                 if [ "$verbose" = "1" ]; then
                     lc=0
                     printparm "%-43s = ##%s##" "$gpu/device/power_state" "not available"
-                    for clk in pp_dpm_dcefclk  pp_dpm_fclk  pp_dpm_mclk  pp_dpm_pcie  pp_dpm_sclk  pp_dpm_socclk; do
+                    for clk in pp_dpm_dcefclk pp_dpm_fclk pp_dpm_mclk pp_dpm_pcie pp_dpm_sclk pp_dpm_socclk; do
                         printparm_amdgpu_ml "$gpu/device/${clk}" && lc=1
                     done
                     if [ "$lc" -eq "1" ]; then
@@ -768,12 +802,12 @@ show_gpu_data () {
                 fi
                 ;;
 
-            radeon) # AMD GPU
+            radeon) # AMD GPU: legacy driver
                 if [ "$hdr" != "radeon" ]; then
                     printf "+++ AMD Radeon Graphics\n"
                     hdr="radeon"
                 fi
-                printf "%-65s = %s\n" "$gpu/device/driver" "$driver"
+                printf "%-65s = %s\n" "$gpu/device/driver" "$_gpu_driver"
                 printparm "%-65s = ##%s##" "$gpu/device/power_state"
 
                 if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
@@ -790,22 +824,22 @@ show_gpu_data () {
                 fi
                 ;;
 
-            nouveau|nvidia) # Nvidia GPU
-                if [ "$hdr" != "$driver" ]; then
+            nouveau|nvidia) # Nvidia GPU: open and proprietary driver
+                if [ "$hdr" != "$_gpu_driver" ]; then
                     printf "+++ Nvidia Graphics\n"
-                    hdr="$driver"
+                    hdr="$_gpu_driver"
                 fi
-                printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                printf "%-44s = %s\n" "$gpu/device/driver" "$_gpu_driver"
                 printparm "%-44s = ##%s##" "$gpu/device/power_state"
 
                 ;;
 
-            *) # Other GPU
-                if [ "$hdr" != "$driver" ]; then
+            *) # Other GPU driver
+                if [ "$hdr" != "$_gpu_driver" ]; then
                     printf "+++ Other Graphics\n"
-                    hdr="$driver"
+                    hdr="$_gpu_driver"
                 fi
-                printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                printf "%-44s = %s\n" "$gpu/device/driver" "$_gpu_driver"
                 printparm "%-44s = ##%s##" "$gpu/device/power_state"
                 ;;
         esac
