@@ -7,14 +7,26 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
 
   * Features
     Battery Care:
+    - Lenovo laptops (non-ThinkPad series and ThinkBooks):
+      use the new charge_types sysfs attribute as of kernel 6.17.
+      Support for the legacy interface in kernels < 6.17 has been split
+      off into the additional plugin lenovo-legacy.
     - Laptops with Wilco EC (like Dell Chromebooks modded with custom UEFI
       firmware from MrChromebox.tech): start and stop threshold (Issue #838)
+    - LG Gram laptops: remove support for kernels < 5.18 (lg-legacy plugin).
+      Note: the lg plugin for kernel 5.18 and newer remains included.
     - tlp-stat -b: on laptops that provide battery metrics in mA(h), calculate
-      the equivalent in mW(h) and display it adjacent
+      the equivalent in mW(h) and display it adjacently
+    - tlp-stat -b -v: show serial number
     General:
-    - tlp-stat -s: "Power profile" renamed to "TLP profile" to distinguish it
-      from similarly sounding kernel tunables
+    - Remove backward compatibility with /etc/default/tlp
+    - tlp-stat -s:
+      - "Power profile" renamed to "TLP profile" to distinguish it
+        from similarly sounding kernel tunables
+      - OS Release: fix parsing of Gentoo's /etc/os-release with '' quoting
     - Use 'daemon' facility for logging and trace
+    Graphics:
+    - tlp-stat -g: show power_state for AMD and Nvidia GPUs
     Processor:
     - tlp-stat -p: section "+++ Platform profile" renamed to '+++ Platform"
 

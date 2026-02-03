@@ -17,7 +17,6 @@ readonly VARDIR=@TLP_VAR@
 readonly CONF_DEF=@TLP_CONFDEF@
 readonly CONF_DIR=@TLP_CONFDIR@
 readonly CONF_USR=@TLP_CONFUSR@
-readonly CONF_OLD=@TLP_CONF@
 readonly CONF_RUN="$RUNDIR/run.conf"
 
 readonly FLOCK=flock
@@ -54,7 +53,7 @@ readonly DMID=/sys/devices/virtual/dmi/id/
 readonly NETD=/sys/class/net
 readonly TPACPID=/sys/devices/platform/thinkpad_acpi
 
-readonly RE_PARAM='^[A-Z_]+[0-9]*=[-0-9a-zA-Z _.:]*$'
+readonly RE_PARAM='^[A-Z_]+[0-9]*=[][0-9a-zA-Z _.:-]*$'
 
 # power supplies: ignore MacBook Pro 2017 sbs-charger, ThinkPad X13s ARM qcom-battmgr-ac, hid devices, game controllers
 readonly RE_PS_IGNORE='sbs-charger|qcom-battmgr-ac|hidpp_battery|hid-|controller-battery-|controller_battery_'
@@ -230,6 +229,10 @@ print_version () {
 
 # --- Strings
 
+trim () { # remove leading and trailing whitespace -- $1: string
+    printf "%s" "$1" | sed -r -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'
+}
+
 tolower () { # print string in lowercase -- $1: string
     printf "%s" "$1" | tr "[:upper:]" "[:lower:]"
 }
@@ -249,6 +252,12 @@ wordinlist () { # test if word in list
     fi
 
     return 1 # no match
+}
+
+get_listitem () {
+    # print the active list item, which is the one enclosed in []
+    # $1: list
+    printf "%s" "$(echo "$1" | sed -r 's/.*\[([A-Za-z0-9_]+)\].*/\1/')"
 }
 
 # --- Sysfiles
@@ -416,17 +425,17 @@ check_services_activation_status () {
     if check_systemd; then
         if ! check_service_state "$TLP_SERVICE" enabled > /dev/null 2>&1; then
             echo_message "Error: TLP's power saving will not apply on boot because $TLP_SERVICE is not enabled "`
-                        `"--> Invoke 'systemctl enable $TLP_SERVICE' to ensure the full functionality of TLP." "err"
+                        `"--> Run 'systemctl enable $TLP_SERVICE' to ensure the full functionality of TLP." "err"
             echo_message ""
             rc=1
         fi
         if check_tlp_pd_installed && ! check_service_state "$TLPPD_SERVICE" enabled > /dev/null 2>&1; then
             if ! check_service_state "$TLPPD_SERVICE" active; then
                 echo_message "Error: You can't switch power profiles on the desktop because $TLPPD_SERVICE is not enabled "`
-                            `"--> Invoke 'systemctl enable --now $TLPPD_SERVICE' to ensure the full functionality of TLP." "err"
+                            `"--> Run 'systemctl enable --now $TLPPD_SERVICE' to ensure the full functionality of TLP." "err"
             else
                 echo_message "Error: After the next restart, you won't be able to switch power profiles on the desktop because "`
-                            `"$TLPPD_SERVICE is not enabled --> Invoke 'systemctl enable $TLPPD_SERVICE' to ensure the "`
+                            `"$TLPPD_SERVICE is not enabled --> Run 'systemctl enable $TLPPD_SERVICE' to ensure the "`
                             `"full functionality of TLP." "err"
             fi
             echo_message ""
@@ -437,13 +446,13 @@ check_services_activation_status () {
                 if [ "$RESTORE_DEVICE_STATE_ON_STARTUP" = "1" ]; then
                     echo_message "Warning: TLP's radio device switching on boot may not work as expected because "`
                                 `"RESTORE_DEVICE_STATE_ON_STARTUP=1 is configured and $su is not masked "`
-                                `"--> Invoke 'systemctl mask $su' to ensure the full functionality of TLP." "err"
+                                `"--> Run 'systemctl mask $su' to ensure the full functionality of TLP." "err"
                     echo_message ""
                 elif [ -n "$DEVICES_TO_DISABLE_ON_STARTUP" ] || [ -n "$DEVICES_TO_ENABLE_ON_STARTUP" ]; then
                     echo_message "Warning: TLP's radio device switching on boot may not work as expected because "`
                                 `"DEVICES_TO_DISABLE_ON_STARTUP or DEVICES_TO_ENABLE_ON_STARTUP "`
                                 `"is configured and $su is not masked "`
-                                `"--> Invoke 'systemctl mask $su' to ensure the full functionality of TLP." "err"
+                                `"--> Run 'systemctl mask $su' to ensure the full functionality of TLP." "err"
                     echo_message ""
                 fi
                 rc=1
@@ -746,7 +755,7 @@ read_config () { # read all config files and write temporary runconf file
 
     if [ $rc -ne 0 ]; then
         case $rc in
-            5) cecho "Error: cannot read user configuration from $CONF_USR or $CONF_OLD." 1>&2 ;;
+            5) cecho "Error: cannot read user configuration from $CONF_USR." 1>&2 ;;
             6) cecho "Error: cannot read default configuration from $CONF_DEF." 1>&2 ;;
             7) cecho "Error: cannot write runtime configuration to $_conf_tmp." 1>&2 ;;
         esac
@@ -1090,7 +1099,7 @@ get_manual_mode () { # get manual profile
         else
             # cannot read mode file - possible cause:
             #   tlp-stat -s is running without root privilege and the file is not world readable
-            #   because tlp ac/bat is invoked with sudo when creating the file and thereby a
+            #   because tlp ac/bat is run with sudo when creating the file and thereby a
             #   restrictive umask applies; see https://github.com/linrunner/TLP/issues/702
             # -> manual mode is active but operation mode cannot be determined
             _manual_mode=$MPM_UNKNOWN

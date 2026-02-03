@@ -310,11 +310,11 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
     echo "+++ System Info"
     vendor="$(read_dmi sys_vendor)" && printf "System         = %s\n" "$vendor $model"
     bios="$(read_dmi bios_version) $(read_dmi bios_vendor)" && printf "BIOS           = %s\n" "$bios"
-    ecfw="$(read_dmi ec_firmware_release)" && printf "EC Firmware    = %s\n" "$ecfw"
+    ecfw="$(read_dmi ec_firmware_release)" && printf "EC firmware    = %s\n" "$ecfw"
 
     # --- release & kernel info
-    printf "OS Release     = "
-    if ! sed -rn 's/PRETTY_NAME="(.*)"/\1/p' $OSRELEASE 2> /dev/null; then
+    printf "OS release     = "
+    if ! sed -rn "s/PRETTY_NAME=[\"'](.*)[\"']/\1/p" $OSRELEASE 2> /dev/null; then
         echo "unknown"
     fi
     echo "Kernel         = $(uname -r -m -v)"
@@ -1045,7 +1045,7 @@ if [ "$show_bat" = "1" ] || [ "$show_system" = "1" ] || [ "$show_all" = "1" ]; t
     if [ "$show_system" = "1" ] || [ "$show_all" = "1" ]; then
         if check_ppd_running; then
             if check_systemd; then
-                reout="${reout}Uninstall power-profiles-daemon or invoke 'systemctl mask $PPD_SERVICE' to ensure the full functionality of TLP\n"
+                reout="${reout}Uninstall power-profiles-daemon or run 'systemctl mask $PPD_SERVICE' to ensure the full functionality of TLP\n"
             else
                 reout="${reout}Uninstall power-profiles-daemon to ensure the full functionality of TLP\n"
             fi

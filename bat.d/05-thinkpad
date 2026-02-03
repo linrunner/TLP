@@ -1102,7 +1102,7 @@ batdrv_show_battery_data () {
         # --- show basic data
         case $_bm_read in
             natacpi) # use ACPI data
-                print_bat_make
+                print_bat_make "$verbose"
                 print_bat_cycle_count "$_bd_read/cycle_count"
 
                 if is_coreboot && [ -f "$_bd_read/charge_full" ]; then
@@ -1127,15 +1127,16 @@ batdrv_show_battery_data () {
 
                 print_bat_state "$_bd_read/status"
                 printf "\n"
-                if [ "$verbose" -eq 1 ]; then
-                    print_bat_voltages
-                    printf "\n"
-                fi
+
+                print_bat_voltages "$verbose"
                 ;; # natacpi
 
             tpsmapi) # ThinkPad with active tp-smapi
                 printparm "%-59s = ##%s##" "$_bd_readsm/manufacturer"
                 printparm "%-59s = ##%s##" "$_bd_readsm/model"
+                if [ "$verbose" = "1" ]; then
+                    printparm "%-59s = ##%s##" "$_bd_readsm/serial" "" "" 1
+                fi
                 printparm "%-59s = ##%s##" "$_bd_readsm/manufacture_date"
                 printparm "%-59s = ##%s##" "$_bd_readsm/first_use_date"
                 printparm "%-59s = ##%6d##" "$_bd_readsm/cycle_count"

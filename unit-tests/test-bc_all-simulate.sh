@@ -9,14 +9,16 @@ spath="${0%/*}"
     exit 70
 }
 cache_root_cred
+set_threshold_trap
 start_report
 
-export VWRITE_SLEEP=2
 run_clitest "$spath/charge-thresholds_simulate1"
 run_clitest "$spath/charge-thresholds_simulate2"
 
 "$spath/test-bc_cros-ec-all-simulate.sh"
 "$spath/test-bc_dell-simulate.sh"
+"$spath/test-bc_lenovo-simulate.sh"
 "$spath/test-bc_tuxedo-simulate.sh"
 
 print_report
+reset_threshold_trap

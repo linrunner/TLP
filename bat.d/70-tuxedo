@@ -639,20 +639,23 @@ batdrv_show_battery_data () {
 
         printf "+++ Battery Status: %s\n" "$bat"
 
-        print_bat_make
+        print_bat_make "$verbose"
         print_bat_cycle_count "$_bd_read/cycle_count"
         print_bat_energy
         print_bat_state "$_bd_read/status"
         printf "\n"
-        if [ "$verbose" -eq 1 ]; then
-            print_bat_voltages
-            printf "\n"
-        fi
+        print_bat_voltages "$verbose"
 
         # --- show battery features: thresholds
-        printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_start_threshold" "not available"
-        printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_end_threshold" "not available"
-        printparm "%-59s = ##%6s##" "$_bd_read/charge_type" "not available"
+        if [ "$X_THRESH_SIMULATE_READERR" != "1" ]; then
+            printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_start_threshold" "not available"
+            printparm "%-59s = ##%6d## [%%]" "$_bd_read/charge_control_end_threshold" "not available"
+            printparm "%-59s = ##%6s##" "$_bd_read/charge_type" "not available"
+        else
+            printf "%-59s = %s [%%]\n" "$_bd_read/charge_control_start_threshold" "(not available)"
+            printf "%-59s = %s [%%]\n" "$_bd_read/charge_control_end_threshold" "(not available)"
+            printf "%-59s = %s\n" "$_bd_read/charge_type" "(not available)"
+        fi
         printf "\n"
 
         # --- show charge level (SOC) and capacity

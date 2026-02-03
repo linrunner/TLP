@@ -1,0 +1,50 @@
+#!/usr/bin/env clitest
+# Test services check
+# Requirements:
+# * installed: systemd, power-profiles-daemon
+# * RESTORE_DEVICE_STATE_ON_STARTUP, DEVICES_TO_DISABLE_ON_STARTUP, DEVICES_TO_ENABLE_ON_STARTUP not configured
+# Copyright (c) 2026 Thomas Koch <linrunner at gmx.net>.
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+$ # --- tlp.service
+$ # prepare
+$ sudo systemctl -q disable tlp.service
+$ # test
+$ sudo tlp start > /dev/null
+Error: TLP's power saving will not apply on boot because tlp.service is not enabled --> Run 'systemctl enable tlp.service' to ensure the full functionality of TLP.
+
+$ sudo tlp-stat -s > /dev/null
+Error: TLP's power saving will not apply on boot because tlp.service is not enabled --> Run 'systemctl enable tlp.service' to ensure the full functionality of TLP.
+
+$ # restore
+$ sudo systemctl -q enable tlp.service
+$ #
+$ # --- systemd-rfkill.service/.socket
+$ # prepare
+$ sudo systemctl -q unmask systemd-rfkill.service
+$ sudo systemctl -q unmask systemd-rfkill.socket
+$ # test
+$ sudo tlp start -- RESTORE_DEVICE_STATE_ON_STARTUP=1 > /dev/null
+Warning: TLP's radio device switching on boot may not work as expected because RESTORE_DEVICE_STATE_ON_STARTUP=1 is configured and systemd-rfkill.service is not masked --> Run 'systemctl mask systemd-rfkill.service' to ensure the full functionality of TLP.
+
+Warning: TLP's radio device switching on boot may not work as expected because RESTORE_DEVICE_STATE_ON_STARTUP=1 is configured and systemd-rfkill.socket is not masked --> Run 'systemctl mask systemd-rfkill.socket' to ensure the full functionality of TLP.
+
+$ sudo tlp-stat -s -- RESTORE_DEVICE_STATE_ON_STARTUP=1 > /dev/null
+Warning: TLP's radio device switching on boot may not work as expected because RESTORE_DEVICE_STATE_ON_STARTUP=1 is configured and systemd-rfkill.service is not masked --> Run 'systemctl mask systemd-rfkill.service' to ensure the full functionality of TLP.
+
+Warning: TLP's radio device switching on boot may not work as expected because RESTORE_DEVICE_STATE_ON_STARTUP=1 is configured and systemd-rfkill.socket is not masked --> Run 'systemctl mask systemd-rfkill.socket' to ensure the full functionality of TLP.
+
+$ sudo tlp-stat -s -- DEVICES_TO_ENABLE_ON_STARTUP="dummy" > /dev/null
+Warning: TLP's radio device switching on boot may not work as expected because DEVICES_TO_DISABLE_ON_STARTUP or DEVICES_TO_ENABLE_ON_STARTUP is configured and systemd-rfkill.service is not masked --> Run 'systemctl mask systemd-rfkill.service' to ensure the full functionality of TLP.
+
+Warning: TLP's radio device switching on boot may not work as expected because DEVICES_TO_DISABLE_ON_STARTUP or DEVICES_TO_ENABLE_ON_STARTUP is configured and systemd-rfkill.socket is not masked --> Run 'systemctl mask systemd-rfkill.socket' to ensure the full functionality of TLP.
+
+$ sudo tlp-stat -s -- DEVICES_TO_DISABLE_ON_STARTUP="dummy" > /dev/null
+Warning: TLP's radio device switching on boot may not work as expected because DEVICES_TO_DISABLE_ON_STARTUP or DEVICES_TO_ENABLE_ON_STARTUP is configured and systemd-rfkill.service is not masked --> Run 'systemctl mask systemd-rfkill.service' to ensure the full functionality of TLP.
+
+Warning: TLP's radio device switching on boot may not work as expected because DEVICES_TO_DISABLE_ON_STARTUP or DEVICES_TO_ENABLE_ON_STARTUP is configured and systemd-rfkill.socket is not masked --> Run 'systemctl mask systemd-rfkill.socket' to ensure the full functionality of TLP.
+
+$ # restore
+$ sudo systemctl -q mask systemd-rfkill.service
+$ sudo systemctl -q mask systemd-rfkill.socket
+$ #

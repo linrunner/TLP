@@ -14,6 +14,7 @@ start_report
 "$spath/test-cpufreq.sh"
 "$spath/test-gpufreq.sh"
 "$spath/test-rf-switch.sh"
+"$spath/test-service-warnings.sh"
 
 # shellcheck disable=SC2154
 TLP_TEST_REPORT="$_report_file" "$spath/test-tlpctl.py"

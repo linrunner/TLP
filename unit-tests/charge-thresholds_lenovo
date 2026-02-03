@@ -1,0 +1,80 @@
+#!/usr/bin/env clitest
+# Test charge thresholds for Lenovo laptops
+# Requirements:
+# * Hardware: Lenovo Laptop - Non-ThinkPad or ThinkBook series OR simulation
+# * Software: kernel module ideapad_laptop (Linux 6.17+)
+# Copyright (c) 2026 Thomas Koch <linrunner at gmx.net>.
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+$ # +++ Lenovo ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$ #
+$ # --- tlp start
+$ sudo tlp start -- ${xinc} "${bctoff}" START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
+$ sudo tlp start -- ${xinc} "${bctoff}" START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" 2>&1 | sed -r "s/(TLP started).*/\1/"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": not specified or invalid (must be 0 or 1). Battery skipped.
+TLP started
+$ sudo tlp start -- ${xinc} "${bctoff}" START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="1" 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
+$ sudo tlp start -- ${xinc} "${bcton}" NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="0" 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
+$ sudo tlp start -- ${xinc} "${bcton}" X_THRESH_SIMULATE_WRITEERR=1 START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
+Error: writing charge type failed.
+TLP started
+$ sudo tlp start -- ${xinc} "${bcton}" START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="0" 2>&1 | sed -r "s/(TLP started).*/\1/"
+TLP started
+$ # Test machine state (real hardware): threshold disabled
+$ #
+$ # --- tlp setcharge w/o arguments
+$ sudo tlp setcharge -- ${xinc} "${bctoff}" START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="24": not specified or invalid (must be 0 or 1). Aborted.
+$ sudo tlp setcharge -- ${xinc} "${bctoff}" START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="XYZZY"
+Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": not specified or invalid (must be 0 or 1). Aborted.
+$ sudo tlp setcharge -- ${xinc} "${bctoff}" START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1"
+Setting temporary charge type for battery BAT0:
+  charge type = Long_Life
+$ sudo tlp setcharge -- ${xinc} "${bcton}" START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1"
+Setting temporary charge type for battery BAT0:
+  charge type = Long_Life (no change)
+$ sudo tlp setcharge -- ${xinc} "${bcton}" START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="0"
+Setting temporary charge type for battery BAT0:
+  charge type = Standard
+$ # Test machine state (real hardware): threshold disabled
+$ #
+$ sudo tlp setcharge -- ${xinc} "${bctoff}" X_THRESH_SIMULATE_WRITEERR=1 START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1"
+Setting temporary charge type for battery BAT0:
+  charge type = Long_Life (Error: write failed)
+$ sudo tlp setcharge -- ${xinc} "${bctoff}" NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: there is no hardware driver support for charge thresholds.
+$ #
+$ # --- tlp setcharge w/ arguments, tlp-stat
+$ sudo tlp setcharge 42 24 -- ${xinc} "${bctoff}"
+Error: charge type (24) for battery BAT0 is not specified or invalid (must be 0 or 1). Aborted.
+$ sudo tlp setcharge ABCDE XYZZY -- ${xinc} "${bctoff}"
+Error: charge type (XYZZY) for battery BAT0 is not specified or invalid (must be 0 or 1). Aborted.
+$ sudo tlp setcharge 42 1 -- ${xinc} "${bctoff}" X_THRESH_SIMULATE_WRITEERR=1
+Setting temporary charge type for battery BAT0:
+  charge type = Long_Life (Error: write failed)
+$ sudo tlp setcharge 42 1 -- ${xinc} "${bctoff}"
+Setting temporary charge type for battery BAT0:
+  charge type = Long_Life
+$ sudo tlp setcharge 42 1 -- ${xinc} "${bcton}"
+Setting temporary charge type for battery BAT0:
+  charge type = Long_Life (no change)
+$ sudo tlp-stat -b -- ${xinc} "${bcton}" | grep "charge_types"
+/sys/class/power_supply/BAT0/charge_types                   = Standard [Long_Life]
+$ sudo tlp setcharge DEF DEF -- ${xinc} "${bcton}"
+Setting temporary charge type for battery BAT0:
+  charge type = Standard
+$ sudo tlp setcharge DEF DEF -- ${xinc} "${bctoff}"
+Setting temporary charge type for battery BAT0:
+  charge type = Standard (no change)
+$ sudo tlp-stat -b -- ${xinc} "${bctoff}" | grep "charge_types"
+/sys/class/power_supply/BAT0/charge_types                   = [Standard] Long_Life
+$ # Test machine state (real hardware): threshold disabled
+$ #
+$ sudo tlp setcharge 42 24 BAT2 -- ${xinc} "${bctoff}"
+Error: battery BAT2 not present.
+$ sudo tlp setcharge BAT2 -- ${xinc} "${bctoff}"
+Error: battery BAT2 not present.
+$ #

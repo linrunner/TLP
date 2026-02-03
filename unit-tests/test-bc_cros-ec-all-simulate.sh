@@ -11,6 +11,7 @@ spath="${0%/*}"
 }
 
 cache_root_cred
+set_threshold_trap
 start_report
 
 if bat_present BAT0; then
@@ -28,7 +29,6 @@ else
     exit 1
 fi
 
-export VWRITE_SLEEP=2
 export xinc="X_BAT_PLUGIN_SIMULATE=cros-ec X_BAT_CROSCC_SIMULATE_ECVER=2"
 sudo tlp setcharge ${bata} 35 100 > /dev/null 2>&1 # preset start threshold for simulation
 "$spath/test-bc_cros-ec-v2.sh" "(cros_charge-control)"
@@ -41,7 +41,8 @@ export xinc="X_BAT_PLUGIN_SIMULATE=cros-ec"
 "$spath/test-bc_cros-ec-v3.sh"
 
 # reset test machine to configured thresholds
-sleep $VWRITE_SLEEP
+sleep "$VWRITE_SLEEP"
 sudo tlp setcharge ${bata}  > /dev/null 2>&1 # reset test machine to configured thresholds
 
 print_report
+reset_threshold_trap

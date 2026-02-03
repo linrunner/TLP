@@ -33,6 +33,9 @@ readonly MPM_OFF=255
 # statefile
 readonly LASTPWR='/run/tlp/last_pwr'
 
+# workaround: mitigate void threshold writes
+export VWRITE_SLEEP=2
+
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -209,6 +212,35 @@ run_clitest () {
         clitest --color always "$1" 1>&2
     fi
     printf "\n" 1>&2
+}
+
+threshold_trap () {
+    # trap: called from bc tests
+    # Reset test machine to configured thresholds
+    printf " Test cancelled. Restoring configured thresholds ...\n" 1>&2
+    if cat /sys/class/power_supply/BAT0/charge_control_end_threshold > /dev/null 2>&1; then
+        sleep $VWRITE_SLEEP
+        sudo tlp setcharge BAT0  > /dev/null 2>&1
+    fi
+    if cat /sys/class/power_supply/BAT1/charge_control_end_threshold > /dev/null 2>&1; then
+        sleep $VWRITE_SLEEP
+        sudo tlp setcharge BAT1  > /dev/null 2>&1
+    fi
+    exit 1
+}
+
+set_threshold_trap () {
+    # enable ^C hook
+    # bc test scripts are nested, do not enable multiple hook instances
+    if [ -z "$_nested_trap" ]; then
+        trap threshold_trap INT
+        export _nested_trap=1
+    fi
+}
+
+reset_threshold_trap () {
+    # disable ^C hook
+    trap - INT
 }
 
 # --- Messages, Reports

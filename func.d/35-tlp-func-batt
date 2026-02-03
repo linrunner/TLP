@@ -9,11 +9,14 @@
 # ----------------------------------------------------------------------------
 # Constants
 
+readonly BCT_ON=Long_Life
+readonly BCT_OFF=Standard
+
 # shellcheck disable=SC2034
 readonly ACPIBATDIR=/sys/class/power_supply
 
 # ----------------------------------------------------------------------------
-# Functions
+# Operational functions
 
 init_batteries_thresholds () {
     # apply thresholds from configuration to all batteries
@@ -274,6 +277,34 @@ discharge_battery () {
 
     return $rc
 }
+
+# ----------------------------------------------------------------------------
+# Helper functions
+
+bat_bct2bool () {
+    # convert battery charge type string to boolean
+    # $1: charge type string
+    case "$1" in
+        "$BCT_ON")  printf "1" ;;
+        "$BCT_OFF") printf "0" ;;
+        *) return 1
+    esac
+
+    return 0
+}
+
+bat_bool2bct () {
+    # convert boolean to battery charge type string
+    # $1: boolean
+    case "$1" in
+        1) printf "%s" "$BCT_ON" ;;
+        0) printf "%s" "$BCT_OFF" ;;
+        *) return 1
+    esac
+
+    return 0
+}
+
 
 soc_gt_stop_notice () {
     # output notice to discharge on battery power if SOC is above stop threshold

@@ -1,5 +1,8 @@
 #!/bin/sh
-# lg - Battery Plugin for LG laptops w/ lg_laptop driver
+# lg - Battery Plugin for LG laptops
+#
+# Requires the lg_laptop module as of Linux 5.18 providing the following sysfs node:
+# * /sys/class/power_supply/{CMB[01],BAT[01]}/charge_control_end_threshold: 80, 100
 #
 # Copyright (c) 2026 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
@@ -117,12 +120,6 @@ batdrv_init () {
             fi
         fi
     done
-
-    if  [ $_natacpi -eq 128 ]; then
-        # charge_control_end_threshold does not exist -> probe lg-legacy next (kernel 5.17 and older)
-        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_natacpi: batteries=$_batteries; natacpi=$_natacpi"
-        return 1
-    fi
 
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
@@ -494,15 +491,12 @@ batdrv_show_battery_data () {
 
         printf "+++ Battery Status: %s\n" "$bat"
 
-        print_bat_make
+        print_bat_make "$verbose"
         print_bat_cycle_count "$_bd_read/cycle_count"
         print_bat_energy
         print_bat_state "$_bd_read/status"
         printf "\n"
-        if [ "$verbose" -eq 1 ]; then
-            print_bat_voltages
-            printf "\n"
-        fi
+        print_bat_voltages "$verbose"
 
         # --- show battery features: thresholds
         if [ "$_bm_thresh" = "natacpi" ]; then

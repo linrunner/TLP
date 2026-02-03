@@ -69,20 +69,25 @@ check_ac_quirk () { # check for hardware known not to expose AC device
 
 printparm () {
     # formatted output of sysfile - general
-    # $1: format
+    # $1: printf format string
     # $2: sysfile
     # $3: n/a message, "_"=no output
-    # $4: cutoff
+    # $4: cutoff i.e. string to be removed from the end
+    # $5: 1=trim leading and trailing whitespace
     local format="$1"
     local sysf="$2"
     local namsg="$3"
     local cutoff="$4"
+    local trim="${5:-0}"
     local val=""
 
     if val=$(read_sysf "$sysf"); then
         # sysfile read successful
+        if [ "$trim" = "1" ]; then
+            val="$(trim "$val")"
+        fi
         if [ -n "$cutoff" ]; then
-            val=${val%"$cutoff"}
+            val="${val%"$cutoff"}"
         fi
     fi
 
@@ -91,21 +96,21 @@ printparm () {
         if [ -n "$namsg" ]; then
             if [ "$namsg" != "_" ]; then
                 # use specific n/a text
-                format=$(echo "$format" | sed -r -e "s/##(.*)##/($namsg)/" -e "s/\[.*\]//")
+                format="$(echo "$format" | sed -r -e "s/##(.*)##/($namsg)/" -e "s/\[.*\]//")"
             else
                 # _ = skip
                 sysf=""
             fi
         else
             # empty n/a text, use default text
-            format=$(echo "$format" | sed -r -e "s/##(.*)##/(not available)/" -e "s/\[.*\]//")
+            format="$(echo "$format" | sed -r -e "s/##(.*)##/(not available)/" -e "s/\[.*\]//")"
         fi
         # output n/a text or skip
         # shellcheck disable=SC2059
         [ -n "$sysf" ] && printf "$format\n" "$sysf"
     else
         # non empty value: strip delimiters from format str
-        format=$(echo "$format" | sed -r "s/##(.*)##/\1/")
+        format="$(echo "$format" | sed -r "s/##(.*)##/\1/")"
         # shellcheck disable=SC2059
         printf "$format\n" "$sysf" "$val"
     fi
@@ -701,7 +706,7 @@ show_gpu_data () {
                     printf "+++ Intel Graphics\n"
                     hdr="i915"
                 fi
-                printf "%-44s = %s\n\n" "$gpu/device/driver" "$driver"
+                printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
 
                 # shellcheck disable=SC2154
                 printparm_i915 "$gpu/power/rc6_enable" "$_intel_gpu_parm/enable_rc6" "$_intel_gpu_parm/i915_enable_rc6"
@@ -734,7 +739,8 @@ show_gpu_data () {
                     printf "+++ AMD Radeon Graphics\n"
                     hdr="amdgpu"
                 fi
-                printf "%-65s = %s\n\n" "$gpu/device/driver" "$driver"
+                printf "%-65s = %s\n" "$gpu/device/driver" "$driver"
+                printparm "%-65s = ##%s##" "$gpu/device/power_state"
 
                 lc=0
                 if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
@@ -767,7 +773,8 @@ show_gpu_data () {
                     printf "+++ AMD Radeon Graphics\n"
                     hdr="radeon"
                 fi
-                printf "%-65s = %s\n\n" "$gpu/device/driver" "$driver"
+                printf "%-65s = %s\n" "$gpu/device/driver" "$driver"
+                printparm "%-65s = ##%s##" "$gpu/device/power_state"
 
                 if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
                     # AMD hardware
@@ -788,7 +795,9 @@ show_gpu_data () {
                     printf "+++ Nvidia Graphics\n"
                     hdr="$driver"
                 fi
-                printf "%-44s = %s\n\n" "$gpu/device/driver" "$driver"
+                printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                printparm "%-44s = ##%s##" "$gpu/device/power_state"
+
                 ;;
 
             *) # Other GPU
@@ -796,7 +805,8 @@ show_gpu_data () {
                     printf "+++ Other Graphics\n"
                     hdr="$driver"
                 fi
-                printf "%-44s = %s\n\n" "$gpu/device/driver" "$driver"
+                printf "%-44s = %s\n" "$gpu/device/driver" "$driver"
+                printparm "%-44s = ##%s##" "$gpu/device/power_state"
                 ;;
         esac
     done
@@ -840,12 +850,18 @@ print_bat_methods_per_driver () {
 
 print_bat_make () {
     # print battery manufacturer and mode name
-    # global param: $_bd_rea
-    # prerequisite: batdrv_init(), batdrv_select_battery
+    # $1: verbose
+    # global param: $_bd_read
+    # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local verbose="${1:-0}"
 
     # shellcheck disable=SC2154
     printparm "%-59s = ##%s##" "$_bd_read/manufacturer"
     printparm "%-59s = ##%s##" "$_bd_read/model_name"
+    if [ "$verbose" = "1" ]; then
+       printparm "%-59s = ##%s##" "$_bd_read/serial_number" "" "" 1
+    fi
 
     return 0
 }
@@ -855,6 +871,7 @@ print_bat_state () {
     # an explanation when a threshold inhibits charging
     # $1: sysfile
     # global params: $_bm_thresh, $_syspwr
+
     local sysf val
 
     # check if bat state sysfile exists
@@ -882,6 +899,7 @@ print_bat_state () {
 print_bat_cycle_count () {
     # print battery cycle count, explain special case of 0
     # $1: cycle count sysfile
+
     local cc
 
     cc="$(read_sysf "$1")"
@@ -903,7 +921,7 @@ print_bat_energy () {
     #   $_bat_en    - current charge level (mWh or mAh)
     #   $_bat_efsum - accumulated fully charged level
     #   $_bat_ensum - accumulated current charge level
-    # prerequisite: batdrv_init(), batdrv_select_battery
+    # prerequisite: batdrv_init(), batdrv_select_battery()
 
     local ed ef en pn pwr volt
 
@@ -1007,11 +1025,17 @@ print_bat_level_total () {
 
 print_bat_voltages () {
     # print battery voltages
+    # $1: verbose
     # global param: $_bd_read
-    # prerequisite: batdrv_init(), batdrv_select_battery
+    # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_min_design" "" 000
-    printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_now" "" 000
+    local verbose="${1:-0}"
+
+    if [ "$verbose" = "1" ]; then
+        printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_min_design" "" 000
+        printparm "%-59s = ##%6s## [mV]" "$_bd_read/voltage_now" "" 000
+        printf "\n"
+    fi
 
     return 0
 }
