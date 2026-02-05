@@ -376,8 +376,9 @@
 # INTEL_GPU_POWER_PROFILE_ON_SAV=power_saving
 
 # Set the min/max/turbo frequency for the Intel GPU.
-# Possible values depend on your hardware. For available frequencies see
-# the output of tlp-stat -g.
+# Parameters actually used depend on the driver:
+# - i915 driver supports min, max and turbo(boost) frequency.
+# - xe driver supports min and max frequency only.
 # Default: <none>
 
 #INTEL_GPU_MIN_FREQ_ON_AC=0

@@ -130,7 +130,7 @@ set_intel_gpu_min_max_boost_freq () {
 
     local new_min new_max new_boost
     local old_min old_max old_boost gpu_min gpu_max
-    local driver suffix
+    local gtfd gtnum suffix
 
     case "$1" in
         "$PP_PRF")
@@ -165,7 +165,7 @@ set_intel_gpu_min_max_boost_freq () {
         get_gpu_driver_parms "$gpu"
 
         case "$_gpu_driver" in
-            i915*) # Intel GPU found
+            i915*) # Intel GPU
                 # shellcheck disable=SC2034
                 if old_min=$(read_sysf "$_gpu_freqs/$IGPU_MIN_FREQ") \
                     && old_max=$(read_sysf "$_gpu_freqs/$IGPU_MAX_FREQ") \
@@ -213,6 +213,50 @@ set_intel_gpu_min_max_boost_freq () {
                     echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_available: gpu=$gpu"
                 fi
                 ;; # i915
+
+            xe)  # Intel XE GPU
+                # iterate GT instances to cover multi-tile devices
+                gtnum=0
+                for gtfd in $_gpu_freqs; do
+                    [ -d "$gtfd" ] || break
+                    gtnum=$((gtnum + 1))
+
+                    # shellcheck disable=SC2034
+                    if [ "$gtnum" -eq 1 ] \
+                        && old_min=$(read_sysf "$gtfd/$IGPU_XE_MIN_FREQ") \
+                        && old_max=$(read_sysf "$gtfd/$IGPU_XE_MAX_FREQ") \
+                        && gpu_min=$(read_sysf "$gtfd/$IGPU_XE_RPN_FREQ") \
+                        && gpu_max=$(read_sysf "$gtfd/$IGPU_XE_RP0_FREQ"); then
+                        # validate parameter on the first GT only
+                        if ! is_uint "$new_min" 5 || [ "$new_min" -lt "$gpu_min" ] || [ "$new_min" -gt "$gpu_max" ]; then
+                            echo_message "Error in configuration at INTEL_GPU_MIN_FREQ_ON_${suffix}=\"${new_min}\": frequency invalid or out of range (see 'tlp-stat -g')."
+                            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min hw_max=$gpu_max; rc=1"
+                            return 1
+                        elif ! is_uint "$new_max" 5 || [ "$new_max" -lt "$gpu_min" ] || [ "$new_max" -gt "$gpu_max" ]; then
+                            echo_message "Error in configuration at INTEL_GPU_MAX_FREQ_ON_${suffix}=\"${new_max}\": frequency invalid or out of range (see 'tlp-stat -g')."
+                            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min gpu_max=$gpu_max; rc=1"
+                            return 1
+                        elif [ "$new_min" -gt "$new_max" ]; then
+                            echo_message "Error in configuration: INTEL_GPU_MIN_FREQ_ON_${suffix} > INTEL_GPU_MAX_FREQ_ON_${suffix}."
+                            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min_gt_max: gpu=$gpu min=$new_min max=$new_max; rc=1"
+                            return 1
+                        fi
+                    fi # validate
+
+                    # all parameters valid --> write min, max in proper sequence (for all GTs)
+                    if [ "$new_min" -gt "$old_max" ]; then
+                        write_sysf "$new_max" "$gtfd/$IGPU_XE_MAX_FREQ"
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$?"
+                        write_sysf "$new_min" "$gtfd/$IGPU_XE_MIN_FREQ"
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$?"
+                    else
+                        write_sysf "$new_min" "$gtfd/$IGPU_XE_MIN_FREQ"
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$?"
+                        write_sysf "$new_max" "$gtfd/$IGPU_XE_MAX_FREQ"
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$?"
+                    fi
+                done
+                ;; # xe
         esac
     done # card
 
@@ -229,7 +273,7 @@ set_amdgpu_profile () {
     local sdone=0 # 1=gpu present
 
     for gpu in "${BASE_DRMD}"/card?; do
-        [ -d "$gpu" ] || break        
+        [ -d "$gpu" ] || break
         get_gpu_driver_parms "$gpu"
 
         case "$_gpu_driver" in
