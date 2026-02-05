@@ -753,7 +753,7 @@ show_gpu_data () {
                     fi
                     printparm "%-60s = ##%6d## [MHz] (GPU min)" "$gtfd/$IGPU_XE_RPN_FREQ"
                     printparm "%-60s = ##%6d## [MHz] (GPU efficient)" "$gtfd/rpe_freq"
-                    printparm "%-60s = ##%6d## [MHz] (GPU max)" "$gtfd/$IGPU_XE_MIN_FREQ"
+                    printparm "%-60s = ##%6d## [MHz] (GPU max)" "$gtfd/$IGPU_XE_RP0_FREQ"
                     if [ "$verbose" = "1" ]; then
                         printparm "%-60s = ##%6d##" "$gtfd/rpa_freq"
                     fi
