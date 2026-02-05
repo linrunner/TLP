@@ -38,6 +38,7 @@ apply_common_settings () { # apply settings common to all modes
     set_disk_spindown_timeout "$1"
     set_disk_iosched
     set_pcie_aspm "$1"
+    set_intel_gpu_power_profile "$1"
     set_intel_gpu_min_max_boost_freq "$1"
     set_amdgpu_profile "$1"
     set_abm_level "$1"

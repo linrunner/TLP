@@ -71,6 +71,58 @@ get_gpu_driver_parms () {
     return 0
 }
 
+# --- Intel GPU
+
+set_intel_gpu_power_profile () {
+    # set gpu frequency limits
+    # $1: PP_PRF, PP_BAL, PP_SAV
+    # rc: 0=ok/1=parameter error
+
+    local profile ec gtfd gtnum rc
+    local gdone=0 # 1=gpu present
+
+    case "$1" in
+        "$PP_PRF") profile="${INTEL_GPU_POWER_PROFILE_ON_AC:-}" ;;
+        "$PP_BAL") profile="${INTEL_GPU_POWER_PROFILE_ON_BAT:-}" ;;
+        "$PP_SAV") profile="${INTEL_GPU_POWER_PROFILE_ON_SAV:-$INTEL_GPU_POWER_PROFILE_ON_BAT}" ;;
+    esac
+
+    if [ -z "$profile" ]; then
+        echo_debug "pm" "set_intel_gpu_power_profile($1).not_configured"
+        return 0
+    fi
+
+    for gpu in "${BASE_DRMD}"/card?; do
+        [ -d "$gpu" ] || break
+        get_gpu_driver_parms "$gpu"
+
+        case "$_gpu_driver" in
+            xe) # Intel XE GPU
+                # iterate GT instances to cover multi-tile devices
+                gtnum=0
+                ec=0
+                for gtfd in $_gpu_freqs; do
+                    if [ -f "$gtfd/power_profile" ]; then
+                        gtnum=$((gtnum + 1))
+                        if ! write_sysf "$profile" "$_gpu_freqs/power_profile"; then
+                            echo_debug "pm" "set_intel_gpu_power_profile($1).write_error: gt=$gtfd profile=$profile; rc=$?"
+                            ec=$((ec + 1))
+                        fi
+                        gdone=1
+                    fi
+                done
+                echo_debug "pm" "set_intel_gpu_power_profile($1): gpu=$gpu profile=$profile; gtnum=$gtnum; ec=$ec"
+                ;;
+        esac
+    done # card
+
+    if [ $gdone -eq 0 ]; then
+        echo_debug "pm" "set_intel_gpu_power_profile($1).no_gpu"
+    fi
+
+    return 0
+}
+
 set_intel_gpu_min_max_boost_freq () {
     # set gpu frequency limits
     # $1: PP_PRF, PP_BAL, PP_SAV
