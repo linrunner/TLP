@@ -75,29 +75,30 @@ set_intel_gpu_min_max_boost_freq () {
     # set gpu frequency limits
     # $1: PP_PRF, PP_BAL, PP_SAV
     # rc: 0=ok/1=parameter error
+
     local new_min new_max new_boost
     local old_min old_max old_boost gpu_min gpu_max
     local driver suffix
 
     case "$1" in
         "$PP_PRF")
-            new_min=${INTEL_GPU_MIN_FREQ_ON_AC:-}
-            new_max=${INTEL_GPU_MAX_FREQ_ON_AC:-}
-            new_boost=${INTEL_GPU_BOOST_FREQ_ON_AC:-}
+            new_min="${INTEL_GPU_MIN_FREQ_ON_AC:-}"
+            new_max="${INTEL_GPU_MAX_FREQ_ON_AC:-}"
+            new_boost="${INTEL_GPU_BOOST_FREQ_ON_AC:-}"
             suffix="AC"
             ;;
 
         "$PP_BAL")
-            new_min=${INTEL_GPU_MIN_FREQ_ON_BAT:-}
-            new_max=${INTEL_GPU_MAX_FREQ_ON_BAT:-}
-            new_boost=${INTEL_GPU_BOOST_FREQ_ON_BAT:-}
+            new_min="${INTEL_GPU_MIN_FREQ_ON_BAT:-}"
+            new_max="${INTEL_GPU_MAX_FREQ_ON_BAT:-}"
+            new_boost="${INTEL_GPU_BOOST_FREQ_ON_BAT:-}"
             suffix="BAT"
             ;;
 
         "$PP_SAV")
-            new_min=${INTEL_GPU_MIN_FREQ_ON_SAV:-INTEL_GPU_MIN_FREQ_ON_BAT}
-            new_max=${INTEL_GPU_MAX_FREQ_ON_SAV:-INTEL_GPU_MAX_FREQ_ON_BAT}
-            new_boost=${INTEL_GPU_BOOST_FREQ_ON_SAV:-INTEL_GPU_BOOST_FREQ_ON_BAT}
+            new_min="${INTEL_GPU_MIN_FREQ_ON_SAV:-$INTEL_GPU_MIN_FREQ_ON_BAT}"
+            new_max="${INTEL_GPU_MAX_FREQ_ON_SAV:-$INTEL_GPU_MAX_FREQ_ON_BAT}"
+            new_boost="${INTEL_GPU_BOOST_FREQ_ON_SAV:-$INTEL_GPU_BOOST_FREQ_ON_BAT}"
             suffix="SAV"
             ;;
     esac
@@ -108,18 +109,17 @@ set_intel_gpu_min_max_boost_freq () {
     fi
 
     for gpu in "${BASE_DRMD}"/card?; do
-        driver=$(readlink "${gpu}/device/driver")
-        driver=${driver##*/}
-        case "$driver" in
-            i915*) # Intel GPU found
-                get_intel_gpu_sysdirs "$gpu" "$driver"
+        [ -d "$gpu" ] || break
+        get_gpu_driver_parms "$gpu"
 
+        case "$_gpu_driver" in
+            i915*) # Intel GPU found
                 # shellcheck disable=SC2034
-                if old_min=$(read_sysf "$gpu/$IGPU_MIN_FREQ") \
-                    && old_max=$(read_sysf "$gpu/$IGPU_MAX_FREQ") \
-                    && old_boost=$(read_sysf "$gpu/$IGPU_BOOST_FREQ") \
-                    && gpu_min=$(read_sysf "$gpu/$IGPU_RPN_FREQ") \
-                    && gpu_max=$(read_sysf "$gpu/$IGPU_RP0_FREQ"); then
+                if old_min=$(read_sysf "$_gpu_freqs/$IGPU_MIN_FREQ") \
+                    && old_max=$(read_sysf "$_gpu_freqs/$IGPU_MAX_FREQ") \
+                    && old_boost=$(read_sysf "$_gpu_freqs/$IGPU_BOOST_FREQ") \
+                    && gpu_min=$(read_sysf "$_gpu_freqs/$IGPU_RPN_FREQ") \
+                    && gpu_max=$(read_sysf "$_gpu_freqs/$IGPU_RP0_FREQ"); then
                     # frequencies actually readable, check new ones against hardware limits and boundary conditions
                     if ! is_uint "$new_min" 5 || [ "$new_min" -lt "$gpu_min" ] || [ "$new_min" -gt "$gpu_max" ]; then
                         echo_message "Error in configuration at INTEL_GPU_MIN_FREQ_ON_${suffix}=\"${new_min}\": frequency invalid or out of range (see 'tlp-stat -g')."
@@ -145,23 +145,24 @@ set_intel_gpu_min_max_boost_freq () {
 
                     # all parameters valid --> write min, max in proper sequence
                     if [ "$new_min" -gt "$old_max" ]; then
-                        write_sysf "$new_max" "$gpu/$IGPU_MAX_FREQ"
+                        write_sysf "$new_max" "$_gpu_freqs/$IGPU_MAX_FREQ"
                         echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$?"
-                        write_sysf "$new_min" "$gpu/$IGPU_MIN_FREQ"
+                        write_sysf "$new_min" "$_gpu_freqs/$IGPU_MIN_FREQ"
                         echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$?"
                     else
-                        write_sysf "$new_min" "$gpu/$IGPU_MIN_FREQ"
+                        write_sysf "$new_min" "$_gpu_freqs/$IGPU_MIN_FREQ"
                         echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$?"
-                        write_sysf "$new_max" "$gpu/$IGPU_MAX_FREQ"
+                        write_sysf "$new_max" "$_gpu_freqs/$IGPU_MAX_FREQ"
                         echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$?"
                     fi
-                    write_sysf "$new_boost" "$gpu/$IGPU_BOOST_FREQ"
+                    write_sysf "$new_boost" "$_gpu_freqs/$IGPU_BOOST_FREQ"
                     echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: gpu=$gpu freq=$new_boost; rc=$?"
                 else
                     echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_available: gpu=$gpu"
                 fi
+                ;; # i915
         esac
-    done
+    done # card
 
     return 0
 }
@@ -172,20 +173,21 @@ set_amdgpu_profile () {
     # set amdgpu/radeon power profile
     # $1: PP_PRF, PP_BAL, PP_SAV
 
-    local driver gpu level pwr rc1 rc2
+    local gpu level pwr rc1 rc2
     local sdone=0 # 1=gpu present
 
     for gpu in "${BASE_DRMD}"/card?; do
-        driver=$(readlink "${gpu}/device/driver")
-        driver=${driver##*/}
-        case "$driver" in
+        [ -d "$gpu" ] || break        
+        get_gpu_driver_parms "$gpu"
+
+        case "$_gpu_driver" in
             amdgpu)
                 if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
                     # Use amdgpu dynamic power management method (DPM)
                     case "$1" in
-                        "$PP_PRF")           level="${RADEON_DPM_PERF_LEVEL_ON_AC:-}" ;;
-                        "$PP_BAL")           level="${RADEON_DPM_PERF_LEVEL_ON_BAT:-}" ;;
-                        "$PP_SAV")           level="${RADEON_DPM_PERF_LEVEL_ON_SAV:-$RADEON_DPM_PERF_LEVEL_ON_BAT}" ;;
+                        "$PP_PRF") level="${RADEON_DPM_PERF_LEVEL_ON_AC:-}" ;;
+                        "$PP_BAL") level="${RADEON_DPM_PERF_LEVEL_ON_BAT:-}" ;;
+                        "$PP_SAV") level="${RADEON_DPM_PERF_LEVEL_ON_SAV:-$RADEON_DPM_PERF_LEVEL_ON_BAT}" ;;
                     esac
 
                     if [ -z "$level" ]; then
@@ -246,13 +248,14 @@ set_abm_level () {
     # set amdgpu adaptive backlight modulation (ABM)
     # $1: PP_PRF, PP_BAL, PP_SAV
 
-    local card driver gpu level old_level pps rc
+    local card gpu level old_level pps rc
     local sdone=0 # 1=gpu present
 
     for gpu in "${BASE_DRMD}"/card?; do
-        driver=$(readlink "${gpu}/device/driver")
-        driver=${driver##*/}
-        case "$driver" in
+        [ -d "$gpu" ] || break
+        get_gpu_driver_parms "$gpu"
+
+        case "$_gpu_driver" in
             amdgpu)
                 card="${gpu##/*/}"
                 for pps in "$gpu/${card}-eDP"*; do
