@@ -58,6 +58,11 @@ wordinlist () { # test if word in list
     return 1 # no match
 }
 
+get_listitem () { # print the active list item, which is the one enclosed in []
+                  # $1: list
+    printf "%s" "$(echo "$1" | sed -r 's/.*\[([A-Za-z0-9_]+)\].*/\1/')"
+}
+
 test_root () {
     # test root privilege -- rc: 0=root, 1=not root
     [ "$(id -u)" = "0" ]
@@ -130,7 +135,33 @@ compare_sysf () {
     local sys_str
 
     if [ -f "$2" ]; then
-        sys_str=$(read_sysf "$2")
+        sys_str="$(read_sysf "$2")"
+        if [ "$sys_str" != "$cmp_str" ]; then
+            printf_msg "\n*** Deviation at %s: %s (act) != %s (exp)\n" "$2" "$sys_str" "$cmp_str"
+            return 1
+        fi
+    else
+        # file is missing
+        if [ -n "$cmp_str" ]; then
+            printf_msg "\n*** Deviation for %s: sysfile does not exist.\n" "$2"
+            return 2
+        fi
+    fi
+
+    return 0
+}
+
+compare_sysf_list () {
+    # Compare a string to the contents of a sysfile
+    # expression
+    # $1: string
+    # $2: file
+
+    local cmp_str="$1"
+    local sys_str
+
+    if [ -f "$2" ]; then
+        sys_str="$(get_listitem "$(read_sysf "$2")")"
         if [ "$sys_str" != "$cmp_str" ]; then
             printf_msg "\n*** Deviation at %s: %s (act) != %s (exp)\n" "$2" "$sys_str" "$cmp_str"
             return 1
