@@ -26,6 +26,8 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
       - OS Release: fix parsing of Gentoo's /etc/os-release with '' quoting
     - Use 'daemon' facility for logging and trace
     Graphics:
+    - Support Intel Xe graphics' SLPC power profile
+      (INTEL_GPU_POWER_PROFILE_ON_AC/BAT/SAV) and min/max frequencies
     - tlp-stat -g: show power_state for AMD and Nvidia GPUs
     Processor:
     - tlp-stat -p: section "+++ Platform profile" renamed to '+++ Platform"
@@ -38,8 +40,8 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     (CVE-2025-67859)
     - https://security.opensuse.org/2026/01/07/tlp-polkit-authentication-bypass.html
     - Version 1.8.0 and older are not affected
-    - Ensure that all processes that change the power profile or the daemon's log level
-      are authenticated, either by a desktop user session or as root
+    - Ensure that all processes that change the power profile or the daemon's
+      log level are authenticated, either by a desktop user session or as root
     - Limit the number of stacked profile holds (tlpctl launch) to 16
     - Make profile hold cookies unpredictable, to prevent unrelated users
       from releasing an active profile hold
