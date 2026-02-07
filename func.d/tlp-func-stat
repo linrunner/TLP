@@ -608,44 +608,41 @@ printparm_ahci () {
 # --- Graphics
 
 printparm_i915 () {
-    # formatted output of sysfile - i915 kernel module variant
-    # $*: sysfile alternatives
-    local sysf val
+    # formatted output of i915 parameters interpreting special values
+    # $1: sysfile
 
-    for sysf in "$@"; do
-        if val=$(read_sysf "$sysf"); then
-            # sysfile exists and is actually readable, output content
-            printf "%-44s = %2d " "$sysf" "$val"
-            # explain content
-            if [ "$val" = "-1" ]; then
-                printf "(use per-chip default)\n"
+    local sysf="$1" val
+
+    if val=$(read_sysf "$sysf"); then
+        # sysfile exists and is actually readable, output content
+        printf "%-44s = %2d " "$sysf" "$val"
+        # explain content
+        if [ "$val" = "-1" ]; then
+            printf "(use per-chip default)\n"
+        else
+            printf "("
+            if [ "${sysf##/*/}" = "enable_psr" ]; then
+                # enable_psr
+                case $val in
+                    0) printf "disabled" ;;
+                    1) printf "enabled" ;;
+                    2) printf "force link-standby mode" ;;
+                    3) printf "force link-off mode" ;;
+                    *) printf "unknown" ;;
+                esac
             else
-                printf "("
-                if [ "${sysf##/*/}" = "enable_psr" ]; then
-                    # enable_psr
-                    case $val in
-                        0) printf "disabled" ;;
-                        1) printf "enabled" ;;
-                        2) printf "force link-standby mode" ;;
-                        3) printf "force link-off mode" ;;
-                        *) printf "unknown" ;;
-                    esac
+                # other parms
+                if [ $((val & 1)) -ne 0 ]; then
+                    printf "enabled"
                 else
-                    # other parms
-                    if [ $((val & 1)) -ne 0 ]; then
-                        printf "enabled"
-                    else
-                        printf "disabled"
-                    fi
-                    [ $((val & 2)) -ne 0 ] && printf " + deep"
-                    [ $((val & 4)) -ne 0 ] && printf " + deepest"
+                    printf "disabled"
                 fi
-                printf ")\n"
             fi
-            # print first match only
-            break
+            printf ")\n"
         fi
-    done
+    else
+        printf "%-44s = (not available)\n" "$sysf"
+    fi
 
     return 0
 }
@@ -707,12 +704,12 @@ show_gpu_data () {
                 printf "%-44s = %s\n" "$gpu/device/driver" "$_gpu_driver"
 
                 # shellcheck disable=SC2154
-                printparm_i915 "$gpu/power/rc6_enable" "$_gpu_parm/enable_rc6" "$_gpu_parm/i915_enable_rc6"
+                printparm_i915 "$gpu/power/rc6_enable"
                 # shellcheck disable=SC2154
                 if sysout=$(grep '^FBC ' "$_gpu_dbg/i915_fbc_status" 2> /dev/null); then
                     printf "%-44s = %s\n" "$_gpu_dbg/i915_fbc_status" "$sysout"
                 else
-                    printparm_i915 "$_gpu_parm/enable_fbc" "$_gpu_parm/i915_enable_fbc"
+                    printparm_i915 "$_gpu_parm/enable_fbc"
                 fi
                 if sysout=$(grep '^PSR mode:' "$_gpu_dbg/i915_edp_psr_status" 2> /dev/null); then
                     printf "%-44s = %s\n" "$_gpu_dbg/i915_edp_psr_status" "$sysout"
