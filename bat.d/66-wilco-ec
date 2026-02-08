@@ -96,12 +96,8 @@ batdrv_init () {
     for bd in "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf "$bd/present")" = "1" ]; then
             # record detected batteries and directories
-            bs=${bd##/*/}
-            if [ -n "$_batteries" ]; then
-                _batteries="$_batteries $bs"
-            else
-                _batteries="$bs"
-            fi
+            bs="${bd##/*/}"
+            _batteries="${_batteries}${_batteries:+ }${bs}"
         fi
     done
 

@@ -213,12 +213,11 @@ get_ethifaces () { # get all eth devices -- retval: $_ethifaces
         if [ "$(read_sysf "$eic")" = "0x020000" ] \
             && [ ! -d "${eic%/class}/ieee80211" ]; then
 
-            ei=${eic%/device/class}; ei=${ei##*/}
-            _ethifaces="$_ethifaces $ei"
+            ei="${eic%/device/class}"; ei="${ei##*/}"
+            _ethifaces="${_ethifaces}${_ethifaces:+ }${ei}"
         fi
     done
 
-    _ethifaces="${_ethifaces# }"
     return 0
 }
 

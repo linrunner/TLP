@@ -171,12 +171,8 @@ batdrv_init () {
     for bd in "$ACPIBATDIR"/BAT[01]; do
         if [ "$(read_sysf "$bd/present")" = "1" ]; then
             # record detected batteries and directories
-            bs=${bd##/*/}
-            if [ -n "$_batteries" ]; then
-                _batteries="$_batteries $bs"
-            else
-                _batteries="$bs"
-            fi
+            bs="${bd##/*/}"
+            _batteries="${_batteries}${_batteries:+ }${bs}"
             # skip natacpi detection for 2nd and subsequent batteries
             [ $done -eq 1 ] && continue
 
@@ -1052,8 +1048,7 @@ batdrv_show_battery_data () {
     local fs=""
     [ "$_bm_thresh" = "natacpi" ] && fs="charge thresholds"
     if [ "$_bm_dischg" = "natacpi" ]; then
-        [ -n "$fs" ] && fs="${fs}, "
-        fs="${fs}chargeonce, discharge, recalibrate"
+        fs="${fs}${fs:+, }chargeonce, discharge, recalibrate"
     fi
     if [ -n "$fs" ]; then
         cprintf "success" "Supported features: %s\n" "$fs"

@@ -24,12 +24,11 @@ get_wifi_ifaces () { # get all wifi devices -- retval: $_wifaces
 
     for wiu in "$NETD"/*/uevent; do
         if grep -q -s 'DEVTYPE=wlan' "$wiu" ; then
-            wi=${wiu%/uevent}; wi=${wi##*/}
-            _wifaces="$_wifaces $wi"
+            wi="${wiu%/uevent}"; wi="${wi##*/}"
+            _wifaces="${_wifaces}${_wifaces:+ }${wi}"
         fi
     done
 
-    _wifaces="${_wifaces# }"
     return 0
 }
 
@@ -121,12 +120,11 @@ get_wwan_ifaces () { # get all wwan devices -- retval: $_wanifaces
 
     for wiu in "$NETD"/*/uevent; do
         if grep -q -s 'DEVTYPE=wwan' "$wiu" ; then
-            wi=${wiu%/uevent}; wi=${wi##*/}
-            _wanifaces="$_wanifaces $wi"
+            wi="${wiu%/uevent}"; wi="${wi##*/}"
+            _wanifaces="${_wanifaces}${_wanifaces:+ }${wi}"
         fi
     done
 
-    _wanifaces="${_wanifaces# }"
     return 0
 }
 

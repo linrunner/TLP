@@ -96,11 +96,7 @@ batdrv_init () {
         if [ "$(read_sysf "$bd/present")" = "1" ]; then
             # record detected batteries and directories
             bs=${bd##/*/}
-            if [ -n "$_batteries" ]; then
-                _batteries="$_batteries $bs"
-            else
-                _batteries="$bs"
-            fi
+            _batteries="${_batteries}${_batteries:+ }${bs}"
             # skip natacpi detection for 2nd and subsequent batteries
             [ $done -eq 1 ] && continue
 

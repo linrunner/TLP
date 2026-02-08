@@ -28,15 +28,11 @@ batdrv_init () {
     for bd in "$ACPIBATDIR"/*; do
         if [ "$(read_sysf "$bd/type")" = "Battery" ] \
             && [ "$(read_sysf "$bd/present")" = "1" ]; then
-            bs=${bd##/*/}
+            bs="${bd##/*/}"
             # ignore atypical power supplies and batteries
             printf '%s\n' "$bs" | grep -E -q "$RE_PS_IGNORE" && continue
             # record detected batteries and directories
-            if [ -n "$_batteries" ]; then
-                _batteries="$_batteries $bs"
-            else
-                _batteries="$bs"
-            fi
+            _batteries="${_batteries}${_batteries:+ }${bs}"
         fi
     done
 

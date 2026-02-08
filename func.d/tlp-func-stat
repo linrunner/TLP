@@ -667,11 +667,7 @@ printparm_amdgpu_ml () {
         while read -r line; do
             if [ -n "$line" ]; then
                 line=$(printf "%-13s" "$line")
-                if [ -n "$out" ]; then
-                    out="${out} ${line}"
-                else
-                    out="${line}"
-                fi
+                out="${out}${out:+ }${line}"
             fi
         done < "$sysf"
     fi
@@ -864,8 +860,7 @@ print_bat_methods_per_driver () {
             esac
             if [ -n "$m" ]; then
                 # concat method to output
-                [ -n "$mlist" ] && mlist="${mlist}, "
-                mlist="${mlist}${m}"
+                mlist="${mlist}${mlist:+, }${m}"
             fi
         fi
     done
