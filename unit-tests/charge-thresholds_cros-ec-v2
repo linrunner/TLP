@@ -74,15 +74,15 @@ Error: stop charge threshold (XYZZY) for BATA is not specified, invalid or out o
 $ sudo tlp setcharge 97 100 -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   stop  = 100 (no change)
-$ sudo tlp setcharge 0 66 -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
+$ sudo tlp setcharge 0 86 -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
-  stop  =  66
-$ sudo tlp setcharge 0 60 -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
+  stop  =  86
+$ sudo tlp setcharge 0 80 -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
-  stop  =  60
-$ sudo tlp setcharge 0 60 -- ${xinc} X_THRESH_SIMULATE_STOP="100" 2>&1 | sed -r "s/${bata}/BATA/"
+  stop  =  80
+$ sudo tlp setcharge 0 80 -- ${xinc} X_THRESH_SIMULATE_STOP="100" 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
-  stop  =  60
+  stop  =  80
 $ sudo tlp setcharge DEF DEF -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   stop  = 100
@@ -98,7 +98,4 @@ $ sudo tlp-stat -b -- ${xinc} | grep "${bata}/charge_control_end_threshold" | se
 /sys/class/power_supply/BATA/charge_control_end_threshold   =    100 [%]
 $ sudo tlp-stat -b -- ${xinc} X_THRESH_SIMULATE_READERR=1 | grep "${bata}/charge_control_end_threshold" | sed -r "s/${bata}/BATA/"
 /sys/class/power_supply/BATA/charge_control_end_threshold   = (not available) [%]
-$ #
-$ # --- Reset test machine to configured thresholds
-$ sudo tlp setcharge ${bata} -- ${xinc} > /dev/null 2>&1
 $ #

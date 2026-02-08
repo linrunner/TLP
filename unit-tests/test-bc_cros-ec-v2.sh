@@ -30,5 +30,9 @@ fi
 echo "        # bata=${bata} batb=${batb} xinc=${xinc}"
 run_clitest "$spath/charge-thresholds_cros-ec-v2" "$1"
 
+# reset test machine to configured thresholds
+sleep "$VWRITE_SLEEP"
+sudo tlp setcharge ${bata}  > /dev/null 2>&1 # reset test machine to configured thresholds
+
 print_report
 reset_threshold_trap
