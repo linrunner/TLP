@@ -29,6 +29,8 @@ fi
 export xinc=""
 echo "        # bata=${bata} batb=${batb}" 1>&2
 run_clitest "$spath/charge-thresholds_tuxedo"
+
+# reset test machine to configured thresholds
 sudo tlp setcharge ${bata}  > /dev/null 2>&1 # reset test machine to configured thresholds
 
 print_report

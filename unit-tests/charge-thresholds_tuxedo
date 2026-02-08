@@ -49,6 +49,7 @@ $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_${bata}="45" STOP_CHARGE_THR
 Error in configuration at START_CHARGE_THRESH_BATA="45": not specified, invalid or not in {40, 50, 60, 70, 80, 95}. Aborted.
 $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_${bata}="80" STOP_CHARGE_THRESH_${bata}="70" 2>&1 | sed -r "s/${bata}/BATA/"
 Error in configuration: START_CHARGE_THRESH_BATA >= STOP_CHARGE_THRESH_BAT0. Aborted.
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_${bata}="70" STOP_CHARGE_THRESH_${bata}="90" 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge thresholds for battery BATA:
   start =  70
@@ -99,6 +100,7 @@ $ sudo tlp setcharge 70 90 -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge thresholds for battery BATA:
   start =  70 (no change)
   stop  =  90 (no change)
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp setcharge DEF DEF -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge thresholds for battery BATA:
   stop  = 100
@@ -117,7 +119,4 @@ $ sudo tlp-stat -b -- ${xinc} | grep -E 'BAT0/charge_(control|behaviour)'
 $ sudo tlp-stat -b -- ${xinc} X_THRESH_SIMULATE_READERR=1 | grep -E 'BAT0/charge_(control|behaviour)'
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
-$ #
-$ # --- Reset test machine to configured thresholds
-$ sudo tlp setcharge ${bata} - ${xinc} > /dev/null 2>&1
 $ #

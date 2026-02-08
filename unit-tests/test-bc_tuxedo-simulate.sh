@@ -32,7 +32,7 @@ run_clitest "$spath/charge-thresholds_tuxedo"
 
 # reset test machine to configured thresholds
 sleep "$VWRITE_SLEEP"
-sudo tlp setcharge ${bata}  > /dev/null 2>&1 # reset test machine to configured thresholds
+sudo tlp setcharge ${bata}  > /dev/null 2>&1
 
 print_report
 reset_threshold_trap
