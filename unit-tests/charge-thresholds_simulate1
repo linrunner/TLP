@@ -261,7 +261,7 @@ $ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy
 Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy | grep "conservation_mode"
+$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy | grep "/conservation_mode"
 /sys/bus/platform/drivers/ideapad_acpi/VPC2004:00/conservation_mode = (not available)
 $ #
 $ # +++ LG ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
