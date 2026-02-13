@@ -43,7 +43,7 @@ Description: Switch Wi-Fi and Bluetooth on/off automatically
 
 Package: tlp-pd
 Architecture: all
-Depends: tlp, polkitd, python3-dbus, python3-gi, ${misc:Depends}, ${python3:Depends}
+Depends: tlp, polkitd, python3-gi, ${misc:Depends}, ${python3:Depends}
 Conflicts: power-profiles-daemon, tuned-ppd
 Provides: power-profiles-daemon
 Description: Switch Power Profiles from the Desktop
