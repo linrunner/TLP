@@ -2,10 +2,14 @@ tlp (1.10.0~alpha.0-1) unstable; urgency=medium
 
   * New upstream version 1.10.0-alpha.0
 
+  [ Thomas Koch ]
+  * Remove dependency on python3-dbus
+
+
   [ Raphaël Halimi ]
   * debian/copyright: update copyright years
 
- -- Thomas Koch <linrunner@gmx.net>  Thu, 08 Jan 2026 18:24:00 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 13 Feb 2026 16:42:21 +0100
 
 tlp (1.9.1-1) unstable; urgency=high
 
