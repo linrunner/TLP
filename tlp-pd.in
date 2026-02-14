@@ -24,7 +24,7 @@ import warnings
 
 # --- Constants
 DAEMON_NAME = "TLP Profiles Daemon"
-AVAILABLE_PROFILES = ["performance", "balanced", "power-saver"]
+AVAILABLE_PROFILES = ["power-saver", "balanced", "performance"]
 MAX_HOLDS = 16
 COOKIE_ATTEMPTS = 10
 MAX_UINT32 = 0xFFFFFFFF
@@ -40,7 +40,7 @@ INTERFACE_PROPERTIES = "org.freedesktop.DBus.Properties"
 
 # --- TLP constants
 TLP_LAST_PROFILE = "@TLP_RUN@/last_pwr"
-TLP_PROFILE_IDX = ["0", "1", "2"]
+TLP_PROFILE_IDX = ["2", "1", "0"]
 
 # --- Introspection XML
 INTROSPECTION_XML = """
