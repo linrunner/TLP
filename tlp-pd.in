@@ -608,7 +608,7 @@ class ProfilesDaemon:
         _logtag = f"{_method_name()}(sender='{sender}', action_id='{action_id}')"
 
         try:
-            # Get PolicyKit authority proxy
+            # Get proxy to PolicyKit authority
             proxy = Gio.DBusProxy.new_sync(
                 self._connection,
                 Gio.DBusProxyFlags.NONE,
@@ -619,7 +619,7 @@ class ProfilesDaemon:
                 None,
             )
 
-            # Call CheckAuthorization
+            # Call PolicyKit CheckAuthorization()
             result = proxy.call_sync(
                 "CheckAuthorization",
                 GLib.Variant(
@@ -627,9 +627,9 @@ class ProfilesDaemon:
                     (
                         ("system-bus-name", {"name": GLib.Variant("s", sender)}),
                         action_id,
-                        {},
+                        {},  # No details
                         0x1,  # AllowUserInteraction flag
-                        "",  # no cancellation_id
+                        "",  # No cancellation_id
                     ),
                 ),
                 Gio.DBusCallFlags.NONE,
