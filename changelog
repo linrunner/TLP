@@ -26,13 +26,17 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
       - OS Release: fix parsing of Gentoo's /etc/os-release with '' quoting
     - Use 'daemon' facility for logging and trace
     Graphics:
-    - Support Intel Xe graphics' SLPC power profile
-      (INTEL_GPU_POWER_PROFILE_ON_AC/BAT/SAV) and min/max frequencies
+    - Support Intel Xe graphics:
+      - INTEL_GPU_POWER_PROFILE_ON_AC/BAT/SAV: SLPC power profile
+      - INTEL_GPU_MIN/MAX_FREQ_ON_AC/BAT/SAV: min/max frequencies
     - tlp-stat -g: show power_state for AMD and Nvidia GPUs
-    Power Profiles:
-    - tlp-pd: rewritten to use only GLib, no dependency on python-dbus anymore
+    Power Profiles (tlp-pd):
+    - Rewritten to use only GLib and no longer python-dbus
+    - Reversed the order of TLP's profiles in the desktop UI to match
+      power-profiles-daemon's order.
     Processor:
     - tlp-stat -p: section "+++ Platform profile" renamed to '+++ Platform"
+
 
 +++ 1.9.1 --- 07.01.2026 +++
 
