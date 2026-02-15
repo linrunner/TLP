@@ -8,14 +8,14 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 
-import argparse
+import argparse  # noqa: I001
 import errno
+from gi.repository import Gio, GLib
 import os
 import signal
 import subprocess
 import sys
 
-from gi.repository import Gio, GLib
 
 # --- Constants
 PROGRAM_NAME = "tlpctl"
@@ -363,9 +363,13 @@ def get_parser():
 
     # version
     parser_version = subparsers.add_parser(
-        "version", aliases=["--version"], help="Print version information and exit"
+        "version", help="Print version information and exit"
     )
     parser_version.set_defaults(func=_version)
+    # Workaround: argparse treats arguments starting with - or -- as optional arguments (flags), not subcommands
+    parser.add_argument(
+        "--version", action="store_true", help="Print version information and exit"
+    )
 
     # shtab completion support (hide from help text)
     if "--print-completion" in sys.argv:
@@ -402,7 +406,9 @@ def main():
     parser = get_parser()
     args, unknown = parser.parse_known_args()
 
-    if not args.command:
+    if args.version:
+        _version(args)
+    elif not args.command:
         # Default behavior is to print a brief profile list if no command is given
         list_profiles_brief()
     else:
