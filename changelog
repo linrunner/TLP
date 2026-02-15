@@ -30,13 +30,16 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
       - INTEL_GPU_POWER_PROFILE_ON_AC/BAT/SAV: SLPC power profile
       - INTEL_GPU_MIN/MAX_FREQ_ON_AC/BAT/SAV: min/max frequencies
     - tlp-stat -g: show power_state for AMD and Nvidia GPUs
-    Power Profiles (tlp-pd):
-    - Rewritten to use only GLib and no longer python-dbus
+    Power Profiles:
+    - Rewrite of tlp-pd to use only GLib and no longer python-dbus
     - Reversed the order of TLP's profiles in the desktop UI to match
-      power-profiles-daemon's order.
+      power-profiles-daemon's order
     Processor:
     - tlp-stat -p: section "+++ Platform profile" renamed to '+++ Platform"
 
+  * Bugfixes
+    Power Profiles:
+    - tlpctl: recover --version
 
 +++ 1.9.1 --- 07.01.2026 +++
 
