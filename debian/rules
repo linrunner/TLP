@@ -10,11 +10,11 @@ export TLP_ZSHCPL=/usr/share/zsh/vendor-completions
 	dh $@ --with python3
 
 override_dh_installsystemd:
-	dh_installsystemd --package=tlp --no-start --no-restart-after-upgrade
+	dh_installsystemd --package=tlp --no-stop-on-upgrade
 	dh_installsystemd --package=tlp-pd
 
 override_dh_installinit:
-	dh_installinit --package=tlp --no-start --no-restart-after-upgrade --only-scripts -- defaults 98 01
+	dh_installinit --package=tlp --no-stop-on-upgrade -- defaults 98 01
 
 override_dh_gencontrol:
 	dh_gencontrol --package=tlp -- $(SUBSTVARS)
