@@ -5,6 +5,8 @@
 #
 # Tested parameters:
 # - TLP_AUTO_SWITCH
+# - TLP_PROFILE_AC
+# - TLP_PROFILE_BAT
 # - TLP_PROFILE_DEFAULT
 # - TLP_PERSISTENT_DEFAULT
 #
@@ -354,7 +356,7 @@ check_power_supply () {
 
     local ps ps_seq
     local prof_save prof_xpect
-    local def
+    local prof_ac prof_bat prof_def prof_seq
     local ps_save
     local mm_save mm_xpect
     local rc=0
@@ -368,37 +370,64 @@ check_power_supply () {
 
     # iterate power supplies, return to initial power supply
     case "$prof_save" in
-        "$PP_PRF") ps_seq="$PS_BAT $PS_UNKNOWN $PS_AC" ;;
-        "$PP_BAL") ps_seq="$PS_UNKNOWN $PS_AC $PS_BAT" ;;
-        "$PP_SAV") ps_seq="$PS_UNKNOWN $PS_AC $PS_BAT" ;;
+        "$PP_PRF")
+            prof_seq="BAL SAV PRF"
+            ;;
+
+        "$PP_BAL")
+            prof_seq="SAV PRF BAL"
+            ;;
+
+        "$PP_SAV")
+            prof_seq="PRF BAL SAV"
+            ;;
     esac
 
     printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$prof_save $ps_save" "$mm_save"
 
-    for def in SAV none; do
+    for prof_ac in $prof_seq; do
+        case "$prof_ac" in
+            PRF)
+                prof_bat=BAL
+                prof_def=SAV
+                ;;
+
+            BAL)
+                prof_bat=SAV
+                prof_def=PRF
+                ;;
+
+            SAV)
+                prof_bat=PRF
+                prof_def=BAL
+                ;;
+        esac
+        ps_seq="$PS_BAT $PS_UNKNOWN $PS_AC"
+
         for ps in $ps_seq; do
-            printf_msg " X_SIMULATE_PS=%-3s TLP_PROFILE_DEFAULT=%-5s:" "$ps" "$def"
+            printf_msg " X_SIMULATE_PS=%-3s TLP_PROFILE_AC=%s TLP_PROFILE_BAT=%s TLP_PROFILE_DEFAULT=%s:" \
+                "$ps" "$prof_ac" "$prof_bat" "$prof_def"
 
             case "$ps" in
                 "$PS_AC")
-                    prof_xpect="$PP_PRF $ps"
+                    prof_xpect="$(id2pp "$prof_ac") $ps"
                     ;;
 
                 "$PS_BAT")
-                    prof_xpect="$PP_BAL $ps"
+                    prof_xpect="$(id2pp "$prof_bat") $ps"
                     ;;
 
                 "$PS_UNKNOWN")
-                    if [ "$def" = "none" ]; then
-                        prof_xpect="$PP_BAL $ps"
+                    if [ "$prof_def" = "none" ]; then
+                        prof_xpect="$(id2pp "$prof_bat") $ps"
                     else
-                        prof_xpect="$PP_SAV $ps"
+                        prof_xpect="$(id2pp "$prof_def") $ps"
                     fi
                     ;;
             esac
 
-            sudo tlp start -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT=$def TLP_PERSISTENT_DEFAULT=0 \
-                X_SIMULATE_PS="$ps" > /dev/null 2>&1
+            sudo tlp start -- TLP_AUTO_SWITCH=2 TLP_PROFILE_AC="$prof_ac" TLP_PROFILE_BAT="$prof_bat" \
+                TLP_PROFILE_DEFAULT=$prof_def TLP_PERSISTENT_DEFAULT=0 X_SIMULATE_PS="$ps" > /dev/null 2>&1
 
             # expect changing profiles
             compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
@@ -421,6 +450,7 @@ check_power_supply () {
 
         done # ps
 
+        printf_msg "\n"
     done # prof
 
     read_saved_profile

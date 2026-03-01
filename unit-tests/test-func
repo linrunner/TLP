@@ -45,6 +45,10 @@ is_uint () { # check for unsigned integer -- $1: string
     printf "%s" "$1" | grep -E -q "^[0-9]+$" 2> /dev/null
 }
 
+toupper () { # print string in uppercase -- $1: string
+    printf "%s" "$1" | tr "[:lower:]" "[:upper:]"
+}
+
 wordinlist () { # test if word in list
                 # $1: word, $2: whitespace-separated list of words
     local word
@@ -100,6 +104,17 @@ pp2str () {
         "$PP_BAL")  printf "balanced" ;;
         "$PP_SAV")  printf "power-saver" ;;
         *)          printf "unknown" ;;
+    esac
+}
+
+id2pp () { # convert power profile id to code
+    # $1: id: PRF/AC/BAL/BAT/SAV
+
+    case "$(toupper "$1")" in
+        PRF|AC)  printf "%s" "$PP_PRF"  ;;
+        BAL|BAT) printf "%s" "$PP_BAL"  ;;
+        SAV)     printf "%s" "$PP_SAV"  ;;
+        *)       printf "%s" "$PP_NONE" ;;
     esac
 }
 
