@@ -36,10 +36,7 @@ check_disabled_defaults () {
         for prof in $prof_seq; do
             # --- test profile
             printf_msg " %s:\n" "$prof"
-
             pol_save="$(read_sysf "${CPU0}/cpufreq/energy_performance_preference")"
-
-
             case "$prof" in
                 performance) pol="$(sed -rn 's/CPU_ENERGY_PERF_POLICY_ON_AC=(.+)/\1/p' "$DEFAULTS")" ;;
                 balanced)    pol="$(sed -rn 's/CPU_ENERGY_PERF_POLICY_ON_BAT=(.+)/\1/p' "$DEFAULTS")" ;;

@@ -468,6 +468,7 @@ check_auto_switch () {
     # global param: $_testcnt, $_failcnt
     # retval: $_testcnt++, $_failcnt++
 
+    local prof_seq
     local prof prof_save prof_xpect
     local ps_now ps_next
     local as
@@ -477,27 +478,39 @@ check_auto_switch () {
 
     printf_msg "check_auto_switch {{{\n"
 
-    # save initial manual mode
-    mm_save="$(read_sysf "$MANUALMODE")"
+    # read initial profile
+    read_saved_profile; prof_save="$_prof"
+
+    # iterate supported profiles, return to initial profile
+    case "$_prof" in
+        "$PP_PRF") prof_seq="balanced power-saver performance" ;;
+        "$PP_BAL") prof_seq="power-saver performance balanced" ;;
+        "$PP_SAV") prof_seq="performance balanced power-saver" ;;
+    esac
 
     for as in 0 1 2; do
         # iterate auto switch modes
-
-        # save current profile and power source
-        read_saved_profile; prof_save="$_prof"
-        printf_msg " TLP_AUTO_SWITCH=%s: last_pwr/%s manual_mode/%s\n" "$as" "$_prof $_ps" "$mm_save"
+        read_saved_profile
+        printf_msg " TLP_AUTO_SWITCH=%s TLP_PROFILE_AC=PRF TLP_PROFILE_BAT=BAL: last_pwr/%s manual_mode/%s\n" "$as" "$_prof $_ps" "$mm_save"
 
         case "$as" in
             0|1) # auto switch: disabled|enabled
+                # interate power sources: AC, battery
                 for ps_now in 0 1; do
                     for mode in auto resume; do
                         printf_msg "  %-6s X_SIMULATE_PS=%s:" "$mode" "$ps_now"
-                        sudo tlp "$mode" -- TLP_AUTO_SWITCH="$as" TLP_PROFILE_DEFAULT="" TLP_PERSISTENT_DEFAULT=0 \
+                        sudo tlp "$mode" -- TLP_AUTO_SWITCH="$as" \
+                            TLP_PROFILE_AC=PRF TLP_PROFILE_BAT=BAL TLP_PROFILE_DEFAULT="" TLP_PERSISTENT_DEFAULT=0 \
                             X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
-                        # do not expect profile change
+
                         case "$as" in
-                            0) prof_xpect="$prof_save $ps_now" ;;
-                            1) prof_xpect="$ps_now $ps_now" ;;
+                            0) # auto switch disabled, do not expect profile change
+                                prof_xpect="$_prof $ps_now"
+                                ;;
+
+                            1) # auto swich enable, expect profile according to power source
+                                prof_xpect="$ps_now $ps_now"
+                                ;;
                         esac
                         compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
                         if [ "$rc" -eq 0 ]; then
@@ -523,18 +536,19 @@ check_auto_switch () {
             2) # auto switch: smart
                 for mode in auto resume; do
                     for ps_now in 0 1; do
-                        # calc opposite pweor source
+                        # calc opposite power source
                         ps_next="$((! ps_now))"
 
-                        for prof in performance balanced power-saver; do
+                        for prof in $prof_seq; do
                             # prepare simulated active profile and power source
                             printf_msg "  %-6s (prof=%-11s ps_now=%s) --> ps_next=%s:" "$mode" "$prof" "$ps_now" "$ps_next"
-                            sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PERSISTENT_DEFAULT=0 \
+                            sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 \
+                                TLP_PROFILE_AC=PRF TLP_PROFILE_BAT=BAL TLP_PERSISTENT_DEFAULT=0 \
                                 X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
 
                             # determine expected profile
                             case "$ps_now" in
-                                0) # simulated active power source: AC
+                                0) # simulated power source: AC
                                     case "$prof" in
                                         performance) prof_xpect="$PP_BAL $ps_next" ;;
                                         balanced)    prof_xpect="$PP_BAL $ps_next" ;;
@@ -542,7 +556,7 @@ check_auto_switch () {
                                     esac
                                     ;;
 
-                                1) # simulated active pwoer source: battery
+                                1) # simulated power source: battery
                                     case "$prof" in
                                         performance) prof_xpect="$PP_PRF $ps_next" ;;
                                         balanced)    prof_xpect="$PP_PRF $ps_next" ;;
@@ -552,7 +566,8 @@ check_auto_switch () {
                             esac
 
                             # check auto/resume on opposite power source
-                            sudo tlp "$mode" -- TLP_AUTO_SWITCH="$as" TLP_PERSISTENT_DEFAULT=0 \
+                            sudo tlp "$mode" -- TLP_AUTO_SWITCH="$as" \
+                                TLP_PROFILE_AC=PRF TLP_PROFILE_BAT=BAL TLP_PERSISTENT_DEFAULT=0 \
                                 X_SIMULATE_PS="$ps_next" > /dev/null 2>&1
 
                             # check against expectations
@@ -579,6 +594,8 @@ check_auto_switch () {
                 ;; # smart
         esac # as
 
+        # restore initial profile
+        sudo tlp "$(pp2str "$prof_save")" > /dev/null 2>&1
         read_saved_profile
         printf_msg " result: last_pwr/%s manual_mode/%s\n\n" "$_prof $_ps" "$(read_sysf "$MANUALMODE")"
    done # as
@@ -694,8 +711,8 @@ else
             default)  do_default="1" ;;
             persist)  do_persist="1" ;;
             power)    do_power="1" ;;
-            psudev)   do_psudev="1" ;;
             switch)   do_switch="1" ;;
+            psudev)   do_psudev="1" ;;
         esac
 
         shift # next argument
