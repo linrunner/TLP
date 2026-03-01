@@ -9,9 +9,6 @@
 # ----------------------------------------------------------------------------
 # Constants
 
-readonly TLP="tlp"
-readonly SUDO="sudo"
-
 # ansi codes
 readonly ANSI_RED="\033[31m"
 readonly ANSI_GREEN="\033[32m"
@@ -216,14 +213,14 @@ read_saved_profile () {
 
     if [ ! -f  "$LASTPWR" ]; then
         # last_pwr non-existent
-        ${SUDO} ${TLP} start > /dev/null 2>&1
+        sudo tlp start > /dev/null 2>&1
     fi
 
     read -r _prof _ps < "$LASTPWR"
     if   [ -z "$_prof" ] || [ "$_prof" = "$PP_NONE" ] \
       || [ -z "$_ps" ] || [ "$_ps" = "$PS_UNKNOWN" ]; then
         # last_pwr invalid
-        ${SUDO} ${TLP} start > /dev/null 2>&1
+        sudo tlp start > /dev/null 2>&1
         read -r _prof _ps < "$LASTPWR"
     fi
 }

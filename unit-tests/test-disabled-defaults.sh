@@ -48,7 +48,7 @@ check_disabled_defaults () {
 
             # defaults disabled --> don't expect policy change
             printf_msg "  TLP_AUTO_SWITCH=2 TLP_DISABLE_DEFAULTS=1:"
-            ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" TLP_DISABLE_DEFAULTS=1 > /dev/null 2>&1
+            sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" TLP_DISABLE_DEFAULTS=1 > /dev/null 2>&1
 
             compare_sysf "$pol_save" "${CPU0}/cpufreq/energy_performance_preference"
             rc=$?
@@ -62,7 +62,7 @@ check_disabled_defaults () {
 
             # defaults enabled --> expect policy change
             printf_msg "  TLP_AUTO_SWITCH=2:"
-            ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" > /dev/null 2>&1
+            sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" > /dev/null 2>&1
 
             compare_sysf "$pol" "${CPU0}/cpufreq/energy_performance_preference"
             rc=$?

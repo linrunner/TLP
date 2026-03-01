@@ -118,7 +118,7 @@ report_test "$_basename"
 printf_msg "+++ %s\n\n" "$_basename"
 
 # initialize TLP
-${SUDO} "${TLP}" start > /dev/null
+sudo tlp start > /dev/null
 
 [ "$do_feature_one" = "1" ] && check_feature_one
 [ "$do_feature_two" = "1" ] && check_feature_two

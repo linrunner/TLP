@@ -74,13 +74,13 @@ check_cpu_driver_opmode () {
 
                 for opm in $opm_seq; do
                     case "$prof" in
-                        performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_DRIVER_OPMODE_ON_AC="$opm"  CPU_DRIVER_OPMODE_ON_BAT="$opm_save" CPU_DRIVER_OPMODE_ON_SAV="$opm_save" \
                             > /dev/null 2>&1 ;;
-                        balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_SAV="$opm_save" CPU_DRIVER_OPMODE_ON_AC="$opm_save" \
                             > /dev/null 2>&1 ;;
-                        power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_DRIVER_OPMODE_ON_SAV="$opm" CPU_DRIVER_OPMODE_ON_AC="$opm_save"  CPU_DRIVER_OPMODE_ON_BAT="$opm_save" \
                             > /dev/null 2>&1 ;;
                     esac
@@ -121,13 +121,13 @@ check_cpu_driver_opmode () {
 
                 for opm in $opm_seq; do
                     case "$prof" in
-                        performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_DRIVER_OPMODE_ON_AC="$opm"  CPU_DRIVER_OPMODE_ON_BAT="$opm_save" CPU_DRIVER_OPMODE_ON_SAV="$opm_save" \
                             > /dev/null 2>&1 ;;
-                        balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_DRIVER_OPMODE_ON_BAT="$opm" CPU_DRIVER_OPMODE_ON_SAV="$opm_save" CPU_DRIVER_OPMODE_ON_AC="$opm_save" \
                             > /dev/null 2>&1 ;;
-                        power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_DRIVER_OPMODE_ON_SAV="$opm" CPU_DRIVER_OPMODE_ON_AC="$opm_save"  CPU_DRIVER_OPMODE_ON_BAT="$opm_save" \
                             > /dev/null 2>&1 ;;
                     esac
@@ -190,13 +190,13 @@ check_cpu_scaling_governor () {
                 esac
                 for gov in $gov_seq; do
                     case "$prof" in
-                        performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_SCALING_GOVERNOR_ON_AC="$gov"  CPU_SCALING_GOVERNOR_ON_BAT="$gov_save" CPU_SCALING_GOVERNOR_ON_SAV="$gov_save" \
                             > /dev/null 2>&1 ;;
-                        balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_SCALING_GOVERNOR_ON_BAT="$gov" CPU_SCALING_GOVERNOR_ON_SAV="$gov_save" CPU_SCALING_GOVERNOR_ON_AC="$gov_save" \
                             > /dev/null 2>&1 ;;
-                        power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_SCALING_GOVERNOR_ON_SAV="$gov" CPU_SCALING_GOVERNOR_ON_AC="$gov_save"  CPU_SCALING_GOVERNOR_ON_BAT="$gov_save" \
                             > /dev/null 2>&1 ;;
                     esac
@@ -241,13 +241,13 @@ check_cpu_scaling_governor () {
                 for gov in $gov_seq; do
                     # apply target governor
                     case "$prof" in
-                        performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_SCALING_GOVERNOR_ON_AC="$gov"  CPU_SCALING_GOVERNOR_ON_BAT="$gov_save" CPU_SCALING_GOVERNOR_ON_SAV="$gov_save" \
                             > /dev/null 2>&1 ;;
-                        balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_SCALING_GOVERNOR_ON_BAT="$gov" CPU_SCALING_GOVERNOR_ON_SAV="$gov_save" CPU_SCALING_GOVERNOR_ON_AC="$gov_save" \
                             > /dev/null 2>&1 ;;
-                        power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_SCALING_GOVERNOR_ON_SAV="$gov" CPU_SCALING_GOVERNOR_ON_AC="$gov_save"  CPU_SCALING_GOVERNOR_ON_BAT="$gov_save" \
                             > /dev/null 2>&1 ;;
                     esac
@@ -319,15 +319,15 @@ check_cpu_scaling_freq () {
 
                 # apply target frequencies
                 case "$prof" in
-                    performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_SCALING_MIN_FREQ_ON_AC="$min"  CPU_SCALING_MIN_FREQ_ON_BAT="$min_save" CPU_SCALING_MIN_FREQ_ON_SAV="$min_save" \
                         CPU_SCALING_MAX_FREQ_ON_AC="$max"  CPU_SCALING_MAX_FREQ_ON_BAT="$max_save" CPU_SCALING_MAX_FREQ_ON_SAV="$min_save" \
                         > /dev/null 2>&1 ;;
-                    balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_SCALING_MIN_FREQ_ON_BAT="$min" CPU_SCALING_MIN_FREQ_ON_SAV="$min_save" CPU_SCALING_MIN_FREQ_ON_AC="$min_save" \
                         CPU_SCALING_MAX_FREQ_ON_BAT="$max" CPU_SCALING_MAX_FREQ_ON_SAV="$max_save" CPU_SCALING_MAX_FREQ_ON_AC="$min_save" \
                         > /dev/null 2>&1 ;;
-                    power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_SCALING_MIN_FREQ_ON_SAV="$min" CPU_SCALING_MIN_FREQ_ON_AC="$min_save"  CPU_SCALING_MIN_FREQ_ON_BAT="$min_save" \
                         CPU_SCALING_MAX_FREQ_ON_SAV="$max" CPU_SCALING_MAX_FREQ_ON_AC="$max_save"  CPU_SCALING_MAX_FREQ_ON_BAT="$min_save" \
                         > /dev/null 2>&1 ;;
@@ -354,15 +354,15 @@ check_cpu_scaling_freq () {
 
                 # revert to initial frequencies
                 case "$prof" in
-                    performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_SCALING_MIN_FREQ_ON_AC="$min_save"  CPU_SCALING_MIN_FREQ_ON_BAT="$min" CPU_SCALING_MIN_FREQ_ON_SAV="$min" \
                         CPU_SCALING_MAX_FREQ_ON_AC="$max_save"  CPU_SCALING_MAX_FREQ_ON_BAT="$max" CPU_SCALING_MAX_FREQ_ON_SAV="$min" \
                         > /dev/null 2>&1 ;;
-                    balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_SCALING_MIN_FREQ_ON_BAT="$min_save" CPU_SCALING_MIN_FREQ_ON_SAV="$min" CPU_SCALING_MIN_FREQ_ON_AC="$min" \
                         CPU_SCALING_MAX_FREQ_ON_BAT="$max_save" CPU_SCALING_MAX_FREQ_ON_SAV="$max" CPU_SCALING_MAX_FREQ_ON_AC="$min" \
                         > /dev/null 2>&1 ;;
-                    power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_SCALING_MIN_FREQ_ON_SAV="$min_save" CPU_SCALING_MIN_FREQ_ON_AC="$min"  CPU_SCALING_MIN_FREQ_ON_BAT="$min" \
                         CPU_SCALING_MAX_FREQ_ON_SAV="$max_save" CPU_SCALING_MAX_FREQ_ON_AC="$max"  CPU_SCALING_MAX_FREQ_ON_BAT="$min" \
                         > /dev/null 2>&1 ;;
@@ -438,13 +438,13 @@ check_cpu_epp () {
 
                     for pol in $pol_seq; do
                         case "$prof" in
-                            performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                            performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                                 CPU_ENERGY_PERF_POLICY_ON_AC="$pol"  CPU_ENERGY_PERF_POLICY_ON_BAT="$pol_save" CPU_ENERGY_PERF_POLICY_ON_SAV="$pol_save" \
                                 > /dev/null 2>&1 ;;
-                            balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                            balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                                 CPU_ENERGY_PERF_POLICY_ON_BAT="$pol" CPU_ENERGY_PERF_POLICY_ON_SAV="$pol_save" CPU_ENERGY_PERF_POLICY_ON_AC="$pol_save" \
                                 > /dev/null 2>&1 ;;
-                            power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                            power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                                 CPU_ENERGY_PERF_POLICY_ON_SAV="$pol" CPU_ENERGY_PERF_POLICY_ON_AC="$pol_save"  CPU_ENERGY_PERF_POLICY_ON_BAT="$pol_save" \
                                 > /dev/null 2>&1 ;;
                         esac
@@ -510,15 +510,15 @@ check_cpu_perf_pct () {
 
                 # apply target performance
                 case "$prof" in
-                    performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_MIN_PERF_ON_AC="$min"  CPU_MIN_PERF_ON_BAT="$min_save" CPU_MIN_PERF_ON_SAV="$min_save"\
                         CPU_MAX_PERF_ON_AC="$max"  CPU_MAX_PERF_ON_BAT="$min_save" CPU_MAX_PERF_ON_SAV="$min_save" \
                         > /dev/null 2>&1 ;;
-                    balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_MIN_PERF_ON_BAT="$min" CPU_MIN_PERF_ON_SAV="$min_save" CPU_MIN_PERF_ON_AC="$min_save"\
                         CPU_MAX_PERF_ON_BAT="$max" CPU_MAX_PERF_ON_SAV="$min_save" CPU_MAX_PERF_ON_AC="$min_save" \
                         > /dev/null 2>&1 ;;
-                    power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_MIN_PERF_ON_SAV="$min" CPU_MIN_PERF_ON_AC="$min_save"  CPU_MIN_PERF_ON_BAT="$min_save"\
                         CPU_MAX_PERF_ON_SAV="$max" CPU_MAX_PERF_ON_AC="$min_save"  CPU_MAX_PERF_ON_BAT="$min_save" \
                         > /dev/null 2>&1 ;;
@@ -545,15 +545,15 @@ check_cpu_perf_pct () {
 
                 # revert to initial performance
                 case "$prof" in
-                    performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_MIN_PERF_ON_AC="$min_save"  CPU_MIN_PERF_ON_BAT="$min" CPU_MIN_PERF_ON_SAV="$min"\
                         CPU_MAX_PERF_ON_AC="$max_save"  CPU_MAX_PERF_ON_BAT="$min" CPU_MAX_PERF_ON_SAV="$min" \
                         > /dev/null 2>&1 ;;
-                    balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_MIN_PERF_ON_BAT="$min_save" CPU_MIN_PERF_ON_SAV="$min" CPU_MIN_PERF_ON_AC="$min"\
                         CPU_MAX_PERF_ON_BAT="$max_save" CPU_MAX_PERF_ON_SAV="$min" CPU_MAX_PERF_ON_AC="$min" \
                         > /dev/null 2>&1 ;;
-                    power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_MIN_PERF_ON_SAV="$min_save" CPU_MIN_PERF_ON_AC="$min"  CPU_MIN_PERF_ON_BAT="$min"\
                         CPU_MAX_PERF_ON_SAV="$max_save" CPU_MAX_PERF_ON_AC="$min"  CPU_MAX_PERF_ON_BAT="$min" \
                         > /dev/null 2>&1 ;;
@@ -624,13 +624,13 @@ check_cpu_boost () {
                 # note: the CPU_BOOST_ON_AC/BAT/SAV setting must be the inverse of the new no_turbo state
                 # so use $no_turbo_save as parameter value
                 case "$prof" in
-                    performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_BOOST_ON_AC="$no_turbo_save"  CPU_BOOST_ON_BAT="$no_turbo" CPU_BOOST_ON_SAV="$no_turbo" \
                         > /dev/null 2>&1 ;;
-                    balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_BOOST_ON_BAT="$no_turbo_save" CPU_BOOST_ON_SAV="$no_turbo" CPU_BOOST_ON_AC="$no_turbo" \
                         > /dev/null 2>&1 ;;
-                    power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_BOOST_ON_SAV="$no_turbo_save" CPU_BOOST_ON_AC="$no_turbo"  CPU_BOOST_ON_BAT="$no_turbo" \
                         > /dev/null 2>&1 ;;
                 esac
@@ -653,13 +653,13 @@ check_cpu_boost () {
 
                     # apply inverted dyn boost state
                     case "$prof" in
-                        performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost"  CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost_save" CPU_HWP_DYN_BOOST_ON_SAV="$dyn_boost_save" \
                             > /dev/null 2>&1 ;;
-                        balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost" CPU_HWP_DYN_BOOST_ON_SAV="$dyn_boost_save" CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost_save" \
                             > /dev/null 2>&1 ;;
-                        power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_HWP_DYN_BOOST_ON_SAV="$dyn_boost" CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost_save"  CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost_save" \
                             > /dev/null 2>&1 ;;
                     esac
@@ -682,13 +682,13 @@ check_cpu_boost () {
                 # note: the CPU_BOOST_ON_AC/BAT/SAV setting must be the inverse of the new no_turbo state
                 # so use $no_turbo as parameter value
                 case "$prof" in
-                    performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_BOOST_ON_AC="$no_turbo"  CPU_BOOST_ON_BAT="$no_turbo_save" CPU_BOOST_ON_SAV="$no_turbo_save" \
                         > /dev/null 2>&1 ;;
-                    balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_BOOST_ON_BAT="$no_turbo" CPU_BOOST_ON_SAV="$no_turbo_save" CPU_BOOST_ON_AC="$no_turbo_save" \
                         > /dev/null 2>&1 ;;
-                    power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         CPU_BOOST_ON_SAV="$no_turbo" CPU_BOOST_ON_AC="$no_turbo_save"  CPU_BOOST_ON_BAT="$no_turbo_save" \
                         > /dev/null 2>&1 ;;
                 esac
@@ -708,13 +708,13 @@ check_cpu_boost () {
                 if [ -f "$INTELPSD/hwp_dynamic_boost" ]; then
                     # revert to initial dyn boost state
                     case "$prof" in
-                        performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost_save"  CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost" CPU_HWP_DYN_BOOST_ON_SAV="$dyn_boost" \
                             > /dev/null 2>&1 ;;
-                        balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost_save" CPU_HWP_DYN_BOOST_ON_SAV="$dyn_boost" CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost" \
                             > /dev/null 2>&1 ;;
-                        power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_HWP_DYN_BOOST_ON_SAV="$dyn_boost_save" CPU_HWP_DYN_BOOST_ON_AC="$dyn_boost"  CPU_HWP_DYN_BOOST_ON_BAT="$dyn_boost" \
                             > /dev/null 2>&1 ;;
                     esac
@@ -757,13 +757,13 @@ check_cpu_boost () {
                     printf_msg " %s:" "$prof"
                     # apply inverted boost state
                     case "$prof" in
-                        performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_BOOST_ON_AC="$boost"  CPU_BOOST_ON_BAT="$boost_save" CPU_BOOST_ON_SAV="$boost_save" \
                             > /dev/null 2>&1 ;;
-                        balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_BOOST_ON_BAT="$boost" CPU_BOOST_ON_SAV="$boost_save" CPU_BOOST_ON_AC="$boost_save" \
                             > /dev/null 2>&1 ;;
-                        power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_BOOST_ON_SAV="$boost" CPU_BOOST_ON_AC="$boost_save"  CPU_BOOST_ON_BAT="$boost_save" \
                             > /dev/null 2>&1 ;;
                     esac
@@ -780,13 +780,13 @@ check_cpu_boost () {
 
                     # revert to initial boost state
                     case "$prof" in
-                        performance) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        performance) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_BOOST_ON_AC="$boost_save"  CPU_BOOST_ON_BAT="$boost" CPU_BOOST_ON_SAV="$boost" \
                             > /dev/null 2>&1 ;;
-                        balanced) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        balanced) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_BOOST_ON_BAT="$boost_save" CPU_BOOST_ON_SAV="$boost" CPU_BOOST_ON_AC="$boost" \
                             > /dev/null 2>&1 ;;
-                        power-saver) ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                        power-saver) sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                             CPU_BOOST_ON_SAV="$boost_save" CPU_BOOST_ON_AC="$boost"  CPU_BOOST_ON_BAT="$boost" \
                             > /dev/null 2>&1 ;;
                     esac
@@ -845,21 +845,21 @@ check_platform_profile () {
             case "$prof" in
                 performance)
                     pprof="performance"
-                    ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         PLATFORM_PROFILE_ON_AC="$pprof"  PLATFORM_PROFILE_ON_BAT="$pprof_save" PLATFORM_PROFILE_SAV="$pprof_save" \
                         > /dev/null 2>&1
                     ;;
 
                 balanced)
                     pprof="balanced"
-                    ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         PLATFORM_PROFILE_ON_BAT="$pprof" PLATFORM_PROFILE_ON_SAV="$pprof_save" PLATFORM_PROFILE_AC="$pprof_save" \
                         > /dev/null 2>&1
                     ;;
 
                 power-saver)
                     pprof="low-power"
-                    ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
+                    sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" \
                         PLATFORM_PROFILE_ON_SAV="$pprof" PLATFORM_PROFILE_ON_AC="$pprof_save"  PLATFORM_PROFILE_BAT="$pprof_save" \
                         > /dev/null 2>&1
                     ;;

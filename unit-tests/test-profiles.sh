@@ -126,7 +126,7 @@ check_profile_select () {
 
         esac
 
-        ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" > /dev/null 2>&1
+        sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" > /dev/null 2>&1
 
         # check expect results
         compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
@@ -218,9 +218,9 @@ check_default_mode () {
         esac
 
         if [ "$prof" = "none" ]; then
-            ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=0 TLP_PROFILE_DEFAULT="" TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
+            sudo tlp start -- TLP_AUTO_SWITCH=0 TLP_PROFILE_DEFAULT="" TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
         else
-            ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=0 TLP_PROFILE_DEFAULT="$prof" TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
+            sudo tlp start -- TLP_AUTO_SWITCH=0 TLP_PROFILE_DEFAULT="$prof" TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
         fi
 
         # expect changing profiles
@@ -314,7 +314,7 @@ check_persistent_mode () {
                 ;;
         esac
 
-        ${SUDO} ${TLP} auto -- TLP_AUTO_SWITCH=2 TLP_PERSISTENT_DEFAULT=1 TLP_PROFILE_DEFAULT="$prof" > /dev/null 2>&1
+        sudo tlp auto -- TLP_AUTO_SWITCH=2 TLP_PERSISTENT_DEFAULT=1 TLP_PROFILE_DEFAULT="$prof" > /dev/null 2>&1
 
         # expect changing profiles
         compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
@@ -397,7 +397,7 @@ check_power_supply () {
                     ;;
             esac
 
-            ${SUDO} ${TLP} start -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT=$def TLP_PERSISTENT_DEFAULT=0 \
+            sudo tlp start -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT=$def TLP_PERSISTENT_DEFAULT=0 \
                 X_SIMULATE_PS="$ps" > /dev/null 2>&1
 
             # expect changing profiles
@@ -462,7 +462,7 @@ check_auto_switch () {
                 for ps_now in 0 1; do
                     for mode in auto resume; do
                         printf_msg "  %-6s X_SIMULATE_PS=%s:" "$mode" "$ps_now"
-                        ${SUDO} ${TLP} "$mode" -- TLP_AUTO_SWITCH="$as" TLP_PROFILE_DEFAULT="" TLP_PERSISTENT_DEFAULT=0 \
+                        sudo tlp "$mode" -- TLP_AUTO_SWITCH="$as" TLP_PROFILE_DEFAULT="" TLP_PERSISTENT_DEFAULT=0 \
                             X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
                         # do not expect profile change
                         case "$as" in
@@ -499,7 +499,7 @@ check_auto_switch () {
                         for prof in performance balanced power-saver; do
                             # prepare simulated active profile and power source
                             printf_msg "  %-6s (prof=%-11s ps_now=%s) --> ps_next=%s:" "$mode" "$prof" "$ps_now" "$ps_next"
-                            ${SUDO} ${TLP} "$prof" -- TLP_AUTO_SWITCH=2 TLP_PERSISTENT_DEFAULT=0 \
+                            sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PERSISTENT_DEFAULT=0 \
                                 X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
 
                             # determine expected profile
@@ -522,7 +522,7 @@ check_auto_switch () {
                             esac
 
                             # check auto/resume on opposite power source
-                            ${SUDO} ${TLP} "$mode" -- TLP_AUTO_SWITCH="$as" TLP_PERSISTENT_DEFAULT=0 \
+                            sudo tlp "$mode" -- TLP_AUTO_SWITCH="$as" TLP_PERSISTENT_DEFAULT=0 \
                                 X_SIMULATE_PS="$ps_next" > /dev/null 2>&1
 
                             # check against expectations
@@ -585,11 +585,11 @@ check_ps_udev_no_switch () {
     printf_msg " initial: last_pwr/%s\n" "$prof_save $ps"
 
     # 1. create temp config
-    echo "TLP_AUTO_SWITCH=1" | ${SUDO} tee $TEMPCONF > /dev/null
+    echo "TLP_AUTO_SWITCH=1" | sudo tee $TEMPCONF > /dev/null
 
     # 2. apply power-saver profile
     printf_msg " Apply power-saver:"
-    ${SUDO} ${TLP} power-saver -- TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
+    sudo tlp power-saver -- TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
     # expect power-saver
     prof_xpect="2"
     compare_sysf "$prof_xpect $ps" "$LASTPWR"; rc=$?
@@ -603,7 +603,7 @@ check_ps_udev_no_switch () {
 
     # 3. simulate udev power_supply change event
     printf_msg " Simulate PS udev event w/TLP_AUTO_SWITCH=1:"
-    ${SUDO} ${UDEVADM} trigger --type=all --action=change --subsystem-match=power_supply --sysname-match=AC
+    sudo ${UDEVADM} trigger --type=all --action=change --subsystem-match=power_supply --sysname-match=AC
     # wait for tlp processing
     sleep 2
 
@@ -623,13 +623,13 @@ check_ps_udev_no_switch () {
         "$PP_BAL") ppi="balanced" ;;
         "$PP_SAV") ppi="power-saver" ;;
     esac
-    ${SUDO} ${TLP} ${ppi} -- TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
+    sudo tlp ${ppi} -- TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
 
     read_saved_profile
     printf_msg " result: last_pwr/%s\n" "$_prof $_ps"
 
     # remove temp config
-    ${SUDO} rm -f $TEMPCONF
+    sudo rm -f $TEMPCONF
 
     # print summary
     printf_msg "}}} errcnt=%s\n\n" "$errcnt"
