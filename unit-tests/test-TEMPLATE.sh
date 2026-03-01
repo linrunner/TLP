@@ -108,7 +108,6 @@ check_tlp
 cache_root_cred
 start_report
 
-# shellcheck disable=SC2034
 _basename="${0##*/}"
 # shellcheck disable=SC2034
 _logfile="$(date -Iseconds)_${_basename%.*}.log"
@@ -116,6 +115,7 @@ _testcnt=0
 _failcnt=0
 
 report_test "$_basename"
+printf_msg "+++ %s\n\n" "$_basename"
 
 # initialize TLP
 ${SUDO} "${TLP}" start > /dev/null

@@ -8,6 +8,7 @@ spath="${0%/*}"
     printf "Error: missing library %s\n" "$spath/$TESTLIB" 1>&2
     exit 70
 }
+
 cache_root_cred
 set_threshold_trap
 start_report
