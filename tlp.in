@@ -446,8 +446,10 @@ case "$_cmd" in
                     init_batteries_thresholds
                 fi
             else
-                # Specific hardware which resets the EC when resuming -> apply thresholds
-                init_batteries_thresholds "asus huawei lg lg-legacy"
+                # Specific hardware which resets the EC when resuming
+                # --> apply charge thresholds
+                # Note: no hardware capabable of force-discharge concerned so far
+                init_batteries_thresholds "asus huawei lg"
             fi
             save_runconf
             unlock_tlp
