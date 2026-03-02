@@ -806,7 +806,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force-discharge' st
         # AC detached --> cancel force-discharge
         _bat_dischg_rc=2
     elif [ "$_bat_fd" = "0" ]; then
-        # force-discharge is off --> quit
+        # force-discharge is off --> terminate
         _bat_dischg_rc=4
     else
         # quirky firmware (e.g. ThinkPad E-series) may keep force-discharge on --> check battery status too
@@ -816,7 +816,7 @@ batdrv_force_discharge_active () { # check if battery is in 'force-discharge' st
                 _bat_dischg_rc=0
                 ;;
 
-            *)  # battery is not discharging --> cancel force-discharge
+            *)  # battery is not discharging --> wait
                 _bat_dischg_rc=1
                 ;;
         esac
@@ -880,24 +880,24 @@ batdrv_discharge () {
     # start discharge
     if ! batdrv_write_force_discharge 1; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_write_error($_bat_str)"
-        cecho "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
+        cecho "Error: discharge $_bat_str initialization malfunction -- check your hardware (battery, charger)." 1>&2
         _bat_dischg_rc=8
         return $_bat_dischg_rc
     fi
 
     trap batdrv_cancel_force_discharge INT # enable ^C hook
 
-    # wait for start == while status not "discharging" -- 15.0 sec timeout
+    # wait for start == while status not "discharging" -- 15.0 sec timeout, quit if force-discharge is reset
     printf "Initiating discharge of battery %s " "$_bat_str" 1>&2
     wt=15
-    while ! batdrv_force_discharge_active && [ $wt -gt 0 ] ; do
+    while ! batdrv_force_discharge_active && [ "$_bat_fd" = "1" ] && [ $wt -gt 0 ] ; do
         sleep 1
         printf "." 1>&2
         wt=$((wt - 1))
     done
     printf "\n" 1>&2
 
-    if batdrv_force_discharge_active; then
+    if [ "$_bat_fd" = "1" ]; then
         # discharge initiated successfully --> wait for force-discharge reset by ec or status != "discharging"
         while batdrv_force_discharge_active; do
             clear
@@ -990,7 +990,7 @@ batdrv_discharge () {
         # force-discharge init malfunction
         _bat_dischg_rc=8
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.init_error($_bat_str): fd=$_bat_fd; st=$_bat_st; target=$_bat_target_en; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; rc=$_bat_dischg_rc"
-        cecho "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
+        cecho "Error: discharge $_bat_str initialization malfunction (after $((15 - wt)) seconds) -- check your hardware (battery, charger)." 1>&2
     fi
 
     trap - INT # remove ^C hook
