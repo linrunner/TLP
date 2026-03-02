@@ -348,8 +348,11 @@ case "$_cmd" in
             if [ "$RESTORE_THRESHOLDS_ON_BAT" = "1" ] \
                 && [ "$_syspwr" = "$PS_BAT" ] \
                 && [ "$_syspwr" != "$_ps_last" ]; then
-                # Power source has changed to battery -> apply thresholds
-                init_batteries_thresholds
+                # Power source has changed to battery
+                # --> apply charge thresholds if there is no force-discharge in progress
+                if ! lockpeek_tlp tlp_discharge; then
+                    init_batteries_thresholds
+                fi
             fi
             unlock_tlp
         fi
@@ -364,7 +367,10 @@ case "$_cmd" in
             notify_profile_daemon "$(pp2str "$_pp_next")"
             poweroff_drivebay "$_pp_next" 0
             set_usb_suspend 0 auto
-            init_batteries_thresholds
+            # apply charge thresholds if there is no force-discharge in progress
+            if ! lockpeek_tlp tlp_discharge; then
+                init_batteries_thresholds
+            fi
             set_radio_device_states "$_pp_next"
             save_runconf
             unlock_tlp
@@ -434,8 +440,11 @@ case "$_cmd" in
             if [ "$RESTORE_THRESHOLDS_ON_BAT" = "1" ] \
                 && [ "$_syspwr" = "$PS_BAT" ] \
                 && [ "$_syspwr" != "$_ps_last" ]; then
-                # Power source has changed to battery -> apply thresholds
-                init_batteries_thresholds
+                # Power source has changed to battery
+                # --> apply charge thresholds if there is no force-discharge in progress
+                if ! lockpeek_tlp tlp_discharge; then
+                    init_batteries_thresholds
+                fi
             else
                 # Specific hardware which resets the EC when resuming -> apply thresholds
                 init_batteries_thresholds "asus huawei lg lg-legacy"
