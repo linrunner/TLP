@@ -54,6 +54,7 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
   * Bugfixes
     Battery Care:
     - ThinkPads:
+      - tlp discharge/recalibrate: catch reset during initialization
       - Fix detection of T580 with Libreboot
     Power Profiles:
     - tlpctl: recover --version
