@@ -15,6 +15,10 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
       firmware from MrChromebox.tech): start and stop threshold (Issue #838)
     - LG Gram laptops: remove support for kernels < 5.18 (lg-legacy plugin).
       Note: the lg plugin for kernel 5.18 and newer remains included.
+    - ThinkPads:
+      - Charge thresholds are not restored or changed by 'tlp start' or
+        automatic operation while 'tlp discharge/recalibrate' is running
+      - Streamline model detection
     - RESTORE_THRESHOLDS_ON_BAT: change default to enabled.
       If the charger is disconnected, for instance after a 'tlp fullcharge',
       then the configured charge thresholds will be automatically restored.
@@ -35,15 +39,15 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     - RADEON_DPM_PERF_LEVEL_ON_SAV added (power-saver profile)
     - tlp-stat -g: show power_state for AMD and Nvidia GPUs
     Power Profiles:
-    - Rewrite of tlp-pd to use only GLib and no longer python-dbus
-    - Reversed the order of TLP's profiles in the desktop UI to match
-      power-profiles-daemon's order
     - TLP_PROFILE_AC/BAT: customize automatic TLP profiles for AC and battery.
       For example, they can be changed to balanced on AC power and power-saver
       on battery power.
     - TLP_DEFAULT_MODE: renamed to TLP_PROFILE_DEFAULT
     - TLP_PERSISTENT_DEFAULT: *DEPRECATED* instead use TLP_AUTO_SWITCH=0
       together with TLP_PROFILE_DEFAULT to lock TLP to a fixed profile
+    - Reversed the order of TLP's profiles in the desktop UI to match
+      power-profiles-daemon's order
+    - Rewrite of tlp-pd to use only GLib and no longer python-dbus
     Processor:
     - tlp-stat -p: section "+++ Platform profile" renamed to '+++ Platform"
 
