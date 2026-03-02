@@ -795,10 +795,6 @@ batdrv_discharge () {
         return $_bat_dischg_rc
     fi
 
-    ########
-    ## local rtime
-    ## _bat_dischg_rc=255
-
     # start discharge
     if ! batdrv_write_force_discharge 1; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_write_error($_bat_str)"
