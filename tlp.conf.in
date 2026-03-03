@@ -446,13 +446,14 @@
 #PCIE_ASPM_ON_AC=default
 #PCIE_ASPM_ON_BAT=default
 
-# Runtime Power Management for PCIe bus devices: on=disable, auto=enable.
+# Autosuspend PCIe devices (Runtime Power Management):
+#   on=disable, auto=enable.
 # Default: on (AC), auto (BAT)
 
 #RUNTIME_PM_ON_AC=on
 #RUNTIME_PM_ON_BAT=auto
 
-# Exclude listed PCIe device adresses from Runtime PM.
+# Exclude listed PCIe device adresses from autosuspend.
 # Note: this preserves the kernel driver default, to force a certain state
 # use RUNTIME_PM_ENABLE/DISABLE instead.
 # Separate multiple addresses with spaces.
@@ -461,7 +462,7 @@
 
 #RUNTIME_PM_DENYLIST="11:22.3 44:55.6"
 
-# Exclude PCIe devices assigned to the listed drivers from Runtime PM.
+# Exclude PCIe devices assigned to the listed drivers from autosuspend.
 # Note: this preserves the kernel driver default, to force a certain state
 # use RUNTIME_PM_ENABLE/DISABLE instead.
 # Separate multiple drivers with spaces, use "" to disable completely.
@@ -469,16 +470,17 @@
 
 #RUNTIME_PM_DRIVER_DENYLIST="amdgpu mei_me nouveau nvidia xhci_hcd"
 
-# Permanently enable/disable Runtime PM for listed PCIe device addresses
+# Permanently enable/disable autossuspend for listed PCIe device addresses
 # (independent of the power source). This has priority over all preceding
-# Runtime PM settings. Separate multiple addresses with spaces.
+# autosuspend settings. Separate multiple addresses with spaces.
 # Use lspci to get the adresses (1st column).
 # Default: <none>
 
 #RUNTIME_PM_ENABLE="11:22.3"
 #RUNTIME_PM_DISABLE="44:55.6"
 
-# Set to 0 to disable, 1 to enable USB autosuspend feature.
+# Autosuspend USB devices:
+#   0=disable, 1=enable.
 # Default: 1
 
 #USB_AUTOSUSPEND=1
