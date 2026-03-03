@@ -913,6 +913,11 @@ if [ "$show_pcie" = "1" ] || [ "$show_all" = "1" ]; then
 
     # --- runtime pm
     echo "+++ PCIe Runtime Power Management"
+    if [ -z "$RUNTIME_PM_ON_AC" ] && [ -z "$RUNTIME_PM_ON_BAT" ]; then
+        echo "Autosuspend       = disabled"
+    else
+        echo "Autosuspend       = enabled"
+    fi
     echo "Enable devices    = ${RUNTIME_PM_ENABLE:-(disabled)}"
     echo "Disable devices   = ${RUNTIME_PM_DISABLE:-(disabled)}"
     echo "Device denylist   = ${RUNTIME_PM_DENYLIST:=(disabled)}"
