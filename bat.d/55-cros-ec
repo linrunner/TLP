@@ -705,7 +705,7 @@ batdrv_force_discharge_active () {
                 _bat_dischg_rc=0
                 ;;
 
-            *)  # battery is not discharging
+            *)  # battery is not discharging --> wait
                 _bat_dischg_rc=1
                 ;;
         esac
@@ -798,7 +798,7 @@ batdrv_discharge () {
     # start discharge
     if ! batdrv_write_force_discharge 1; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_write_error($_bat_str)"
-        cecho "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
+        cecho "Error: discharge $_bat_str initialization malfunction -- check your hardware (battery, charger)." 1>&2
         unlock_tlp tlp_discharge
         return 8
     fi
@@ -823,7 +823,7 @@ batdrv_discharge () {
     done
     printf "\n" 1>&2
 
-    if batdrv_force_discharge_active; then
+    if  "$_bat_fd" = "1" ]; then
         # discharge initiated successfully --> wait for completion
         while batdrv_force_discharge_active; do
             clear
@@ -910,7 +910,7 @@ batdrv_discharge () {
         # force-discharge init malfunction
         _bat_dischg_rc=8
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.init_error($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc"
-        cecho "Error: discharge $_bat_str malfunction -- check your hardware (battery, charger)." 1>&2
+        cecho "Error: discharge $_bat_str initialization malfunction (after $((15 - wt)) seconds) -- check your hardware (battery, charger)." 1>&2
     fi
 
     trap - INT TERM # remove ^C and error hook
