@@ -40,6 +40,8 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     - RADEON_DPM_STATE_ON_AC/BAT/SAV: *DEPRECATED* feature will be
       removed in TLP 1.11. Only affects the legacy driver radeon.
     - tlp-stat -g: show power_state for AMD and Nvidia GPUs
+    - RUNTIME_PM_DRIVER_DENYLIST: add amdgpu, nvidia to default to
+      facilitate hybrid GPU powerdown
     PCI(e) Devices:
     - tlp-stat -e: indicate when autosuspend is deactivated using
       RUNTIME_PM_ON_AC/BAT=""
