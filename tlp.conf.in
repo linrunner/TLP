@@ -400,14 +400,6 @@
 #RADEON_DPM_PERF_LEVEL_ON_BAT=auto
 #RADEON_DPM_PERF_LEVEL_ON_SAV=low
 
-# Dynamic power management method (DPM): performance, balanced, battery.
-# Note: radeon driver only.
-# Default: <none>
-
-#RADEON_DPM_STATE_ON_AC=performance
-#RADEON_DPM_STATE_ON_BAT=balanced
-#RADEON_DPM_STATE_ON_SAV=battery
-
 # Display panel adaptive backlight modulation (ABM) level: 0(off), 1..4.
 # Values 1..4 control the maximum brightness reduction allowed by the ABM
 # algorithm, where 1 represents the least and 4 the most power saving.
