@@ -910,7 +910,7 @@ batdrv_discharge () {
         # force-discharge init malfunction
         _bat_dischg_rc=8
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.init_error($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc"
-        cecho "Error: discharge $_bat_str initialization malfunction (after $((15 - wt)) seconds) -- check your hardware (battery, charger)." 1>&2
+        cecho "Error: discharge $_bat_str initialization malfunction after $((15 - wt)) second(s) -- check your hardware (battery, charger)." 1>&2
     fi
 
     trap - INT TERM # remove ^C and error hook
