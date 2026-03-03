@@ -535,14 +535,6 @@
 
 #USB_ALLOWLIST="1111:2222 3333:4444"
 
-# Restore radio device state (Bluetooth, WiFi, WWAN) from previous shutdown
-# on system startup: 0=disable, 1=enable.
-# Note: the parameters DEVICES_TO_DISABLE/ENABLE_ON_STARTUP/SHUTDOWN below
-# are ignored when this is enabled.
-# Default: 0
-
-#RESTORE_DEVICE_STATE_ON_STARTUP=0
-
 # Radio devices to disable on startup: bluetooth, nfc, wifi, wwan.
 # Separate multiple devices with spaces.
 # Default: <none>
