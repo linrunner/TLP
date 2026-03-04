@@ -25,6 +25,7 @@ import warnings
 # --- Constants
 DAEMON_NAME = "TLP Profiles Daemon"
 AVAILABLE_PROFILES = ["power-saver", "balanced", "performance"]
+PROFILE_MAXLEN = 12
 MAX_HOLDS = 16
 COOKIE_ATTEMPTS = 10
 MAX_UINT32 = 0xFFFFFFFF
@@ -37,6 +38,7 @@ BUS_NAME_LEGACY = "net.hadess.PowerProfiles"
 INTERFACE_NAME_LEGACY = BUS_NAME_LEGACY
 OBJECT_PATH_LEGACY = "/net/hadess/PowerProfiles"
 INTERFACE_PROPERTIES = "org.freedesktop.DBus.Properties"
+NAME_MAXLEN = 255
 
 # --- TLP constants
 TLP_LAST_PROFILE = "@TLP_RUN@/last_pwr"
@@ -284,7 +286,7 @@ class ProfilesDaemon:
         req_iface: str,
     ) -> int:
         # Hold a new profile
-        profile = _sanitize_input(profile)
+        profile = _sanitize_input(profile, trunc_len=PROFILE_MAXLEN)
         reason = _sanitize_input(reason)
         application_id = _sanitize_input(application_id)
         # Note: requester and req_iface are already sanitized by _handle_method_call
@@ -355,16 +357,18 @@ class ProfilesDaemon:
         _logtag = f"{_method_name()}()"
         action = _sanitize_input(action)
 
+        # No actions supported
         raise GLib.Error(f"{_logtag}: No such action '{action}'")
 
     def _method_sync_profile(self, profile: str, autosw: bool, sender: str) -> None:
         # Callback for TLP after profile changes
         # Note: sender is already sanitized by _handle_method_call
-        profile = _sanitize_input(profile)
+        profile = _sanitize_input(profile, trunc_len=PROFILE_MAXLEN)
         _logtag = f"{_method_name()}(profile='{profile}', sender='{sender}')"
 
         if profile not in AVAILABLE_PROFILES:
             self._logger.error(f"{_logtag}: Invalid profile '{profile}'")
+            return
 
         if not self._check_polkit_auth(sender, f"{BUS_NAME}.sync-profile"):
             raise GLib.Error(f"{_logtag}: Not authorized to sync power profile")
@@ -466,7 +470,7 @@ class ProfilesDaemon:
             raise GLib.Error(f"{_logtag}: Unknown property '{property_name}'")
 
         if property_name == "ActiveProfile":
-            profile = _sanitize_input(value.get_string())
+            profile = _sanitize_input(value.get_string(), trunc_len=PROFILE_MAXLEN)
 
             # Check authorization
             if not self._check_polkit_auth(sender, f"{BUS_NAME}.switch-profile"):
@@ -496,7 +500,7 @@ class ProfilesDaemon:
                 self._logger.error(f"{_logtag}: Not authorized to set loglevel")
                 return False
 
-            loglevel = _sanitize_input(value.get_string())
+            loglevel = _sanitize_input(value.get_string(), trunc_len=5)
             if loglevel == "debug":
                 self._logger.setLevel(logging.DEBUG)
                 self._loglevel = "debug"
@@ -610,7 +614,7 @@ class ProfilesDaemon:
     def _check_polkit_auth(self, sender: str, action_id: str) -> bool:
         # Check if the D-Bus sender is authorized for the PolicyKit action_id
         sender = _sanitize_input(sender)
-        action_id = _sanitize_input(action_id)
+        # Note: action_id is internal only, no sanitation required
         _logtag = f"{_method_name()}(sender='{sender}', action_id='{action_id}')"
 
         try:
@@ -725,8 +729,12 @@ INPUT_ALLOWED_CHARS = (
 )
 
 
-def _sanitize_input(input_str: str, sani_ch: str = "¿") -> str:
-    # Replaces any character not in INPUT_ALLOWED_CHARS with sani_char
+def _sanitize_input(
+    input_str: str, sani_ch: str = "§", trunc_len: int = NAME_MAXLEN
+) -> str:
+    # Replace any character not in INPUT_ALLOWED_CHARS with sani_char
+    # Truncate input to trunc_len chars (default is 255, the max length of D-Bus names)
+    input_str = input_str[:trunc_len]
     result_str = ""
     for ch in input_str:
         if ch in INPUT_ALLOWED_CHARS:
