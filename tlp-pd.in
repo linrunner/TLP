@@ -63,6 +63,7 @@ INTROSPECTION_XML = """
     </method>
     <method name="SyncProfile">
       <arg type="s" name="profile" direction="in"/>
+      <arg type="b" name="autosw" direction="in"/>
     </method>
     <signal name="ProfileReleased">
       <arg type="u" name="cookie"/>
@@ -138,7 +139,7 @@ class ProfilesDaemon:
         self._actions: list[str] = []
         self._actions_info = []
         self._version = "tlp-pd @TLPVER@"
-        self._battery_aware = False
+        self._battery_aware = True
         self._holds = {}  # cookie -> {profile, reason, application_id, sender}
 
         # Parse introspection data
@@ -255,7 +256,8 @@ class ProfilesDaemon:
                 invocation.return_value(None)
             elif method_name == "SyncProfile":
                 profile = parameters.unpack()[0]
-                self._method_sync_profile(profile, sender)
+                autosw = parameters.unpack()[1]
+                self._method_sync_profile(profile, autosw, sender)
                 invocation.return_value(None)
             else:
                 invocation.return_error_literal(
@@ -355,7 +357,7 @@ class ProfilesDaemon:
 
         raise GLib.Error(f"{_logtag}: No such action '{action}'")
 
-    def _method_sync_profile(self, profile: str, sender: str) -> None:
+    def _method_sync_profile(self, profile: str, autosw: bool, sender: str) -> None:
         # Callback for TLP after profile changes
         # Note: sender is already sanitized by _handle_method_call
         profile = _sanitize_input(profile)
@@ -367,8 +369,9 @@ class ProfilesDaemon:
         if not self._check_polkit_auth(sender, f"{BUS_NAME}.sync-profile"):
             raise GLib.Error(f"{_logtag}: Not authorized to sync power profile")
 
-        # Update active profile
+        # Update active profile and battery aware flag
         self._active_profile = profile
+        self._battery_aware = autosw
         self._logger.debug(f"{_logtag}")
 
         # Signal the desktop about the new profile

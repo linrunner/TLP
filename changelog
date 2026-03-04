@@ -42,7 +42,7 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     - tlp-stat -g: show power_state for AMD and Nvidia GPUs
     - RUNTIME_PM_DRIVER_DENYLIST: add amdgpu, nvidia to default to
       facilitate hybrid GPU powerdown
-    PCI(e) Devices:
+    PCIe Devices:
     - tlp-stat -e: indicate when autosuspend is deactivated using
       RUNTIME_PM_ON_AC/BAT=""
     Power Profiles:

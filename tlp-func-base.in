@@ -1384,9 +1384,15 @@ notify_profile_daemon () {
     # Notify TLP-PD of a profile change via D-Bus
     # $1: profile id
 
+    local autosw
+    case "$TLP_AUTO_SWITCH" in
+        1|2) autosw="true"  ;;
+        *)   autosw="false" ;;
+    esac
+
     if [ -n "$1" ]; then
        if cmd_exists "$GDBUS"; then
-           $GDBUS call -y -d $TLPPD_BUS_NAME -o $TLPPD_OBJECT_PATH -m "${TLPPD_INTERFACE_NAME}.SyncProfile" "$1" 2> /dev/null 1>&2
+           $GDBUS call -y -d $TLPPD_BUS_NAME -o $TLPPD_OBJECT_PATH -m "${TLPPD_INTERFACE_NAME}.SyncProfile" "$1" "$autosw" 2> /dev/null 1>&2
            echo_debug "run" "notify_profile_daemon.gdbus.call.SyncProfile($1): rc=$?"
        else
            echo_debug "run" "notify_profile_daemon($1).gdbus_missing"
