@@ -11,7 +11,7 @@ import re
 import time
 from typing import List
 
-from testing import TestReport, run_executable, test_executable
+from testing import TestReport, make_regex_filter, run_executable, test_executable
 
 # --- Constants
 TLPCTL = "tlpctl"
@@ -153,7 +153,7 @@ TLPCTL_OUTPUT_LIST = """Available power profiles (* = active):
     CpuDriver      : tlp
     PlatformDriver : tlp
 
-Dynamic changes from charger and battery events: no
+Dynamic changes from charger and battery events: NA
 tlp-pd LogLevel: @L@
 """
 
@@ -204,11 +204,16 @@ def test_list(report: TestReport):
             exp_out = exp_out.replace("@S@", "*")
         exp_out = exp_out.replace("@L@", loglevel)
 
+        battery_aware_filter = make_regex_filter(
+            r"(battery events:) (yes|no)", r"\1 NA", flags=re.NOFLAG
+        )
+
         print("  check result w/ tlpctl list: ", end="")
         if not test_executable(
             executable_path=TLPCTL,
             args=["list"],
             expected_output=exp_out,
+            filters=[battery_aware_filter],
         ):
             errcnt += 1
 

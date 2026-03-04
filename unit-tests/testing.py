@@ -3,6 +3,7 @@
 
 import difflib
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -69,6 +70,25 @@ def filter_output(
     for filter_func in filters:
         filtered = filter_func(filtered)
     return filtered
+
+
+def make_regex_filter(
+    pattern: str, replacement: str, flags: int = 0
+) -> Callable[[str], str]:
+    # Create a filter function that replaces regex pattern matches with a string
+    #
+    # Args:
+    #   pattern:     regex pattern to search for
+    #   replacement: string to replace matches with (supports backreferences e.g. \1)
+    #   flags:       optional re module flags (e.g. re.IGNORECASE, re.MULTILINE)
+    #
+    # Returns:
+    #   A filter function compatible with filter_output()
+
+    def _filter(output: str) -> str:
+        return re.sub(pattern, replacement, output, flags=flags)
+
+    return _filter
 
 
 def compare_outputs(
