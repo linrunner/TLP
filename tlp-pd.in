@@ -364,7 +364,7 @@ class ProfilesDaemon:
         _logtag = f"{_method_name()}(profile='{profile}', sender='{sender}')"
 
         if profile not in AVAILABLE_PROFILES:
-            raise GLib.Error(f"{_logtag}: Invalid profile '{profile}'")
+            self._logger.error(f"{_logtag}: Invalid profile '{profile}'")
 
         if not self._check_polkit_auth(sender, f"{BUS_NAME}.sync-profile"):
             raise GLib.Error(f"{_logtag}: Not authorized to sync power profile")
@@ -475,7 +475,9 @@ class ProfilesDaemon:
 
             # User (manually) changes profile
             self._drop_all_holds()
-            self._apply_profile_with_tlp(profile)
+            if not self._apply_profile_with_tlp(profile):
+                return False
+
             self._selected_profile = profile
             # Note: ActiveProfile is signaled in _method_sync_profile() after TLP applied the profile
 
@@ -558,12 +560,13 @@ class ProfilesDaemon:
 
     # --- TLP helpers
 
-    def _apply_profile_with_tlp(self, profile: str) -> None:
+    def _apply_profile_with_tlp(self, profile: str) -> bool:
         # Call TLP to apply the new profile
         _logtag = f"{_method_name()}()"
 
         if profile not in AVAILABLE_PROFILES:
-            raise GLib.Error(f"{_logtag}: Invalid profile '{profile}'")
+            self._logger.error(f"{_logtag}: Invalid profile '{profile}'")
+            return False
 
         self._logger.info(f"Run detached TLP to apply profile '{profile}'")
         _ = subprocess.Popen(
@@ -574,6 +577,7 @@ class ProfilesDaemon:
             stderr=subprocess.DEVNULL,
             close_fds=True,
         )
+        return True
 
     def _get_tlp_profile(self) -> str:
         # Read TLP statefile and translate into the last profile applied
