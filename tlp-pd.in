@@ -58,8 +58,8 @@ INTROSPECTION_XML = """
       <arg type="u" name="cookie" direction="in"/>
     </method>
     <method name="SetActionEnabled">
-      <arg name="action" type="s" direction="in"/>
-      <arg name="enabled" type="b" direction="in"/>
+      <arg type="s" name="action" direction="in"/>
+      <arg type="b" name="enabled" direction="in"/>
     </method>
     <method name="SyncProfile">
       <arg type="s" name="profile" direction="in"/>
