@@ -480,17 +480,13 @@ class ProfilesDaemon:
             # Note: ActiveProfile is signaled in _method_sync_profile() after TLP applied the profile
 
         elif property_name == "BatteryAware":
-            # Check authorization
-            if not self._check_polkit_auth(
-                sender, f"{BUS_NAME}.configure-battery-aware"
-            ):
-                self._logger.error(
-                    f"{_logtag}: Not authorized to configure battery aware"
-                )
-                return False
-
-            self._battery_aware = value.get_boolean()
-            self._signal_properties_changed({property_name: value}, [])
+            # BatteryAware is determined internally by TLP_AUTO_SWITCH and therefore
+            # read-only via the D-Bus property API
+            # Silently discard property change so as not to startle other API users
+            self._logger.error(
+                f"{_logtag}: Property BatteryAware can only be changed via TLP_AUTO_SWITCH"
+            )
+            return True
 
         elif property_name == "LogLevel":
             # Check authorization
