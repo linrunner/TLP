@@ -70,11 +70,11 @@ check_radio () {
         if [ -n "$rf_seq" ]; then
             printf_msg " initial: %s\n" "$rf_save"
 
-            for sdo in "     " "$SUDO "; do
+            for sdo in "" "sudo"; do
                 for next_state in $rf_seq; do
                     # shellcheck disable=SC2086
                     $sdo $rf_cmd "$next_state" 1> /dev/null
-                    printf_msg " %s%s %-3s -> " "$sdo" "$rf_cmd" "$next_state"
+                    printf_msg " %-4s %s %-3s -> " "$sdo" "$rf_cmd" "$next_state"
                     new_state="$(read_rf_state "$rf_cmd")"
 
                     if [ "$new_state" = "$next_state" ]; then
