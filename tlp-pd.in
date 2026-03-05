@@ -257,8 +257,7 @@ class ProfilesDaemon:
                 self._method_set_action_enabled(action, enabled)
                 invocation.return_value(None)
             elif method_name == "SyncProfile":
-                profile = parameters.unpack()[0]
-                autosw = parameters.unpack()[1]
+                profile, autosw = parameters.unpack()
                 self._method_sync_profile(profile, autosw, sender)
                 invocation.return_value(None)
             else:
