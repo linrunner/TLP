@@ -215,32 +215,9 @@ class ProfilesDaemon:
         invocation: Gio.DBusMethodInvocation,
     ) -> None:
         # Handle method calls on main or legacy interface
-        interface_name = _sanitize_input(interface_name)
-        sender = _sanitize_input(sender)
         _logtag = f"{_method_name()}()"
 
-        # Validate interface
-        if interface_name not in [INTERFACE_NAME, INTERFACE_NAME_LEGACY]:
-            invocation.return_error_literal(
-                Gio.dbus_error_quark(),
-                Gio.DBusError.UNKNOWN_INTERFACE,
-                f"{_logtag}: Unknown interface '{interface_name}'",
-            )
-            return
-
         try:
-            # Legacy interface doesn't provide all methods
-            if interface_name == INTERFACE_NAME_LEGACY and method_name in [
-                "SetActionEnabled",
-                "SyncProfile",
-            ]:
-                invocation.return_error_literal(
-                    Gio.dbus_error_quark(),
-                    Gio.DBusError.UNKNOWN_METHOD,
-                    f"{_logtag}: Unknown method '{method_name}'",
-                )
-                return
-
             # Handle main and legacy interface methods
             if method_name == "HoldProfile":
                 profile, reason, application_id = parameters.unpack()
@@ -393,25 +370,10 @@ class ProfilesDaemon:
         property_name: str,
     ) -> Optional[GLib.Variant]:
         # Handle Get() through the main or legacy interface
-        interface_name = _sanitize_input(interface_name)
-        property_name = _sanitize_input(property_name)
-        sender = _sanitize_input(sender)
         _logtag = f"{_method_name()}(interface='{interface_name}', property='{property_name}', sender='{sender}')"
-
-        # Properties are accessed through the main or legacy interface
-        if interface_name not in [INTERFACE_NAME, INTERFACE_NAME_LEGACY]:
-            raise GLib.Error(f"{_logtag}: Unknown interface '{interface_name}'")
 
         # Remember receiving interface for later use with PropertiesChanged signal
         self._ifaces_seen.add(interface_name)
-
-        # Legacy interface provides only a subset of methods/properties (same as power-profiles-daemon)
-        if interface_name == INTERFACE_NAME_LEGACY and property_name in [
-            "ActionsInfo",
-            "BatteryAware",
-            "LogLevel",
-        ]:
-            raise GLib.Error(f"{_logtag}: Unknown property '{property_name}'")
 
         if property_name == "ActiveProfile":
             retval = GLib.Variant("s", self._active_profile)
@@ -449,24 +411,10 @@ class ProfilesDaemon:
         value: GLib.Variant,
     ) -> bool:
         # Handle Set() through the main or legacy interface
-        interface_name = _sanitize_input(interface_name)
-        property_name = _sanitize_input(property_name)
-        sender = _sanitize_input(sender)
         _logtag = f"{_method_name()}(interface='{interface_name}', property='{property_name}', value={value}, sender='{sender}')"
-
-        # Properties are accessed through the main or legacy interface
-        if interface_name not in [INTERFACE_NAME, INTERFACE_NAME_LEGACY]:
-            raise GLib.Error(f"{_logtag}: Unknown interface '{interface_name}'")
 
         # Remember receiving interface for later use with PropertiesChanged signal
         self._ifaces_seen.add(interface_name)
-
-        # Legacy interface provides only a subset of methods/properties (same as power-profiles-daemon)
-        if interface_name == INTERFACE_NAME_LEGACY and property_name in [
-            "BatteryAware",
-            "LogLevel",
-        ]:
-            raise GLib.Error(f"{_logtag}: Unknown property '{property_name}'")
 
         if property_name == "ActiveProfile":
             profile = _sanitize_input(value.get_string(), trunc_len=PROFILE_MAXLEN)
@@ -612,8 +560,6 @@ class ProfilesDaemon:
 
     def _check_polkit_auth(self, sender: str, action_id: str) -> bool:
         # Check if the D-Bus sender is authorized for the PolicyKit action_id
-        sender = _sanitize_input(sender)
-        # Note: action_id is internal only, no sanitation required
         _logtag = f"{_method_name()}(sender='{sender}', action_id='{action_id}')"
 
         try:
