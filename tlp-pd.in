@@ -215,7 +215,7 @@ class ProfilesDaemon:
         invocation: Gio.DBusMethodInvocation,
     ) -> None:
         # Handle method calls on main or legacy interface
-        _logtag = f"{_method_name()}()"
+        _logtag = f"{_method_name()}"
 
         try:
             # Handle main and legacy interface methods
@@ -244,12 +244,11 @@ class ProfilesDaemon:
                     f"{_logtag}: Unknown method '{method_name}'",
                 )
         except GLib.Error as e:
-            invocation.return_gerror(e)
+            self._logger.error(f"{_logtag}/{e.message}")
+            invocation.return_error_literal(Gio.dbus_error_quark(), e.code, e.message)
         except Exception as e:
-            self._logger.error(f"{_logtag}: Error in {method_name}(): {e}")
-            invocation.return_error_literal(
-                Gio.dbus_error_quark(), Gio.DBusError.FAILED, str(e)
-            )
+            self._logger.error(f"{_logtag}/{e.message}")
+            invocation.return_error_literal(Gio.dbus_error_quark(), e.code, e.message)
 
     # --- Method implementations
 
@@ -269,15 +268,22 @@ class ProfilesDaemon:
         _logtag = f"{_method_name()}(profile='{profile}', reason='{reason}', appid='{application_id}', req='{requester}', iface='{req_iface}')"
 
         if profile not in AVAILABLE_PROFILES:
-            raise GLib.Error(f"{_logtag}: Invalid profile '{profile}'")
+            raise GLib.Error(
+                code=Gio.DBusError.INVALID_ARGS,
+                message=f"{_logtag}: Invalid profile '{profile}'",
+            )
 
         # Check authorization
         if not self._check_polkit_auth(requester, f"{BUS_NAME}.hold-profile"):
-            raise GLib.Error(f"{_logtag}: Not authorized to hold power profile")
+            raise GLib.Error(
+                code=Gio.DBusError.AUTH_FAILED,
+                message=f"{_logtag}: Not authorized to hold profile",
+            )
 
         if len(self._holds) >= MAX_HOLDS:
             raise GLib.Error(
-                f"{_logtag}: Maximum number of simultaneous holds ({MAX_HOLDS}) is used up"
+                code=Gio.DBusError.FAILED,
+                message=f"{_logtag}: Maximum number of simultaneous holds ({MAX_HOLDS}) is used up",
             )
 
         # Create unique uint32 cookie
@@ -294,7 +300,8 @@ class ProfilesDaemon:
                 break
         else:
             raise GLib.Error(
-                f"{_logtag}: Failed to create random cookie after {COOKIE_ATTEMPTS} attempts"
+                code=Gio.DBusError.FAILED,
+                message=f"{_logtag}: Failed to create random cookie after {COOKIE_ATTEMPTS} attempts",
             )
 
         self._logger.debug(f"{_logtag}: cookie: '{cookie}'")
@@ -311,14 +318,23 @@ class ProfilesDaemon:
         _logtag = f"{_method_name()}(scookie='{scookie}', sender='{sender}')"
 
         if scookie < 0:
-            raise GLib.Error(f"{_logtag}: Invalid cookie '{cookie}'")
+            raise GLib.Error(
+                code=Gio.DBusError.INVALID_ARGS,
+                message=f"{_logtag}: Invalid cookie '{scookie}'",
+            )
 
         # Check authorization
         if not self._check_polkit_auth(sender, f"{BUS_NAME}.release-profile"):
-            raise GLib.Error(f"{_logtag}: Not authorized to release power profile")
+            raise GLib.Error(
+                code=Gio.DBusError.AUTH_FAILED,
+                message=f"{_logtag}: Not authorized to release profile",
+            )
 
         if scookie not in self._holds:
-            raise GLib.Error(f"{_logtag}: Unknown cookie '{scookie}'")
+            raise GLib.Error(
+                code=Gio.DBusError.INVALID_ARGS,
+                message=f"{_logtag}: Unknown cookie '{scookie}'",
+            )
 
         hold_rel = self._holds.pop(scookie)
         self._logger.debug(
@@ -334,7 +350,10 @@ class ProfilesDaemon:
         action = _sanitize_input(action)
 
         # No actions supported
-        raise GLib.Error(f"{_logtag}: No such action '{action}'")
+        raise GLib.Error(
+            code=Gio.DBusError.NOT_SUPPORTED,
+            message=f"{_logtag}: No such action '{action}'",
+        )
 
     def _method_sync_profile(self, profile: str, autosw: bool, sender: str) -> None:
         # Callback for TLP after profile changes
@@ -347,7 +366,10 @@ class ProfilesDaemon:
             return
 
         if not self._check_polkit_auth(sender, f"{BUS_NAME}.sync-profile"):
-            raise GLib.Error(f"{_logtag}: Not authorized to sync power profile")
+            raise GLib.Error(
+                code=Gio.DBusError.AUTH_FAILED,
+                message=f"{_logtag}: Not authorized to sync profile",
+            )
 
         # Update active profile and battery aware flag
         self._active_profile = profile
@@ -396,7 +418,10 @@ class ProfilesDaemon:
         elif property_name == "LogLevel":
             retval = GLib.Variant("s", self._loglevel)
         else:
-            raise GLib.Error(f"{_logtag}: Unknown property '{property_name}'")
+            raise GLib.Error(
+                code=Gio.DBusError.UNKNOWN_PROPERTY,
+                message=f"{_logtag}: Unknown property '{property_name}'",
+            )
 
         self._logger.debug(f"{_logtag}: {retval}")
         return retval
@@ -421,7 +446,7 @@ class ProfilesDaemon:
 
             # Check authorization
             if not self._check_polkit_auth(sender, f"{BUS_NAME}.switch-profile"):
-                self._logger.error(f"{_logtag}: Not authorized to switch power profile")
+                self._logger.error(f"{_logtag}: Not authorized to switch profile")
                 return False
 
             # User (manually) changes profile
@@ -459,7 +484,8 @@ class ProfilesDaemon:
 
         else:
             raise GLib.Error(
-                f"{_logtag}: Property '{property_name}' is readonly or unknown"
+                code=Gio.DBusError.UNKNOWN_PROPERTY,
+                message=f"{_logtag}: Property '{property_name}' is readonly or unknown",
             )
 
         self._logger.debug(f"{_logtag}: ok")
