@@ -807,8 +807,9 @@ batdrv_discharge () {
 
     # wait for start == while status not "discharging" -- 15.0 sec timeout
     printf "Initiating discharge of battery %s " "$_bat_str" 1>&2
+    sleep 0.5
     wt=15
-    while ! batdrv_force_discharge_active && [ $wt -gt 0 ] ; do
+    while ! batdrv_force_discharge_active && [ "$_bat_fd" = "1" ] && [ $wt -gt 0 ] ; do
         if [ "$_bat_dischg_rc" = "6" ]; then
             # limit already undercut - do not continue
             _bat_dischg_rc=4
@@ -823,7 +824,7 @@ batdrv_discharge () {
     done
     printf "\n" 1>&2
 
-    if  "$_bat_fd" = "1" ]; then
+    if  [ "$_bat_fd" = "1" ]; then
         # discharge initiated successfully --> wait for completion
         while batdrv_force_discharge_active; do
             clear
