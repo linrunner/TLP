@@ -652,10 +652,16 @@ batdrv_cancel_force_discharge () {
 batdrv_force_discharge_active () {
     # check battery soc and terminate 'force-discharge' in time *before* the battery is empty
     # DANGER: Framework EC firmware does *not* automatically terminate discharge, the laptop switches off hard instead
+    # $1: init/run
     # global params: $_batdrv_plugin, $_batdrv_sim, $_bat_str, $_bm_read, $_bd_read, $_bat_target_ch
-    # rc: 0=discharging/1=not discharging/2=AC detached/4=terminated/6=target soc reached/255=internal error
-    # retval: $_bat_cn, $_bat_fd, $_bat_cur, $_bat_limit, $_bat_soc, $_bat_st, $_bat_volt, $_bat_dischg_rc
+    # rc: init: 0=running or malfuntion/1=waiting, run: 0=running/1=terminated or malfunction
+    # retval: $_bat_dischg_rc: 0=discharging/1=not discharging/2=AC detached/4=terminated/6=target soc reached/255=internal error,
+    #   $_bat_cn, $_bat_fd, $_bat_cur, $_bat_limit, $_bat_soc, $_bat_st, $_bat_volt
     # prerequisite: batdrv_init(), batdrv_select_battery()
+
+    local task="$1"
+    local label
+    local rc
 
     # battery readings to be returned to caller as retvals (and for trace output)
     case "$_batdrv_sim" in
@@ -690,12 +696,13 @@ batdrv_force_discharge_active () {
     if [ "$_bat_cn" -lt "$_bat_limit" ]; then
        # limit is reached -> cancel force-discharge immediately to prevent sudden poweroff
        batdrv_write_force_discharge 0
+       _bat_fd=0
        _bat_dischg_rc=6
     elif ! get_sys_power_supply; then
-        # AC detached --> cancel discharge immediately
+        # AC detached
         _bat_dischg_rc=2
     elif [ "$_bat_fd" = "0" ]; then
-        # force_discharge was reset (by some other process, not by the ec) --> quit
+        # force_discharge was reset (by some other process, not by the ec)
         _bat_dischg_rc=4
     else
         # check battery status
@@ -711,16 +718,24 @@ batdrv_force_discharge_active () {
         esac
     fi
 
-    case "$_bat_dischg_rc" in
-        0) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.running($_bat_str): fd=$_bat_fd; st=$_bat_st; target=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; cur=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
-        1) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.not_discharging($_bat_str): fd=$_bat_fd; st=$_bat_st; target=$_bat_target_ch; soc=$_bat_soc; cn=$_bat_cn; cur=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
-        2) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.ac_detached($_bat_str): fd=$_bat_fd; st=$_bat_st; target=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; cur=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
-        4) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.terminated($_bat_str): fd=$_bat_fd; st=$_bat_st; target=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; curr=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
-        6) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.target_soc($_bat_str): fd=$_bat_fd; st=$_bat_st; target=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; cur=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
-        *) echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.int_err($_bat_str): fd=$_bat_fd; st=$_bat_st; target=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; cur=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc" ;;
-    esac
+    # rc=0 when actively discharging, or when init detects an abnormal condition --> terminate calling loop immediately
+    if [ "$_bat_dischg_rc" -eq 0 ] || { [ "$task" = "init" ] && [ "$_bat_dischg_rc" -gt 1 ]; }; then
+        rc=0
+    else
+        rc=1
+    fi
 
-    return $_bat_dischg_rc
+    case "$_bat_dischg_rc" in
+        0) label="running"         ;;
+        1) label="not_discharging" ;;
+        2) label="ac_detached"     ;;
+        4) label="terminated"      ;;
+        6) label="target_soc"      ;;
+        *) label="int_err"         ;;
+    esac
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.force_discharge.${label}($_bat_str): fd=$_bat_fd; bst=$_bat_st; target=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; cur=$_bat_cur; volt=$_bat_volt; dst=$_bat_dischg_rc; rc=$rc"
+
+    return $rc
 }
 
 batdrv_discharge_safetylock () {
@@ -752,11 +767,12 @@ batdrv_discharge_safetylock () {
 
 batdrv_discharge () {
     # discharge battery
+    # $1: target soc 0(default)..99
     # global params: $_batdrv_plugin, $_batdrv_sim, $_bm_dischg, $_bat_str, $_bat_idx, $_bd_read, $_bf_dischg
     # rc: 0=done/1=malfunction/2=AC detached/3=not emptied/4=already empty/5=cancelled by ^C/6=target soc reached/7=target soc out of bounds/8=force-discharge malfunction/9=charge level read error/16=blocked
 
     # prerequisite: batdrv_init(), batdrv_select_battery()
-    local cf cn soc target_soc wt
+    local cf cn label sleeps soc target_soc timeout wt
 
     if ! soc="$(batdrv_calc_soc)"; then
         _bat_dischg_rc=9
@@ -800,33 +816,36 @@ batdrv_discharge () {
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_write_error($_bat_str)"
         cecho "Error: discharge $_bat_str initialization malfunction -- check your hardware (battery, charger)." 1>&2
         unlock_tlp tlp_discharge
-        return 8
+        _bat_dischg_rc=8
+        return $_bat_dischg_rc
     fi
 
     trap batdrv_cancel_force_discharge INT TERM # enable ^C and error hook
 
-    # wait for start == while status not "discharging" -- 15.0 sec timeout
+    # wait for start == while status not "discharging" -- 15.0 sec timeout, quit if force-discharge is reset
     printf "Initiating discharge of battery %s " "$_bat_str" 1>&2
-    sleep 0.5
-    wt=15
-    while ! batdrv_force_discharge_active && [ "$_bat_fd" = "1" ] && [ $wt -gt 0 ] ; do
+    sleep 0.1
+    timeout="${X_DISCHG_INIT_TIMEOUT:-15}"
+    sleeps="${X_DISCHG_INIT_SLEEP:-1}"
+    wt="$timeout"
+    while ! batdrv_force_discharge_active "init" && [ "$wt" -gt 0 ] ; do
         if [ "$_bat_dischg_rc" = "6" ]; then
             # limit already undercut - do not continue
-            _bat_dischg_rc=4
             echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.target_soc($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur;  volt=$_bat_volt; rc=$_bat_dischg_rc"
             echo 1>&2
             cecho "Error: actual charge level of battery $_bat_str is too close to the target level." "err" 1>&2
+            _bat_dischg_rc=4
             return $_bat_dischg_rc
         fi
-        sleep 1
+        sleep "$sleeps"
         printf "." 1>&2
         wt=$((wt - 1))
     done
     printf "\n" 1>&2
 
-    if  [ "$_bat_fd" = "1" ]; then
+    if  [ "$_bat_dischg_rc" = "0" ]; then
         # discharge initiated successfully --> wait for completion
-        while batdrv_force_discharge_active; do
+        while batdrv_force_discharge_active "run"; do
             clear
             printf "Currently discharging battery %s to %s%% (%s mAh):\n" "$_bat_str" "$target_soc" "$_bat_target_ch" 1>&2
 
@@ -876,42 +895,40 @@ batdrv_discharge () {
         batdrv_write_force_discharge 0
 
         # check exit cause
+        label="completed"
         case "$_bat_dischg_rc" in
             2) # system on battery, AC power removed
+                label="ac_detached"
                 echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.ac_detached($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc"
                 cecho "Warning: battery $_bat_str discharge has stopped early -- AC/charger removed." 1>&2
                 ;;
 
             1|4) # discharging stopped(1) or force-discharge reset (3) before limit was reached
-                if [ "$target_soc" -eq 0 ] && [ "$_bat_soc" -gt 1 ]; then
-                    # system on AC, target soc = 0, SOC > 1%, force-discharge ended prematurely
+                if [ "$_bat_soc" -gt "$target_soc" ]; then
+                    # system on AC: force-discharge ended prematurely with SOC > target
+                    label="not_completed"
                     _bat_dischg_rc=3
-                    echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_completed($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc"
-                    cecho "Error: battery $_bat_str discharge was aborted early -- check your hardware (battery, charger)." 1>&2
-                elif [ "$target_soc" -gt 0 ]; then
-                    # system on AC, target soc > 0, force-discharge ended prematurely
-                    _bat_dischg_rc=3
-                    echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.not_completed($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc"
                     cecho "Error: battery $_bat_str discharge was aborted early -- check your hardware (battery, charger)." 1>&2
                 else
-                    # battery discharged completely
+                    # battery discharge completed
                     _bat_dischg_rc=0
-                    echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.complete($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur;  volt=$_bat_volt; rc=$_bat_dischg_rc"
-                    cecho "Done: battery $_bat_str discharge complete." "success"  1>&2
+                    cecho "Done: battery $_bat_str discharge completed." "success"  1>&2
                 fi
                 ;;
 
             6) # target soc reached resp. limit undercut
+                label="target_soc"
                 _bat_dischg_rc=0
-                echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.target_soc($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur;  volt=$_bat_volt; rc=$_bat_dischg_rc"
-                cecho "Done: battery $_bat_str discharge complete." "success" 1>&2
+                cecho "Done: battery $_bat_str discharge completed." "success" 1>&2
                 ;;
         esac
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.${label}($_bat_str): fd=$_bat_fd; bst=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur; volt=$_bat_volt; drc=$_bat_dischg_rc"
+
     else
         # force-discharge init malfunction
         _bat_dischg_rc=8
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.init_error($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur; volt=$_bat_volt; rc=$_bat_dischg_rc"
-        cecho "Error: discharge $_bat_str initialization malfunction after $((15 - wt)) second(s) -- check your hardware (battery, charger)." 1>&2
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.init_error($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur; volt=$_bat_volt; drc=$_bat_dischg_rc"
+        cecho "Error: discharge $_bat_str initialization malfunction after $(((timeout - wt) * sleeps)) second(s) -- check your hardware (battery, charger)." 1>&2
     fi
 
     trap - INT TERM # remove ^C and error hook
