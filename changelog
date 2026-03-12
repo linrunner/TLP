@@ -63,10 +63,12 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     Radio Devices:
     - RESTORE_DEVICE_STATE_ON_STARTUP: *DEPRECATED* feature will be
       removed in TLP 1.11
+
   * Bugfixes
     Battery Care:
     - ThinkPads:
-      - tlp discharge/recalibrate: catch reset during initialization
+      - tlp discharge/recalibrate: catch reset during initialization,
+        refactor process
       - Fix detection of T580 with Libreboot
     Power Profiles:
     - tlpctl: recover --version
