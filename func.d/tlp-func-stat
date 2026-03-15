@@ -212,7 +212,7 @@ print_file_modtime_and_age () {
 }
 
 print_saved_profile () {
-    # read and print saved power profile
+    # read and print saved profile
 
     read_saved_power_profile
     # shellcheck disable=SC2154

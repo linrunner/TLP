@@ -392,7 +392,7 @@ if [ "$show_system" = "1" ] || [ "$show_all" = "1" ] ; then
         printf "tlp-pd         = not installed\n"
     fi
 
-    # --- actual power profile
+    # --- actual profile
     printf "TLP profile    = %s\n" "$(print_saved_profile)"
 
     # ---- actual power source

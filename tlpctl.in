@@ -304,18 +304,18 @@ def get_parser():
 
     # list-actiond
     parser_list_holds = subparsers.add_parser(
-        "list-holds", help="List current power profile holds (from launch command)"
+        "list-holds", help="List current profile holds (from launch command)"
     )
     parser_list_holds.set_defaults(func=_list_holds)
 
     # get
     parser_get = subparsers.add_parser(
-        "get", help="Print the currently active power profile", description=f"{help}."
+        "get", help="Print the currently active TLP profile", description=f"{help}."
     )
     parser_get.set_defaults(func=_get)
 
     # set
-    parser_set = subparsers.add_parser("set", help="Set the active power profile")
+    parser_set = subparsers.add_parser("set", help="Set the active TLP profile")
     parser_set.add_argument(
         "profile",
         nargs=1,
@@ -327,8 +327,8 @@ def get_parser():
     # launch
     parser_launch = subparsers.add_parser(
         "launch",
-        help="Run a command using a specific power profile (hold)",
-        description="Applies the given power profile, runs the command, "
+        help="Run a command using a specific TLP profile (hold)",
+        description="Applies the given profile, runs the command, "
         "and returns to the original profile.",
     )
     parser_launch.add_argument(

@@ -8,12 +8,12 @@ _shtab_tlpctl_commands() {
     "performance:Switch to performance profile"
     "balanced:Switch to balanced profile"
     "power-saver:Switch to power-saver profile"
-    "get:Print the currently active power profile"
-    "launch:Run a command using a specific power profile (hold)"
-    "list:List available power profiles"
-    "list-holds:List current power profile holds (from launch command)"
+    "get:Print the currently active profile"
+    "launch:Run a command using a specific profile (hold)"
+    "list:List available profiles"
+    "list-holds:List current profile holds (from launch command)"
     "loglevel:Set the loglevel of the tlp-pd daemon"
-    "set:Set the active power profile"
+    "set:Set the active profile"
     "version:Print version info"
   )
   _describe 'tlpctl commands' _commands

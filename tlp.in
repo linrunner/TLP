@@ -329,7 +329,7 @@ case "$_cmd" in
         [ $locked -eq 0 ] || unlock_tlp
         ;;
 
-    auto) # apply power profile depending on power source and manual/persistent modes (called by udev rule)
+    auto) # apply profile depending on power source and manual/persistent modes (called by udev rule)
           # -- but only if not previously run for the same power profile
           # rationale: filter out duplicate power_supply udev events
         check_root
@@ -358,7 +358,7 @@ case "$_cmd" in
         fi
         ;;
 
-    start) # apply power profile depending on power source and manual/persistent modes (interactive mode)
+    start) # apply profile depending on power source and manual/persistent modes (interactive mode)
         check_services_activation_status
         check_root
         if lock_tlp; then

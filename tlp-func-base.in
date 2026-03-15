@@ -70,7 +70,7 @@ readonly PS_AC=0
 readonly PS_BAT=1
 readonly PS_UNKNOWN=128
 
-# power profiles
+# TLP profiles
 readonly PP_PRF=0
 readonly PP_BAL=1
 readonly PP_SAV=2
@@ -428,10 +428,10 @@ check_services_activation_status () {
         fi
         if check_tlp_pd_installed && ! check_service_state "$TLPPD_SERVICE" enabled > /dev/null 2>&1; then
             if ! check_service_state "$TLPPD_SERVICE" active; then
-                echo_message "Error: You can't switch power profiles on the desktop because $TLPPD_SERVICE is not enabled "`
+                echo_message "Error: You can't switch TLP profiles on the desktop because $TLPPD_SERVICE is not enabled "`
                             `"--> Run 'systemctl enable --now $TLPPD_SERVICE' to ensure the full functionality of TLP." "err"
             else
-                echo_message "Error: After the next restart, you won't be able to switch power profiles on the desktop because "`
+                echo_message "Error: After the next restart, you won't be able to switch TLP profiles on the desktop because "`
                             `"$TLPPD_SERVICE is not enabled --> Run 'systemctl enable $TLPPD_SERVICE' to ensure the "`
                             `"full functionality of TLP." "err"
             fi
@@ -1023,7 +1023,7 @@ check_ac_power () { # check if ac power connected -- $1: function
     return 0
 }
 
-# --- Power Profiles
+# --- TLP Profiles
 
 id2pp () { # convert power profile id to code
     # $1: id: PRF/AC/BAL/BAT/SAV
@@ -1090,7 +1090,7 @@ get_manual_mode () {
     return $rc
 }
 
-pp2str () { # convert power profile code to string
+pp2str () { # convert profile code to string
     # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
 
     case "$1" in
@@ -1101,7 +1101,7 @@ pp2str () { # convert power profile code to string
     esac
 }
 
-pp2strx () { # convert power profile code to string plus config suffix
+pp2strx () { # convert profile code to string plus config suffix
     # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
 
     pp2str "$1"
@@ -1113,7 +1113,7 @@ pp2strx () { # convert power profile code to string plus config suffix
 }
 
 read_saved_power_profile () {
-    # get saved power profile
+    # get saved profile
     # retval: $_pp_last (PP_PRF=0, PP_BAL=1, PP_SAV=2)
     #         $_ps_last (PS_AC=0, PS_BAT=1, PS_UNKNOWN=128)
 
@@ -1213,7 +1213,7 @@ assigned_profile () { # print profile code assigned to the given or current powe
 }
 
 get_next_power_profile () {
-    # determine next power profile: either
+    # determine next profile: either
     # - depending on the tlp command,
     # - actual power source or
     # - default/persistence setting
@@ -1229,7 +1229,7 @@ get_next_power_profile () {
     # determine current power supply
     get_sys_power_supply "$tlp_cmd"
 
-    # determine next power profile based on command
+    # determine next profile based on command
     read_saved_power_profile
     local tlp_cmd="$1"
     local neutral=0
@@ -1381,7 +1381,7 @@ get_next_power_profile () {
 }
 
 notify_profile_daemon () {
-    # Notify TLP-PD of a profile change via D-Bus
+    # Notify tlp-pd of a profile change via D-Bus
     # $1: profile id
 
     local autosw
@@ -1425,14 +1425,14 @@ has_power_profile_changed () {
 }
 
 clear_saved_power_profile () {
-    # remove last saved power profile
+    # remove last saved profile
 
     rm -f $PWRRUNFILE 2> /dev/null
 
     return 0
 }
 
-echo_started_profile () { # announce power profile and auto/manual mode after start
+echo_started_profile () { # announce profile and auto/manual mode after start
     # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
     # $2: tlp command
 

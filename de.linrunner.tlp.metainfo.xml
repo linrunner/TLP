@@ -21,13 +21,13 @@
         customizable to fulfil specific user requirements.
     </p>
     <p>
-        Settings are organized into the three customizable profiles performance (AC),
+        Settings are organized into the three customizable TLP profiles performance (AC),
         balanced (BAT) and power-saver (SAV), allowing to adjust between savings
         and performance independently for battery and AC operation.
     </p>
     <p>
         The optional TLP Profiles Daemon (tlp-pd) implements the D-Bus interface,
-        which lets desktop environments show a power profile switch.
+        which lets desktop environments show a TLP profile switch.
         Together with TLP as the backend for applying the customizable profiles,
         it replaces power-profiles-daemon.
     </p>

@@ -13,7 +13,7 @@
 
   <action id="org.freedesktop.UPower.PowerProfiles.switch-profile">
     <description>Switch Power Profile</description>
-    <message>Privileges are required to switch power profiles.</message>
+    <message>Privileges are required to switch profiles.</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -23,7 +23,7 @@
 
   <action id="org.freedesktop.UPower.PowerProfiles.hold-profile">
     <description>Hold Power Profile</description>
-    <message>Privileges are required to hold power profiles.</message>
+    <message>Privileges are required to hold profiles.</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -33,7 +33,7 @@
 
   <action id="org.freedesktop.UPower.PowerProfiles.release-profile">
     <description>Hold Power Profile</description>
-    <message>Privileges are required to hold power profiles.</message>
+    <message>Privileges are required to hold profiles.</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>

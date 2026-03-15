@@ -96,7 +96,7 @@ bat_present () {
 }
 
 pp2str () {
-    # Convert power profile code to string
+    # Convert profile code to string
     # $1: profile: PP_PRF=0/PP_BAL=1/PP_SAV=2
 
     case "$1" in

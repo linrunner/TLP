@@ -30,16 +30,16 @@ function __fish_tlpctl_using_command
 end
 
 # Main commands - TLP-specific shortcuts first
-complete -c tlpctl -n __fish_tlpctl_needs_command -a performance -d "Switch to performance profile"
-complete -c tlpctl -n __fish_tlpctl_needs_command -a balanced -d "Switch to balanced profile"
-complete -c tlpctl -n __fish_tlpctl_needs_command -a power-saver -d "Switch to power-saver profile"
+complete -c tlpctl -n __fish_tlpctl_needs_command -a performance -d "Switch to 'performance' profile"
+complete -c tlpctl -n __fish_tlpctl_needs_command -a balanced -d "Switch to 'balanced' profile"
+complete -c tlpctl -n __fish_tlpctl_needs_command -a power-saver -d "Switch to 'power-saver' profile"
 
 # Standard commands
-complete -c tlpctl -n __fish_tlpctl_needs_command -a list -d "List available power profiles"
-complete -c tlpctl -n __fish_tlpctl_needs_command -a list-holds -d "List current power profile holds"
-complete -c tlpctl -n __fish_tlpctl_needs_command -a get -d "Print the currently active power profile"
-complete -c tlpctl -n __fish_tlpctl_needs_command -a set -d "Set the active power profile"
-complete -c tlpctl -n __fish_tlpctl_needs_command -a launch -d "Run a command using a specific power profile (hold)"
+complete -c tlpctl -n __fish_tlpctl_needs_command -a list -d "List available profiles"
+complete -c tlpctl -n __fish_tlpctl_needs_command -a list-holds -d "List current profile holds"
+complete -c tlpctl -n __fish_tlpctl_needs_command -a get -d "Print the currently active profile"
+complete -c tlpctl -n __fish_tlpctl_needs_command -a set -d "Set the active profile"
+complete -c tlpctl -n __fish_tlpctl_needs_command -a launch -d "Run a command using a specific profile (hold)"
 complete -c tlpctl -n __fish_tlpctl_needs_command -a loglevel -d "Set the loglevel of the tlp-pd daemon"
 complete -c tlpctl -n __fish_tlpctl_needs_command -a version -d "Print version information and exit"
 
@@ -47,7 +47,7 @@ complete -c tlpctl -n __fish_tlpctl_needs_command -a version -d "Print version i
 complete -c tlpctl -n __fish_tlpctl_needs_command -s h -l help -d "Show help message and exit"
 complete -c tlpctl -n __fish_tlpctl_needs_command -l version -d "Print version information and exit"
 
-# 'set' subcommand - complete with available profiles
+# 'set' subcommand - complete with available TLP profiles
 complete -c tlpctl -n '__fish_tlpctl_using_command set' -a 'performance balanced power-saver' -d "Profile"
 
 # 'loglevel' subcommand - complete with log levels
