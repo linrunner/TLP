@@ -31,6 +31,7 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
       - "Power profile" renamed to "TLP profile" to distinguish it
         from similarly sounding kernel tunables
       - OS Release: fix parsing of Gentoo's /etc/os-release with '' quoting
+    - tlp-stat -T: show timestamps with microsecond precision
     - Use 'daemon' facility for logging and trace
     Graphics:
     - Support Intel Xe graphics:
