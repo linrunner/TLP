@@ -654,7 +654,7 @@ batdrv_force_discharge_active () {
     # DANGER: Framework EC firmware does *not* automatically terminate discharge, the laptop switches off hard instead
     # $1: init/run
     # global params: $_batdrv_plugin, $_batdrv_sim, $_bat_str, $_bm_read, $_bd_read, $_bat_target_ch
-    # rc: init: 0=running or malfuntion/1=waiting, run: 0=running/1=terminated or malfunction
+    # rc: init: 0=running or timeout/1=waiting, run: 0=running/1=stopped
     # retval: $_bat_dischg_rc: 0=discharging/1=not discharging/2=AC detached/4=terminated/6=target soc reached/255=internal error,
     #   $_bat_cn, $_bat_fd, $_bat_cur, $_bat_limit, $_bat_soc, $_bat_st, $_bat_volt
     # prerequisite: batdrv_init(), batdrv_select_battery()
@@ -769,7 +769,7 @@ batdrv_discharge () {
     # discharge battery
     # $1: target soc 0(default)..99
     # global params: $_batdrv_plugin, $_batdrv_sim, $_bm_dischg, $_bat_str, $_bat_idx, $_bd_read, $_bf_dischg
-    # rc: 0=done/1=malfunction/2=AC detached/3=not emptied/4=already empty/5=cancelled by ^C/6=target soc reached/7=target soc out of bounds/8=force-discharge malfunction/9=charge level read error/16=blocked
+    # rc: 0=done/2=AC detached/3=not emptied/4=already empty/5=cancelled by ^C/6=target soc reached/7=target soc out of bounds/8=force-discharge failed or timeout/9=charge level read error/16=blocked
 
     # prerequisite: batdrv_init(), batdrv_select_battery()
     local cf cn label sleeps soc target_soc timeout wt
@@ -814,7 +814,7 @@ batdrv_discharge () {
     # start discharge
     if ! batdrv_write_force_discharge 1; then
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_write_error($_bat_str)"
-        cecho "Error: discharge $_bat_str initialization malfunction -- check your hardware (battery, charger)." 1>&2
+        cecho "Error: discharge $_bat_str failed -- check your hardware (battery, charger)." 1>&2
         unlock_tlp tlp_discharge
         _bat_dischg_rc=8
         return $_bat_dischg_rc
@@ -925,10 +925,10 @@ batdrv_discharge () {
         echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.${label}($_bat_str): fd=$_bat_fd; bst=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur; volt=$_bat_volt; drc=$_bat_dischg_rc"
 
     else
-        # force-discharge init malfunction
+        # force-discharge timeout
         _bat_dischg_rc=8
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.init_error($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur; volt=$_bat_volt; drc=$_bat_dischg_rc"
-        cecho "Error: discharge $_bat_str initialization malfunction after $(((timeout - wt) * sleeps)) second(s) -- check your hardware (battery, charger)." 1>&2
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.timeout($_bat_str): fd=$_bat_fd; st=$_bat_st; limit=$_bat_limit; soc=$_bat_soc; cn=$_bat_cn; pwr=$_bat_cur; volt=$_bat_volt; drc=$_bat_dischg_rc"
+        cecho "Error: discharge $_bat_str timeout after $(((timeout - wt) * sleeps)) second(s) -- check your hardware (battery, charger)." 1>&2
     fi
 
     trap - INT TERM # remove ^C and error hook
