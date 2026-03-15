@@ -1177,11 +1177,11 @@ if [ "$show_trace" = "1" ]; then
         if [ $show_verbose -eq 1 ]; then
             # verbose: show all output
             # shellcheck disable=SC2086
-            $JOURNALCTL -p debug --no-pager $log_ids    2> /dev/null && jdone=1
+            $JOURNALCTL -p debug --output=short-precise --no-pager $log_ids    2> /dev/null && jdone=1
         else
             # non-verbose: show output since last reboot only
             # shellcheck disable=SC2086
-            $JOURNALCTL -p debug --no-pager $log_ids -b 2> /dev/null && jdone=1
+            $JOURNALCTL -p debug --output=short-precise --no-pager $log_ids -b 2> /dev/null && jdone=1
         fi
     fi
 
