@@ -363,23 +363,16 @@ restore_device_states () {
 
 set_radio_device_states () {
     # set/initialize all radio states
-    # $1: start/stop/PP_PRF=0/PP_BAL=1/PP_SAV=2/radiosw
+    # $1: start/stop/PP_PRF=0/PP_BAL=1/PP_SAV=2
     # called from init scripts or upon change of power source
 
     local dev devs2disable devs2enable restore
     local quiet=0
 
-    # save/restore mode is disabled by default
-    if [ "$1" != "radiosw" ]; then
-        restore="$RESTORE_DEVICE_STATE_ON_STARTUP"
-    else
-        restore=0
-    fi
-
-    if [ "$restore" = "1" ]; then
-        # "save/restore" mode
+    if wordinlist "$1" "start stop" && [ "${RESTORE_DEVICE_STATE_ON_STARTUP}" = "1" ]; then
+        # save/restore mode on system startup/shutdown (DEPRECATED)
         echo_debug "rf" "set_radio_device_states($1).restore"
-        case $1 in
+        case "$1" in
             start)
                 if restore_device_states; then
                     echo "Radio device states restored."
@@ -395,8 +388,8 @@ set_radio_device_states () {
                 ;;
         esac
     else
-        # "disable/enable on startup/shutdown or bat/ac" or "radiosw" mode
-        case $1 in
+        # disable/enable on system startup/shutdown or profile select
+        case "$1" in
             start) # system startup
                 devs2disable="$DEVICES_TO_DISABLE_ON_STARTUP"
                 devs2enable="$DEVICES_TO_ENABLE_ON_STARTUP"
@@ -422,7 +415,13 @@ set_radio_device_states () {
                 fi
                 ;;
 
-            "$PP_BAL"|"$PP_SAV") # balanced/power-saver profile: battery power --> build disable list
+            "$PP_PRF") # performance profile --> build enable list
+                quiet=1 # do not display progress
+                devs2enable="${DEVICES_TO_ENABLE_ON_AC:-}"
+                devs2disable=""
+                ;;
+
+            "$PP_BAL"|"$PP_SAV") # balanced/power-saver profile --> build disable list
                 quiet=1 # do not display progress
                 devs2enable=""
                 devs2disable="${DEVICES_TO_DISABLE_ON_BAT:-}"
@@ -440,16 +439,6 @@ set_radio_device_states () {
                 devs2disable="${devs2disable# }"
                 ;;
 
-            "$PP_PRF") # performance profile: AC power --> build enable list
-                quiet=1 # do not display progress
-                devs2enable="${DEVICES_TO_ENABLE_ON_AC:-}"
-                devs2disable=""
-                ;;
-
-            radiosw)
-                devs2disable=""
-                devs2enable="$DEVICES_TO_ENABLE_ON_RADIOSW"
-                ;;
         esac
 
         echo_debug "rf" "set_radio_device_states($1): enable=$devs2enable disable=$devs2disable"

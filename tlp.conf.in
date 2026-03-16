@@ -541,17 +541,21 @@
 
 #DEVICES_TO_ENABLE_ON_STARTUP="wifi"
 
-# Radio devices to enable on AC: bluetooth, nfc, wifi, wwan.
+# Radio devices to enable when switching to the performance profile:
+#   bluetooth, nfc, wifi, wwan.
 # Default: <none>
 
 #DEVICES_TO_ENABLE_ON_AC="bluetooth nfc wifi wwan"
 
-# Radio devices to disable on battery: bluetooth, nfc, wifi, wwan.
+# Radio devices to disable when switching to the balanced or power-saver
+# profile:
+#   bluetooth, nfc, wifi, wwan.
 # Default: <none>
 
 #DEVICES_TO_DISABLE_ON_BAT="bluetooth nfc wifi wwan"
 
-# Radio devices to disable on battery when not in use (not connected):
+# Radio devices to disable when not in use (not connected) and switching
+# to the balanced or power-saver profile:
 #   bluetooth, nfc, wifi, wwan.
 # Default: <none>
 
