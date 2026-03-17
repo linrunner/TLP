@@ -428,10 +428,10 @@ check_services_activation_status () {
         fi
         if check_tlp_pd_installed && ! check_service_state "$TLPPD_SERVICE" enabled > /dev/null 2>&1; then
             if ! check_service_state "$TLPPD_SERVICE" active; then
-                echo_message "Error: You can't switch TLP profiles on the desktop because $TLPPD_SERVICE is not enabled "`
+                echo_message "Error: You can't switch TLP profiles by mouse click because $TLPPD_SERVICE is not enabled "`
                             `"--> Run 'systemctl enable --now $TLPPD_SERVICE' to ensure the full functionality of TLP." "err"
             else
-                echo_message "Error: After the next restart, you won't be able to switch TLP profiles on the desktop because "`
+                echo_message "Error: After the next restart, you won't be able to switch TLP profiles by mouse click because "`
                             `"$TLPPD_SERVICE is not enabled --> Run 'systemctl enable $TLPPD_SERVICE' to ensure the "`
                             `"full functionality of TLP." "err"
             fi
