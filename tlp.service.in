@@ -16,5 +16,20 @@ ExecStart=@TLP_SBIN@/tlp init start
 ExecReload=@TLP_SBIN@/tlp start
 ExecStop=@TLP_SBIN@/tlp init stop
 
+# Lockdown
+LockPersonality=yes
+KeyringMode=private
+MemoryDenyWriteExecute=yes
+NoNewPrivileges=yes
+ProtectClock=yes
+ProtectControlGroups=yes
+ProtectHome=yes
+ProtectHostname=yes
+ProtectSystem=full
+ProtectKernelLogs=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+RestrictSUIDSGID=yes
+
 [Install]
 WantedBy=multi-user.target

@@ -10,5 +10,20 @@ BusName=net.hadess.PowerProfiles
 ExecStart=@TLP_SBIN@/tlp-pd
 Restart=on-failure
 
+# Lockdown
+LockPersonality=yes
+KeyringMode=private
+MemoryDenyWriteExecute=yes
+NoNewPrivileges=yes
+ProtectClock=yes
+ProtectControlGroups=yes
+ProtectHome=yes
+ProtectHostname=yes
+ProtectSystem=full
+ProtectKernelLogs=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+RestrictSUIDSGID=yes
+
 [Install]
 WantedBy=graphical.target
