@@ -23,10 +23,10 @@ $ # --- tlp-pd.service
 $ # prepare
 $ sudo systemctl -q disable tlp-pd.service
 $ sudo tlp start > /dev/null
-Error: After the next restart, you won't be able to switch power profiles on the desktop because tlp-pd.service is not enabled --> Run 'systemctl enable tlp-pd.service' to ensure the full functionality of TLP.
+Error: After the next restart, you won't be able to switch TLP profiles by mouse click because tlp-pd.service is not enabled --> Run 'systemctl enable tlp-pd.service' to ensure the full functionality of TLP.
 
 $ sudo tlp-stat -s > /dev/null
-Error: After the next restart, you won't be able to switch power profiles on the desktop because tlp-pd.service is not enabled --> Run 'systemctl enable tlp-pd.service' to ensure the full functionality of TLP.
+Error: After the next restart, you won't be able to switch TLP profiles by mouse click because tlp-pd.service is not enabled --> Run 'systemctl enable tlp-pd.service' to ensure the full functionality of TLP.
 
 $ # restore
 $ sudo systemctl -q enable tlp-pd.service
