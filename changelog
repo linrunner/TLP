@@ -56,6 +56,7 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     - Reversed the order of TLP's profiles in the desktop UI to match
       power-profiles-daemon's order
     - Rewrite of tlp-pd to use only GLib and no longer python-dbus
+    - Sandbox tlp-pd.service
     - tlp-pd property BatteryAware now reflects TLP_AUTO_SWITCH
       (0=false, 1/2=true) and becomes de facto readonly,
       i.e. it discards written values
