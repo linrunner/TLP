@@ -1163,10 +1163,12 @@ read_saved_power_profile () {
 assigned_profile () { # print profile code assigned to the given or current power source
     # global param: $_syspwr
     # $1: power source: PS_AC=0/PS_BAT=1/PS_UNKNOWN=128
+    # $2: 1=quiet (no debug log)
     # rc: PP_PRF=0/PP_BAL=1/PP_SAV=2
     # retval: $_pp_def_mem: PP_PRF=0/PP_BAL=1/PP_SAV=2
 
     local ps="${1:-$_syspwr}"
+    local quiet="${2:-0}"
     local ap
 
     case "$ps" in
@@ -1208,7 +1210,7 @@ assigned_profile () { # print profile code assigned to the given or current powe
     esac
 
     printf "%s" "$ap"
-    echo_debug "ps" "assigned_profile($1): ps=$ps; def=$_pp_def_mem; ap=$ap"
+    [ "$quiet" = "0" ] && echo_debug "ps" "assigned_profile($1): ps=$ps; def=$_pp_def_mem; ap=$ap"
     return "$ap"
 }
 
@@ -1294,7 +1296,7 @@ get_next_power_profile () {
                                 # power source has changed
                                 case "$_syspwr" in
                                     "$PS_AC")
-                                        if [ "$_pp_last" = "$(assigned_profile "$PS_BAT")" ]; then
+                                        if [ "$_pp_last" = "$(assigned_profile "$PS_BAT" 1)" ]; then
                                             # last profile matches the battery default --> assigned AC profile
                                             _pp_next="$(assigned_profile "$PS_AC")"
                                         else
@@ -1304,7 +1306,7 @@ get_next_power_profile () {
                                         ;;
 
                                     "$PS_BAT")
-                                        if [ "$_pp_last" = "$(assigned_profile "$PS_AC")" ]; then
+                                        if [ "$_pp_last" = "$(assigned_profile "$PS_AC" 1)" ]; then
                                             # last profile matches the AC default --> assigned battery profile
                                             _pp_next="$(assigned_profile "$PS_BAT")"
                                         else
@@ -1327,26 +1329,31 @@ get_next_power_profile () {
             bat)
                 _pp_next="$(assigned_profile "$PS_BAT")"
                 set_manual_mode "$_pp_next"
+                man_pp="$_pp_next"
                 ;;
 
             ac)
                 _pp_next="$(assigned_profile "$PS_AC")"
                 set_manual_mode "$_pp_next"
+                man_pp="$_pp_next"
                 ;;
 
             power-saver)
                 _pp_next="$PP_SAV"
                 clear_manual_mode
+                man_pp=""
                 ;;
 
             balanced)
                 _pp_next="$PP_BAL"
                 clear_manual_mode
+                man_pp=""
                 ;;
 
             performance)
                 _pp_next="$PP_PRF"
                 clear_manual_mode
+                man_pp=""
                 ;;
 
             *)
