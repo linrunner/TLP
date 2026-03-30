@@ -26,20 +26,21 @@
 # - If parameters are specified more than once, the last occurrence takes
 #   precedence. This also means that any parameters defined here will take
 #   precedence over any drop-ins.
-# - You can however, append values to a parameter already defined as intrinsic
-#   default or in a previously read file: use PARAMETER+="add values".
-# - Important: all parameters are disabled here. Remove the leading '#' if you
-#   want to enable a feature without a default or if you want to set a value
-#   other than the default.
+# - You can however, append values to a parameter already defined as default
+#   or in a previously read file: use PARAMETER+="add values".
+# - Important: in the original state all parameters in this file are commented
+#   out, so the defaults (if any) apply. Remove the leading '#' if you want
+#   to enable a feature without a default or if you want to set a value other
+#   than the default.
 # - Parameters must always be specified for all TLP profiles, i.e. in the
 #   AC, BAT and SAV category (where applicable). If you omit one of them,
 #   the missing profile will receive its value from another profile, since
 #   a change will only occur if different values are defined.
 # - To completely disable a parameter, use PARAMETER="".
 # Legend for defaults:
-# - Default *: intrinsic default that is effective when the parameter is
-#   missing or the line has a leading #'.
-# - Default <none>: do nothing or use kernel/hardware defaults.
+# - Default *: effective value when the parameter is missing or the line has
+#   a leading '#'.
+# - Default <none>: feature disabled, use kernel or hardware defaults.
 #
 # ----------------------------------------------------------------------------
 # tlp - Parameters for power saving
@@ -49,13 +50,15 @@
 
 #TLP_ENABLE=1
 
-# Set to 1 to deactivate all intrinsic defaults of TLP. This means that
-# TLP only applies settings that have been explicitly activated i.e.
-# parameters without a leading '#'.
+# Set to 1 to disable (almost) all defaults of TLP.
+# This means that TLP only applies settings that have been explicitly activated
+# i.e. parameters without leading '#'.
 # Notes:
 # - Helpful if one wants to use only selected features of TLP
 # - After activation, use tlp-stat -c to display your effective configuration
-
+# - TLP's operation relies on the defaults of TLP_ENABLE, TLP_WARN_LEVEL,
+#   TLP_AUTO_SWITCH, and TLP_PROFILE_AC/BAT, which are *not* disabled
+#
 #TLP_DISABLE_DEFAULTS=1
 
 # Control how warnings about invalid settings are issued:

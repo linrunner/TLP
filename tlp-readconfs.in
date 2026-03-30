@@ -36,7 +36,7 @@ use constant EXIT_TLPCONF => 5;
 use constant EXIT_DEFCONF => 6;
 
 # Defaults spared by TLP_DISABLE_DEFAULTS=1
-use constant ESSENTIAL_DEFAULTS => qr/TLP_ENABLE|TLP_WARN_LEVEL|TLP_PROFILE_AC|TLP_PROFILE_BAT/;
+use constant ESSENTIAL_DEFAULTS => qr/TLP_ENABLE|TLP_WARN_LEVEL|TLP_AUTO_SWITCH|TLP_PROFILE_AC|TLP_PROFILE_BAT/;
 
 # --- Global vars
 my @config_val = ();      # 2-dim array: parameter name, value, source, default-value
