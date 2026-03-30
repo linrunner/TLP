@@ -397,9 +397,9 @@ set_disk_iosched () { # set disk io scheduler
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "*** set_disk_iosched($pwrmode).all"
+        echo_debug "disk" "*** set_disk_iosched.all"
     else
-        echo_debug "disk" "*** set_disk_iosched($pwrmode).target: $target"
+        echo_debug "disk" "*** set_disk_iosched.target: $target"
     fi
 
     # pairwise iteration DISK_DEVICES[1,n], schedlist[1,m]; m > 0
