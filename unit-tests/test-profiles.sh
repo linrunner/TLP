@@ -45,7 +45,7 @@ check_profile_select () {
     case "$prof_save" in
         "$PP_PRF") prof_seq="balanced power-saver ac bat start auto suspend resume0 resume usb usb0 performance" ;;
         "$PP_BAL") prof_seq="power-saver ac bat start auto performance suspend resume0 resume usb usb0 balanced" ;;
-        "$PP_SAV") prof_seq="ac bat start auto performance balanced suspend resume0 resume usb usb0  power-saver" ;;
+        "$PP_SAV") prof_seq="ac bat start auto performance balanced suspend resume0 resume usb usb0 power-saver" ;;
     esac
 
     printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$prof_save $ps_save" "$mm_save"
@@ -350,7 +350,7 @@ check_persistent_mode () {
 }
 
 check_power_supply () {
-    # run 'tlp auto' with simulated power supply AC/battery/unknown
+    # run 'tlp start' with simulated power supply AC/battery/unknown
     # global param: $_testcnt, $_failcnt
     # retval: $_testcnt++, $_failcnt++
 

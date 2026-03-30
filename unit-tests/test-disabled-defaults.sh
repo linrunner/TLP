@@ -1,7 +1,7 @@
 #!/bin/sh
 # Test:
-# - Run tlp with TLP_DISABLE_DEFAULTS=1
-# - Check if default-configured tunables ar left unchanged
+# - Iterate all profiles with TLP_DISABLE_DEFAULTS=1
+# - Check a default-configured tunable to ensure it does not change
 # - Use EPP as sample, it's available on most hardware
 # Tested parameters:
 # - TLP_DISABLE_DEFAULTS=1
@@ -13,11 +13,12 @@
 readonly CPUD="/sys/devices/system/cpu"
 readonly CPU0="${CPUD}/cpu0"
 readonly DEFAULTS="/usr/share/tlp/defaults.conf"
+readonly READCONFS="/usr/share/tlp/tlp-readconfs"
 
 # --- Functions
 
 check_disabled_defaults () {
-    # TEMPLATE
+    # Iterate all profiles and check if EPP changes
     # global param: $_testcnt, $_failcnt
     # retval: $_testcnt++, $_failcnt++
 
@@ -28,7 +29,11 @@ check_disabled_defaults () {
 
     printf_msg "check_disabled_defaults {{{\n"
 
-    if [ -f "${CPU0}/cpufreq/energy_performance_preference" ]; then
+    if $READCONFS | grep -v '^defaults.conf' | grep -E -q 'CPU_ENERGY_PERF_POLICY'; then
+        printf_msg "*** Error: For the test to succeed, your configuration must not include CPU_ENERGY_PERF_POLICY_ON_AC/BAT/SAV.\n"
+        errcnt=1
+
+    elif [ -f "${CPU0}/cpufreq/energy_performance_preference" ]; then
         # save initial policy
         pol_save="$(read_sysf "${CPU0}/cpufreq/energy_performance_preference")"
         printf_msg " initial(%s): %s\n" "$prof_save" "$pol_save"
