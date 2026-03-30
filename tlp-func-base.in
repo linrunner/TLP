@@ -1175,7 +1175,7 @@ assigned_profile () { # print profile code assigned to the given or current powe
         "$PS_AC")
             ap="$(id2pp "$TLP_PROFILE_AC")"
             if [ "$ap" = "$PP_NONE" ]; then
-                # messed config --> substitute default or performance profile
+                # borked config --> substitute default or performance profile
                 ap="$(id2pp "${TLP_PROFILE_DEFAULT:-PRF}")"
             fi
             ;;
@@ -1183,7 +1183,7 @@ assigned_profile () { # print profile code assigned to the given or current powe
         "$PS_BAT")
             ap="$(id2pp "$TLP_PROFILE_BAT")"
             if [ "$ap" = "$PP_NONE" ]; then
-                # messed config --> substitute default or balanced profile
+                # borked config --> substitute default or balanced profile
                 ap="$(id2pp "${TLP_PROFILE_DEFAULT:-BAL}")"
             fi
             ;;
@@ -1195,12 +1195,12 @@ assigned_profile () { # print profile code assigned to the given or current powe
                 if is_laptop; then
                     # laptop: use battery profile
                     ap="$(id2pp "$TLP_PROFILE_BAT")"
-                    # messed config --> substitute balanced profile
+                    # borked config --> substitute balanced profile
                     [ "$ap" = "$PP_NONE" ] && ap="$PP_BAL"
                 else
                     # desktop/other: use AC profile
                     ap="$(id2pp "$TLP_PROFILE_AC")"
-                    # messed config --> substitute performance profile
+                    # borked config --> substitute performance profile
                     [ "$ap" = "$PP_NONE" ] && ap="$PP_PRF"
                 fi
             else
@@ -1259,6 +1259,11 @@ get_next_power_profile () {
 
                     1|2) # auto and smart switching --> assigned profile
                         _pp_next="$(assigned_profile)"
+                        ;;
+
+                    *) # borked config --> default profile
+                        _pp_next="$def_pp"
+                        _pp_def_mem="$def_pp"
                         ;;
                 esac
                 clear_manual_mode
@@ -1322,7 +1327,11 @@ get_next_power_profile () {
                             fi
                             ;;
 
-                    esac # $TLP_AUTO_SWITCH
+                        *) # borked config --> keep profile
+                            _pp_next=$_pp_last
+                            ;;
+
+                    esac # TLP_AUTO_SWITCH
                 fi # not manual mode
                 ;;
 
