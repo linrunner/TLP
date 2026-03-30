@@ -4,8 +4,14 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
 +++ 1.10.0 --- <unreleased> +++
 
 * Features since 1.10.0-beta.1
+  General:
+  - TLP_DISABLE_DEFAULTS: exclude TLP_AUTO_SWITCH=2. Specify all excluded
+    parameters in tlp.conf to make operating behaviour transparent.
+  Profiles:
+  - TLP_AUTO_SWITCH: replace invalid config with 0
 
 * Bugfixes since 1.9.0-beta.1
+  ./.
 
 +++ 1.10.0-beta.1 --- 27.03.2026 +++
 
@@ -54,7 +60,7 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     PCIe Devices:
     - tlp-stat -e: indicate when autosuspend is deactivated using
       RUNTIME_PM_ON_AC/BAT=""
-    Power Profiles:
+    Profiles:
     - TLP_PROFILE_AC/BAT: customize automatic TLP profiles for AC and battery.
       For example, they can be changed to balanced on AC power and power-saver
       on battery power (Issue #844).
