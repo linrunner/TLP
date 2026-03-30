@@ -28,15 +28,15 @@
 #   precedence over any drop-ins.
 # - You can however, append values to a parameter already defined as default
 #   or in a previously read file: use PARAMETER+="add values".
-# - Important: in the original state all parameters in this file are commented
-#   out, so the defaults (if any) apply. Remove the leading '#' if you want
-#   to enable a feature without a default or if you want to set a value other
-#   than the default.
+# - Important: in its native state, all of the parameters in this file are
+#   commented out with a leading '#', so the defaults (if any) apply.
+#   Remove the leading '#' if you want to enable a feature without a default
+#   or if you want to set a value other than the default.
 # - Parameters must always be specified for all TLP profiles, i.e. in the
 #   AC, BAT and SAV category (where applicable). If you omit one of them,
 #   the missing profile will receive its value from another profile, since
 #   a change will only occur if different values are defined.
-# - To completely disable a parameter, use PARAMETER="".
+# - To completely disable a feature, use PARAMETER="".
 # Legend for defaults:
 # - Default *: effective value when the parameter is missing or the line has
 #   a leading '#'.
