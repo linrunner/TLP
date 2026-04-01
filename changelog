@@ -7,6 +7,8 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
   General:
   - TLP_DISABLE_DEFAULTS: exclude TLP_AUTO_SWITCH=2. Specify all excluded
     parameters in tlp.conf to make operating behaviour transparent.
+  Graphics:
+  - INTEL_GPU_POWER_PROFILE_ON_BAT: change default to power_saving
   Profiles:
   - TLP_AUTO_SWITCH: replace invalid config with 0
 
