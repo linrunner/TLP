@@ -372,7 +372,7 @@
 # Intel GPU power management.
 # Select power profile for the Intel Xe GPU: base, power_saving.
 # Note: requires xe driver.
-# Default: base (AC), base (BAT), power_saving (SAV)
+# Default: base (AC), power_saving (BAT), power_saving (SAV)
 
 # INTEL_GPU_POWER_PROFILE_ON_AC=base
 # INTEL_GPU_POWER_PROFILE_ON_BAT=base
