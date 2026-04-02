@@ -326,7 +326,9 @@ save_device_states () {
         # iterate over all possible devices -> save state in file
         for dev in $devlist; do
             get_rf_dev_state "$dev"
-            { printf '%s\n' "$dev $_devs" >> "$RFSTATEFILE"; } 2> /dev/null || rc=2
+            if [ "$_devs" = "0" ] || [ "$_devs" = "1" ]; then
+                { printf '%s\n' "$dev $_devs" >> "$RFSTATEFILE"; } 2> /dev/null || rc=2
+            fi
         done
     else
         # create failed
@@ -352,6 +354,7 @@ restore_device_states () {
             set -- $sline # read dev, state into $1, $2
             device_switch "$1" "$2"
         done < "$RFSTATEFILE"
+        rm -f "$RFSTATEFILE" 2> /dev/null
     else
         # state file nonexistent
         rc=1

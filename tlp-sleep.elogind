@@ -1,4 +1,9 @@
 #!/bin/sh
+# tlp - elogind suspend/resume hook
+#
+# Copyright (c) 2026 Thomas Koch <linrunner at gmx.net> and others.
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 case "${1-}" in
     'pre')
         exec tlp suspend
