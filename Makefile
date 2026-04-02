@@ -80,6 +80,7 @@ SED = sed \
 	-e "s|@TLP_CONFDEF@|$(TLP_CONFDEF)|g" \
 	-e "s|@TLP_CONFREN@|$(TLP_CONFREN)|g" \
 	-e "s|@TLP_CONFDPR@|$(TLP_CONFDPR)|g" \
+	-e "s|@TLP_SDSL@|$(TLP_SDSL)|g" \
 	-e "s|@TLP_RUN@|$(TLP_RUN)|g"   \
 	-e "s|@TLP_VAR@|$(TLP_VAR)|g"
 

@@ -402,7 +402,16 @@ case "$_cmd" in
 
     suspend) # handle suspend/hibernate
         check_root
-        save_device_states "bluetooth wwan"
+        if [ "${X_TLP_SUSPEND_RFKILL_PERSIST:-1}" != "0" ]; then
+            if [ -x "@TLP_SDSL@/system76-driver_bluetooth-suspend" ] \
+                && [ ! -x "@TLP_SDSL@/pop-default-settings_bluetooth-suspend" ] ; then
+                # system76's suspend/resume hack is active --> do not save bluetooth state
+                # refer to https://github.com/linrunner/TLP/issues/872
+                save_device_states "wwan"
+            else
+                save_device_states "bluetooth wwan"
+            fi
+        fi
         suspend_drivebay "$_pp_next"
 
         case "$X_TLP_SUSPEND_ACMODE" in
