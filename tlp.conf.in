@@ -448,6 +448,7 @@
 
 #PCIE_ASPM_ON_AC=default
 #PCIE_ASPM_ON_BAT=default
+#PCIE_ASPM_ON_SAV=default
 
 # Autosuspend PCIe devices (Runtime Power Management):
 #   on=disable, auto=enable.
