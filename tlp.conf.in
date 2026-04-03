@@ -444,7 +444,7 @@
 # PCIe Active State Power Management (ASPM):
 #   default(*), performance, powersave, powersupersave.
 # (*) keeps BIOS ASPM defaults (recommended)
-# Default: <none>
+# Default: default
 
 #PCIE_ASPM_ON_AC=default
 #PCIE_ASPM_ON_BAT=default
