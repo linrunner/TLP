@@ -131,10 +131,11 @@ set_pcie_aspm () { # set pcie active state power management
 
     case "$1" in
         "$PP_PRF")           pwr="${PCIE_ASPM_ON_AC:-}" ;;
-        "$PP_BAL"|"$PP_SAV") pwr="${PCIE_ASPM_ON_BAT:-}" ;;
+        "$PP_BAL")           pwr="${PCIE_ASPM_ON_BAT:-}" ;;
+        "$PP_SAV")           pwr="${PCIE_ASPM_ON_SAV:-${PCIE_ASPM_ON_BAT:-}}" ;;
 
         "$PP_SUS") # reset on suspend only when configured
-            if [ -n "${PCIE_ASPM_ON_AC:-}${PCIE_ASPM_ON_BAT:-}" ]; then
+            if [ -n "${PCIE_ASPM_ON_AC:-}${PCIE_ASPM_ON_BAT:-}${PCIE_ASPM_ON_SAV:-}" ]; then
                 pwr="default"
             fi
             ;;
