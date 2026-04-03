@@ -104,7 +104,7 @@ set_intel_gpu_power_profile () {
                 for gtfd in $_gpu_freqs; do
                     if [ -f "$gtfd/power_profile" ]; then
                         gtnum=$((gtnum + 1))
-                        if ! write_sysf "$profile" "$_gpu_freqs/power_profile"; then
+                        if ! write_sysf "$profile" "$gtfd/power_profile"; then
                             echo_debug "pm" "set_intel_gpu_power_profile($1).write_error: gt=$gtfd profile=$profile; rc=$?"
                             ec=$((ec + 1))
                         fi
