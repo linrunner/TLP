@@ -9,11 +9,15 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     parameters in tlp.conf to make operating behaviour transparent.
   Graphics:
   - INTEL_GPU_POWER_PROFILE_ON_BAT: change default to power_saving
+  PCIe Devices:
+  - PCIE_ASPM_ON_SAV added for power-saver profile
   Profiles:
-  - TLP_AUTO_SWITCH: replace invalid config with 0
+  - TLP_AUTO_SWITCH: substitute invalid config with 0
 
 * Bugfixes since 1.9.0-beta.1
-  ./.
+  Graphics:
+  - Fix INTEL_GPU_POWER_PROFILE_AC/BAT/SAV not working for GPUs with
+    multiple GTs
 
 +++ 1.10.0-beta.1 --- 27.03.2026 +++
 
