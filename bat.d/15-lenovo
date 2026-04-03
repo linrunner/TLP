@@ -416,7 +416,7 @@ batdrv_show_battery_data () {
     printf "Plugin: %s\n" "$_batdrv_plugin"
 
     if [ "$_bm_thresh" = "natacpi" ]; then
-        cprintf "success" "Supported features: charge threshold"
+        cprintf "success" "Supported features: charge threshold\n"
     else
         cprintf "warning" "Supported features: none available\n"
     fi
