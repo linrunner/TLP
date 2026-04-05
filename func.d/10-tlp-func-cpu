@@ -515,6 +515,106 @@ set_platform_profile () { # set platform profile
     fi
 
     if [ -f $FWACPID/platform_profile ]; then
+        # Validate configured profile against available choices and
+        # try to heuristically pick a matching profile when the
+        # configured name is not available on the current system.
+        choices_file="$FWACPID/platform_profile_choices"
+        if [ -f "$choices_file" ]; then
+            choices="$(read_sysf "$choices_file")"
+            found=0
+
+            # If applying SAV and SAV was not explicitly set, prefer
+            # a prioritized lower-power candidate (e.g. quiet) over the
+            # BAT-derived value when available on this system.
+            if [ "$1" = "$PP_SAV" ] && [ -z "${PLATFORM_PROFILE_ON_SAV:-}" ] && [ -n "${PLATFORM_PROFILE_ON_BAT:-}" ]; then
+                for cand in low-power quiet power_saving powersave low powersupersave; do
+                    cand_h="$(printf "%s" "$cand" | tr '_' '-')"
+                    cand_u="$(printf "%s" "$cand" | tr '-' '_')"
+                    for opt in $choices; do
+                        if [ "$opt" = "$cand" ] || [ "$opt" = "$cand_h" ] || [ "$opt" = "$cand_u" ]; then
+                            pwr="$opt"
+                            found=1
+                            echo_debug "pm" "set_platform_profile($1): selected SAV priority candidate -> $pwr"
+                            break 3
+                        fi
+                    done
+                done
+            fi
+
+            if [ "$found" -eq 0 ]; then
+                for opt in $choices; do
+                    if [ "$opt" = "$pwr" ]; then
+                        found=1
+                        break
+                    fi
+                done
+            fi
+
+            if [ "$found" -eq 0 ]; then
+                # Try simple normalisations: lower-case, underscores->hyphens
+                pwr_l="$(printf "%s" "$pwr" | tr '[:upper:]' '[:lower:]')"
+                pwr_h="$(printf "%s" "$pwr_l" | tr '_' '-')"
+                for opt in $choices; do
+                    opt_l="$(printf "%s" "$opt" | tr '[:upper:]' '[:lower:]')"
+                    if [ "$opt_l" = "$pwr_l" ] || [ "$opt_l" = "$pwr_h" ]; then
+                        pwr="$opt"
+                        found=1
+                        break
+                    fi
+                done
+            fi
+
+            if [ "$found" -eq 0 ]; then
+                # Heuristic token match: try tokens from configured name
+                pwr_tokens="$(printf "%s" "$pwr" | tr ' _-' '\n' | tr '[:upper:]' '[:lower:]')"
+                for tok in $pwr_tokens; do
+                    [ -z "$tok" ] && continue
+                    for opt in $choices; do
+                        opt_l="$(printf "%s" "$opt" | tr '[:upper:]' '[:lower:]')"
+                        case "$opt_l" in
+                            *"$tok"*)
+                                pwr="$opt"
+                                found=1
+                                break 2
+                                ;;
+                        esac
+                    done
+                done
+            fi
+
+            # If we're applying the power-saver profile but the configured
+            # SAV name was taken from the BAT setting (i.e. no explicit
+            # SAV configured), try to pick a more power-saving candidate
+            # from a prioritized list when available on the system.
+            if [ "$found" -eq 0 ] && [ "$1" = "$PP_SAV" ] ; then
+                # compare against BAT-derived value; if pwr equals BAT, we
+                # assume SAV was not explicitly set and try to find a lower
+                # option
+                if [ -n "${PLATFORM_PROFILE_ON_BAT:-}" ] && [ "$pwr" = "${PLATFORM_PROFILE_ON_BAT}" ]; then
+                    for cand in low-power quiet power_saving powersave low powersupersave; do
+                        # try variants with hyphen/underscore and plain
+                        cand_h="$(printf "%s" "$cand" | tr '_' '-')"
+                        cand_u="$(printf "%s" "$cand" | tr '-' '_')"
+                        for opt in $choices; do
+                            if [ "$opt" = "$cand" ] || [ "$opt" = "$cand_h" ] || [ "$opt" = "$cand_u" ]; then
+                                pwr="$opt"
+                                found=1
+                                break 3
+                            fi
+                        done
+                    done
+                    if [ "$found" -eq 1 ]; then
+                        echo_debug "pm" "set_platform_profile($1): selected SAV candidate -> $pwr"
+                    fi
+                fi
+            fi
+
+            if [ "$found" -eq 1 ]; then
+                echo_debug "pm" "set_platform_profile($1): adjusted profile -> $pwr"
+            else
+                echo_debug "pm" "set_platform_profile($1): configured profile '$pwr' not in choices: $choices"
+            fi
+        fi
         if check_ppd_running; then
             # do not apply platform profile when power-profiles-daemon is running
             echo_message "Warning: PLATFORM_PROFILE_ON_AC/BAT is not set because power-profiles-daemon is running."
