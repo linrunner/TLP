@@ -1,6 +1,6 @@
-tlp (1.10.0~beta.1-1~bookworm) bookworm; urgency=medium
+tlp (1.10.0~beta.2-1~bookworm) bookworm; urgency=medium
  
-  * New upstream version 1.10.0-beta.1
+  * New upstream version 1.10.0-beta.2
 
   [ Thomas Koch ]
   * Remove dependency on python3-dbus
@@ -9,7 +9,7 @@ tlp (1.10.0~beta.1-1~bookworm) bookworm; urgency=medium
   [ Raphaël Halimi ]
   * debian/copyright: update copyright years
 
- -- Thomas Koch <linrunner@gmx.net>  Fri, 27 Mar 2026 09:42:21 +0100
+ -- Thomas Koch <linrunner@gmx.net>  Tue, 07 Apr 2026 08:42:21 +0200
 
 tlp (1.9.1-1~bookworm) bookworm; urgency=high
 
