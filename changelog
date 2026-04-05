@@ -1,36 +1,38 @@
 This is the user-oriented changelog. For information regarding packaging,
 please refer to: https://linrunner.de/tlp/developers/packaging.html
 
-+++ 1.10.0 --- <unreleased> +++
++++ 1.10.0-beta.2 --- 07.04.2026 +++
 
-* Features since 1.10.0-beta.1
-  Battery Care:
-  - Framework laptops: remove the framework plugin, as the required
-    out-of-tree kernel module framework_laptop is abandoned.
-    State of things for setting charge thresholds on Framework hardware is:
-    - Recent changes to Framework's EC firmware break the cros_charge-control
-      kernel module, the base for TLP's alternative cros-ec plugin.
-    - Currently, the only remaining viable option is to use framework_tool
-      (part of the framework-system library). However, this does not provide
-      the standard sysfs attributes charge_control_start/end_threshold,
-      which prevents TLP from setting charge thresholds.
-  General:
-  - TLP_DISABLE_DEFAULTS: exclude TLP_AUTO_SWITCH=2. Specify all excluded
-    parameters in tlp.conf to make operating behaviour transparent.
-  Graphics:
-  - INTEL_GPU_POWER_PROFILE_ON_BAT: change default to power_saving
-  PCIe Devices:
-  - PCIE_ASPM_ON_SAV added for power-saver profile
-  Profiles:
-  - TLP_AUTO_SWITCH: substitute invalid config with 0
+  * Beta Release
 
-* Bugfixes since 1.9.0-beta.1
-  General:
-  - Fix disabled bluetooth after suspend/resume cycle when paired with
-    system76-driver (Issue #872)
-  Graphics:
-  - Fix INTEL_GPU_POWER_PROFILE_AC/BAT/SAV not working for GPUs with
-    multiple GTs
+  * Features since 1.10.0-beta.1
+    Battery Care:
+    - Framework laptops: remove the obsolete framework plugin, as the required
+      out-of-tree kernel module framework_laptop is abandoned.
+      State of things for setting charge thresholds on Framework hardware is:
+      - Recent changes to Framework's EC firmware break the cros_charge-control
+        kernel module, the base for TLP's alternative cros-ec plugin.
+      - Currently, the only remaining viable option is to use framework_tool
+        (part of the framework-system library). However, this does not provide
+        the standard sysfs attributes charge_control_start/end_threshold,
+        which prevents TLP from setting charge thresholds.
+    General:
+    - TLP_DISABLE_DEFAULTS: exclude TLP_AUTO_SWITCH=2. Specify all excluded
+      parameters in tlp.conf to make operating behaviour transparent.
+    Graphics:
+    - INTEL_GPU_POWER_PROFILE_ON_BAT: change default to power_saving
+    PCIe Devices:
+    - PCIE_ASPM_ON_SAV added for power-saver profile
+    Profiles:
+    - TLP_AUTO_SWITCH: substitute invalid config with 0
+
+  * Bugfixes since 1.9.0-beta.1
+    General:
+    - Fix disabled bluetooth after suspend/resume cycle when paired with
+      system76-driver (Issue #872)
+    Graphics:
+    - Fix INTEL_GPU_POWER_PROFILE_AC/BAT/SAV not working for GPUs with
+      multiple GTs
 
 +++ 1.10.0-beta.1 --- 27.03.2026 +++
 
