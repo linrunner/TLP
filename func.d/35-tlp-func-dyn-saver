@@ -1,0 +1,334 @@
+#!/bin/sh
+# tlp-func-dyn-saver - Dynamic adjustments for power-saver profile
+#
+# Activates only in battery mode when the active profile is power-saver.
+# Adjusts PLATFORM_PROFILE_ON_SAV, CPU_ENERGY_PERF_POLICY_ON_SAV and
+# PCIE_ASPM_ON_SAV workload-dependently (low/med/high) using existing
+# setter functions. Designed for install-and-forget usage (disabled by default).
+
+# Requires: tlp-func-base, tlp-func-cpu, tlp-func-pm
+
+# ============================================================================
+# Helper functions
+# ============================================================================
+
+create_pidfile() {
+    [ -n "$RUNDIR" ] || RUNDIR=/run/tlp
+    mkdir -p "$RUNDIR"
+    echo "$1" > "$RUNDIR/tlp-dyn-saver.pid"
+}
+
+remove_pidfile() {
+    rm -f "$RUNDIR/tlp-dyn-saver.pid" 2>/dev/null || true
+}
+
+is_running() {
+    [ -f "$RUNDIR/tlp-dyn-saver.pid" ] || return 1
+    pid=$(cat "$RUNDIR/tlp-dyn-saver.pid")
+    [ -n "$pid" ] || return 1
+    kill -0 "$pid" 2>/dev/null
+}
+
+read_cpu_pct() {
+    # read aggregate cpu utilization over $1 seconds
+    # simple implementation using /proc/stat
+    local sleep_sec=${1:-1}
+    local cpu1 cpu2 idle1 idle2 total1 total2
+    cpu1=$(awk '/^cpu /{for(i=2;i<=NF;i++)s+=$i;print s; exit}' /proc/stat)
+    idle1=$(awk '/^cpu /{print $5; exit}' /proc/stat)
+    sleep "$sleep_sec"
+    cpu2=$(awk '/^cpu /{for(i=2;i<=NF;i++)s+=$i;print s; exit}' /proc/stat)
+    idle2=$(awk '/^cpu /{print $5; exit}' /proc/stat)
+    total1=$cpu1
+    total2=$cpu2
+    local total_delta=$((total2 - total1))
+    local idle_delta=$((idle2 - idle1))
+    if [ "$total_delta" -le 0 ]; then
+        echo 0
+        return
+    fi
+    # busy = total - idle
+    busy=$((total_delta - idle_delta))
+    pct=$((busy * 100 / total_delta))
+    echo "$pct"
+}
+
+get_ac_power() {
+    # Determine if running on AC power (1=on AC, 0=on battery)
+    # Check battery status from /sys/class/power_supply (via ACPIBATDIR constant)
+    # When sourced, ACPIBATDIR=/sys/class/power_supply
+    
+    # Find any battery and check its status
+    for bat_dir in /sys/class/power_supply/BAT*; do
+        if [ -d "$bat_dir" ]; then
+            status_file="$bat_dir/status"
+            if [ -f "$status_file" ]; then
+                status=$(cat "$status_file" 2>/dev/null)
+                echo "dyn-saver: checking $status_file -> $status" >> /tmp/dyn-saver.log
+                
+                if [ "$status" = "Discharging" ]; then
+                    echo 0  # on battery
+                    return 0
+                elif [ "$status" = "Charging" ] || [ "$status" = "Full" ] || [ "$status" = "Not charging" ]; then
+                    echo 1  # on AC
+                    return 0
+                fi
+            fi
+        fi
+    done
+    
+    # Fallback: check AC adapter directly
+    if [ -f /sys/class/power_supply/AC/online ]; then
+        ac_online=$(cat /sys/class/power_supply/AC/online 2>/dev/null)
+        echo "$ac_online"
+        return 0
+    fi
+    
+    # Fallback: assume AC power if we can't determine
+    echo 1
+}
+
+usage() {
+    echo "Usage: $0 {start|stop|status|run}" 1>&2
+}
+
+# ============================================================================
+# Main daemon loop
+# ============================================================================
+
+run_loop() {
+    # source common functions
+    # tlp-func-base must be sourced first as it defines functions and constants
+    for lib in @TLP_TLIB@/tlp-func-base @TLP_TLIB@/func.d/35-tlp-func-batt @TLP_TLIB@/func.d/10-tlp-func-cpu @TLP_TLIB@/func.d/05-tlp-func-pm; do
+        . "$lib" || { echo "Failed to source $lib"; exit 1; }
+    done
+
+    # Load configuration directly (for standalone execution outside of tlp's context)
+    # Source defaults and user config files
+    if [ -f "@TLP_TLIB@/defaults.conf" ]; then
+        . "@TLP_TLIB@/defaults.conf"
+    fi
+    if [ -f "/etc/tlp.conf" ]; then
+        . "/etc/tlp.conf"
+    fi
+    # Source all config files in /etc/tlp.d/ directory
+    for conf_file in /etc/tlp.d/*.conf; do
+        if [ -f "$conf_file" ]; then
+            . "$conf_file"
+        fi
+    done
+
+    # Use constants from tlp-func-base, or fallback if not readonly
+    # Note: Some constants may be readonly, so we use local variables as fallbacks
+    _pp_sav=${PP_SAV:-2}      # power-saver profile constant
+    _ps_bat=${PS_BAT:-1}      # battery state constant
+    _pp_none=${PP_NONE:-255}  # invalid profile constant
+    _pwrrunfile=${PWRRUNFILE:-/run/tlp/last_pwr}  # file with last profile
+    _rundir=${RUNDIR:-/run/tlp}  # runtime directory
+
+    # Check if dynamic saver is enabled
+    SAV_DYNAMIC_ENABLE=${SAV_DYNAMIC_ENABLE:-0}
+    [ "$SAV_DYNAMIC_ENABLE" = "1" ] || { echo "dyn-saver: disabled"; exit 0; }
+    
+    # Auto-detect SAV profile if not configured
+    # Try to find the best power-saver candidate from available profiles
+    if [ -z "$PLATFORM_PROFILE_ON_SAV" ]; then
+        if [ -f /sys/firmware/acpi/platform_profile_choices ]; then
+            # Try preferred candidates in order
+            for candidate in quiet low-power power-saver balanced-low; do
+                if grep -q "$candidate" /sys/firmware/acpi/platform_profile_choices 2>/dev/null; then
+                    PLATFORM_PROFILE_ON_SAV="$candidate"
+                    echo "dyn-saver: auto-detected SAV profile: $PLATFORM_PROFILE_ON_SAV" >> /tmp/dyn-saver.log
+                    break
+                fi
+            done
+        fi
+    fi
+    
+    # Final fallback if still not set (should not happen on systems with platform_profile)
+    PLATFORM_PROFILE_ON_SAV=${PLATFORM_PROFILE_ON_SAV:-quiet}
+    
+    INTERVAL=${SAV_DYNAMIC_INTERVAL:-5}
+    SAMPLES=${SAV_DYNAMIC_SAMPLES:-3}
+    THRESH="${SAV_DYNAMIC_THRESHOLDS:-30,60}"
+    HYST=${SAV_DYNAMIC_HYSTERESIS:-5}
+    MIND=${SAV_DYNAMIC_MIN_DELAY:-30}
+
+    thr_low=$(echo "$THRESH" | cut -d, -f1)
+    thr_high=$(echo "$THRESH" | cut -d, -f2)
+    [ -n "$thr_low" ] || thr_low=30
+    [ -n "$thr_high" ] || thr_high=60
+
+    # debug: verify constants are defined
+    echo "dyn-saver: SAV_DYNAMIC_ENABLE=$SAV_DYNAMIC_ENABLE PLATFORM_PROFILE_ON_SAV=$PLATFORM_PROFILE_ON_SAV" >> /tmp/dyn-saver.log
+    echo "dyn-saver: INTERVAL=$INTERVAL SAMPLES=$SAMPLES THRESHOLDS=$thr_low,$thr_high HYST=$HYST MIND=$MIND" >> /tmp/dyn-saver.log
+
+    last_state="unknown"
+    last_change=0
+    sample_buf=""
+
+    while true; do
+        # check running conditions: battery & last_pwr == PP_SAV
+        # Get AC power status (1=on AC, 0=on battery)
+        ac_status=$(get_ac_power)
+        
+        # Validate ac_status is a number
+        if ! printf "%d" "$ac_status" >/dev/null 2>&1; then
+            ac_status=1  # assume AC if unclear
+        fi
+        
+        if [ "$ac_status" = "1" ]; then
+            echo "dyn-saver: on AC power (ac_status=$ac_status), skipping" >> /tmp/dyn-saver.log
+            sleep "$INTERVAL"
+            continue
+        fi
+
+        # check last applied profile
+        # Read current platform profile from /sys and compare with configured SAV value
+        if [ -f /sys/firmware/acpi/platform_profile ]; then
+            current_profile=$(cat /sys/firmware/acpi/platform_profile 2>/dev/null)
+            echo "dyn-saver: current_profile=$current_profile PLATFORM_PROFILE_ON_SAV=$PLATFORM_PROFILE_ON_SAV" >> /tmp/dyn-saver.log
+            
+            # Check if current profile matches the configured SAV profile
+            # We need to compare the actual profile name, not numeric values
+            if [ "$current_profile" != "$PLATFORM_PROFILE_ON_SAV" ] && [ -n "$PLATFORM_PROFILE_ON_SAV" ]; then
+                echo "dyn-saver: not in SAV profile (current=$current_profile, want=$PLATFORM_PROFILE_ON_SAV)" >> /tmp/dyn-saver.log
+                sleep "$INTERVAL"
+                continue
+            fi
+        else
+            echo "dyn-saver: /sys/firmware/acpi/platform_profile not found" >> /tmp/dyn-saver.log
+            sleep "$INTERVAL"
+            continue
+        fi
+
+        # sample CPU util and maintain moving average
+        pct=$(read_cpu_pct 1)
+        sample_buf="$sample_buf $pct"
+        # keep only last SAMPLES values
+        set -- $sample_buf
+        count=$#
+        if [ $count -gt $SAMPLES ]; then
+            # drop oldest
+            shift_count=$((count - SAMPLES))
+            i=0; newbuf=""
+            for val in "$@"; do
+                i=$((i+1))
+                if [ $i -gt $shift_count ]; then
+                    newbuf="$newbuf $val"
+                fi
+            done
+            sample_buf="$newbuf"
+        fi
+        # compute average
+        sum=0; n=0
+        for v in $sample_buf; do sum=$((sum+v)); n=$((n+1)); done
+        avg=0
+        if [ $n -gt 0 ]; then avg=$((sum / n)); fi
+
+        # determine target state with hysteresis
+        target=unknown
+        if [ "$avg" -le $((thr_low + HYST)) ]; then
+            target=low
+        elif [ "$avg" -ge $((thr_high - HYST)) ]; then
+            target=high
+        else
+            target=med
+        fi
+
+        now=$(date +%s)
+        changed=0
+        if [ "$target" != "$last_state" ] && [ $((now - last_change)) -ge $MIND ]; then
+            changed=1
+        fi
+
+        if [ $changed -eq 1 ]; then
+            # prepare desired runtime values
+            case "$target" in
+                low)
+                    desired_platform="quiet"
+                    desired_cpu="power"
+                    desired_pcie="powersupersave"
+                    ;;
+                med)
+                    desired_platform="balanced"
+                    desired_cpu="balance_power"
+                    desired_pcie="powersave"
+                    ;;
+                high)
+                    desired_platform="performance"
+                    desired_cpu="balance_performance"
+                    desired_pcie="default"
+                    ;;
+            esac
+
+            # apply by temporarily setting *_ON_SAV vars and invoking setters
+            CPU_ENERGY_PERF_POLICY_ON_SAV="$desired_cpu"
+            PCIE_ASPM_ON_SAV="$desired_pcie"
+            PLATFORM_PROFILE_ON_SAV="$desired_platform"
+
+            # call setters (they will check ppd and availability)
+            set_cpu_perf_policy "$_pp_sav"
+            set_pcie_aspm "$_pp_sav"
+            set_platform_profile "$_pp_sav"
+
+            last_state="$target"
+            last_change=$now
+            echo "dyn-saver: state=$target avg=$avg applied: $desired_platform,$desired_cpu,$desired_pcie" >> /tmp/dyn-saver.log
+        fi
+
+        sleep "$INTERVAL"
+    done
+}
+
+# ============================================================================
+# Main program - only execute if invoked directly (not sourced)
+# ============================================================================
+
+# Prevent execution when this file is sourced by `tlp` (func.d/* are sourced).
+# Only run the following when the script is invoked directly.
+script_name="$(basename "$0")"
+if [ "$script_name" = "35-tlp-func-dyn-saver" ] || [ "$script_name" = "tlp-func-dyn-saver" ]; then
+    case "$1" in
+        start)
+            RUNDIR=/run/tlp
+            if is_running; then
+                echo "dyn-saver already running"
+                exit 0
+            fi
+            rm -f /tmp/dyn-saver.log
+            run_loop &
+            create_pidfile $!
+            echo "dyn-saver started (PID=$!)"
+            ;;
+        stop)
+            RUNDIR=/run/tlp
+            if ! is_running; then
+                echo "dyn-saver not running"
+                exit 0
+            fi
+            pid=$(cat "$RUNDIR/tlp-dyn-saver.pid")
+            kill "$pid" 2>/dev/null || true
+            remove_pidfile
+            echo "dyn-saver stopped"
+            ;;
+        status)
+            RUNDIR=/run/tlp
+            if is_running; then
+                echo "dyn-saver running"
+                exit 0
+            else
+                echo "dyn-saver not running"
+                exit 1
+            fi
+            ;;
+        run)
+            RUNDIR=/run/tlp
+            run_loop
+            ;;
+        *)
+            usage
+            exit 2
+            ;;
+    esac
+fi

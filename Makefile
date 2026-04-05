@@ -130,6 +130,7 @@ MANFILESPD8 = \
 SHFILES = \
 	tlp.in \
 	tlp-func-base.in \
+	func.d/35-tlp-func-dyn-saver \
 	func.d/* \
 	bat.d/* \
 	tlp-rdw.in \
@@ -181,6 +182,10 @@ install-tlp: all
 	ln -sf run-on-ac $(_BIN)/run-on-bat
 	install -m 755 tlp-stat $(_BIN)/
 	install -D -m 755 -t $(_TLIB)/func.d func.d/*
+	# Ensure func.d scripts that contain placeholders are processed and
+	# written with substitutions (e.g. @TLP_TLIB@ -> /usr/share/tlp).
+	$(SED) func.d/35-tlp-func-dyn-saver > $(_TLIB)/func.d/35-tlp-func-dyn-saver
+	chmod 755 $(_TLIB)/func.d/35-tlp-func-dyn-saver
 	install -m 755 tlp-func-base $(_TLIB)/
 	install -D -m 755 -t $(_TLIB)/bat.d bat.d/*
 	install -m 755 tlp-pcilist $(_TLIB)/
