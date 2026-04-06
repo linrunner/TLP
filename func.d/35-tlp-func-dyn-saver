@@ -31,56 +31,51 @@ is_running() {
 
 read_cpu_pct() {
     # read aggregate cpu utilization over $1 seconds
-    # simple implementation using /proc/stat
+    # optimized: use head + set instead of 4 awk calls
     local sleep_sec=${1:-1}
-    local cpu1 cpu2 idle1 idle2 total1 total2
-    cpu1=$(awk '/^cpu /{for(i=2;i<=NF;i++)s+=$i;print s; exit}' /proc/stat)
-    idle1=$(awk '/^cpu /{print $5; exit}' /proc/stat)
+    
+    # Read first snapshot (all cpu time fields)
+    set -- $(head -1 /proc/stat)
+    shift  # skip "cpu" label
+    local cpu1=0 idle1=$4
+    for val in "$@"; do cpu1=$((cpu1 + val)); done
+    
     sleep "$sleep_sec"
-    cpu2=$(awk '/^cpu /{for(i=2;i<=NF;i++)s+=$i;print s; exit}' /proc/stat)
-    idle2=$(awk '/^cpu /{print $5; exit}' /proc/stat)
-    total1=$cpu1
-    total2=$cpu2
-    local total_delta=$((total2 - total1))
+    
+    # Read second snapshot (all cpu time fields)
+    set -- $(head -1 /proc/stat)
+    shift  # skip "cpu" label
+    local cpu2=0 idle2=$4
+    for val in "$@"; do cpu2=$((cpu2 + val)); done
+    
+    local cpu_delta=$((cpu2 - cpu1))
     local idle_delta=$((idle2 - idle1))
-    if [ "$total_delta" -le 0 ]; then
+    
+    if [ "$cpu_delta" -le 0 ]; then
         echo 0
         return
     fi
-    # busy = total - idle
-    busy=$((total_delta - idle_delta))
-    pct=$((busy * 100 / total_delta))
-    echo "$pct"
+    
+    local busy=$((cpu_delta - idle_delta))
+    echo "$((busy * 100 / cpu_delta))"
 }
 
 get_ac_power() {
     # Determine if running on AC power (1=on AC, 0=on battery)
-    # Check battery status from /sys/class/power_supply (via ACPIBATDIR constant)
-    # When sourced, ACPIBATDIR=/sys/class/power_supply
+    # Optimized: check first battery only (most systems have just one)
     
-    # Find any battery and check its status
-    for bat_dir in /sys/class/power_supply/BAT*; do
-        if [ -d "$bat_dir" ]; then
-            status_file="$bat_dir/status"
-            if [ -f "$status_file" ]; then
-                status=$(cat "$status_file" 2>/dev/null)
-                echo "dyn-saver: checking $status_file -> $status" >> /tmp/dyn-saver.log
-                
-                if [ "$status" = "Discharging" ]; then
-                    echo 0  # on battery
-                    return 0
-                elif [ "$status" = "Charging" ] || [ "$status" = "Full" ] || [ "$status" = "Not charging" ]; then
-                    echo 1  # on AC
-                    return 0
-                fi
-            fi
-        fi
-    done
+    local bat_dir=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -1)
+    if [ -n "$bat_dir" ] && [ -f "$bat_dir/status" ]; then
+        local status=$(cat "$bat_dir/status" 2>/dev/null)
+        case "$status" in
+            Discharging) echo 0; return 0 ;;
+            *) echo 1; return 0 ;;
+        esac
+    fi
     
     # Fallback: check AC adapter directly
     if [ -f /sys/class/power_supply/AC/online ]; then
-        ac_online=$(cat /sys/class/power_supply/AC/online 2>/dev/null)
-        echo "$ac_online"
+        cat /sys/class/power_supply/AC/online 2>/dev/null || echo 1
         return 0
     fi
     
@@ -130,28 +125,39 @@ run_loop() {
     SAV_DYNAMIC_ENABLE=${SAV_DYNAMIC_ENABLE:-0}
     [ "$SAV_DYNAMIC_ENABLE" = "1" ] || { echo "dyn-saver: disabled"; exit 0; }
     
-    # Auto-detect SAV profile if not configured
-    # Try to find the best power-saver candidate from available profiles
-    if [ -z "$PLATFORM_PROFILE_ON_SAV" ]; then
-        if [ -f /sys/firmware/acpi/platform_profile_choices ]; then
-                # Try preferred candidates in order (match candidates used by set_platform_profile)
-                for candidate in low-power quiet cool; do
-                    if grep -q "$candidate" /sys/firmware/acpi/platform_profile_choices 2>/dev/null; then
-                        PLATFORM_PROFILE_ON_SAV="$candidate"
-                        echo "dyn-saver: auto-detected SAV profile: $PLATFORM_PROFILE_ON_SAV" >> /tmp/dyn-saver.log
-                        break
-                    fi
-                done
+    # Auto-detect or validate SAV profile
+    # Check if the configured or auto-detected profile is supported
+    if [ -f /sys/firmware/acpi/platform_profile_choices ]; then
+        if [ -n "$PLATFORM_PROFILE_ON_SAV" ]; then
+            # Validate configured profile exists
+            if ! grep -q "$PLATFORM_PROFILE_ON_SAV" /sys/firmware/acpi/platform_profile_choices 2>/dev/null; then
+                # Configured profile not supported, try alternatives
+                PLATFORM_PROFILE_ON_SAV=""
+            fi
+        fi
+        
+        # If not set or not valid, try preferred candidates in order
+        if [ -z "$PLATFORM_PROFILE_ON_SAV" ]; then
+            for candidate in quiet low-power cool; do
+                if grep -q "$candidate" /sys/firmware/acpi/platform_profile_choices 2>/dev/null; then
+                    PLATFORM_PROFILE_ON_SAV="$candidate"
+                    echo "dyn-saver: auto-detected SAV profile: $PLATFORM_PROFILE_ON_SAV" >> /tmp/dyn-saver.log
+                    break
+                fi
+            done
         fi
     fi
     
-    # Final fallback if still not set (should not happen on systems with platform_profile)
-    PLATFORM_PROFILE_ON_SAV=${PLATFORM_PROFILE_ON_SAV:-quiet}
+    # Require a supported profile to proceed
+    if [ -z "$PLATFORM_PROFILE_ON_SAV" ]; then
+        echo "dyn-saver: no supported platform profile found (quiet, low-power, or cool)"
+        exit 1
+    fi
     
     INTERVAL=${SAV_DYNAMIC_INTERVAL:-5}
     SAMPLES=${SAV_DYNAMIC_SAMPLES:-3}
     THRESH="${SAV_DYNAMIC_THRESHOLDS:-30,60}"
-    HYST=${SAV_DYNAMIC_HYSTERESIS:-5}
+    HYST=${SAV_DYNAMIC_HYSTERESIS:-3}
     MIND=${SAV_DYNAMIC_MIN_DELAY:-30}
 
     thr_low=$(echo "$THRESH" | cut -d, -f1)
@@ -165,20 +171,21 @@ run_loop() {
 
     last_state="unknown"
     last_change=0
+    last_ac_check=0
+    cached_ac_status=1
     sample_buf=""
+    sav_profile="$PLATFORM_PROFILE_ON_SAV"  # Store original SAV profile
 
     while true; do
-        # check running conditions: battery & last_pwr == PP_SAV
-        # Get AC power status (1=on AC, 0=on battery)
-        ac_status=$(get_ac_power)
+        now=$(date +%s)
         
-        # Validate ac_status is a number
-        if ! printf "%d" "$ac_status" >/dev/null 2>&1; then
-            ac_status=1  # assume AC if unclear
+        # Check AC status every 2*INTERVAL to reduce I/O (optimization: cache status)
+        if [ $((now - last_ac_check)) -ge $((INTERVAL * 2)) ]; then
+            last_ac_check=$now
+            cached_ac_status=$(get_ac_power)
         fi
         
-        if [ "$ac_status" = "1" ]; then
-            echo "dyn-saver: on AC power (ac_status=$ac_status), skipping" >> /tmp/dyn-saver.log
+        if [ "$cached_ac_status" = "1" ]; then
             sleep "$INTERVAL"
             continue
         fi
@@ -187,17 +194,14 @@ run_loop() {
         # Read current platform profile from /sys and compare with configured SAV value
         if [ -f /sys/firmware/acpi/platform_profile ]; then
             current_profile=$(cat /sys/firmware/acpi/platform_profile 2>/dev/null)
-            echo "dyn-saver: current_profile=$current_profile PLATFORM_PROFILE_ON_SAV=$PLATFORM_PROFILE_ON_SAV" >> /tmp/dyn-saver.log
             
             # Check if current profile matches the configured SAV profile
             # We need to compare the actual profile name, not numeric values
             if [ "$current_profile" != "$PLATFORM_PROFILE_ON_SAV" ] && [ -n "$PLATFORM_PROFILE_ON_SAV" ]; then
-                echo "dyn-saver: not in SAV profile (current=$current_profile, want=$PLATFORM_PROFILE_ON_SAV)" >> /tmp/dyn-saver.log
                 sleep "$INTERVAL"
                 continue
             fi
         else
-            echo "dyn-saver: /sys/firmware/acpi/platform_profile not found" >> /tmp/dyn-saver.log
             sleep "$INTERVAL"
             continue
         fi
@@ -246,7 +250,7 @@ run_loop() {
             # prepare desired runtime values
             case "$target" in
                 low)
-                    desired_platform="quiet"
+                    desired_platform="$sav_profile"
                     desired_cpu="power"
                     desired_pcie="powersupersave"
                     ;;

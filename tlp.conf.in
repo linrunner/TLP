@@ -269,7 +269,7 @@
 #SAV_DYNAMIC_INTERVAL=5                        # sampling interval [seconds]
 #SAV_DYNAMIC_SAMPLES=3                         # moving average window size [samples]
 #SAV_DYNAMIC_THRESHOLDS="30,60"                # low,high CPU load thresholds [%]
-#SAV_DYNAMIC_HYSTERESIS=5                      # hysteresis to prevent flapping [%]
+#SAV_DYNAMIC_HYSTERESIS=3                      # hysteresis to prevent flapping [%]
 #SAV_DYNAMIC_MIN_DELAY=30                      # minimum delay between profile changes [seconds]
 
 # System suspend mode:
