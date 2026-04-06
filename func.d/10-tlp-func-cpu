@@ -505,18 +505,11 @@ set_platform_profile () { # set platform profile
     case "$1" in
         "$PP_PRF") pwr="${PLATFORM_PROFILE_ON_AC:-}" ;;
         "$PP_BAL") pwr="${PLATFORM_PROFILE_ON_BAT:-}" ;;
-        "$PP_SAV") 
-            # For SAV: iterate profile list and use first available match
-            pwr="${PLATFORM_PROFILE_ON_SAV:-}"
-            if [ -z "$pwr" ]; then
-                # Fallback to BAT if SAV not configured
-                pwr="${PLATFORM_PROFILE_ON_BAT:-}"
-            fi
-            ;;
+        "$PP_SAV") pwr="${PLATFORM_PROFILE_ON_SAV:-}" ;;
     esac
 
-    if [ -z "$pwr" ]; then
-        # do nothing if unconfigured
+    if [ -z "$pwr" ] && [ "$1" != "$PP_SAV" ]; then
+        # do nothing if unconfigured (except SAV, which auto-detects)
         echo_debug "pm" "set_platform_profile($1).not_configured"
         return 0
     fi
@@ -528,18 +521,33 @@ set_platform_profile () { # set platform profile
             choices="$(read_sysf "$choices_file")"
             found=0
 
-            # For SAV profile with a list, iterate and use first available match
-            if [ "$1" = "$PP_SAV" ] && [ -n "${PLATFORM_PROFILE_ON_SAV:-}" ]; then
-                for candidate in $pwr; do
-                    for opt in $choices; do
-                        if [ "$opt" = "$candidate" ]; then
-                            pwr="$opt"
-                            found=1
-                            echo_debug "pm" "set_platform_profile($1): selected from SAV list -> $pwr"
-                            break 2
-                        fi
+            # For SAV profile: handle list-based selection or auto-detection
+            if [ "$1" = "$PP_SAV" ]; then
+                if [ -n "$pwr" ]; then
+                    # User configured a list: iterate and use first available match
+                    for candidate in $pwr; do
+                        for opt in $choices; do
+                            if [ "$opt" = "$candidate" ]; then
+                                pwr="$opt"
+                                found=1
+                                echo_debug "pm" "set_platform_profile($1): selected from SAV list -> $pwr"
+                                break 2
+                            fi
+                        done
                     done
-                done
+                else
+                    # SAV not configured: auto-detect from predefined candidates
+                    for candidate in low-power quiet cool power-saving powersave low powersupersave; do
+                        for opt in $choices; do
+                            if [ "$opt" = "$candidate" ]; then
+                                pwr="$opt"
+                                found=1
+                                echo_debug "pm" "set_platform_profile($1): auto-detected SAV candidate -> $pwr"
+                                break 2
+                            fi
+                        done
+                    done
+                fi
             else
                 # Direct match check for AC/BAT profiles
                 for opt in $choices; do
@@ -567,9 +575,20 @@ set_platform_profile () { # set platform profile
             if [ "$found" -eq 1 ]; then
                 echo_debug "pm" "set_platform_profile($1): adjusted profile -> $pwr"
             else
-                echo_debug "pm" "set_platform_profile($1): configured profile '$pwr' not in choices: $choices"
+                if [ -z "$pwr" ]; then
+                    echo_debug "pm" "set_platform_profile($1): no matching profile found in choices: $choices"
+                else
+                    echo_debug "pm" "set_platform_profile($1): configured profile '$pwr' not in choices: $choices"
+                fi
             fi
         fi
+
+        if [ -z "$pwr" ]; then
+            # No profile found to apply
+            echo_debug "pm" "set_platform_profile($1).no_profile"
+            return 0
+        fi
+
         if check_ppd_running; then
             # do not apply platform profile when power-profiles-daemon is running
             echo_message "Warning: PLATFORM_PROFILE_ON_AC/BAT is not set because power-profiles-daemon is running."
