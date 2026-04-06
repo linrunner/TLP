@@ -134,14 +134,14 @@ run_loop() {
     # Try to find the best power-saver candidate from available profiles
     if [ -z "$PLATFORM_PROFILE_ON_SAV" ]; then
         if [ -f /sys/firmware/acpi/platform_profile_choices ]; then
-            # Try preferred candidates in order
-            for candidate in quiet low-power power-saver balanced-low; do
-                if grep -q "$candidate" /sys/firmware/acpi/platform_profile_choices 2>/dev/null; then
-                    PLATFORM_PROFILE_ON_SAV="$candidate"
-                    echo "dyn-saver: auto-detected SAV profile: $PLATFORM_PROFILE_ON_SAV" >> /tmp/dyn-saver.log
-                    break
-                fi
-            done
+                # Try preferred candidates in order (match candidates used by set_platform_profile)
+                for candidate in low-power quiet cool; do
+                    if grep -q "$candidate" /sys/firmware/acpi/platform_profile_choices 2>/dev/null; then
+                        PLATFORM_PROFILE_ON_SAV="$candidate"
+                        echo "dyn-saver: auto-detected SAV profile: $PLATFORM_PROFILE_ON_SAV" >> /tmp/dyn-saver.log
+                        break
+                    fi
+                done
         fi
     fi
     
