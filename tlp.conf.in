@@ -253,6 +253,25 @@
 #PLATFORM_PROFILE_ON_BAT=balanced
 #PLATFORM_PROFILE_ON_SAV=low-power
 
+# Dynamic SAV - Workload-dependent adjustments for power-saver profile
+# When enabled, TLP dynamically adjusts the power-saver profile (and related
+# settings) based on current CPU load while running on battery power.
+# This provides better responsiveness under heavy workloads while maximizing
+# battery lifetime during light usage (web browsing, office work, etc).
+# 
+# The daemon monitors CPU utilization and switches between three states:
+#   - low:  CPU ≤ 30% → maximum power saving (quiet/power-saver profile)
+#   - med:  CPU 30-60% → balanced mode (balanced profile)
+#   - high: CPU ≥ 60% → better performance (performance profile)
+#
+# Dynamic SAV settings (all optional, shown with defaults):
+#SAV_DYNAMIC_ENABLE=0                          # 0=off, 1=on
+#SAV_DYNAMIC_INTERVAL=5                        # sampling interval [seconds]
+#SAV_DYNAMIC_SAMPLES=3                         # moving average window size [samples]
+#SAV_DYNAMIC_THRESHOLDS="30,60"                # low,high CPU load thresholds [%]
+#SAV_DYNAMIC_HYSTERESIS=5                      # hysteresis to prevent flapping [%]
+#SAV_DYNAMIC_MIN_DELAY=30                      # minimum delay between profile changes [seconds]
+
 # System suspend mode:
 #   s2idle: Idle standby - a pure software, light-weight, system sleep state,
 #   deep: Suspend to RAM - the whole system is put into a low-power state,
