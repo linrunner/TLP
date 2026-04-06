@@ -521,10 +521,10 @@ set_platform_profile () { # set platform profile
             choices="$(read_sysf "$choices_file")"
             found=0
 
-            # For SAV profile: handle list-based selection or auto-detection
+            # Direct match check for all profiles
             if [ "$1" = "$PP_SAV" ]; then
+                # SAV: list-based selection or auto-detection
                 if [ -n "$pwr" ]; then
-                    # User configured a list: iterate and use first available match
                     for candidate in $pwr; do
                         for opt in $choices; do
                             if [ "$opt" = "$candidate" ]; then
@@ -537,7 +537,7 @@ set_platform_profile () { # set platform profile
                     done
                 else
                     # SAV not configured: auto-detect from predefined candidates
-                    for candidate in low-power quiet cool power-saving powersave low powersupersave; do
+                    for candidate in low-power quiet cool; do
                         for opt in $choices; do
                             if [ "$opt" = "$candidate" ]; then
                                 pwr="$opt"
@@ -549,23 +549,9 @@ set_platform_profile () { # set platform profile
                     done
                 fi
             else
-                # Direct match check for AC/BAT profiles
+                # AC/BAT: exact match required
                 for opt in $choices; do
                     if [ "$opt" = "$pwr" ]; then
-                        found=1
-                        break
-                    fi
-                done
-            fi
-
-            if [ "$found" -eq 0 ]; then
-                # Try simple normalisations: lower-case, underscores->hyphens
-                pwr_l="$(printf "%s" "$pwr" | tr '[:upper:]' '[:lower:]')"
-                pwr_h="$(printf "%s" "$pwr_l" | tr '_' '-')"
-                for opt in $choices; do
-                    opt_l="$(printf "%s" "$opt" | tr '[:upper:]' '[:lower:]')"
-                    if [ "$opt_l" = "$pwr_l" ] || [ "$opt_l" = "$pwr_h" ]; then
-                        pwr="$opt"
                         found=1
                         break
                     fi
