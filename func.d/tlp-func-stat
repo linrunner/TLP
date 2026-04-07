@@ -372,8 +372,7 @@ print_nvme_temp () {
 
 anonymize_disk_ids () {
     # replace disk serial number with asterisks
-    # $@: space separated list of disk ids
-    set -- "$@"
+    # $*: space separated list of disk ids
 
     while [ $# -gt 0 ]; do
         echo "$1" | awk '{

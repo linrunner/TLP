@@ -710,7 +710,8 @@ if [ "$show_disk" = "1" ] || [ "$show_all" = "1" ]; then
     disklist="$DISK_DEVICES"
     # list for output: print "(disabled)" when empty
     diskstat="${DISK_DEVICES:-(disabled)}"
-    printf "Devices = %s\n" "$(anonymize_disk_ids "$diskstat")"
+    # shellcheck disable=SC2086
+    printf "Devices = %s\n" "$(anonymize_disk_ids $diskstat)"
 
     # iterate over list
     if [ -n "$disklist" ]; then
