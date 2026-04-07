@@ -154,11 +154,11 @@ run_loop() {
         exit 1
     fi
     
-    INTERVAL=${SAV_DYNAMIC_INTERVAL:-5}
+    INTERVAL=${SAV_DYNAMIC_INTERVAL:-4}
     SAMPLES=${SAV_DYNAMIC_SAMPLES:-3}
     THRESH="${SAV_DYNAMIC_THRESHOLDS:-30,60}"
     HYST=${SAV_DYNAMIC_HYSTERESIS:-3}
-    MIND=${SAV_DYNAMIC_MIN_DELAY:-30}
+    MIND=${SAV_DYNAMIC_MIN_DELAY:-4}
 
     thr_low=$(echo "$THRESH" | cut -d, -f1)
     thr_high=$(echo "$THRESH" | cut -d, -f2)
@@ -175,6 +175,9 @@ run_loop() {
     cached_ac_status=1
     sample_buf=""
     sav_profile="$PLATFORM_PROFILE_ON_SAV"  # Store original SAV profile
+    prev_avg=0
+    last_sample_time=$(date +%s)
+    current_interval=$INTERVAL
 
     while true; do
         now=$(date +%s)
@@ -230,6 +233,43 @@ run_loop() {
         avg=0
         if [ $n -gt 0 ]; then avg=$((sum / n)); fi
 
+        # Adaptive interval based on load trend
+        # Calculate slope: how fast is load changing?
+        time_delta=$((now - last_sample_time))
+        delta_avg=$((avg - prev_avg))
+        
+        # Default to base interval
+        current_interval=$INTERVAL
+        
+        # If load is rising sharply, sample more frequently
+        if [ $delta_avg -gt 10 ]; then
+            # Load jumping up rapidly - sample every 2 seconds
+            current_interval=2
+        elif [ $delta_avg -gt 5 ]; then
+            # Load rising moderately - sample every 3 seconds
+            current_interval=3
+        elif [ $delta_avg -lt -10 ]; then
+            # Load dropping sharply - can check slower
+            current_interval=$((INTERVAL + 2))
+        fi
+        
+        # Predictive: if close to threshold and rising, sample faster
+        threshold_distance=$((thr_high - HYST - avg))
+        if [ $threshold_distance -gt 0 ] && [ $threshold_distance -le 15 ] && [ $delta_avg -gt 0 ]; then
+            # Within 15% of high threshold and rising - urgent sampling
+            current_interval=1
+        fi
+        
+        # Also check low threshold approaching from below
+        low_threshold_distance=$((avg - (thr_low + HYST)))
+        if [ $low_threshold_distance -gt -15 ] && [ $low_threshold_distance -le 0 ] && [ $delta_avg -lt 0 ]; then
+            # Within 15% below low threshold and falling - urgent sampling
+            current_interval=1
+        fi
+        
+        prev_avg=$avg
+        last_sample_time=$now
+
         # determine target state with hysteresis
         target=unknown
         if [ "$avg" -le $((thr_low + HYST)) ]; then
@@ -281,7 +321,7 @@ run_loop() {
             echo "dyn-saver: state=$target avg=$avg applied: $desired_platform,$desired_cpu,$desired_pcie" >> /tmp/dyn-saver.log
         fi
 
-        sleep "$INTERVAL"
+        sleep "$current_interval"
     done
 }
 

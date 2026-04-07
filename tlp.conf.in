@@ -266,11 +266,11 @@
 #
 # Dynamic SAV settings (all optional, shown with defaults):
 #SAV_DYNAMIC_ENABLE=0                          # 0=off, 1=on
-#SAV_DYNAMIC_INTERVAL=5                        # sampling interval [seconds]
+#SAV_DYNAMIC_INTERVAL=4                        # sampling interval [seconds]
 #SAV_DYNAMIC_SAMPLES=3                         # moving average window size [samples]
 #SAV_DYNAMIC_THRESHOLDS="30,60"                # low,high CPU load thresholds [%]
 #SAV_DYNAMIC_HYSTERESIS=3                      # hysteresis to prevent flapping [%]
-#SAV_DYNAMIC_MIN_DELAY=30                      # minimum delay between profile changes [seconds]
+#SAV_DYNAMIC_MIN_DELAY=4                      # minimum delay between profile changes [seconds]
 
 # System suspend mode:
 #   s2idle: Idle standby - a pure software, light-weight, system sleep state,
