@@ -377,7 +377,7 @@ uninstall: uninstall-tlp uninstall-rdw uninstall-pd
 
 uninstall-man: uninstall-man-tlp uninstall-man-rdw uninstall-man-pd
 
-checkall: checkbashisms shellcheck perlcritic checkdupconst checkman checkbatdrv checkwip
+checkall: checkbatdrv checkbashisms shellcheck perlcritic checkdupconst checkman checkconf checkwip
 
 checkbashisms:
 	@echo "*** checkbashisms ***************************************************************************"
@@ -398,6 +398,10 @@ checkdupconst:
 checkman:
 	@echo "*** checkman ********************************************************************************"
 	@grep '.TH ' man/* man-pd/* man-rdw/*
+
+checkconf:
+	@echo "*** checkconf *******************************************************************************"
+	@grep -v '^\s*\(#\|$$\)' tlp.conf.in || true
 
 checkwip:
 	@echo "*** checkwip ********************************************************************************"
