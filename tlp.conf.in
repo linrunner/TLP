@@ -474,7 +474,7 @@
 
 #RUNTIME_PM_DRIVER_DENYLIST="amdgpu mei_me nouveau nvidia xhci_hcd"
 
-# Permanently enable/disable autossuspend for listed PCIe device addresses
+# Permanently enable/disable autosuspend for listed PCIe device addresses
 # (independent of the power source). This has priority over all preceding
 # autosuspend settings. Separate multiple addresses with spaces.
 # Use lspci to get the adresses (1st column).
