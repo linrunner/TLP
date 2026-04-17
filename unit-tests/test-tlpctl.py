@@ -8,13 +8,21 @@
 
 import os
 import re
+import socket
 import time
 from typing import List
 
-from testing import TestReport, make_regex_filter, run_executable, test_executable
+from testing import (
+    TestReport,
+    make_regex_filter,
+    run_executable,
+    run_executable_rc,
+    test_executable,
+)
 
 # --- Constants
 TLPCTL = "tlpctl"
+SSH = "ssh"
 AVAILABLE_PROFILES = ["performance", "balanced", "power-saver"]
 WAIT_PROFILE_ACTIVATION = 1.5
 
@@ -96,9 +104,6 @@ def test_set(report: TestReport):
     #
     # Args: none
     # Returns: none
-
-    ### global _testcnt
-    ### global _failcnt
 
     errcnt = 0
     initial = run_executable(TLPCTL, ["get"]).rstrip("\n")
@@ -256,6 +261,57 @@ def test_loglevel(report: TestReport):
     report.count_test(errcnt)
 
 
+def test_polkit_noauth(report: TestReport):
+    # Run 'tlpctl <profile>' in a ssh session, expecting a not authorized error
+    # Checks with 'tlpctl' if profile is unchanged
+    #
+    # Args: none
+    # Returns: none
+
+    errcnt = 0
+    initial = run_executable(TLPCTL, ["get"]).rstrip("\n")
+    profile = reordered_profile_sequence(initial)[1]
+    print("Check polkit not authorized {{{")
+
+    myhostname = socket.gethostname()
+
+    print(f"  ssh {myhostname} tlpctl set '{initial}'-> '{profile}'")
+    rc = run_executable_rc(
+        executable_path=SSH,
+        args=[myhostname, "tlpctl", "set", profile],
+    )
+    if rc == 1:
+        # "not authorized" (as expected) -> check if profile did not change
+        # Wait, tlp activates the profile asynchronously
+        time.sleep(WAIT_PROFILE_ACTIVATION)
+
+        # Expect profile unchanged
+        print("    unchanged? ", end="")
+        if not test_executable(
+            executable_path=TLPCTL,
+            args=["get"],
+            expected_output=f"{initial}\n",
+        ):
+            # Profile changed despite "not authorized"
+            errcnt += 1
+        else:
+            print(f"    rc={rc}: not authorized=ok")
+    elif rc == 0:
+        # "authorized" (not expected)
+        print(f"    rc={rc}: authorized=NOK")
+        errcnt += 1
+    elif rc == -1:
+        print(f"    rc={rc}: timeout (NOK)")
+        errcnt += 1
+    else:
+        print(f"    rc={rc}: unknown result (NOK)")
+        errcnt += 1
+
+    print("}}} " + f"errcnt={str(errcnt)}\n")
+
+    report.count_test(errcnt)
+
+
 # --- Run tests
 if __name__ == "__main__":
     report = TestReport()
@@ -265,5 +321,6 @@ if __name__ == "__main__":
     test_set(report)
     test_list(report)
     test_loglevel(report)
+    test_polkit_noauth(report)
 
     report.print_result()

@@ -50,6 +50,42 @@ def run_executable(
         return ""
 
 
+def run_executable_rc(
+    executable_path: str,
+    args: List[str] = [],
+    input_data: str = "",
+    timeout: int = 10,
+) -> int:
+    # Run an executable and return its exitcode; discard output
+    #
+    # Args:
+    #   executable_path: Path to the executable
+    #   args: List of command-line arguments
+    #   input_data: Input to pass via stdin (optional)
+    #   timeout: Timeout in seconds
+    #
+    # Returns:
+    #   returncode as an int
+
+    cmd = [executable_path]
+    if args:
+        cmd.extend(args)
+
+    try:
+        result = subprocess.run(
+            cmd,
+            input=input_data,
+            text=True,
+            capture_output=True,
+            timeout=timeout,
+            check=False,
+        )
+        return result.returncode
+    except subprocess.TimeoutExpired:
+        sys.stderr.write(f"Error: {cmd} timed out after {timeout} seconds.\n")
+        return -1
+
+
 def filter_output(
     output: str,
     filters: Optional[List[Callable[[str], str]]] = None,
