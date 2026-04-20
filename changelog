@@ -1,9 +1,9 @@
 This is the user-oriented changelog. For information regarding packaging,
 please refer to: https://linrunner.de/tlp/developers/packaging.html
 
-+++ 1.10.0 --- <unreleased> +++
++++ 1.10.0 --- 20.04.2026 +++
 
-  * Bugfixes since 1.9.0-beta.2
+  * Bugfixes since 1.10.0-beta.2
     Disks:
     - tlp-stat -d: fix incomplete device list
 
@@ -35,7 +35,7 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     Profiles:
     - TLP_AUTO_SWITCH: substitute invalid config with 0
 
-  * Bugfixes since 1.9.0-beta.1
+  * Bugfixes since 1.10.0-beta.1
     General:
     - Fix disabled bluetooth after suspend/resume cycle when paired with
       system76-driver (Issue #872)
