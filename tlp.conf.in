@@ -88,7 +88,7 @@
 # the charger, when booting the system or when executing 'tlp start':
 #   0=disabled - never switch, use TLP_PROFILE_DEFAULT if configured
 #   1=auto  - always switch, select TLP_PROFILE_AC on AC and TLP_PROFILE_BAT
-              on battery power.
+#             on battery power.
 #   2=smart - like auto, but skips the switch if you have manually changed the
 #             profile away from the previous power source's default profile
 #             (as defined by TLP_PROFILE_AC/BAT).
