@@ -286,8 +286,7 @@ bat_bct2bool () {
     # $1: charge type string
     case "$1" in
         "$BCT_ON")  printf "1" ;;
-        "$BCT_OFF") printf "0" ;;
-        *) return 1
+        *) printf "0" ;;
     esac
 
     return 0
