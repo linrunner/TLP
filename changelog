@@ -1,6 +1,16 @@
 This is the user-oriented changelog. For information regarding packaging,
 please refer to: https://linrunner.de/tlp/developers/packaging.html
 
++++ 1.10.1 --- <unreleased> +++
+
+  * Bugfix Release
+    Battery Care:
+    - Lenovo laptops (non-ThinkPad series and ThinkBooks): fix the
+      "could not read charge type" error triggered by a firmware update
+      that introduces the "Fast" charge type (Issue #882).
+    Operation:
+    - Fix tlp.service start on Fedora
+
 +++ 1.10.0 --- 20.04.2026 +++
 
   * Bugfixes since 1.10.0-beta.2
