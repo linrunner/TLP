@@ -500,21 +500,81 @@ set_nmi_watchdog () { # enable/disable nmi watchdog
 set_platform_profile () { # set platform profile
     # $1: PP_PRF, PP_BAL, PP_SAV
 
-    local pwr
+    local pwr found
 
     case "$1" in
         "$PP_PRF") pwr="${PLATFORM_PROFILE_ON_AC:-}" ;;
         "$PP_BAL") pwr="${PLATFORM_PROFILE_ON_BAT:-}" ;;
-        "$PP_SAV") pwr="${PLATFORM_PROFILE_ON_SAV:-$PLATFORM_PROFILE_ON_BAT}" ;;
+        "$PP_SAV") pwr="${PLATFORM_PROFILE_ON_SAV:-}" ;;
     esac
 
-    if [ -z "$pwr" ]; then
-        # do nothing if unconfigured
+    if [ -z "$pwr" ] && [ "$1" != "$PP_SAV" ]; then
+        # do nothing if unconfigured (except SAV, which auto-detects)
         echo_debug "pm" "set_platform_profile($1).not_configured"
         return 0
     fi
 
     if [ -f $FWACPID/platform_profile ]; then
+        # Validate configured profile against available choices
+        choices_file="$FWACPID/platform_profile_choices"
+        if [ -f "$choices_file" ]; then
+            choices="$(read_sysf "$choices_file")"
+            found=0
+
+            # Direct match check for all profiles
+            if [ "$1" = "$PP_SAV" ]; then
+                # SAV: list-based selection or auto-detection
+                if [ -n "$pwr" ]; then
+                    for candidate in $pwr; do
+                        for opt in $choices; do
+                            if [ "$opt" = "$candidate" ]; then
+                                pwr="$opt"
+                                found=1
+                                echo_debug "pm" "set_platform_profile($1): selected from SAV list -> $pwr"
+                                break 2
+                            fi
+                        done
+                    done
+                else
+                    # SAV not configured: auto-detect from predefined candidates
+                    for candidate in low-power quiet cool; do
+                        for opt in $choices; do
+                            if [ "$opt" = "$candidate" ]; then
+                                pwr="$opt"
+                                found=1
+                                echo_debug "pm" "set_platform_profile($1): auto-detected SAV candidate -> $pwr"
+                                break 2
+                            fi
+                        done
+                    done
+                fi
+            else
+                # AC/BAT: exact match required
+                for opt in $choices; do
+                    if [ "$opt" = "$pwr" ]; then
+                        found=1
+                        break
+                    fi
+                done
+            fi
+
+            if [ "$found" -eq 1 ]; then
+                echo_debug "pm" "set_platform_profile($1): adjusted profile -> $pwr"
+            else
+                if [ -z "$pwr" ]; then
+                    echo_debug "pm" "set_platform_profile($1): no matching profile found in choices: $choices"
+                else
+                    echo_debug "pm" "set_platform_profile($1): configured profile '$pwr' not in choices: $choices"
+                fi
+            fi
+        fi
+
+        if [ -z "$pwr" ]; then
+            # No profile found to apply
+            echo_debug "pm" "set_platform_profile($1).no_profile"
+            return 0
+        fi
+
         if check_ppd_running; then
             # do not apply platform profile when power-profiles-daemon is running
             echo_message "Warning: PLATFORM_PROFILE_ON_AC/BAT is not set because power-profiles-daemon is running."
