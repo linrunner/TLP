@@ -205,7 +205,7 @@ discharge_battery () {
     # shellcheck disable=SC2154
     if [ "$_bm_dischg" = "none" ]; then
         # no method available --> quit
-        cecho "Error: there is no hardware driver support for battery $mode." 1>&2
+        cecho "Error: battery $mode is not supported." 1>&2
         echo_debug "bat" "discharge_battery.no_method"
         return 255
     fi

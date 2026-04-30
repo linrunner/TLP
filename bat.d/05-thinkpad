@@ -196,13 +196,20 @@ batdrv_init () {
                 _natacpi=1
                 _bm_thresh="natacpi"
 
-                if [ -f "$bd/$_bn_dischg" ]; then
-                    if grep -q "force-discharge" "$bd/$_bn_dischg"; then
-                        # sysfile exists and flags the force-discharge capability
-                        # note: coreboot does not support force-discharge i.e. charge_behaviour = "[auto]"
-                        _natacpi=0
-                        _bm_dischg="natacpi"
-                    fi
+                if [ -f "$bd/$_bn_dischg" ] && grep -q "force-discharge" "$bd/$_bn_dischg" \
+                    && [ -f "$bd/energy_now" ] && [ "$X_DISCHG_SIMULATE_NONE" != "1" ]; then
+                    # charge_behaviour exists and flags the force-discharge capability
+                    # and BIOS reports battery ratings in energy_* [mWh]
+                    #
+                    # known constellations *not* supporting 'tlp discharge|recalibrate' are:
+                    # 1. older coreboot does not support force-discharge (charge_behaviour = "[auto]")
+                    # 2. future coreboot will support force-discharge
+                    #    (charge_behaviour = "[auto] inhibit-charge force-discharge"),
+                    #    but unless coreboot has also been patched to properly report battery ratings
+                    #    in energy_* [mWh], batdrv_discharge() cannot work
+                    #
+                    _natacpi=0
+                    _bm_dischg="natacpi"
                 fi
             fi
         fi
@@ -1201,11 +1208,12 @@ batdrv_check_soc_gt_stop () {
 
 batdrv_recommendations () {
     # output ThinkPad specific recommendations
-    # prerequisite: batdrv_init()
+    # prerequisite: batdrv_init(), batdrv_select_battery()
 
     soc_gt_stop_recommendation
-    if [ "$_natacpi" = "1" ] && ! is_coreboot; then
-        # natacpi degraded and no coreboot
+    if [ "$_natacpi" = "1" ] \
+        && { [ ! -f "$_bd_read/charge_behaviour" ]||[ "$X_DISCHG_SIMULATE_NONE" = "1" ]; }; then
+        # kernel does not expose charge_behaviour
         printf "Install kernel 5.17 (or later) for battery recalibration support\n"
     fi
     if [ "$_tpsmapi" = "128" ]; then
