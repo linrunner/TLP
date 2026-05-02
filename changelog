@@ -5,6 +5,9 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
 
   * Bugfix Release
     Battery Care:
+    - ThinkPads: disable 'tlp discharge|recalibrate' if battery ratings are
+      not reported in energy_* [mWh], since the workflow cannot handle this.
+      A scenario that could arise with upcoming interim versions of Coreboot.
     - Lenovo laptops (non-ThinkPad series and ThinkBooks): fix the
       "could not read charge type" error triggered by a firmware update
       that introduces the "Fast" charge type (Issue #882).
