@@ -247,11 +247,15 @@
 # thermal and fan speed. Values are given in order of increasing power saving.
 # Note: check the output of tlp-stat -p to determine availability on your
 # hardware and additional profiles such as: balanced-performance, quiet, cool.
-# Default: performance (AC), balanced (BAT), low-power (SAV)
+# For SAV (power-saver): specify a space-separated list of profile names, e.g.
+#   "low-power cool quiet". TLP will automatically select the first profile
+#   available on your system. This enables portability across different hardware
+#   platforms with different platform profile naming schemes.
+# Default: performance (AC), balanced (BAT), low-power cool quiet (SAV)
 
 #PLATFORM_PROFILE_ON_AC=performance
 #PLATFORM_PROFILE_ON_BAT=balanced
-#PLATFORM_PROFILE_ON_SAV=low-power
+#PLATFORM_PROFILE_ON_SAV="low-power cool quiet"
 
 # System suspend mode:
 #   s2idle: Idle standby - a pure software, light-weight, system sleep state,
