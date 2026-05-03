@@ -33,10 +33,19 @@ Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": not specified or inva
 $ sudo tlp setcharge -- ${xinc} "${bctoff}" START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1"
 Setting temporary charge type for battery BAT0:
   charge type = Long_Life
+$ sudo tlp setcharge -- ${xinc} "${bctoff2}" START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1"
+Setting temporary charge type for battery BAT0:
+  charge type = Long_Life
 $ sudo tlp setcharge -- ${xinc} "${bcton}" START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1"
 Setting temporary charge type for battery BAT0:
   charge type = Long_Life (no change)
+$ sudo tlp setcharge -- ${xinc} "${bcton2}" START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1"
+Setting temporary charge type for battery BAT0:
+  charge type = Long_Life (no change)
 $ sudo tlp setcharge -- ${xinc} "${bcton}" START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="0"
+Setting temporary charge type for battery BAT0:
+  charge type = Standard
+$ sudo tlp setcharge -- ${xinc} "${bcton2}" START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="0"
 Setting temporary charge type for battery BAT0:
   charge type = Standard
 $ # Test machine state (real hardware): threshold disabled
@@ -58,12 +67,23 @@ Setting temporary charge type for battery BAT0:
 $ sudo tlp setcharge 42 1 -- ${xinc} "${bctoff}"
 Setting temporary charge type for battery BAT0:
   charge type = Long_Life
+$ sudo tlp setcharge 42 1 -- ${xinc} "${bctoff2}"
+Setting temporary charge type for battery BAT0:
+  charge type = Long_Life
 $ sudo tlp setcharge 42 1 -- ${xinc} "${bcton}"
+Setting temporary charge type for battery BAT0:
+  charge type = Long_Life (no change)
+$ sudo tlp setcharge 42 1 -- ${xinc} "${bcton2}"
 Setting temporary charge type for battery BAT0:
   charge type = Long_Life (no change)
 $ sudo tlp-stat -b -- ${xinc} "${bcton}" | grep "/charge_types"
 /sys/class/power_supply/BAT0/charge_types                   = Standard [Long_Life]
+$ sudo tlp-stat -b -- ${xinc} "${bcton2}" | grep "/charge_types"
+/sys/class/power_supply/BAT0/charge_types                   = Fast Standard [Long_Life]
 $ sudo tlp setcharge DEF DEF -- ${xinc} "${bcton}"
+Setting temporary charge type for battery BAT0:
+  charge type = Standard
+$ sudo tlp setcharge DEF DEF -- ${xinc} "${bcton2}"
 Setting temporary charge type for battery BAT0:
   charge type = Standard
 $ sudo tlp setcharge DEF DEF -- ${xinc} "${bctoff}"
@@ -71,6 +91,8 @@ Setting temporary charge type for battery BAT0:
   charge type = Standard (no change)
 $ sudo tlp-stat -b -- ${xinc} "${bctoff}" | grep "/charge_types"
 /sys/class/power_supply/BAT0/charge_types                   = [Standard] Long_Life
+$ sudo tlp-stat -b -- ${xinc} "${bctoff2}" | grep "/charge_types"
+/sys/class/power_supply/BAT0/charge_types                   = [Fast] Standard Long_Life
 $ # Test machine state (real hardware): threshold disabled
 $ #
 $ sudo tlp setcharge 42 24 BAT2 -- ${xinc} "${bctoff}"
