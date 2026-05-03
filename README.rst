@@ -1,27 +1,28 @@
 TLP - Optimize Linux Laptop Battery Life
 ========================================
-TLP is a feature-rich utility for Linux, saving laptop battery power
-without the need to delve deeper into technical details.
+TLP is a feature-rich Linux utility that saves laptop battery power
+without the need to delve into technical details.
 
-TLP’s default settings are already optimized for battery life, so you may just
-install and forget it. Nevertheless TLP is highly customizable to meet your specific
-requirements.
+Rest easy after installation knowing that TLP's default settings are
+already optimized for battery life.
+However, you can also fully customize TLP to suit your unique needs.
 
-Settings are organized into three customizable profiles *performance* (AC),
-*balanced* (BAT) and *power-saver* (SAV), allowing to adjust between savings
-and performance independently for battery and AC operation.
+The settings are organized into three customisable profiles *performance*,
+*balanced* and *power-saver*. The profiles switch automatically,
+allowing you to adjust between savings and performance independently for
+AC and battery operation.
 
-*Version 1.9* introduces the (optional) TLP profiles daemon (**tlp-pd**), which
-enables choosing between the three profiles with a mouse click. Together with TLP
-as the backend it **replaces power-profiles-daemon** by implementing the same
-D-Bus API that major Linux desktop environments like GNOME, KDE and Cinnamon
-already use for switching power profiles.
+The newly introduced TLP profiles daemon (**tlp-pd**) enables manual profile
+switching with a mouse click. Together with TLP as the backend, it provides a
+**complete replacement** for **power-profiles-daemon** by implementing the
+same D-Bus API used by major Linux desktop environments such as GNOME, KDE
+and Cinnamon for switching power profiles.
 
 In addition TLP can enable or disable Bluetooth, NFC, Wi-Fi and WWAN radio
-devices on boot and when connecting/removing the LAN cable.
+devices on boot and when connecting or removing the LAN cable.
 
-For ThinkPads and other supported laptops it provides a unified approach to
-battery charge thresholds.
+For ThinkPads and many other supported laptops it provides a unified approach
+to setting battery charge thresholds.
 
 Documentation
 -------------
@@ -37,11 +38,9 @@ TLP packages are available for all major Linux distributions:
 
 Settings
 --------
-Settings are organized into two profiles, enabling you to adjust between savings
-and performance independently for battery (BAT) and AC operation.
-
-Refer to `Settings <https://linrunner.de/tlp/settings/introduction>`_ to learn
-how to customize the configuration if desired.
+Refer to `Settings <https://linrunner.de/tlp/settings/introduction>`_ and
+the `Optimizing Guide <https://linrunner.de/tlp/support/optimizing.html>`_
+to learn how to customize the configuration if desired.
 
 Support
 -------
