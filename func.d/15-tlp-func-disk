@@ -637,6 +637,7 @@ set_laptopmode () {
         return 0
     fi
 
+    [ -f /proc/sys/vm/laptop_mode ] || return 0
     write_sysf "$isec" /proc/sys/vm/laptop_mode
     echo_debug "disk" "set_laptopmode($1): $isec; rc=$?"
 
