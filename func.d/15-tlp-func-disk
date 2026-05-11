@@ -14,6 +14,8 @@ readonly ALPM_GLOB=$AHCI_GLOB'/host*/scsi_host/host*'
 
 readonly DISK_NOP_WORDS="_ keep"
 
+readonly LM_IGN_KVER="7.0"
+
 # ----------------------------------------------------------------------------
 # Functions
 
@@ -639,6 +641,11 @@ set_laptopmode () {
 
     if [ ! -f /proc/sys/vm/laptop_mode ]; then
         echo_debug "disk" "set_laptopmode($1).non_existent"
+        return 0
+    fi
+    if kernel_version_ge "$LM_IGN_KVER"; then
+        # prevent "vm.laptop_mode is deprecated" warnings
+        echo_debug "disk" "set_laptopmode($1).ignored"
         return 0
     fi
 

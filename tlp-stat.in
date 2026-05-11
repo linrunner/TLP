@@ -692,7 +692,7 @@ fi # show_temp
 # --- show laptop-mode, dirty buffers params
 if [ "$show_all" = "1" ]; then
     echo "+++ File System"
-    printparm "%-38s = ##%5d##" /proc/sys/vm/laptop_mode
+    kernel_version_ge "$LM_IGN_KVER" || printparm "%-38s = ##%5d##" /proc/sys/vm/laptop_mode
     printparm "%-38s = ##%5d##" /proc/sys/vm/dirty_writeback_centisecs
     printparm "%-38s = ##%5d##" /proc/sys/vm/dirty_expire_centisecs
     printparm "%-38s = ##%5d##" /proc/sys/vm/dirty_ratio

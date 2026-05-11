@@ -122,8 +122,9 @@
 
 #TLP_PS_IGNORE="BAT"
 
-# Seconds laptop mode has to wait after the disk goes idle before doing a
-# sync. Non-zero value enables, zero disables laptop mode.
+# Seconds laptop_mode has to wait after the disk goes idle before doing a
+# sync. Non-zero value enables, zero disables laptop_mode.
+# Note: will be ignored starting with kernel 7.0
 # Default: 0 (AC), 2 (BAT)
 
 #DISK_IDLE_SECS_ON_AC=0
