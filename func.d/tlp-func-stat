@@ -983,10 +983,10 @@ print_bat_energy () {
             en="$(perl -e 'printf "%.0f\n", '"$_bat_en"' * '"$volt"'')"
             pn="$(perl -e 'printf "%.0f\n", '"$pwr"' * '"$volt"'')"
 
-            printf "%-59s = %6d [mAh] (%6d mWh)\n" "$_bd_read/charge_full_design" "$_bat_ed" "$ed"
-            printf "%-59s = %6d [mAh] (%6d mWh)\n" "$_bd_read/charge_full" "$_bat_ef" "$ef"
-            printf "%-59s = %6d [mAh] (%6d mWh)\n" "$_bd_read/charge_now" "$_bat_en" "$en"
-            printf "%-59s = %6d [mA]  (%6d mW)\n"  "$_bd_read/current_now" "$pwr" "$pn"
+            printf "%-59s = %6d [mAh] (≈%6d mWh)\n" "$_bd_read/charge_full_design" "$_bat_ed" "$ed"
+            printf "%-59s = %6d [mAh] (≈%6d mWh)\n" "$_bd_read/charge_full" "$_bat_ef" "$ef"
+            printf "%-59s = %6d [mAh] (≈%6d mWh)\n" "$_bd_read/charge_now" "$_bat_en" "$en"
+            printf "%-59s = %6d [mA]  (≈%6d mW)\n"  "$_bd_read/current_now" "$pwr" "$pn"
         else
             # voltage is not available or invalid -> display mA(h) units only
             printf "%-59s = %6d [mAh]\n" "$_bd_read/charge_full_design" "$_bat_ed"
