@@ -217,7 +217,7 @@ batdrv_init () {
 
     # quit if no battery detected, there is no point in activating the plugin
     if [ -z "$_batteries" ]; then
-        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries"
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries" "$LOGPRIO_WARN"
         return 2
     fi
 
@@ -254,8 +254,8 @@ batdrv_init () {
 
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; tpsmapi=$_tpsmapi"
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: read=$_bm_read; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop; dischg=$_bm_dischg; bn_dischg=$_bn_dischg"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; tpsmapi=$_tpsmapi" "$LOGPRIO_INFO"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: read=$_bm_read; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop; dischg=$_bm_dischg; bn_dischg=$_bn_dischg" "$LOGPRIO_INFO"
     return 0
 }
 
@@ -464,7 +464,7 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_start" 3 || \
        ! is_within_bounds "$new_start" 0 99; then
         # threshold out of range
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str; cfg=$_bt_cfg_bat"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOGPRIO_WARN"
         case $verb in
             1)
                 if [ -n "$4" ]; then
@@ -487,7 +487,7 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_stop" 3 || \
        ! is_within_bounds "$new_stop" 1 100; then
         # threshold out of range
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: bat=$_bat_str; cfg=$_bt_cfg_bat"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOGPRIO_WARN"
         case $verb in
             1)
                 if [ -n "$4" ]; then
@@ -508,7 +508,7 @@ batdrv_write_thresholds () {
 
     # check if start < stop
     if [ "$new_start" -ge "$new_stop" ]; then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_diff: bat=$_bat_str; cfg=$_bt_cfg_bat"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_diff: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOGPRIO_WARN"
         case $verb in
             1)
                 if [ -n "$4" ]; then
@@ -530,7 +530,7 @@ batdrv_write_thresholds () {
     # read active threshold values
     if ! old_start=$(batdrv_read_threshold start 0) || \
        ! old_stop=$(batdrv_read_threshold stop 0); then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOGPRIO_ERR"
         case $verb in
             1) echo_message "Warning: could not read current charge threshold(s) for battery $_bat_str. Battery skipped." ;;
             2) cprintf "" "Error: could not read current charge threshold(s) for battery %s. Aborted.\n" "$_bat_str" 1>&2 ;;
@@ -583,7 +583,7 @@ batdrv_write_thresholds () {
                 stop)  [ "$X_THRESH_SIMULATE_WRITEERR" != "1" ] && write_sysf "$new_thresh" "$_bf_stop"  ;;
             esac
             steprc=$?; [ $steprc -ne 0 ] && [ $rc -eq 0 ] && rc=5
-            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.write: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_thresh; new=$new_thresh; steprc=$steprc"
+            echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).$step.write: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_thresh; new=$new_thresh; steprc=$steprc" "$LOGPRIO_INFO"
             case $verb in
                 2)
                     if [ $steprc -eq 0 ]; then
@@ -647,14 +647,14 @@ batdrv_chargeonce () {
 
     if ! cur_stop=$(batdrv_read_threshold stop 0); then
         cprintf "" "Error: reading stop charge threshold of battery %s failed. Aborted.\n" "$_bat_str" 1>&2
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).thresh_unknown: stop=$cur_stop; rc=4"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).thresh_unknown: stop=$cur_stop; rc=4" "$LOGPRIO_ERR"
         return 4
     fi
 
     # get current charge level (in %)
     if ! soc="$(batdrv_calc_soc)"; then
         cprintf "" "Error: cannot determine charge level of battery %s.\n" "$_bat_str" 1>&2
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_unknown; rc=2"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_unknown; rc=2" "$LOGPRIO_ERR"
         return 2
     fi
 
@@ -662,7 +662,7 @@ batdrv_chargeonce () {
     if [ "$soc" -gt "$temp_start" ]; then
         cprintf "" "Error: the charge level of battery %s is %s%%. " "$_bat_str" "$soc"  1>&2
         cprintf "err" "For this command to work, it must not be higher than %s%% (stop threshold - 1).\n" "$temp_start" 1>&2
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_too_high: soc=$soc; stop=$cur_stop; rc=3"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.chargeonce($_bat_str).charge_level_too_high: soc=$soc; stop=$cur_stop; rc=3" "$LOGPRIO_WARN"
         return 3
     fi
 
@@ -747,7 +747,7 @@ batdrv_read_force_discharge () {
 
     if [ "$rc" -gt 0 ]; then
         # log output in the error case only
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; bat_idx=$_bat_idx; out=$out; rc=$rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.read_force_discharge($_bat_str): bm_dischg=$_bm_dischg; bf_dischg=$_bf_dischg; bat_idx=$_bat_idx; out=$out; rc=$rc" "$LOGPRIO_ERR"
     fi
     return $rc
 }
@@ -786,7 +786,7 @@ batdrv_cancel_force_discharge () {
 
     batdrv_write_force_discharge 0
     unlock_tlp tlp_discharge
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.cancelled($_bat_str)"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.cancelled($_bat_str)" "$LOGPRIO_INFO"
     printf " Cancelled.\n"
 
     do_exit 5
@@ -876,7 +876,7 @@ batdrv_discharge () {
 
     if ! soc="$(batdrv_calc_soc)"; then
         _bat_dischg_rc=9
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge($_bat_str).charge_level_unknown; rc=$_bat_dischg_rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge($_bat_str).charge_level_unknown; rc=$_bat_dischg_rc" "$LOGPRIO_ERR"
         cecho "Error: cannot read charge level of battery ${_bat_str}."  1>&2
         return $_bat_dischg_rc
     fi
@@ -884,7 +884,7 @@ batdrv_discharge () {
     target_soc="${1:-0}"
     if is_uint "$target_soc"; then
         if ! is_within_bounds "$target_soc" 0 99; then
-            echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.target_out_of_bounds($_bat_str): target=$target_soc"
+            echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.target_out_of_bounds($_bat_str): target=$target_soc" "$LOGPRIO_WARN"
             cprintf "" "Error: target charge level (%s) for battery %s is out of range (0..99).\n" "$target_soc" "$_bat_str" 1>&2
             _bat_dischg_rc=7
             return $_bat_dischg_rc
@@ -894,7 +894,7 @@ batdrv_discharge () {
     _bat_target_en="$(perl -e 'printf ("%d", '"$ef"' * '"$target_soc"' / 100.0)')"
     en="$(perl -e 'printf ("%d", '"$(read_sysval "$_bd_read/energy_now")"' / 1000.0 );')"
     if [ "$_bat_target_en" -ge "$en" ]; then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.target_below_soc($_bat_str): target=$target_soc; soc=$soc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.target_below_soc($_bat_str): target=$target_soc; soc=$soc" "$LOGPRIO_WARN"
         cprintf "" "Error: target level (%s%%) is too high compared to the actual charge level (%s%%) of battery %s.\n" "$target_soc" "$soc" "$_bat_str" 1>&2
         _bat_dischg_rc=7
         return $_bat_dischg_rc
@@ -902,7 +902,7 @@ batdrv_discharge () {
 
     # start discharge
     if ! batdrv_write_force_discharge 1; then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_write_error($_bat_str)"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.force_discharge_write_error($_bat_str)" "$LOGPRIO_ERR"
         cecho "Error: discharge $_bat_str failed -- check your hardware (battery, charger)." 1>&2
         _bat_dischg_rc=8
         return $_bat_dischg_rc
@@ -986,7 +986,7 @@ batdrv_discharge () {
                 cecho "Done: battery $_bat_str discharge completed." "success" 1>&2
                 ;;
         esac
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.${label}($_bat_str): fd=$_bat_fd; bst=$_bat_st; target=$_bat_target_en; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; drc=$_bat_dischg_rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.${label}($_bat_str): fd=$_bat_fd; bst=$_bat_st; target=$_bat_target_en; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; drc=$_bat_dischg_rc" "$LOGPRIO_INFO"
 
         wt="$X_DISCHG_TRACE_FOLLOWUP"
         if is_uint "$wt"; then
@@ -1011,7 +1011,7 @@ batdrv_discharge () {
     else
         # force-discharge timeout
         _bat_dischg_rc=8
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.timeout($_bat_str): fd=$_bat_fd; bst=$_bat_st; target=$_bat_target_en; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; drc=$_bat_dischg_rc"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.discharge.timeout($_bat_str): fd=$_bat_fd; bst=$_bat_st; target=$_bat_target_en; soc=$_bat_soc; en=$_bat_en; pwr=$_bat_pwr; volt=$_bat_volt; drc=$_bat_dischg_rc" "$LOGPRIO_ERR"
         cecho "Error: discharge $_bat_str timeout after $(((timeout - wt) * sleeps)) second(s) -- check your hardware (battery, charger)." 1>&2
     fi
 

@@ -230,10 +230,10 @@ usb_suspend_device () {
         if [ "$X_TLP_USB_SET_AUTOSUSPEND_DELAY" = "1" ]; then
             # set autosuspend delay
             write_sysf $USB_TIMEOUT_MS "$usbdev/power/autosuspend_delay_ms"; rc2=$?
-            echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid $usbdev [$drvlist]; control: rc=$rc1; delay: rc=$rc2"
+            echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid $usbdev [$drvlist]; control: rc=$rc1; delay: rc=$rc2" "$LOGPRIO_INFO"
         elif [ $chg -eq 1 ]; then
             # default: change control but not autosuspend_delay, i.e. keep kernel default setting
-            echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid $usbdev [$drvlist]; control: rc=$rc1"
+            echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid $usbdev [$drvlist]; control: rc=$rc1" "$LOGPRIO_INFO"
         else
             # we didn't change anything actually
             echo_debug "usb" "usb_suspend_device.$caller.$control$exc.no_change: $busdev ID $usbid $usbdev [$drvlist]"

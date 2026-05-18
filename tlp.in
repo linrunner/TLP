@@ -224,9 +224,9 @@ check_tlp_enabled 1 || do_exit 1
 add_sbin2path
 
 if [ -z "$_cmd2" ]; then
-    echo_debug "run" "+++ $_cmd ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
+    echo_debug "run" "+++ $_cmd ($TLPVER) ++++++++++++++++++++++++++++++++++++++++" "$LOGPRIO_INFO"
 else
-    echo_debug "run" "+++ $_cmd $_cmd2 ($TLPVER) ++++++++++++++++++++++++++++++++++++++++"
+    echo_debug "run" "+++ $_cmd $_cmd2 ($TLPVER) ++++++++++++++++++++++++++++++++++++++++" "$LOGPRIO_INFO"
 fi
 
 # shellcheck disable=SC2154
@@ -243,13 +243,13 @@ get_next_power_profile "$_cmd"
 
 # shellcheck disable=SC2154
 case "$_syspwr" in
-    "$PS_AC")  echo_debug "run" "power_source=ac($_syspwr)" ;;
-    "$PS_BAT") echo_debug "run" "power_source=bat($_syspwr)" ;;
-    *)         echo_debug "run" "power_source=unknown($_syspwr)" ;;
+    "$PS_AC")  echo_debug "run" "power_source=ac($_syspwr)" "$LOGPRIO_INFO" ;;
+    "$PS_BAT") echo_debug "run" "power_source=bat($_syspwr)" "$LOGPRIO_INFO" ;;
+    *)         echo_debug "run" "power_source=unknown($_syspwr)" "$LOGPRIO_INFO" ;;
 esac
 
 # shellcheck disable=SC2154
-echo_debug "run" "power_profile=$(pp2str "$_pp_next")($_pp_next)"
+echo_debug "run" "power_profile=$(pp2str "$_pp_next")($_pp_next)" "$LOGPRIO_INFO"
 
 # process command
 exitcode=0

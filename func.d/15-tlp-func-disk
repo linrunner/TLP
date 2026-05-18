@@ -285,7 +285,7 @@ set_disk_apm_level () { # set disk apm level
                 echo_debug "disk" "${log_message}; keep as is"
             else
                 $HDPARM -B "$1" "/dev/$_disk_dev" > /dev/null 2>&1
-                echo_debug "disk" "${log_message}; rc=$?"
+                echo_debug "disk" "${log_message}; rc=$?" "$LOGPRIO_INFO"
             fi
         fi
         # quit the loop after reaching the target
@@ -357,7 +357,7 @@ set_disk_spindown_timeout () { # set disk spindown timeout
                 echo_debug "disk" "${log_message}; keep as is"
             else
                 $HDPARM -S "$1" "/dev/$_disk_dev" > /dev/null 2>&1
-                echo_debug "disk" "${log_message}; rc=$?"
+                echo_debug "disk" "${log_message}; rc=$?" "$LOGPRIO_INFO"
             fi
         fi
         # quit the loop after reaching the target
@@ -425,7 +425,7 @@ set_disk_iosched () { # set disk io scheduler
                 echo_debug "disk" "${log_message}; keep as is"
             else
                 write_sysf "$sched" "$schedctrl"
-                echo_debug "disk" "${log_message}; rc=$?"
+                echo_debug "disk" "${log_message}; rc=$?" "$LOGPRIO_INFO"
             fi
         fi
         # quit the loop after reaching the target
@@ -478,7 +478,7 @@ set_sata_link_power () { # set ahci link power management
                 # host not denylisted --> iterate all configured values
                 for pwr in "$@"; do
                     write_sysf "$pwr" "$linkpol"; rc=$?
-                    echo_debug "disk" "set_sata_link_power($pwrmode).$pwr: $host; rc=$rc"
+                    echo_debug "disk" "set_sata_link_power($pwrmode).$pwr: $host; rc=$rc" "$LOGPRIO_INFO"
                     if [ $rc -eq 0 ]; then
                         # write successful --> goto next host
                         ctrl_avail="1"
@@ -558,7 +558,7 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
                         # activation failed
                         rc=2
                     fi
-                    echo_debug "disk" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc"
+                    echo_debug "disk" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc" "$LOGPRIO_INFO"
                     ;;
 
                 1|2) # runtime pm denied for disk
@@ -608,7 +608,7 @@ set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
     # iterate ahci ports
     for device in $AHCI_GLOB; do
         if write_sysf "$control" "${device}/power/control"; then
-            echo_debug "disk" "set_ahci_port_runtime_pm($1).$control: port=$device; rc=0"
+            echo_debug "disk" "set_ahci_port_runtime_pm($1).$control: port=$device; rc=0" "$LOGPRIO_INFO"
         else
             echo_debug "disk" "set_ahci_port_runtime_pm($1).no-port"
         fi
@@ -650,7 +650,7 @@ set_laptopmode () {
     fi
 
     write_sysf "$isec" /proc/sys/vm/laptop_mode
-    echo_debug "disk" "set_laptopmode($1): $isec; rc=$?"
+    echo_debug "disk" "set_laptopmode($1): $isec; rc=$?" "$LOGPRIO_INFO"
 
     return 0
 }
@@ -681,18 +681,18 @@ set_dirty_parms () {
              /proc/sys/fs/xfs/age_buffer_centisecs \
              /proc/sys/fs/xfs/xfssyncd_centisecs; do
         if [ -f "$df" ] && ! write_sysf "$cage" $df; then
-            echo_debug "disk" "set_dirty_parms($1).write_error: $df $cage; rc=$?"
+            echo_debug "disk" "set_dirty_parms($1).write_error: $df $cage; rc=$?" "$LOGPRIO_WARN"
             ec=$((ec+1))
         fi
     done
     # shellcheck disable=SC2043
     for df in /proc/sys/fs/xfs/xfsbufd_centisecs; do
         if [ -f "$df" ] && ! write_sysf "3000" $df; then
-            echo_debug "disk" "set_dirty_parms($1).write_error: $df 3000; rc=$?"
+            echo_debug "disk" "set_dirty_parms($1).write_error: $df 3000; rc=$?" "$LOGPRIO_WARN"
             ec=$((ec+1))
         fi
     done
-    echo_debug "disk" "set_dirty_parms($1): $cage; ec=$ec"
+    echo_debug "disk" "set_dirty_parms($1): $cage; ec=$ec" "$LOGPRIO_INFO"
 
     return 0
 }

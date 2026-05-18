@@ -52,7 +52,7 @@ case "$1" in
         ;;
 
     disk) # (s)ata disks attached via usb
-        echo_debug "usb" "tlp_usb_udev.disk: bus=$ID_BUS dev=/sys$2 "
+        echo_debug "usb" "tlp_usb_udev.disk: bus=$ID_BUS dev=/sys$2" "$LOGPRIO_INFO"
 
         get_next_power_profile usb-udev-disk
         dev="${2##*/block/}"

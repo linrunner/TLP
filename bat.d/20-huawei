@@ -109,7 +109,7 @@ batdrv_init () {
 
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; start_stop=$_bf_start_stop;"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; start_stop=$_bf_start_stop;" "$LOGPRIO_INFO"
     return 0
 }
 
@@ -227,7 +227,7 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_start" 3 || \
        ! is_within_bounds "$new_start" 0 99; then
         # threshold out of range
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: cfg=$_bt_cfg_bat"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: cfg=$_bt_cfg_bat" "$LOGPRIO_WARN"
         case $verb in
             1)
                 if [ -n "$4" ]; then
@@ -250,7 +250,7 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_stop" 3 || \
        ! is_within_bounds "$new_stop" 1 100; then
         # threshold out of range
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: cfg=$_bt_cfg_bat"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: cfg=$_bt_cfg_bat" "$LOGPRIO_WARN"
         case $verb in
             1)
                 if [ -n "$4" ]; then
@@ -271,7 +271,7 @@ batdrv_write_thresholds () {
 
     # check start <= stop
     if [ "$new_start" -gt "$new_stop" ]; then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_diff: cfg=$_bt_cfg_bat"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_diff: cfg=$_bt_cfg_bat" "$LOGPRIO_WARN"
         case $verb in
             1)
                 if [ -n "$4" ]; then
@@ -298,7 +298,7 @@ batdrv_write_thresholds () {
     local rc=0
     local new_threshs="$new_start $new_stop"
     write_sysf "$new_threshs" "$_bf_start_stop" || rc=5
-    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4): cfg=$_bt_cfg_bat; new=$new_threshs; rc=$rc"
+    echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4): cfg=$_bt_cfg_bat; new=$new_threshs; rc=$rc" "$LOGPRIO_INFO"
     case $verb in
         2)
             if [ $rc -eq 0 ]; then

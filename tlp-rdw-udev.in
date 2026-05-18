@@ -37,7 +37,7 @@ case $devtype in
         action=$EVENT
 
         # shellcheck disable=SC2154
-        echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev type=$type docked=$docked syspwr=$_syspwr"
+        echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev type=$type docked=$docked syspwr=$_syspwr" "$LOGPRIO_INFO"
         ;;
 
     usb_dock)
@@ -47,7 +47,7 @@ case $devtype in
             remove) action="undock"  ;;
         esac
 
-        echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev syspwr=$_syspwr"
+        echo_debug "udev" "+++ rdw_udev($devtype).$action dev=$ddev syspwr=$_syspwr" "$LOGPRIO_INFO"
         ;;
 
     *) do_exit 0 ;; # unknown device type
@@ -55,7 +55,7 @@ esac
 
 # quit if timed lock in progress
 if check_timed_lock "$RDW_DOCK_LOCK" ; then
-    echo_debug "udev" "rdw_udev.locked"
+    echo_debug "udev" "rdw_udev.locked" "$LOGPRIO_INFO"
     do_exit 0
 fi
 

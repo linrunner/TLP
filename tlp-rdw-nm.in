@@ -40,7 +40,7 @@ check_switch_lock() { # switch listed radio devices
                     *)  repeats=""  ;;
                 esac
                 if [ -n "$repeats" ]; then
-                    echo_debug "nm" "+++ tlp_rdw_nm(${iface}).${action}.nm_seems_asleep: repeats=$repeats"
+                    echo_debug "nm" "+++ tlp_rdw_nm(${iface}).${action}.nm_seems_asleep: repeats=$repeats" "$LOGPRIO_INFO"
                     ( sleep 2; $0 "$iface" "$action" "$repeats" < /dev/null > /dev/null ) &
                     do_exit 0
                 fi
@@ -98,7 +98,7 @@ case "$action" in
     up|down) # interface up/down
         # quit for invalid interfaces
         if [ -z "$iface" ] || [ "$iface" = "none" ]; then
-            echo_debug "nm" "tlp_rdw_nm($iface).${action}.no_interface"
+            echo_debug "nm" "tlp_rdw_nm($iface).${action}.no_interface" "$LOGPRIO_WARN"
             echo_env
             do_exit 0
         fi
@@ -122,7 +122,7 @@ case "$action" in
             fi
         fi
 
-        echo_debug "nm" "+++ tlp_rdw_nm($iface).$action: repeats=$repeats"
+        echo_debug "nm" "+++ tlp_rdw_nm($iface).$action: repeats=$repeats" "$LOGPRIO_INFO"
         echo_env
         # shellcheck disable=SC2154
         if [ -n "$_addpath" ]; then

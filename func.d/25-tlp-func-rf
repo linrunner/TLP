@@ -92,7 +92,7 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: PP_PRF, PP_BAL, PP_SA
 
     get_wifi_ifaces
     if [ -z "$_wifaces" ]; then
-        echo_debug "pm" "set_wifi_power_mode($1).no_ifaces"
+        echo_debug "pm" "set_wifi_power_mode($1).no_ifaces" "$LOGPRIO_WARN"
         return 0
     fi
 
@@ -100,10 +100,10 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: PP_PRF, PP_BAL, PP_SA
         if [ -n "$iface" ]; then
             if  cmd_exists $IW; then
                 $IW dev "$iface" set power_save "$pwr" > /dev/null 2>&1
-                echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr; rc=$?"
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr; rc=$?" "$LOGPRIO_INFO"
             else
                 # iw not iwconfig installed
-                echo_debug "pm" "set_wifi_power_mode($1, $iface).no_iw"
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).no_iw" "$LOGPRIO_WARN"
                 return 1
             fi
         fi

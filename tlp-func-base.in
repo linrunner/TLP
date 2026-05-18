@@ -79,6 +79,12 @@ readonly PP_SUS=3
 readonly PP_NONE=255
 readonly PP_USER="0 1 2"
 
+# log message priorities
+readonly LOGPRIO_DEBUG="debug"
+readonly LOGPRIO_INFO="info"
+readonly LOGPRIO_WARN="warning"
+readonly LOGPRIO_ERR="err"
+
 # ----------------------------------------------------------------------------
 # Control
 
@@ -555,7 +561,7 @@ lock_tlp () { # get exclusive lock: blocking with timeout
         echo_debug "lock" "lock_tlp($1).success"
         return 0
     else
-        echo_debug "lock" "lock_tlp($1).failed"
+        echo_debug "lock" "lock_tlp($1).failed" "$LOGPRIO_WARN"
         return 1
     fi
 }
@@ -571,7 +577,7 @@ lock_tlp_nb () { # get exclusive lock: non-blocking
         echo_debug "lock" "lock_tlp_nb($1).success"
         return 0
     else
-        echo_debug "lock" "lock_tlp_nb($1).failed"
+        echo_debug "lock" "lock_tlp_nb($1).failed" "$LOGPRIO_WARN"
         return 1
     fi
 }
@@ -821,7 +827,7 @@ save_runconf () { # copy temporary to final runconf
         chmod 664 "$_conf_tmp" $CONF_RUN > /dev/null 2>&1
         echo_debug "run" "save_runconf.ok: $_conf_tmp -> $CONF_RUN"
     else
-        echo_debug "run" "save_runconf.failed: $_conf_tmp -> $CONF_RUN"
+        echo_debug "run" "save_runconf.failed: $_conf_tmp -> $CONF_RUN" "$LOGPRIO_WARN"
     fi
 }
 
@@ -1162,7 +1168,7 @@ read_saved_power_profile () {
             ;;
 
         *) # invalid
-            echo_debug "ps" "read_saved_power_profile.invalid_pp: saved=$_pp_last"
+            echo_debug "ps" "read_saved_power_profile.invalid_pp: saved=$_pp_last" "$LOGPRIO_WARN"
             _pp_last="$PP_NONE"
             ;;
     esac
@@ -1177,7 +1183,7 @@ read_saved_power_profile () {
             ;;
 
         *) # invalid
-            echo_debug "ps" "read_saved_power_profile.invalid_ps: saved=$_ps_last"
+            echo_debug "ps" "read_saved_power_profile.invalid_ps: saved=$_ps_last" "$LOGPRIO_WARN"
             _ps_last="$PS_UNKNOWN"
             ;;
     esac
@@ -1413,9 +1419,9 @@ get_next_power_profile () {
     fi # still undefined
 
     if [ "$_pp_next" != "$_pp_last" ]; then
-        echo_debug "ps" "get_next_power_profile($tlp_cmd).change: autosw=$TLP_AUTO_SWITCH; def=$def_pp; man=$man_pp; pers=$pers; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
+        echo_debug "ps" "get_next_power_profile($tlp_cmd).change: autosw=$TLP_AUTO_SWITCH; def=$def_pp; man=$man_pp; pers=$pers; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next" "$LOGPRIO_INFO"
     else
-        echo_debug "ps" "get_next_power_profile($tlp_cmd).keep: autosw=$TLP_AUTO_SWITCH; def=$def_pp; man=$man_pp; pers=$pers; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next"
+        echo_debug "ps" "get_next_power_profile($tlp_cmd).keep: autosw=$TLP_AUTO_SWITCH; def=$def_pp; man=$man_pp; pers=$pers; ps_last=$_ps_last; pp_last=$_pp_last; pp_next=$_pp_next" "$LOGPRIO_INFO"
     fi
 
     return "$_pp_next"
@@ -1436,7 +1442,7 @@ notify_profile_daemon () {
            $GDBUS call -y -d $TLPPD_BUS_NAME -o $TLPPD_OBJECT_PATH -m "${TLPPD_INTERFACE_NAME}.SyncProfile" "$1" "$autosw" 2> /dev/null 1>&2
            echo_debug "run" "notify_profile_daemon.gdbus.call.SyncProfile($1): rc=$?"
        else
-           echo_debug "run" "notify_profile_daemon($1).gdbus_missing"
+           echo_debug "run" "notify_profile_daemon($1).gdbus_missing" "$LOGPRIO_ERR"
        fi
     else
         echo_debug "run" "notify_profile_daemon($1).no_profile"

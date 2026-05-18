@@ -72,24 +72,24 @@ set_cpu_driver_opmode () {
 
     if check_intel_pstate; then
         if write_sysf "$opmode" "${INTEL_PSTATED}/status"; then
-            echo_debug "pm" "set_cpu_driver_opmode($1).intel_pstate: $opmode; rc=$?"
+            echo_debug "pm" "set_cpu_driver_opmode($1).intel_pstate: $opmode; rc=$?" "$LOGPRIO_INFO"
         else
             # kernel rejected the configured opmode
-            echo_debug "pm" "set_cpu_driver_opmode($1).intel_pstate: $opmode; rc=$?"
+            echo_debug "pm" "set_cpu_driver_opmode($1).intel_pstate: $opmode; rc=$?" "$LOGPRIO_WARN"
             echo_message "Error in configuration at ${cfg}=\"${opmode}\": this operation mode is not supported by the intel_pstate driver."
             return 1
         fi
     elif check_amd_pstate; then
         if write_sysf "$opmode" "${AMD_PSTATED}/status"; then
-            echo_debug "pm" "set_cpu_driver_opmode($1).amd_pstate: $opmode; rc=$?"
+            echo_debug "pm" "set_cpu_driver_opmode($1).amd_pstate: $opmode; rc=$?" "$LOGPRIO_INFO"
         else
             # kernel rejected the configured opmode
-            echo_debug "pm" "set_cpu_driver_opmode($1).amd_pstate: $opmode; rc=$?"
+            echo_debug "pm" "set_cpu_driver_opmode($1).amd_pstate: $opmode; rc=$?" "$LOGPRIO_WARN"
             echo_message "Error in configuration at ${cfg}=\"${opmode}\": this operation mode is not supported by the amd-pstate driver."
             return 1
         fi
     else
-        echo_debug "pm" "set_cpu_driver_opmode($1).unsupported_driver"
+        echo_debug "pm" "set_cpu_driver_opmode($1).unsupported_driver" "$LOGPRIO_WARN"
         echo_message "Error in configuration at ${cfg}=\"${opmode}\": the $(print_cpu_driver) driver does not support operation modes."
         return 1
     fi
@@ -128,17 +128,17 @@ set_cpu_scaling_governor () {
         ec=0
         for cpu in "${CPUD}"/cpu*/cpufreq/scaling_governor; do
             if [ -f "$cpu" ] && ! write_sysf "$gov" "$cpu"; then
-                echo_debug "pm" "set_cpu_scaling_governor($1).write_error: $cpu $gov; rc=$?"
+                echo_debug "pm" "set_cpu_scaling_governor($1).write_error: $cpu $gov; rc=$?" "$LOGPRIO_WARN"
                 ec=$((ec+1))
             fi
         done
         if [ "$ec" -gt 0 ]; then
             # kernel rejected the configured governor
-            echo_debug "pm" "set_cpu_scaling_governor($1).not_available: $gov; ec=$ec"
+            echo_debug "pm" "set_cpu_scaling_governor($1).not_available: $gov; ec=$ec" "$LOGPRIO_WARN"
             echo_message "Error in configuration at ${cfg}=\"${gov}\": governor not available."
             return 1
         fi
-        echo_debug "pm" "set_cpu_scaling_governor($1): $gov; ec=$ec"
+        echo_debug "pm" "set_cpu_scaling_governor($1): $gov; ec=$ec" "$LOGPRIO_INFO"
     else
         echo_debug "pm" "set_cpu_scaling_governor($1).not_configured"
     fi
@@ -173,11 +173,11 @@ set_cpu_scaling_min_max_freq () {
         ec=0
         for cpu in "${CPUD}"/cpu*/cpufreq/scaling_min_freq; do
             if [ -f "$cpu" ] && ! write_sysf "$minfreq" "$cpu"; then
-                echo_debug "pm" "set_cpu_scaling_min_max_freq($1).min.write_error: $cpu $minfreq; rc=$?"
+                echo_debug "pm" "set_cpu_scaling_min_max_freq($1).min.write_error: $cpu $minfreq; rc=$?" "$LOGPRIO_WARN"
                 ec=$((ec+1))
             fi
         done
-        echo_debug "pm" "set_cpu_scaling_min_max_freq($1).min: $minfreq; ec=$ec"
+        echo_debug "pm" "set_cpu_scaling_min_max_freq($1).min: $minfreq; ec=$ec" "$LOGPRIO_INFO"
     fi
 
     if [ -n "$maxfreq" ] && [ "$maxfreq" != "0" ]; then
@@ -185,11 +185,11 @@ set_cpu_scaling_min_max_freq () {
         ec=0
         for cpu in "${CPUD}"/cpu*/cpufreq/scaling_max_freq; do
             if [ -f "$cpu" ] && ! write_sysf "$maxfreq" "$cpu"; then
-                echo_debug "pm" "set_cpu_scaling_min_max_freq($1).max.write_error: $cpu $maxfreq; rc=$?"
+                echo_debug "pm" "set_cpu_scaling_min_max_freq($1).max.write_error: $cpu $maxfreq; rc=$?" "$LOGPRIO_WARN"
                 ec=$((ec+1))
             fi
         done
-        echo_debug "pm" "set_cpu_scaling_min_max_freq($1).max: $maxfreq; ec=$ec"
+        echo_debug "pm" "set_cpu_scaling_min_max_freq($1).max: $maxfreq; ec=$ec" "$LOGPRIO_INFO"
     fi
 
     [ $conf -eq 1 ] || echo_debug "pm" "set_cpu_scaling_min_max_freq($1).not_configured"
@@ -266,14 +266,14 @@ set_cpu_perf_policy () {
                 ;;
 
             *) # invalid setting
-                echo_debug "pm" "set_cpu_perf_policy($1).epp.invalid: perf=$perf"
+                echo_debug "pm" "set_cpu_perf_policy($1).epp.invalid: perf=$perf" "$LOGPRIO_WARN"
                 return 0
                 ;;
         esac
 
         # don't apply EPP when power-profiles-daemon is running
         if check_ppd_running ; then
-            echo_message "Warning: CPU_ENERGY_PERF_POLICY_ON_$(pp2sfx "$1") is not set because power-profiles-daemon is running."
+            echo_message "Warning: CPU_ENERGY_PERF_POLICY_ON_$(pp2sfx "$1") is not set because power-profiles-daemon is running." "$LOGPRIO_WARN"
             echo_debug "pm" "set_cpu_perf_policy($1).epp.nop_ppd_active"
             return 0
         fi
@@ -285,13 +285,13 @@ set_cpu_perf_policy () {
             if [ -f "$cpuf" ]; then
                 cnt=$((cnt+1))
                 if  ! write_sysf "$perf" "$cpuf"; then
-                    echo_debug "pm" "set_cpu_perf_policy($1).epp.write_error: $perf $cpuf; rc=$?"
+                    echo_debug "pm" "set_cpu_perf_policy($1).epp.write_error: $perf $cpuf; rc=$?" "$LOGPRIO_WARN"
                     ec=$((ec+1))
                 fi
             fi
         done
         if [ $cnt -gt 0 ]; then
-            echo_debug "pm" "set_cpu_perf_policy($1).epp: $perf; ec=$ec"
+            echo_debug "pm" "set_cpu_perf_policy($1).epp: $perf; ec=$ec" "$LOGPRIO_INFO"
             # EPP active and applied, quit unless EPB is forced
             [ "$X_FORCE_EPB" = "1" ] || return 0
         else
@@ -314,7 +314,7 @@ set_cpu_perf_policy () {
             0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15) pnum="$perf" ;;
 
             *) # invalid setting
-                echo_debug "pm" "set_cpu_perf_policy($1).epb.invalid: perf=$perf"
+                echo_debug "pm" "set_cpu_perf_policy($1).epb.invalid: perf=$perf" "$LOGPRIO_WARN"
                 return 0
                 ;;
         esac
@@ -326,14 +326,14 @@ set_cpu_perf_policy () {
             if [ -f "$cpuf" ]; then
                 cnt=$((cnt + 1))
                 if  ! write_sysf "$pnum" "$cpuf"; then
-                    echo_debug "pm" "set_cpu_perf_policy($1).epb.write_error: $perf($pnum) $cpuf; rc=$?"
+                    echo_debug "pm" "set_cpu_perf_policy($1).epb.write_error: $perf($pnum) $cpuf; rc=$?" "$LOGPRIO_WARN"
                     ec=$((ec+1))
                 fi
             fi
         done
         if [ $cnt -gt 0 ]; then
             # native kernel API actually detected
-            echo_debug "pm" "set_cpu_perf_policy($1).epb: $perf($pnum); ec=$ec"
+            echo_debug "pm" "set_cpu_perf_policy($1).epb: $perf($pnum); ec=$ec" "$LOGPRIO_INFO"
         else
             # no native kernel support
             echo_debug "pm" "set_cpu_perf_policy($1).epb.not_available"
@@ -376,7 +376,7 @@ set_intel_cpu_perf_pct () {
         echo_debug "pm" "set_intel_cpu_perf_pct($1).min.not_supported"
     elif [ -n "$min" ]; then
         write_sysf "$min" $CPU_MIN_PERF_PCT
-        echo_debug "pm" "set_intel_cpu_perf_pct($1).min: $min; rc=$?"
+        echo_debug "pm" "set_intel_cpu_perf_pct($1).min: $min; rc=$?" "$LOGPRIO_INFO"
     else
         echo_debug "pm" "set_intel_cpu_perf_pct($1).min.not_configured"
     fi
@@ -385,7 +385,7 @@ set_intel_cpu_perf_pct () {
         echo_debug "pm" "set_intel_cpu_perf_pct($1).max.not_supported"
     elif [ -n "$max" ]; then
         write_sysf "$max" $CPU_MAX_PERF_PCT
-        echo_debug "pm" "set_intel_cpu_perf_pct($1).max: $max; rc=$?"
+        echo_debug "pm" "set_intel_cpu_perf_pct($1).max: $max; rc=$?" "$LOGPRIO_INFO"
     else
         echo_debug "pm" "set_intel_cpu_perf_pct($1).max.not_configured"
     fi
@@ -419,12 +419,12 @@ set_cpu_boost_all () { # $1: PP_PRF, PP_BAL, PP_SAV
         if check_ppd_running; then
             # do not apply no_turbo when power-profiles-daemon is running
             echo_message "Warning: CPU_BOOST_ON_$(pp2sfx "$1") is not set because power-profiles-daemon is running."
-            echo_debug "pm" "set_cpu_boost_all($1).intel_pstate.nop_ppd_active"
+            echo_debug "pm" "set_cpu_boost_all($1).intel_pstate.nop_ppd_active" "$LOGPRIO_WARN"
             return 0
         fi
         # use intel_pstate sysfiles, invert value
         if write_sysf "$((val ^ 1))" $CPU_TURBO_PSTATE; then
-            echo_debug "pm" "set_cpu_boost_all($1).intel_pstate: $val"
+            echo_debug "pm" "set_cpu_boost_all($1).intel_pstate: $val" "$LOGPRIO_INFO"
         else
             echo_debug "pm" "set_cpu_boost_all($1).intel_pstate.cpu_not_supported"
         fi
@@ -432,7 +432,7 @@ set_cpu_boost_all () { # $1: PP_PRF, PP_BAL, PP_SAV
         # use acpi_cpufreq sysfiles
         # simple test for attribute "w" doesn't work, so actually write
         if write_sysf "$val" $CPU_BOOST_ALL_CTRL; then
-            echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq: $val"
+            echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq: $val" "$LOGPRIO_INFO"
         else
             echo_debug "pm" "set_cpu_boost_all($1).acpi_cpufreq.cpu_not_supported"
         fi
@@ -460,7 +460,7 @@ set_cpu_dyn_boost () {
     elif check_intel_pstate; then
         if [ -f "$INTEL_DYN_BOOST" ]; then
             write_sysf "$val" $INTEL_DYN_BOOST
-            echo_debug "pm" "set_cpu_dyn_boost($1).intel_pstate: $val; rc=$?"
+            echo_debug "pm" "set_cpu_dyn_boost($1).intel_pstate: $val; rc=$?" "$LOGPRIO_INFO"
         else
             echo_debug "pm" "set_cpu_dyn_boost($1).intel_pstate.not_supported"
         fi
@@ -484,7 +484,7 @@ set_nmi_watchdog () { # enable/disable nmi watchdog
 
     if [ -f /proc/sys/kernel/nmi_watchdog ]; then
         if write_sysf "$nmiwd" /proc/sys/kernel/nmi_watchdog; then
-            echo_debug "pm" "set_nmi_watchdog: $nmiwd; rc=$?"
+            echo_debug "pm" "set_nmi_watchdog: $nmiwd; rc=$?" "$LOGPRIO_INFO"
         else
             echo_debug "pm" "set_nmi_watchdog.disabled_by_kernel: $nmiwd"
         fi
@@ -518,7 +518,7 @@ set_platform_profile () { # set platform profile
         if check_ppd_running; then
             # do not apply platform profile when power-profiles-daemon is running
             echo_message "Warning: PLATFORM_PROFILE_ON_$(pp2sfx "$1") is not set because power-profiles-daemon is running."
-            echo_debug "pm" "set_platform_profile($1).nop_ppd_active"
+            echo_debug "pm" "set_platform_profile($1).nop_ppd_active" "$LOGPRIO_WARN"
             return 0
         fi
 
@@ -529,16 +529,16 @@ set_platform_profile () { # set platform profile
             [ -n "$pwr" ] || continue
             if wordinlist "$pwr" "$pwr_choices"; then
                 if write_sysf "$pwr" $FWACPID/platform_profile; then
-                    echo_debug "pm" "set_platform_profile($1): $pwr"
+                    echo_debug "pm" "set_platform_profile($1): $pwr" "$LOGPRIO_INFO"
                 else
-                    echo_debug "pm" "set_platform_profile($1).write_error: $pwr"
+                    echo_debug "pm" "set_platform_profile($1).write_error: $pwr" "$LOGPRIO_WARN"
                 fi
                 match=1
             fi
         done
 
         if [ $match -eq 0 ]; then
-            echo_debug "pm" "set_platform_profile($1).no_match: config='$pwr_list'; choices='$pwr_choices'"
+            echo_debug "pm" "set_platform_profile($1).no_match: config='$pwr_list'; choices='$pwr_choices'" "$LOGPRIO_WARN"
         fi
     else
         echo_debug "pm" "set_platform_profile($1).not_available"

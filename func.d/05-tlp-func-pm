@@ -48,7 +48,7 @@ set_runtime_pm () { # set runtime power management
             ;;
 
         *) # invalid control value
-            echo_debug "pm" "set_runtime_pm($1).invalid: $control"
+            echo_debug "pm" "set_runtime_pm($1).invalid: $control" "$LOGPRIO_WARN"
             return 0
             ;;
     esac
@@ -94,11 +94,11 @@ set_runtime_pm () { # set runtime power management
                 if wordinlist "$address" "$pci_enable_adr"; then
                     # device should be permanently 'auto' (enabled)
                     write_sysf "auto" "$device/power/control"
-                    echo_debug "pm" "set_runtime_pm($1).perm_auto: $device [$class]; rc=$?"
+                    echo_debug "pm" "set_runtime_pm($1).perm_auto: $device [$class]; rc=$?" "$LOGPRIO_INFO"
                 elif wordinlist "$address" "$pci_disable_adr"; then
                     # device should be permanently 'on' (disabled)
                     write_sysf "on" "$device/power/control"
-                    echo_debug "pm" "set_runtime_pm($1).perm_on: $device [$class]; rc=$?"
+                    echo_debug "pm" "set_runtime_pm($1).perm_on: $device [$class]; rc=$?" "$LOGPRIO_INFO"
                 elif wordinlist "$address" "$pci_bl_adr"; then
                     # device is in address denylist
                     echo_debug "pm" "set_runtime_pm($1).deny_address: $device [$class]"
@@ -109,7 +109,7 @@ set_runtime_pm () { # set runtime power management
                     case $control in
                         auto|on)
                             write_sysf "$control" "$device/power/control"
-                            echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]; rc=$?"
+                            echo_debug "pm" "set_runtime_pm($1).$control: $device [$class]; rc=$?" "$LOGPRIO_INFO"
                             ;;
 
                         "") # no operation i.e. apply RUNTIME_PM_ENABLE/DISABLE only
@@ -149,7 +149,7 @@ set_pcie_aspm () { # set pcie active state power management
 
     if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
         if write_sysf "$pwr" /sys/module/pcie_aspm/parameters/policy; then
-            echo_debug "pm" "set_pcie_aspm($1): $pwr"
+            echo_debug "pm" "set_pcie_aspm($1): $pwr" "$LOGPRIO_INFO"
         else
             echo_debug "pm" "set_pcie_aspm($1).disabled_by_kernel"
         fi
@@ -185,20 +185,20 @@ set_sound_power_mode () { # set sound chip power modes
 
     if [ -d /sys/module/snd_hda_intel ]; then
         write_sysf "$pwr" /sys/module/snd_hda_intel/parameters/power_save
-        echo_debug "pm" "set_sound_power_mode($1).hda: $pwr; rc=$?"
+        echo_debug "pm" "set_sound_power_mode($1).hda: $pwr; rc=$?" "$LOGPRIO_INFO"
 
         if [ "$pwr" = "0" ]; then
             write_sysf "N" /sys/module/snd_hda_intel/parameters/power_save_controller
-            echo_debug "pm" "set_sound_power_mode($1).hda_controller: N controller=$cpwr; rc=$?"
+            echo_debug "pm" "set_sound_power_mode($1).hda_controller: N controller=$cpwr; rc=$?" "$LOGPRIO_INFO"
         else
             write_sysf "$cpwr" /sys/module/snd_hda_intel/parameters/power_save_controller
-            echo_debug "pm" "set_sound_power_mode($1).hda_controller: $cpwr; rc=$?"
+            echo_debug "pm" "set_sound_power_mode($1).hda_controller: $cpwr; rc=$?" "$LOGPRIO_INFO"
         fi
     fi
 
     if [ -d /sys/module/snd_ac97_codec ]; then
         write_sysf "$pwr" /sys/module/snd_ac97_codec/parameters/power_save
-        echo_debug "pm" "set_sound_power_mode($1).ac97: $pwr; rc=$?"
+        echo_debug "pm" "set_sound_power_mode($1).ac97: $pwr; rc=$?" "$LOGPRIO_INFO"
     fi
 
     return 0
@@ -230,10 +230,10 @@ disable_wake_on_lan () {  # disable WOL
         if [ -n "$_ethifaces" ]; then
             for ei in $_ethifaces; do
                 $ETHTOOL -s "$ei" wol d > /dev/null 2>&1
-                echo_debug "pm" "disable_wake_on_lan: $ei; rc=$?"
+                echo_debug "pm" "disable_wake_on_lan: $ei; rc=$?" "$LOGPRIO_INFO"
             done
         else
-            echo_debug "pm" "disable_wake_on_lan.no_ifaces"
+            echo_debug "pm" "disable_wake_on_lan.no_ifaces" "$LOGPRIO_WARN"
         fi
     else
         echo_debug "pm" "disable_wake_on_lan.not_configured"
@@ -262,9 +262,9 @@ set_mem_sleep () {
 
     if [ -f $SLEEPMODE ]; then
         if write_sysf "$susp" $SLEEPMODE; then
-            echo_debug "pm" "set_mem_sleep($1): $susp"
+            echo_debug "pm" "set_mem_sleep($1): $susp" "$LOGPRIO_INFO"
         else
-            echo_debug "pm" "set_mem_sleep($1).rejected_by_kernel"
+            echo_debug "pm" "set_mem_sleep($1).rejected_by_kernel" "$LOGPRIO_WARN"
         fi
     else
         echo_debug "pm" "set_mem_sleep($1).not_available"

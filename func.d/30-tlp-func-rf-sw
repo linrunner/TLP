@@ -61,7 +61,7 @@ get_rf_dev_state () {
         *)
             # unknown radio type -> quit
             cecho "Error: unknown device type $1" 1>&2
-            echo_debug "rf" "get_rf_dev_state($1).unknown_type"
+            echo_debug "rf" "get_rf_dev_state($1).unknown_type" "$LOGPRIO_WARN"
             return 1
             ;;
     esac
@@ -93,7 +93,7 @@ get_rf_dev_state () {
                 ;;
             *) _devs=3 # unknown state
         esac
-        echo_debug "rf" "get_rf_dev_state.nmcli($1) = $_devs; devc=$_devc; rfkill=$rfks"
+        echo_debug "rf" "get_rf_dev_state.nmcli($1) = $_devs; devc=$_devc; rfkill=$rfks" "$LOGPRIO_INFO"
     else
         # get state from rfkill sysfs
         _devs="$(read_sysf "$_devc")"
@@ -101,7 +101,7 @@ get_rf_dev_state () {
             0|1|2)     ;; # 0=soft blocked(off)/1=unblocked(on)/2=hard blocked(off)
             *) _devs=3 ;; # unknown state
         esac
-        echo_debug "rf" "get_rf_dev_state.sysfs($1) = $_devs; devc=$_devc"
+        echo_debug "rf" "get_rf_dev_state.sysfs($1) = $_devs; devc=$_devc" "$LOGPRIO_INFO"
     fi
 
     return 0
@@ -165,15 +165,15 @@ device_switch () {
 
     # quit if invalid operation
     if ! wordinlist "$2" "on 1 off 0 toggle"; then
-        echo_debug "rf" "device_switch($1, $2).invalid_op: rc=1"
+        echo_debug "rf" "device_switch($1, $2).invalid_op: rc=1" "$LOGPRIO_ERR"
         return 1
     fi
 
     # quit if device state is hard blocked or invalid
     if [ "$_devs" -ge 2 ]; then
         case "$_devs" in
-            2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$_devs" ;;
-            *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$_devs" ;;
+            2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$_devs" "$LOGPRIO_WARN" ;;
+            *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$_devs" "$LOGPRIO_ERR" ;;
         esac
         return "$_devs"
     fi
@@ -244,8 +244,8 @@ device_switch () {
     # quit if device state is hard blocked or invalid
     if [ "$_devs" -ge 2 ]; then
         case "$_devs" in
-            2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$_devs" ;;
-            *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$_devs" ;;
+            2) echo_debug "rf" "device_switch($1, $2).hard_blocked: rc=$_devs" "$LOGPRIO_WARN" ;;
+            *) echo_debug "rf" "device_switch($1, $2).invalid_state: rc=$_devs" "$LOGPRIO_ERR" ;;
         esac
         return "$_devs"
     fi
@@ -256,7 +256,7 @@ device_switch () {
         echo_debug "rf" "device_switch($1, $2).no_change: rc=4"
         return 4
     else
-        echo_debug "rf" "device_switch($1, $2).ok: rc=0"
+        echo_debug "rf" "device_switch($1, $2).ok: rc=0" "$LOGPRIO_INFO"
         return 0
     fi
 }
@@ -335,7 +335,7 @@ save_device_states () {
         rc=1
     fi
 
-    echo_debug "rf" "save_device_states($devlist): $RFSTATEFILE; rc=$rc"
+    echo_debug "rf" "save_device_states($devlist): $RFSTATEFILE; rc=$rc" "$LOGPRIO_INFO"
     return $rc
 }
 
@@ -360,7 +360,7 @@ restore_device_states () {
         rc=1
     fi
 
-    echo_debug "rf" "restore_device_states: $RFSTATEFILE; rc=$rc"
+    echo_debug "rf" "restore_device_states: $RFSTATEFILE; rc=$rc" "$LOGPRIO_INFO"
     return $rc
 }
 
@@ -425,7 +425,7 @@ set_radio_device_states () {
 
     esac
 
-    echo_debug "rf" "set_radio_device_states($1): enable=$devs2enable disable=$devs2disable"
+    echo_debug "rf" "set_radio_device_states($1): enable=$devs2enable disable=$devs2disable" "$LOGPRIO_INFO"
 
     # disable configured radios
     if [ -n "$devs2disable" ]; then

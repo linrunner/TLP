@@ -68,7 +68,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
                 ;;
 
             0) # disabled
-                echo_debug "pm" "poweroff_drivebay($1).disabled"
+                echo_debug "pm" "poweroff_drivebay($1).disabled" "$LOGPRIO_INFO"
                 return 0
                 ;;
 
@@ -85,7 +85,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
         [ "$2" = "1" ] && cecho "Error: cannot locate bay device." 1>&2
         return 1
     fi
-    echo_debug "pm" "poweroff_drivebay($1): dock=$dock"
+    echo_debug "pm" "poweroff_drivebay($1): dock=$dock" "$LOGPRIO_INFO"
 
     # Check if bay is occupied
     if ! check_is_docked; then
@@ -103,7 +103,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
             [ "$2" = "1" ] && echo "No optical drive in bay (/dev/$optdrv)."
             return 0
         else
-            echo_debug "pm" "poweroff_drivebay($1): optdrv=$optdrv"
+            echo_debug "pm" "poweroff_drivebay($1): optdrv=$optdrv" "$LOGPRIO_INFO"
             [ "$2" = "1" ] && printf "Powering off drive bay..."
 
             # Unmount media
@@ -133,7 +133,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
 
             # Turn power off
             write_sysf "1" "$dock/undock"
-            echo_debug "pm" "poweroff_drivebay($1).bay_powered_off: rc=$?"
+            echo_debug "pm" "poweroff_drivebay($1).bay_powered_off: rc=$?" "$LOGPRIO_INFO"
             [ "$2" = "1" ] && echo "done."
         fi
     fi
