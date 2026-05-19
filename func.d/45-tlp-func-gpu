@@ -105,13 +105,13 @@ set_intel_gpu_power_profile () {
                     if [ -f "$gtfd/power_profile" ]; then
                         gtnum=$((gtnum + 1))
                         if ! write_sysf "$profile" "$gtfd/power_profile"; then
-                            echo_debug "pm" "set_intel_gpu_power_profile($1).write_error: gt=$gtfd profile=$profile; rc=$?" "$LOGPRIO_ERR"
+                            echo_debug "pm" "set_intel_gpu_power_profile($1).write_error: gt=$gtfd profile=$profile; rc=$?" "$LOG_ERR"
                             ec=$((ec + 1))
                         fi
                         gdone=1
                     fi
                 done
-                echo_debug "pm" "set_intel_gpu_power_profile($1): gpu=$gpu profile=$profile; gtnum=$gtnum; ec=$ec" "$LOGPRIO_INFO"
+                echo_debug "pm" "set_intel_gpu_power_profile($1): gpu=$gpu profile=$profile; gtnum=$gtnum; ec=$ec" "$LOG_INFO"
                 ;;
         esac
     done # card
@@ -176,23 +176,23 @@ set_intel_gpu_min_max_boost_freq () {
                     # frequencies actually readable, check new ones against hardware limits and boundary conditions
                     if ! is_uint "$new_min" 5 || [ "$new_min" -lt "$gpu_min" ] || [ "$new_min" -gt "$gpu_max" ]; then
                         echo_message "Error in configuration at INTEL_GPU_MIN_FREQ_ON_${suffix}=\"${new_min}\": frequency invalid or out of range (see 'tlp-stat -g')."
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min hw_max=$gpu_max; rc=1" "$LOGPRIO_WARN"
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min hw_max=$gpu_max; rc=1" "$LOG_WARN"
                         return 1
                     elif ! is_uint "$new_max" 5 || [ "$new_max" -lt "$gpu_min" ] || [ "$new_max" -gt "$gpu_max" ]; then
                         echo_message "Error in configuration at INTEL_GPU_MAX_FREQ_ON_${suffix}=\"${new_max}\": frequency invalid or out of range (see 'tlp-stat -g')."
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min gpu_max=$gpu_max; rc=1" "$LOGPRIO_WARN"
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min gpu_max=$gpu_max; rc=1" "$LOG_WARN"
                         return 1
                     elif ! is_uint "$new_boost" 5 || [ "$new_boost" -lt "$gpu_min" ] || [ "$new_boost" -gt "$gpu_max" ]; then
                         echo_message "Error in configuration at INTEL_GPU_BOOST_FREQ_ON_${suffix}=\"${new_boost}\": frequency invalid or out of range (see 'tlp-stat -g')."
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu boost=$new_boost gpu_min=$gpu_min gpu_max=$gpu_max; rc=1" "$LOGPRIO_WARN"
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu boost=$new_boost gpu_min=$gpu_min gpu_max=$gpu_max; rc=1" "$LOG_WARN"
                         return 1
                     elif [ "$new_min" -gt "$new_max" ]; then
                         echo_message "Error in configuration: INTEL_GPU_MIN_FREQ_ON_${suffix} > INTEL_GPU_MAX_FREQ_ON_${suffix}."
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min_gt_max: gpu=$gpu min=$new_min max=$new_max; rc=1" "$LOGPRIO_WARN"
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min_gt_max: gpu=$gpu min=$new_min max=$new_max; rc=1" "$LOG_WARN"
                         return 1
                     elif [ "$new_max" -gt "$new_boost" ]; then
                         echo_message "Error in configuration: INTEL_GPU_MAX_FREQ_ON_${suffix} > INTEL_GPU_BOOST_FREQ_ON_${suffix}."
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max_gt_boost: gpu=$gpu max=$new_max boost=$new_boost; rc=1" "$LOGPRIO_WARN"
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max_gt_boost: gpu=$gpu max=$new_max boost=$new_boost; rc=1" "$LOG_WARN"
                         return 1
                     fi
 
@@ -231,15 +231,15 @@ set_intel_gpu_min_max_boost_freq () {
                         # validate parameter on the first GT only
                         if ! is_uint "$new_min" 5 || [ "$new_min" -lt "$gpu_min" ] || [ "$new_min" -gt "$gpu_max" ]; then
                             echo_message "Error in configuration at INTEL_GPU_MIN_FREQ_ON_${suffix}=\"${new_min}\": frequency invalid or out of range (see 'tlp-stat -g')."
-                            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min hw_max=$gpu_max; rc=1" "$LOGPRIO_WARN"
+                            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min hw_max=$gpu_max; rc=1" "$LOG_WARN"
                             return 1
                         elif ! is_uint "$new_max" 5 || [ "$new_max" -lt "$gpu_min" ] || [ "$new_max" -gt "$gpu_max" ]; then
                             echo_message "Error in configuration at INTEL_GPU_MAX_FREQ_ON_${suffix}=\"${new_max}\": frequency invalid or out of range (see 'tlp-stat -g')."
-                            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min gpu_max=$gpu_max; rc=1" "$LOGPRIO_WARN"
+                            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).invalid: gpu=$gpu min=$new_min gpu_min=$gpu_min gpu_max=$gpu_max; rc=1" "$LOG_WARN"
                             return 1
                         elif [ "$new_min" -gt "$new_max" ]; then
                             echo_message "Error in configuration: INTEL_GPU_MIN_FREQ_ON_${suffix} > INTEL_GPU_MAX_FREQ_ON_${suffix}."
-                            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min_gt_max: gpu=$gpu min=$new_min max=$new_max; rc=1" "$LOGPRIO_WARN"
+                            echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min_gt_max: gpu=$gpu min=$new_min max=$new_max; rc=1" "$LOG_WARN"
                             return 1
                         fi
                     fi # validate
@@ -342,7 +342,7 @@ set_abm_level () {
                         elif check_ppd_running ; then
                             # don't apply ABM when power-profiles-daemon is running
                             echo_message "Warning: AMDGPU_ABM_LEVEL_ON_$(pp2sfx "$1") is not set because power-profiles-daemon is running."
-                            echo_debug "pm" "set_abm_level($1).amdgpu.nop_ppd_active"  "$LOGPRIO_WARN"
+                            echo_debug "pm" "set_abm_level($1).amdgpu.nop_ppd_active"  "$LOG_WARN"
                             return 0
                         else
                             write_sysf "$level" "$pps/amdgpu/panel_power_savings"; rc=$?

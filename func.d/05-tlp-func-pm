@@ -48,7 +48,7 @@ set_runtime_pm () { # set runtime power management
             ;;
 
         *) # invalid control value
-            echo_debug "pm" "set_runtime_pm($1).invalid: $control" "$LOGPRIO_WARN"
+            echo_debug "pm" "set_runtime_pm($1).invalid: $control" "$LOG_WARN"
             return 0
             ;;
     esac
@@ -149,7 +149,7 @@ set_pcie_aspm () { # set pcie active state power management
 
     if [ -f /sys/module/pcie_aspm/parameters/policy ]; then
         if write_sysf "$pwr" /sys/module/pcie_aspm/parameters/policy; then
-            echo_debug "pm" "set_pcie_aspm($1): $pwr" "$LOGPRIO_INFO"
+            echo_debug "pm" "set_pcie_aspm($1): $pwr" "$LOG_INFO"
         else
             echo_debug "pm" "set_pcie_aspm($1).disabled_by_kernel"
         fi
@@ -233,7 +233,7 @@ disable_wake_on_lan () {  # disable WOL
                 echo_debug "pm" "disable_wake_on_lan: $ei; rc=$rc" "$(rc2log "$rc")"
             done
         else
-            echo_debug "pm" "disable_wake_on_lan.no_ifaces" "$LOGPRIO_WARN"
+            echo_debug "pm" "disable_wake_on_lan.no_ifaces" "$LOG_WARN"
         fi
     else
         echo_debug "pm" "disable_wake_on_lan.not_configured"
@@ -262,9 +262,9 @@ set_mem_sleep () {
 
     if [ -f $SLEEPMODE ]; then
         if write_sysf "$susp" $SLEEPMODE; then
-            echo_debug "pm" "set_mem_sleep($1): $susp" "$LOGPRIO_INFO"
+            echo_debug "pm" "set_mem_sleep($1): $susp" "$LOG_INFO"
         else
-            echo_debug "pm" "set_mem_sleep($1).rejected_by_kernel" "$LOGPRIO_WARN"
+            echo_debug "pm" "set_mem_sleep($1).rejected_by_kernel" "$LOG_WARN"
         fi
     else
         echo_debug "pm" "set_mem_sleep($1).not_available"

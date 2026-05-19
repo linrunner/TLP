@@ -103,7 +103,7 @@ batdrv_init () {
 
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bf_stop=$_bf_stop" "$LOGPRIO_INFO"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bf_stop=$_bf_stop" "$LOG_INFO"
     return 0
 }
 
@@ -219,7 +219,7 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_stop" 3 || \
        ! is_within_bounds "$new_stop" 0 1; then
         # threshold out of range
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop.  bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOGPRIO_WARN"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop.  bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOG_WARN"
         case $verb in
             1)
                 if [ -n "$4" ]; then
@@ -240,7 +240,7 @@ batdrv_write_thresholds () {
 
     # read active stop threshold value
     if ! old_stop=$(batdrv_read_threshold stop 0); then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOGPRIO_ERR"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOG_ERR"
         case $verb in
             1) echo_message "Error: could not read current conservation mode. Skipped." ;;
             2) cprintf "" "Error: could not read current conservation mode. Aborted.\n" 1>&2 ;;

@@ -274,7 +274,7 @@ batdrv_write_thresholds () {
 
     # read active stop threshold value
     if ! old_stop=$(batdrv_read_threshold stop 0); then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOGPRIO_ERR"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOG_ERR"
         case $verb in
             1) echo_message "Error: could not read current stop charge threshold for battery $_bat_str. Battery skipped." ;;
             2) cprintf "" "Error: could not read current stop charge threshold for battery %s. Aborted.\n" "$_bat_str" 1>&2 ;;

@@ -216,7 +216,7 @@ discharge_battery () {
 
     if ! lock_tlp_nb tlp_discharge; then
         cecho "Error: another $mode operation is pending." 1>&2
-        echo_debug "bat" "discharge_battery.concurrent_op_running" "$LOGPRIO_WARN"
+        echo_debug "bat" "discharge_battery.concurrent_op_running" "$LOG_WARN"
         return 15
     fi
 
@@ -261,7 +261,7 @@ discharge_battery () {
 
     # enable fullcharge
     if [ "$mode" = "recalibrate" ] && ! batdrv_write_thresholds DEF DEF 2 ""; then
-        echo_debug "bat" "discharge_battery.fullcharge_malfunction" "$LOGPRIO_ERR"
+        echo_debug "bat" "discharge_battery.fullcharge_malfunction" "$LOG_ERR"
         unlock_tlp tlp_discharge
         return 11
     fi

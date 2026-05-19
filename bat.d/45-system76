@@ -125,13 +125,13 @@ batdrv_init () {
 
     # quit if no battery detected, there is no point in activating the plugin
     if [ -z "$_batteries" ]; then
-        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries" "$LOGPRIO_WARN"
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries" "$LOG_WARN"
         return 2
     fi
 
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
-    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop; dischg=$_bm_dischg" "$LOGPRIO_INFO"
+    echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; bn_start=$_bn_start; bn_stop=$_bn_stop; dischg=$_bm_dischg" "$LOG_INFO"
     return 0
 }
 
@@ -285,7 +285,7 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_start" 3 || \
        ! is_within_bounds "$new_start" 0 99; then
         # threshold out of range
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOGPRIO_WARN"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_start: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOG_WARN"
         case $verb in
             1)
                 if [ -n "$4" ]; then
@@ -308,7 +308,7 @@ batdrv_write_thresholds () {
     if ! is_uint "$new_stop" 3 || \
        ! is_within_bounds "$new_stop" 1 100; then
         # threshold out of range
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOGPRIO_WARN"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_stop: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOG_WARN"
         case $verb in
             1)
                 if [ -n "$4" ]; then
@@ -329,7 +329,7 @@ batdrv_write_thresholds () {
 
     # check start < stop
     if [ "$new_start" -ge "$new_stop" ]; then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_diff: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOGPRIO_WARN"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).invalid_diff: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOG_WARN"
         case $verb in
             1)
                 if [ -n "$4" ]; then
@@ -351,7 +351,7 @@ batdrv_write_thresholds () {
     # read active threshold values
     if ! old_start=$(batdrv_read_threshold start 0) || \
        ! old_stop=$(batdrv_read_threshold stop 0); then
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOGPRIO_ERR"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).read_error: bat=$_bat_str; cfg=$_bt_cfg_bat" "$LOG_ERR"
         case $verb in
             1) echo_message "Error: could not read current charge threshold(s) for battery $_bat_str. Battery skipped." ;;
             2) cprintf "" "Error: could not read current charge threshold(s) for battery %s. Aborted.\n" "$_bat_str" 1>&2 ;;

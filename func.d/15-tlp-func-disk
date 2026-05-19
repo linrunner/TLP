@@ -260,9 +260,9 @@ set_disk_apm_level () { # set disk apm level
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "*** set_disk_apm_level($pwrmode).all" "$LOGPRIO_INFO"
+        echo_debug "disk" "*** set_disk_apm_level($pwrmode).all" "$LOG_INFO"
     else
-        echo_debug "disk" "*** set_disk_apm_level($pwrmode).target: $target" "$LOGPRIO_INFO"
+        echo_debug "disk" "*** set_disk_apm_level($pwrmode).target: $target" "$LOG_INFO"
     fi
 
     # pairwise iteration DISK_DEVICES[1,n], apmlist[1,m]; m > 0
@@ -336,9 +336,9 @@ set_disk_spindown_timeout () { # set disk spindown timeout
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "*** set_disk_spindown_timeout($pwrmode).all" "$LOGPRIO_INFO"
+        echo_debug "disk" "*** set_disk_spindown_timeout($pwrmode).all" "$LOG_INFO"
     else
-        echo_debug "disk" "*** set_disk_spindown_timeout($pwrmode).target: $target" "$LOGPRIO_INFO"
+        echo_debug "disk" "*** set_disk_spindown_timeout($pwrmode).target: $target" "$LOG_INFO"
     fi
 
     # pairwise iteration DISK_DEVICES[1,n], timeoutlist[1,m]; m > 0
@@ -399,9 +399,9 @@ set_disk_iosched () { # set disk io scheduler
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "*** set_disk_iosched.all" "$LOGPRIO_INFO"
+        echo_debug "disk" "*** set_disk_iosched.all" "$LOG_INFO"
     else
-        echo_debug "disk" "*** set_disk_iosched.target: $target" "$LOGPRIO_INFO"
+        echo_debug "disk" "*** set_disk_iosched.target: $target" "$LOG_INFO"
     fi
 
     # pairwise iteration DISK_DEVICES[1,n], schedlist[1,m]; m > 0
@@ -537,9 +537,9 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "*** set_ahci_disk_runtime_pm($1).all" "$LOGPRIO_INFO"
+        echo_debug "disk" "*** set_ahci_disk_runtime_pm($1).all" "$LOG_INFO"
     else
-        echo_debug "disk" "*** set_ahci_disk_runtime_pm($1).target: $target" "$LOGPRIO_INFO"
+        echo_debug "disk" "*** set_ahci_disk_runtime_pm($1).target: $target" "$LOG_INFO"
     fi
 
     # iterate DISK_DEVICES
@@ -559,9 +559,9 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
                         rc=2
                     fi
                     if [ $rc -eq 2 ]; then
-                        echo_debug "disk" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc" "$LOGPRIO_ERROR"
+                        echo_debug "disk" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc" "$LOG_ERROR"
                     else
-                        echo_debug "disk" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc" "$LOGPRIO_INFO"
+                        echo_debug "disk" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc" "$LOG_INFO"
                     fi
                     ;;
 
@@ -612,7 +612,7 @@ set_ahci_port_runtime_pm () { # set runtime power management for ahci ports
     # iterate ahci ports
     for device in $AHCI_GLOB; do
         if write_sysf "$control" "${device}/power/control"; then
-            echo_debug "disk" "set_ahci_port_runtime_pm($1).$control: port=$device; rc=0" "$LOGPRIO_INFO"
+            echo_debug "disk" "set_ahci_port_runtime_pm($1).$control: port=$device; rc=0" "$LOG_INFO"
         else
             echo_debug "disk" "set_ahci_port_runtime_pm($1).no-port"
         fi
@@ -644,12 +644,12 @@ set_laptopmode () {
     fi
 
     if [ ! -f /proc/sys/vm/laptop_mode ]; then
-        echo_debug "disk" "set_laptopmode($1).non_existent" "$LOGPRIO_INFO"
+        echo_debug "disk" "set_laptopmode($1).non_existent" "$LOG_INFO"
         return 0
     fi
     if kernel_version_ge "$LM_IGN_KVER"; then
         # prevent "vm.laptop_mode is deprecated" warnings
-        echo_debug "disk" "set_laptopmode($1).ignored" "$LOGPRIO_INFO"
+        echo_debug "disk" "set_laptopmode($1).ignored" "$LOG_INFO"
         return 0
     fi
 
@@ -685,18 +685,18 @@ set_dirty_parms () {
              /proc/sys/fs/xfs/age_buffer_centisecs \
              /proc/sys/fs/xfs/xfssyncd_centisecs; do
         if [ -f "$df" ] && ! write_sysf "$cage" $df; then
-            echo_debug "disk" "set_dirty_parms($1).write_error: $df $cage; rc=$?" "$LOGPRIO_WARN"
+            echo_debug "disk" "set_dirty_parms($1).write_error: $df $cage; rc=$?" "$LOG_WARN"
             ec=$((ec+1))
         fi
     done
     # shellcheck disable=SC2043
     for df in /proc/sys/fs/xfs/xfsbufd_centisecs; do
         if [ -f "$df" ] && ! write_sysf "3000" $df; then
-            echo_debug "disk" "set_dirty_parms($1).write_error: $df 3000; rc=$?" "$LOGPRIO_WARN"
+            echo_debug "disk" "set_dirty_parms($1).write_error: $df 3000; rc=$?" "$LOG_WARN"
             ec=$((ec+1))
         fi
     done
-    echo_debug "disk" "set_dirty_parms($1): $cage; ec=$ec" "$LOGPRIO_INFO"
+    echo_debug "disk" "set_dirty_parms($1): $cage; ec=$ec" "$LOG_INFO"
 
     return 0
 }
