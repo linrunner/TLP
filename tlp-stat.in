@@ -597,6 +597,11 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     if [ "$quiet" = "0" ] || [ "$show_all" = "1" ] ; then
         printf "\n+++ Platform\n"
     fi
+    if driver="$(readlink /sys/class/platform-profile/*/device)"; then
+        printf "Driver = %s\n" "${driver##*/}"
+    else
+        printf "Driver = (not available)\n"
+    fi
     printparm "%-54s = ##%s##" "$FWACPID/platform_profile"
     printparm "%-54s = ##%s##" "$FWACPID/platform_profile_choices"
     [ -d "$TPACPID" ] && printparm "%-54s = ##%s##" "$TPACPID/dytc_lapmode"
