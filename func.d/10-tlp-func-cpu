@@ -46,7 +46,7 @@ print_cpu_driver () {
 
 set_cpu_driver_opmode () {
     # set CPU driver operation mode -- $1: PP_PRF, PP_BAL, PP_SAV
-    local cfg opmode
+    local cfg opmode rc
 
     case "$1" in
         "$PP_PRF")
@@ -348,7 +348,7 @@ set_cpu_perf_policy () {
 set_intel_cpu_perf_pct () {
     # set Intel P-state performance limits
     # $1: PP_PRF, PP_BAL, PP_SAV
-    local min max
+    local min max rc
 
     if ! check_intel_pstate; then
         echo_debug "pm" "set_intel_cpu_perf_pct($1).no_intel_pstate"
@@ -375,8 +375,8 @@ set_intel_cpu_perf_pct () {
     if [ ! -f $CPU_MIN_PERF_PCT ]; then
         echo_debug "pm" "set_intel_cpu_perf_pct($1).min.not_supported"
     elif [ -n "$min" ]; then
-        write_sysf "$min" $CPU_MIN_PERF_PCT
-        echo_debug "pm" "set_intel_cpu_perf_pct($1).min: $min; rc=$?" "$LOGPRIO_INFO"
+        write_sysf "$min" $CPU_MIN_PERF_PCT; rc=$?
+        echo_debug "pm" "set_intel_cpu_perf_pct($1).min: $min; rc=$rc" "$(rc2log "$rc")"
     else
         echo_debug "pm" "set_intel_cpu_perf_pct($1).min.not_configured"
     fi
@@ -384,8 +384,8 @@ set_intel_cpu_perf_pct () {
     if [ ! -f $CPU_MAX_PERF_PCT ]; then
         echo_debug "pm" "set_intel_cpu_perf_pct($1).max.not_supported"
     elif [ -n "$max" ]; then
-        write_sysf "$max" $CPU_MAX_PERF_PCT
-        echo_debug "pm" "set_intel_cpu_perf_pct($1).max: $max; rc=$?" "$LOGPRIO_INFO"
+        write_sysf "$max" $CPU_MAX_PERF_PCT; rc=$?
+        echo_debug "pm" "set_intel_cpu_perf_pct($1).max: $max; rc=$rc" "$(rc2log "$rc")"
     else
         echo_debug "pm" "set_intel_cpu_perf_pct($1).max.not_configured"
     fi
@@ -447,7 +447,7 @@ set_cpu_dyn_boost () {
     # set CPU dynamic boost feature
     # requires intel_state in HWP active mode
     # $1: PP_PRF, PP_BAL, PP_SAV, PP_SUS
-    local val
+    local val rc
 
     case "$1" in
         "$PP_PRF") val="${CPU_HWP_DYN_BOOST_ON_AC:-}" ;;
@@ -459,8 +459,8 @@ set_cpu_dyn_boost () {
         echo_debug "pm" "set_cpu_dyn_boost($1).not_configured"
     elif check_intel_pstate; then
         if [ -f "$INTEL_DYN_BOOST" ]; then
-            write_sysf "$val" $INTEL_DYN_BOOST
-            echo_debug "pm" "set_cpu_dyn_boost($1).intel_pstate: $val; rc=$?" "$LOGPRIO_INFO"
+            write_sysf "$val" $INTEL_DYN_BOOST; rc=$?
+            echo_debug "pm" "set_cpu_dyn_boost($1).intel_pstate: $val; rc=$rc" "$(rc2log "$rc")"
         else
             echo_debug "pm" "set_cpu_dyn_boost($1).intel_pstate.not_supported"
         fi
@@ -474,7 +474,8 @@ set_cpu_dyn_boost () {
 # --- Misc
 
 set_nmi_watchdog () { # enable/disable nmi watchdog
-    local nmiwd=${NMI_WATCHDOG:-}
+    local nmiwd="${NMI_WATCHDOG:-}"
+    local rc
 
     if [ -z "$nmiwd" ]; then
         # do nothing if unconfigured
@@ -484,7 +485,8 @@ set_nmi_watchdog () { # enable/disable nmi watchdog
 
     if [ -f /proc/sys/kernel/nmi_watchdog ]; then
         if write_sysf "$nmiwd" /proc/sys/kernel/nmi_watchdog; then
-            echo_debug "pm" "set_nmi_watchdog: $nmiwd; rc=$?" "$LOGPRIO_INFO"
+            rc=$?
+            echo_debug "pm" "set_nmi_watchdog: $nmiwd; rc=$rc" "$(rc2log "$rc")"
         else
             echo_debug "pm" "set_nmi_watchdog.disabled_by_kernel: $nmiwd"
         fi

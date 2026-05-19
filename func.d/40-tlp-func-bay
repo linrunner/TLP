@@ -54,7 +54,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
     # $2: 0=conditional+quiet mode, 1=force+verbose mode
     # Some code adapted from https://www.thinkwiki.org/wiki/How_to_hotswap_UltraBay_devices
 
-    local pwr optdrv syspath
+    local pwr optdrv syspath rc
 
     case "$1" in
         "$PP_PRF")           pwr="$BAY_POWEROFF_ON_AC" ;;
@@ -68,7 +68,7 @@ poweroff_drivebay () { # power off optical drive in drive bay
                 ;;
 
             0) # disabled
-                echo_debug "pm" "poweroff_drivebay($1).disabled" "$LOGPRIO_INFO"
+                echo_debug "pm" "poweroff_drivebay($1).disabled"
                 return 0
                 ;;
 
@@ -132,8 +132,8 @@ poweroff_drivebay () { # power off optical drive in drive bay
             fi
 
             # Turn power off
-            write_sysf "1" "$dock/undock"
-            echo_debug "pm" "poweroff_drivebay($1).bay_powered_off: rc=$?" "$LOGPRIO_INFO"
+            write_sysf "1" "$dock/undock"; rc=$?
+            echo_debug "pm" "poweroff_drivebay($1).bay_powered_off: rc=$rc" "$(rc2log "$rc")"
             [ "$2" = "1" ] && echo "done."
         fi
     fi

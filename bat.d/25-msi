@@ -335,7 +335,8 @@ batdrv_write_thresholds () {
         write_sysf "$new_stop" "$_bf_stop"
         steprc=$?; [ $steprc -ne 0 ] && rc=5
 
-        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).stop.write: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_stop; new=$new_stop; steprc=$steprc" "$LOGPRIO_INFO"
+        echo_debug "bat" "batdrv.${_batdrv_plugin}.write_thresholds($1, $2, $3, $4).stop.write: bat=$_bat_str; cfg=$_bt_cfg_bat; old=$old_stop; new=$new_stop; steprc=$steprc" \
+            "$(rc2log "$steprc")"
         case $verb in
             2)
                 if [ $steprc -eq 0 ]; then

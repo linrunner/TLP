@@ -131,6 +131,7 @@ set_intel_gpu_min_max_boost_freq () {
     local new_min new_max new_boost
     local old_min old_max old_boost gpu_min gpu_max
     local gtfd gtnum suffix
+    local rc
 
     case "$1" in
         "$PP_PRF")
@@ -197,18 +198,18 @@ set_intel_gpu_min_max_boost_freq () {
 
                     # all parameters valid --> write min, max in proper sequence
                     if [ "$new_min" -gt "$old_max" ]; then
-                        write_sysf "$new_max" "$_gpu_freqs/$IGPU_MAX_FREQ"
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$?" "$LOGPRIO_INFO"
-                        write_sysf "$new_min" "$_gpu_freqs/$IGPU_MIN_FREQ"
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$?" "$LOGPRIO_INFO"
+                        write_sysf "$new_max" "$_gpu_freqs/$IGPU_MAX_FREQ"; rc=$?
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$rc" "$(rc2log "$rc")"
+                        write_sysf "$new_min" "$_gpu_freqs/$IGPU_MIN_FREQ"; rc=$?
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$rc" "$(rc2log "$rc")"
                     else
-                        write_sysf "$new_min" "$_gpu_freqs/$IGPU_MIN_FREQ"
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$?" "$LOGPRIO_INFO"
-                        write_sysf "$new_max" "$_gpu_freqs/$IGPU_MAX_FREQ"
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$?" "$LOGPRIO_INFO"
+                        write_sysf "$new_min" "$_gpu_freqs/$IGPU_MIN_FREQ"; rc=$?
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$rc" "$(rc2log "$rc")"
+                        write_sysf "$new_max" "$_gpu_freqs/$IGPU_MAX_FREQ"; rc=$?
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$rc" "$(rc2log "$rc")"
                     fi
-                    write_sysf "$new_boost" "$_gpu_freqs/$IGPU_BOOST_FREQ"
-                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: gpu=$gpu freq=$new_boost; rc=$?" "$LOGPRIO_INFO"
+                    write_sysf "$new_boost" "$_gpu_freqs/$IGPU_BOOST_FREQ"; rc=$?
+                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: gpu=$gpu freq=$new_boost; rc=$rc" "$(rc2log "$rc")"
                 else
                     echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_available: gpu=$gpu"
                 fi
@@ -245,15 +246,15 @@ set_intel_gpu_min_max_boost_freq () {
 
                     # all parameters valid --> write min, max in proper sequence (for all GTs)
                     if [ "$new_min" -gt "$old_max" ]; then
-                        write_sysf "$new_max" "$gtfd/$IGPU_XE_MAX_FREQ"
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$?" "$LOGPRIO_INFO"
-                        write_sysf "$new_min" "$gtfd/$IGPU_XE_MIN_FREQ"
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$?" "$LOGPRIO_INFO"
+                        write_sysf "$new_max" "$gtfd/$IGPU_XE_MAX_FREQ"; rc=$?
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$rc" "$(rc2log "$rc")"
+                        write_sysf "$new_min" "$gtfd/$IGPU_XE_MIN_FREQ"; rc=$?
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$rc" "$(rc2log "$rc")"
                     else
-                        write_sysf "$new_min" "$gtfd/$IGPU_XE_MIN_FREQ"
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$?" "$LOGPRIO_INFO"
-                        write_sysf "$new_max" "$gtfd/$IGPU_XE_MAX_FREQ"
-                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$?" "$LOGPRIO_INFO"
+                        write_sysf "$new_min" "$gtfd/$IGPU_XE_MIN_FREQ"; rc=$?
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$rc" "$(rc2log "$rc")"
+                        write_sysf "$new_max" "$gtfd/$IGPU_XE_MAX_FREQ"; rc=$?
+                        echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$rc" "$(rc2log "$rc")"
                     fi
                 done
                 ;; # xe
@@ -269,7 +270,7 @@ set_amdgpu_profile () {
     # set amdgpu/radeon power profile
     # $1: PP_PRF, PP_BAL, PP_SAV
 
-    local gpu level rc1
+    local gpu level rc
     local sdone=0 # 1=gpu present
 
     for gpu in "${BASE_DRMD}"/card?; do
@@ -291,8 +292,8 @@ set_amdgpu_profile () {
                         echo_debug "pm" "set_amdgpu_profile($1).$_gpu_driver.not_configured: gpu=$gpu"
                         return 0
                     else
-                        write_sysf "$level" "$gpu/device/power_dpm_force_performance_level"; rc1=$?
-                        echo_debug "pm" "set_amdgpu_profile($1).$_gpu_driver: gpu=$gpu level=${level}: rc=$rc1" "$LOGPRIO_INFO"
+                        write_sysf "$level" "$gpu/device/power_dpm_force_performance_level"; rc=$?
+                        echo_debug "pm" "set_amdgpu_profile($1).$_gpu_driver: gpu=$gpu level=${level}: rc=$rc" "$(rc2log "$rc")"
                     fi
                     sdone=1
                 fi
@@ -345,7 +346,7 @@ set_abm_level () {
                             return 0
                         else
                             write_sysf "$level" "$pps/amdgpu/panel_power_savings"; rc=$?
-                            echo_debug "pm" "set_abm_level($1).amdgpu: pps=$pps level=${level}: rc=$rc" "$LOGPRIO_INFO"
+                            echo_debug "pm" "set_abm_level($1).amdgpu: pps=$pps level=${level}: rc=$rc" "$(rc2log "$rc")"
                         fi
                         sdone=1
                     fi

@@ -228,7 +228,7 @@ set_disk_apm_level () { # set disk apm level
 
     local pwrmode="$1"
     local target="$2"
-    local dev log_message
+    local dev log_message rc
 
     # quit when disabled
     if [ -z "$DISK_DEVICES" ]; then
@@ -260,9 +260,9 @@ set_disk_apm_level () { # set disk apm level
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "*** set_disk_apm_level($pwrmode).all"
+        echo_debug "disk" "*** set_disk_apm_level($pwrmode).all" "$LOGPRIO_INFO"
     else
-        echo_debug "disk" "*** set_disk_apm_level($pwrmode).target: $target"
+        echo_debug "disk" "*** set_disk_apm_level($pwrmode).target: $target" "$LOGPRIO_INFO"
     fi
 
     # pairwise iteration DISK_DEVICES[1,n], apmlist[1,m]; m > 0
@@ -284,8 +284,8 @@ set_disk_apm_level () { # set disk apm level
             elif wordinlist "$1" "$DISK_NOP_WORDS"; then
                 echo_debug "disk" "${log_message}; keep as is"
             else
-                $HDPARM -B "$1" "/dev/$_disk_dev" > /dev/null 2>&1
-                echo_debug "disk" "${log_message}; rc=$?" "$LOGPRIO_INFO"
+                $HDPARM -B "$1" "/dev/$_disk_dev" > /dev/null 2>&1; rc=$?
+                echo_debug "disk" "${log_message}; rc=$rc" "$(rc2log "$rc")"
             fi
         fi
         # quit the loop after reaching the target
@@ -336,9 +336,9 @@ set_disk_spindown_timeout () { # set disk spindown timeout
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "*** set_disk_spindown_timeout($pwrmode).all"
+        echo_debug "disk" "*** set_disk_spindown_timeout($pwrmode).all" "$LOGPRIO_INFO"
     else
-        echo_debug "disk" "*** set_disk_spindown_timeout($pwrmode).target: $target"
+        echo_debug "disk" "*** set_disk_spindown_timeout($pwrmode).target: $target" "$LOGPRIO_INFO"
     fi
 
     # pairwise iteration DISK_DEVICES[1,n], timeoutlist[1,m]; m > 0
@@ -356,8 +356,8 @@ set_disk_spindown_timeout () { # set disk spindown timeout
             if wordinlist "$1" "$DISK_NOP_WORDS"; then
                 echo_debug "disk" "${log_message}; keep as is"
             else
-                $HDPARM -S "$1" "/dev/$_disk_dev" > /dev/null 2>&1
-                echo_debug "disk" "${log_message}; rc=$?" "$LOGPRIO_INFO"
+                $HDPARM -S "$1" "/dev/$_disk_dev" > /dev/null 2>&1; rc=$?
+                echo_debug "disk" "${log_message}; rc=$rc" "$(rc2log "$rc")"
             fi
         fi
         # quit the loop after reaching the target
@@ -399,9 +399,9 @@ set_disk_iosched () { # set disk io scheduler
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "*** set_disk_iosched.all"
+        echo_debug "disk" "*** set_disk_iosched.all" "$LOGPRIO_INFO"
     else
-        echo_debug "disk" "*** set_disk_iosched.target: $target"
+        echo_debug "disk" "*** set_disk_iosched.target: $target" "$LOGPRIO_INFO"
     fi
 
     # pairwise iteration DISK_DEVICES[1,n], schedlist[1,m]; m > 0
@@ -424,8 +424,8 @@ set_disk_iosched () { # set disk io scheduler
             elif wordinlist "$sched" "$DISK_NOP_WORDS"; then
                 echo_debug "disk" "${log_message}; keep as is"
             else
-                write_sysf "$sched" "$schedctrl"
-                echo_debug "disk" "${log_message}; rc=$?" "$LOGPRIO_INFO"
+                write_sysf "$sched" "$schedctrl"; rc=$?
+                echo_debug "disk" "${log_message}; rc=$rc" "$(rc2log "$rc")"
             fi
         fi
         # quit the loop after reaching the target
@@ -478,7 +478,7 @@ set_sata_link_power () { # set ahci link power management
                 # host not denylisted --> iterate all configured values
                 for pwr in "$@"; do
                     write_sysf "$pwr" "$linkpol"; rc=$?
-                    echo_debug "disk" "set_sata_link_power($pwrmode).$pwr: $host; rc=$rc" "$LOGPRIO_INFO"
+                    echo_debug "disk" "set_sata_link_power($pwrmode).$pwr: $host; rc=$rc" "$(rc2log "$rc")"
                     if [ $rc -eq 0 ]; then
                         # write successful --> goto next host
                         ctrl_avail="1"
@@ -537,9 +537,9 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
     fi
 
     if [ -z "$target" ]; then
-        echo_debug "disk" "*** set_ahci_disk_runtime_pm($1).all"
+        echo_debug "disk" "*** set_ahci_disk_runtime_pm($1).all" "$LOGPRIO_INFO"
     else
-        echo_debug "disk" "*** set_ahci_disk_runtime_pm($1).target: $target"
+        echo_debug "disk" "*** set_ahci_disk_runtime_pm($1).target: $target" "$LOGPRIO_INFO"
     fi
 
     # iterate DISK_DEVICES
@@ -558,7 +558,11 @@ set_ahci_disk_runtime_pm () { # set runtime power management for ahci disks
                         # activation failed
                         rc=2
                     fi
-                    echo_debug "disk" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc" "$LOGPRIO_INFO"
+                    if [ $rc -eq 2 ]; then
+                        echo_debug "disk" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc" "$LOGPRIO_ERROR"
+                    else
+                        echo_debug "disk" "set_ahci_disk_runtime_pm($1).$control: disk=$_disk_dev timeout=$timeout; rc=$rc" "$LOGPRIO_INFO"
+                    fi
                     ;;
 
                 1|2) # runtime pm denied for disk
@@ -623,7 +627,7 @@ set_laptopmode () {
     # set kernel laptop mode
     # $1: PP_PRF, PP_BAL, PP_SAV
 
-    local isec
+    local isec rc
 
     case "$1" in
         "$PP_PRF")           isec="${DISK_IDLE_SECS_ON_AC:-}" ;;
@@ -640,17 +644,17 @@ set_laptopmode () {
     fi
 
     if [ ! -f /proc/sys/vm/laptop_mode ]; then
-        echo_debug "disk" "set_laptopmode($1).non_existent"
+        echo_debug "disk" "set_laptopmode($1).non_existent" "$LOGPRIO_INFO"
         return 0
     fi
     if kernel_version_ge "$LM_IGN_KVER"; then
         # prevent "vm.laptop_mode is deprecated" warnings
-        echo_debug "disk" "set_laptopmode($1).ignored"
+        echo_debug "disk" "set_laptopmode($1).ignored" "$LOGPRIO_INFO"
         return 0
     fi
 
-    write_sysf "$isec" /proc/sys/vm/laptop_mode
-    echo_debug "disk" "set_laptopmode($1): $isec; rc=$?" "$LOGPRIO_INFO"
+    write_sysf "$isec" /proc/sys/vm/laptop_mode; rc=$?
+    echo_debug "disk" "set_laptopmode($1): $isec; rc=$rc" "$(rc2log "$rc")"
 
     return 0
 }

@@ -69,7 +69,7 @@ any_wifi_in_use () { # check if any wifi device is in use
 # --- Wifi Power Management
 
 set_wifi_power_mode () { # set wifi power save mode -- $1: PP_PRF, PP_BAL, PP_SAV
-    local pwr iface
+    local pwr iface rc
 
     case "$1" in
         "$PP_PRF")           pwr="${WIFI_PWR_ON_AC:-}" ;;
@@ -99,8 +99,8 @@ set_wifi_power_mode () { # set wifi power save mode -- $1: PP_PRF, PP_BAL, PP_SA
     for iface in $_wifaces; do
         if [ -n "$iface" ]; then
             if  cmd_exists $IW; then
-                $IW dev "$iface" set power_save "$pwr" > /dev/null 2>&1
-                echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr; rc=$?" "$LOGPRIO_INFO"
+                $IW dev "$iface" set power_save "$pwr" > /dev/null 2>&1; rc=$?
+                echo_debug "pm" "set_wifi_power_mode($1, $iface).iw: $pwr; rc=$rc" "$(rc2log "$rc")"
             else
                 # iw not iwconfig installed
                 echo_debug "pm" "set_wifi_power_mode($1, $iface).no_iw" "$LOGPRIO_WARN"

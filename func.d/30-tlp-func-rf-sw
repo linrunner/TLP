@@ -355,12 +355,13 @@ restore_device_states () {
             device_switch "$1" "$2"
         done < "$RFSTATEFILE"
         rm -f "$RFSTATEFILE" 2> /dev/null
+        echo_debug "rf" "restore_device_states: $RFSTATEFILE; rc=$rc" "$LOGPRIO_INFO"
     else
         # state file nonexistent
         rc=1
+        echo_debug "rf" "restore_device_states: $RFSTATEFILE; rc=$rc"
     fi
 
-    echo_debug "rf" "restore_device_states: $RFSTATEFILE; rc=$rc" "$LOGPRIO_INFO"
     return $rc
 }
 

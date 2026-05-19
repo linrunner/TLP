@@ -103,6 +103,17 @@ do_exit () { # cleanup and exit  -- $1: rc
 }
 
 # --- Messages
+rc2log () {
+    # print log priority corresponding to result code:
+    # - "info" for zero rc
+    # - "$2" or "err" for non-zero rc
+    # $1: rc; $2: log prio for non-zero rc
+    if [ "$1" = "0" ]; then
+        printf "%s" "$LOGPRIO_INFO"
+    else
+        printf "%s" "${2:-$LOGPRIO_ERR}"
+    fi
+}
 
 echo_debug () { # write trace message to syslog if tag matches -- $1: tag; $2: msg; $3: log prio
     [ "$_nodebug" = "1" ] && return 0
