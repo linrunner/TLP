@@ -1107,7 +1107,7 @@ batdrv_show_battery_data () {
                     _bat_efsum=$((_bat_efsum + _bat_ef))
                     _bat_ensum=$((_bat_ensum + _bat_en))
                 else
-                    print_bat_energy
+                    print_bat_energy "$verbose"
                 fi
 
                 print_bat_state "$_bd_read/status"

@@ -922,6 +922,7 @@ print_bat_cycle_count () {
 
 print_bat_energy () {
     # print and sum up battery energy or charge data
+    # $1: verbose
     # global param: $_bd_read
     # global vars/retvals:
     #   $_bat_ed    - design capacity (mWh or mAh)
@@ -931,6 +932,7 @@ print_bat_energy () {
     #   $_bat_ensum - accumulated current charge level
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
+    local verbose="${1:-0}"
     local ed ef en pn pwr volt
 
     # initialize accumulation
@@ -967,9 +969,9 @@ print_bat_energy () {
         _bat_ensum=$((_bat_ensum + _bat_en))
 
         pwr="$(perl -e 'printf "%.0f", '"$(read_sysval "$_bd_read/current_now")"' / 1000.0')"
-        volt="$(read_sysval "$_bd_read/voltage_now")"
+        volt="$(read_sysval "$_bd_read/voltage_min_design")"
 
-        if [ "$volt" -gt 0 ]; then
+        if [ "$verbose" = "1" ] && [ "$volt" -gt 0 ]; then
             # voltage is valid -> display mA(h) and mW(h) units side by side
             # convert mA(h) to mW(h) units
             volt="$(perl -e 'printf "%.3f", '"$volt"' / 1000000.0')"
