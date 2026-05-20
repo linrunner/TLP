@@ -7,10 +7,11 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
 
   * Features
     Battery Care:
-    - tlp-stat -b: label calculated mW(h) ratings as approximations
+    - tlp-stat -b -v: base mA(h) to mW(h) conversion of battery ratings
+      on voltage_min_design (representing the nominal voltage)
     File System:
     - DISK_IDLE_SECS_ON_AC/BAT ignored with kernels >= 7.0, where
-      laptop_mode has been deprecated
+      laptop_mode has been removed
     Graphics:
     - RADEON_DPM_STATE_ON_AC/BAT/SAV removed (deprecated since 1.10)
     Processor:
@@ -23,6 +24,7 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
         This will reduce fan speed on AC power for certain gaming laptops
         (Issue #840).
       - Add 'cool' and 'quiet' as alternatives to 'low-power'.
+    - tlp-stat -p: show platform_profile driver
     Radio Devices:
     - RDW: warning if configured, but NetworkManager-dispatcher.service
       is not enabled
