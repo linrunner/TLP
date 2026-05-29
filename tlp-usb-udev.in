@@ -35,17 +35,20 @@ case "$1" in
 
         # USB autosuspend has two principal operation modes:
         #
-        # Mode 1 (optional):
+        # Mode 1 "batch" (optional):
         # - System startup is handled by tlp-functions:set_usb_suspend()
         # - Startup completion is signaled by "flag file" $USB_DONE
         # - Newly added devices are handled by this udev script
         # - Mode 1 is enabled by the private config variable X_TLP_USB_MODE=1
         #
-        # Mode 2 (default):
+        # Mode 2 "udev" (default):
         # - Everything - including system startup, but not shutdown - is handled by this udev script
 
-        # quit if mode 1 and no startup completion flag
-        [ "$X_TLP_USB_MODE" = "1" ] && ! check_run_flag "$USB_DONE" && do_exit 0
+        # quit if batch mode and no startup completion flag
+        if [ "$X_TLP_USB_MODE" = "1" ] && ! check_run_flag "$USB_DONE"; then
+            echo_debug "usb" "tlp_usb_udev.batch_not_completed: bus=$ID_BUS dev=/sys$2"
+            do_exit 0
+        fi
 
         # handle device
         usb_suspend_device "/sys$2" "udev"

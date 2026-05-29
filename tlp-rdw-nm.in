@@ -85,7 +85,7 @@ read_config 0
 check_tlp_enabled || do_exit 0
 
 # quit if RDW disabled
-if check_run_flag "$RDW_KILL" &&n
+if check_run_flag "$RDW_KILL"; then
    echo_debug "nm" "tlp_rdw_nm.rdw_disabled"
    do_exit 0
 fi
