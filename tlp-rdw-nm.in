@@ -85,7 +85,10 @@ read_config 0
 check_tlp_enabled || do_exit 0
 
 # quit if RDW disabled
-check_run_flag "$RDW_KILL" && do_exit 0
+if check_run_flag "$RDW_KILL" &&n
+   echo_debug "nm" "tlp_rdw_nm.rdw_disabled"
+   do_exit 0
+fi
 add_sbin2path
 
 # get args

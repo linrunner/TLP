@@ -17,7 +17,10 @@ done
 read_config 0
 
 check_tlp_enabled || do_exit 0
-check_run_flag "$RDW_KILL" && do_exit 0
+if check_run_flag "$RDW_KILL"; then
+   echo_debug "udev" "tlp_rdw_udev.rdw_disabled"
+   do_exit 0
+fi
 add_sbin2path
 
 # get power source

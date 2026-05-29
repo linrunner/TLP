@@ -552,12 +552,7 @@ reset_run_flag () { # reset flag -- $1: flag name
 
 check_run_flag () { # check flag -- $1: flag name
                     # rc: 0=flag set/1=flag not set
-    local rc
-
-    [ -f "$RUNDIR/$1" ]; rc=$?
-    echo_debug "lock" "check_run_flag($1): rc=$rc"
-
-    return $rc
+    [ -f "$RUNDIR/$1" ]
 }
 
 lock_tlp () { # get exclusive lock: blocking with timeout
