@@ -1,9 +1,8 @@
 Source: tlp
 Maintainer: Raphaël Halimi <raphael.halimi@gmail.com>
 Section: utils
-Priority: optional
 Build-Depends: debhelper-compat (= 13), dh-python, python3
-Standards-Version: 4.7.2
+Standards-Version: 4.7.4
 Vcs-Browser: https://salsa.debian.org/moonsweep/tlp
 Vcs-Git: https://salsa.debian.org/moonsweep/tlp.git
 Homepage: https://linrunner.de/tlp
