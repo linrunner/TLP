@@ -1,5 +1,7 @@
 # Watch file for TLP
 Version: 5
+
 Template: Github
-Owner: linrunner
-Project: TLP
+Dist: https://github.com/linrunner/TLP
+Uversion-Mangle: auto
+Download-Url-Mangle: s%api.github.com/repos/([^/]+/[^/]+)/git/(.*)%github.com/$1/archive/$2.tar.gz%
