@@ -2,7 +2,11 @@ tlp (1.11.0~alpha.0-1) unstable; urgency=medium
 
   * New upstream version 1.11.0-alpha.0
 
- -- Thomas Koch <linrunner@gmx.net>  Tue, 14 May 2026 15:42:00 +0200
+  [ Raphaël Halimi ]
+  * debian/copyright: update format URI
+  * Add basic debian/upstream/metadata
+
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 01 Jun 2026 21:01:21 +0200
 
 tlp (1.10.1-1) unstable; urgency=medium
 
