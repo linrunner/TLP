@@ -5,8 +5,15 @@ tlp (1.11.0~alpha.0-1) unstable; urgency=medium
   [ Raphaël Halimi ]
   * debian/copyright: update format URI
   * Add basic debian/upstream/metadata
+  * debian/watch: tuning
+    - Use "Dist" instead of "Owner/Project"
+    - Mangle upstream version to sort pre-releases before final releases
+    - Mangle download URL to match archives found on the tags page
+  * Enable default Salsa CI pipeline
+  * Bump Standards-Version to 4.7.4
+    - debian/control: remove redundant "Priority" field
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 01 Jun 2026 21:01:21 +0200
+ -- Thomas Koch <linrunner@gmx.net>  Mon, 02 Jun 2026 17:17:42 +0200
 
 tlp (1.10.1-1) unstable; urgency=medium
 
