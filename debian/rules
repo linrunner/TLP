@@ -9,6 +9,9 @@ export TLP_ZSHCPL=/usr/share/zsh/vendor-completions
 %:
 	dh $@ --with python3
 
+override_dh_auto_install:
+	dh_auto_install -- -j1
+
 override_dh_installsystemd:
 	dh_installsystemd --package=tlp --no-stop-on-upgrade
 	dh_installsystemd --package=tlp-pd
