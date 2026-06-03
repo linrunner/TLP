@@ -13,7 +13,11 @@ tlp (1.11.0~alpha.0-1) unstable; urgency=medium
   * Bump Standards-Version to 4.7.4
     - debian/control: remove redundant "Priority" field
 
- -- Thomas Koch <linrunner@gmx.net>  Mon, 02 Jun 2026 17:17:42 +0200
+  [ Thomas Koch ]
+  * Ubuntu: fix concurrent make jam on build servers
+    - debian/rules: override dh_auto_install with make -j1
+
+ -- Thomas Koch <linrunner@gmx.net>  Wed, 03 Jun 2026 13:42:31 +0200
 
 tlp (1.10.1-1) unstable; urgency=medium
 
