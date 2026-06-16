@@ -907,7 +907,7 @@ get_sys_power_supply () {
     #   3. Batteries
     # $TLP_PS_IGNORE may be used to ignore one or more power source classes
 
-    local bs ps_ignore psrc psrc_name
+    local bs ps_ignore psrc psrc_name usb_type
     local ac0seen=
     local tlp_cmd="$1"
     local wait=
@@ -934,7 +934,7 @@ get_sys_power_supply () {
                 _psdev="${_psdev:-$psrc}"
                 # if configured, skip device to ignore incorrect AC status
                 if wordinlist "AC" "$ps_ignore"; then
-                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_ignored: syspwr=$_syspwr"
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_ignored: syspwr=$_syspwr; dev=$_psdev"
                     continue
                 fi
 
@@ -942,12 +942,12 @@ get_sys_power_supply () {
                 if [ "$(read_sysf "$psrc/online")" = "1" ]; then
                     # AC online --> end iteration
                     _syspwr=$PS_AC
-                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_online: syspwr=$_syspwr"
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_online: syspwr=$_syspwr; dev=$_psdev"
                     break
                 else
                     # AC offine --> end iteration
                     _syspwr=$PS_BAT
-                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_offline: syspwr=$_syspwr"
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).ac_offline: syspwr=$_syspwr; dev=$_psdev"
                     break
                 fi
                 ;;
@@ -955,9 +955,17 @@ get_sys_power_supply () {
             USB)
                 # USB PS detected
                 _psdev="${_psdev:-$psrc}"
+
                 # if configured, skip device to ignore incorrect USB status
                 if wordinlist "USB" "$ps_ignore"; then
-                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_ignored: syspwr=$_syspwr"
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_ignored: syspwr=$_syspwr; dev=$_psdev"
+                    continue
+                fi
+
+                # check USB PS type
+                usb_type="$(get_listitem "$(read_sysf "$psrc/usb_type")")"
+                if ! wordinlist "$usb_type" "PD PD_PPS"; then
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_notpd: syspwr=$_syspwr; dev=$_psdev; type=$usb_type"
                     continue
                 fi
 
@@ -965,13 +973,13 @@ get_sys_power_supply () {
                 if [ "$(read_sysf "$psrc/online")" = "1" ]; then
                     # USB online --> end iteration
                     _syspwr=$PS_AC
-                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_online: syspwr=$_syspwr"
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).usb_online: syspwr=$_syspwr; dev=$_psdev; type=$usb_type"
                     break
                 else
                     # USB PS offline could mean battery, but multiple connectors may exist
                     # --> remember and continue looking
                     ac0seen=1
-                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).remember_usb_offline"
+                    echo_debug "ps" "get_sys_power_supply(${psrc_name}).remember_usb_offline; dev=$_psdev; type=$usb_type"
                 fi
                 ;;
 
