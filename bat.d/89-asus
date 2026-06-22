@@ -91,8 +91,8 @@ batdrv_init () {
             if [ "$NATACPI_ENABLE" = "0" ]; then
                 # natacpi disabled in configuration --> skip actual detection
                 _natacpi=32
-            elif [ -f "$bd/charge_control_end_threshold" ] && readable_sysf "$bd/charge_control_end_threshold"; then
-                # sysfile for stop threshold exists and is actually readable
+            elif [ -f "$bd/charge_control_end_threshold" ]; then
+                # sysfile for stop threshold exists
                 _natacpi=0
                 _bm_thresh="natacpi"
                 _bn_stop="charge_control_end_threshold"
