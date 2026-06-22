@@ -1,5 +1,5 @@
 #!/bin/sh
-# 15-asus - Battery Plugin for ASUS laptops w/ asus_wmi driver
+# 89-asus - Battery Plugin for ASUS laptops w/ asus_wmi driver
 #
 # Copyright (c) 2026 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
@@ -93,6 +93,12 @@ batdrv_init () {
                 _natacpi=32
             elif [ -f "$bd/charge_control_end_threshold" ]; then
                 # sysfile for stop threshold exists
+                # note: the threshold value cannot be read from the ASUS hardware.
+                #   starting with 7.1 the kernel returns -ENODATA "No data available"
+                #   after boot instead of resetting the threshold to 100 and returning
+                #   that value. thus, do not read threshold during initialization since
+                #   it will only be readable after the first write.
+                #   https://github.com/torvalds/linux/commit/186bf9031666602d61b40832181b6b6fdc3ba4dc
                 _natacpi=0
                 _bm_thresh="natacpi"
                 _bn_stop="charge_control_end_threshold"
@@ -241,8 +247,8 @@ batdrv_write_thresholds () {
     #     5=threshold write error
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
-    local new_stop=${2:-}
-    local verb=${3:-0}
+    local new_stop="${2:-}"
+    local verb="${3:-0}"
 
     # insert defaults
     [ "$new_stop" = "DEF" ] && new_stop=$_bt_def_stop
@@ -297,6 +303,7 @@ batdrv_write_thresholds () {
     fi
 
     # write new threshold
+    # note: do not read threshold for comparison since with kernel 7.1 it will only be readable after the first write
     if [ "$verb" = "2" ]; then
         printf "Setting temporary charge threshold for %s:\n" "$_bat_str" 1>&2
     fi
