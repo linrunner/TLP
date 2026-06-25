@@ -31,7 +31,10 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     - RESTORE_DEVICE_STATE_ON_STARTUP removed (deprecated since 1.10)
 
   * Bugfixes
-
+    Battery Care:
+    - ASUS laptops: fix charge threshold for kernel 7.1 (Issue #890)
+    Profiles:
+    - Restrict USB charger detection to PD/PPS
 
 +++ 1.10.1 --- 04.05.2026 +++
 
