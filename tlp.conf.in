@@ -558,19 +558,33 @@
 
 #DEVICES_TO_ENABLE_ON_AC="bluetooth nfc wifi wwan"
 
-# Radio devices to disable when switching to the balanced or power-saver
-# profile:
+# Radio devices to disable when switching to the balanced profile:
 #   bluetooth, nfc, wifi, wwan.
 # Default: <none>
 
 #DEVICES_TO_DISABLE_ON_BAT="bluetooth nfc wifi wwan"
 
+# Radio devices to disable when switching to the power-saver profile:
+#   bluetooth, nfc, wifi, wwan.
+# Falls back to DEVICES_TO_DISABLE_ON_BAT if not set.
+# Default: <none>
+
+#DEVICES_TO_DISABLE_ON_SAV="bluetooth nfc wifi wwan"
+
 # Radio devices to disable when not in use (not connected) and switching
-# to the balanced or power-saver profile:
+# to the balanced profile:
 #   bluetooth, nfc, wifi, wwan.
 # Default: <none>
 
 #DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE="bluetooth nfc wifi wwan"
+
+# Radio devices to disable when not in use (not connected) and switching
+# to the power-saver profile:
+#   bluetooth, nfc, wifi, wwan.
+# Falls back to DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE if not set.
+# Default: <none>
+
+#DEVICES_TO_DISABLE_ON_SAV_NOT_IN_USE="bluetooth nfc wifi wwan"
 
 # Battery Care -- Charge thresholds
 # Charging will start once the charger is connected and the battery level

@@ -391,6 +391,8 @@ set_radio_device_states () {
                 # then re-enable wifi on shutdown to prepare for startup
                 if wordinlist "wifi" "$DEVICES_TO_DISABLE_ON_BAT
                                         $DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE
+                                        $DEVICES_TO_DISABLE_ON_SAV
+                                        $DEVICES_TO_DISABLE_ON_SAV_NOT_IN_USE
                                         $DEVICES_TO_DISABLE_ON_LAN_CONNECT
                                         $DEVICES_TO_DISABLE_ON_WIFI_CONNECT
                                         $DEVICES_TO_DISABLE_ON_WWAN_CONNECT" && \
@@ -406,13 +408,31 @@ set_radio_device_states () {
             devs2disable=""
             ;;
 
-        "$PP_BAL"|"$PP_SAV") # balanced/power-saver profile --> build disable list
+        "$PP_BAL") # balanced profile --> build disable list
             quiet=1 # do not display progress
             devs2enable=""
             devs2disable="${DEVICES_TO_DISABLE_ON_BAT:-}"
 
             # check configured list for connected devices
             for dev in ${DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE:-}; do
+                # if device is not connected and not in list yet --> add to disable list
+                { case $dev in
+                    bluetooth) any_bluetooth_in_use ;;
+                    nfc) any_nfc_in_use ;;
+                    wifi) any_wifi_in_use ;;
+                    wwan) any_wwan_in_use ;;
+                esac } || wordinlist "$dev" "$devs2disable" || devs2disable="$dev $devs2disable"
+            done
+            devs2disable="${devs2disable# }"
+            ;;
+
+        "$PP_SAV") # power-saver profile --> build disable list
+            quiet=1 # do not display progress
+            devs2enable=""
+            devs2disable="${DEVICES_TO_DISABLE_ON_SAV-${DEVICES_TO_DISABLE_ON_BAT:-}}"
+
+            # check configured list for connected devices
+            for dev in ${DEVICES_TO_DISABLE_ON_SAV_NOT_IN_USE-${DEVICES_TO_DISABLE_ON_BAT_NOT_IN_USE:-}}; do
                 # if device is not connected and not in list yet --> add to disable list
                 { case $dev in
                     bluetooth) any_bluetooth_in_use ;;
