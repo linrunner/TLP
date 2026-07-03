@@ -206,7 +206,7 @@ batdrv_read_threshold () {
             if [ "$1" != "1" ]; then
                 out=""
             else
-                out="(not available)"
+                out="(no data)"
             fi
             rc=4
         fi
@@ -223,7 +223,7 @@ batdrv_read_threshold () {
         printf "%s" "$out"
     else
         if [ "$1" = "1" ]; then
-            printf "(not available)\n"
+            printf "(no data)\n"
         fi
         rc=4
     fi
