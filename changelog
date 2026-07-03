@@ -1,6 +1,26 @@
 This is the user-oriented changelog. For information regarding packaging,
 please refer to: https://linrunner.de/tlp/developers/packaging.html
 
++++ 1.10.2 --- <unreleased> +++
+
+  * Bugfix release
+
+  * Features
+    Battery Care:
+    - tlp-stat -b -v: base mA(h) to mW(h) conversion of battery ratings
+      on voltage_min_design (representing the nominal voltage)
+    File System:
+    - DISK_IDLE_SECS_ON_AC/BAT ignored with kernels >= 7.0, where
+      laptop_mode has been removed
+
+  * Bugfixes
+    Battery Care:
+    - ASUS laptops:
+      - Fix charge threshold for kernel 7.1 (Issue #890)
+      - tlp-stat -b: display "no data" until a threshold has been set
+    Profiles:
+    - Restrict USB charger detection to PD/PPS
+
 +++ 1.10.1 --- 04.05.2026 +++
 
   * Bugfix Release
