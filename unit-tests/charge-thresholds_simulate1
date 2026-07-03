@@ -101,7 +101,7 @@ $ # --- tlp-stat
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=asus | grep "BAT0/charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
 $ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=asus X_THRESH_SIMULATE_READERR=1 | grep "BAT0/charge_control_end_threshold"
-/sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
+/sys/class/power_supply/BAT0/charge_control_end_threshold   = (no data) [%]
 $ #
 $ # +++ Huawei ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
