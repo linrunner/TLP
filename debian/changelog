@@ -1,3 +1,24 @@
+tlp (1.10.2-1) unstable; urgency=medium
+
+  * New upstream version 1.10.2
+
+  [ Raphaël Halimi ]
+  * debian/copyright: update format URI
+  * Add basic debian/upstream/metadata
+  * debian/watch: tuning
+    - Use "Dist" instead of "Owner/Project"
+    - Mangle upstream version to sort pre-releases before final releases
+    - Mangle download URL to match archives found on the tags page
+  * Enable default Salsa CI pipeline
+  * Bump Standards-Version to 4.7.4
+    - debian/control: remove redundant "Priority" field
+
+  [ Thomas Koch ]
+  * Ubuntu: fix concurrent make jam on build servers
+    - debian/rules: override dh_auto_install with make -j1
+
+ -- Thomas Koch <linrunner@gmx.net>  Fri, 03 Jul 2026 13:11:42 +0200
+
 tlp (1.10.1-1) unstable; urgency=medium
 
   * New upstream version 1.10.1
