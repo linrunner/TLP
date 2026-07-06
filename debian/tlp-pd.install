@@ -1,3 +1,5 @@
+etc/default/tlp-pd
+etc/init.d/tlp-pd
 usr/sbin/tlp-pd
 usr/bin/tlpctl
 usr/lib/systemd/system/tlp-pd.service
