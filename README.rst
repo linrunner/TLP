@@ -45,7 +45,7 @@ to learn how to customize the configuration if desired.
 Support
 -------
 Please visit your favorite Linux community for help and support questions.
-Make shure to check `Support <https://linrunner.de/tlp/support>`_ first.
+Make sure to check `Support <https://linrunner.de/tlp/support>`_ first.
 
 Bug reports
 -----------
