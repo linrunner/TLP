@@ -326,6 +326,9 @@ case "$_cmd" in
                     poweroff_drivebay "$_pp_next" 0
                     echo "done."
                 fi
+
+                # re-enable wifi if necessary
+                set_radio_device_states "$_pp_next" "shutdown"
                 ;;
         esac
 

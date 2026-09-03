@@ -379,35 +379,59 @@ set_radio_device_states () {
     local devs2disableu=""
     local quiet=0
 
-    if [ "$2" = "startup" ]; then
-        # enable/disable radios on system startup
-        enable_on_start="${DEVICES_TO_ENABLE_ON_STARTUP:-}"
-        disable_on_start="${DEVICES_TO_DISABLE_ON_STARTUP:-}"
+    if [ "$2" = "shutdown" ]; then
+        # NM-specific workaround for system shutdown:
+        # if disabling wifi is configured anywhere, then make sure to enable
+        # it now. Otherwise NM will remember a disabled state and wifi
+        # will stay disconnected at the subsequent system startup.
+        # note: in case wifi is actually disabled but this isn't configured
+        # anywhere, assume that it was disabled manually and the user does
+        # not want an intervention.
+        if [ "$X_WIFI_ON_SHUTDOWN" != "0" ]; then
+            if wordinlist "wifi" "$DEVICES_TO_DISABLE_ON_PRF
+                                  $DEVICES_TO_DISABLE_ON_PRF_NOT_IN_USE
+                                  $DEVICES_TO_DISABLE_ON_BAL
+                                  $DEVICES_TO_DISABLE_ON_BAL_NOT_IN_USE
+                                  $DEVICES_TO_DISABLE_ON_SAV
+                                  $DEVICES_TO_DISABLE_ON_SAV_NOT_IN_USE
+                                  $DEVICES_TO_DISABLE_ON_LAN_CONNECT
+                                  $DEVICES_TO_DISABLE_ON_WIFI_CONNECT
+                                  $DEVICES_TO_DISABLE_ON_WWAN_CONNECT"; then
+                devs2enable="wifi"
+            fi
+        fi
+    else
+        # profile changes and system startup
+        if [ "$2" = "startup" ]; then
+            # enable/disable radios on system startup
+            enable_on_start="${DEVICES_TO_ENABLE_ON_STARTUP:-}"
+            disable_on_start="${DEVICES_TO_DISABLE_ON_STARTUP:-}"
+        fi
+
+        # enable/disable radios on profile select; takes precedence over startup settings
+        case "$1" in
+            "$PP_PRF") # performance profile --> build enable list
+                quiet=1 # do not display progress
+                devs2enable="${DEVICES_TO_ENABLE_ON_PRF:-$enable_on_start}"
+                devs2disable="${DEVICES_TO_DISABLE_ON_PRF:-$disable_on_start}"
+                devs2disableu=${DEVICES_TO_DISABLE_ON_PRF_NOT_IN_USE:-}
+                ;;
+
+            "$PP_BAL") # balanced profile --> build disable/enable lists
+                quiet=1 # do not display progress
+                devs2enable="${DEVICES_TO_ENABLE_ON_BAL:-$enable_on_start}"
+                devs2disable="${DEVICES_TO_DISABLE_ON_BAL:-$disable_on_start}"
+                devs2disableu=${DEVICES_TO_DISABLE_ON_BAL_NOT_IN_USE:-}
+                ;;
+
+            "$PP_SAV") # power-saver profile --> build disable/enable lists
+                quiet=1 # do not display progress
+                devs2enable="${DEVICES_TO_ENABLE_ON_SAV:-$enable_on_start}"
+                devs2disable="${DEVICES_TO_DISABLE_ON_SAV:-$disable_on_start}"
+                devs2disableu=${DEVICES_TO_DISABLE_ON_SAV_NOT_IN_USE:-}
+                ;;
+        esac
     fi
-
-    # enable/disable radios on profile select; takes precedence over startup settings
-    case "$1" in
-        "$PP_PRF") # performance profile --> build enable list
-            quiet=1 # do not display progress
-            devs2enable="${DEVICES_TO_ENABLE_ON_PRF:-$enable_on_start}"
-            devs2disable="${DEVICES_TO_DISABLE_ON_PRF:-$disable_on_start}"
-            devs2disableu=${DEVICES_TO_DISABLE_ON_PRF_NOT_IN_USE:-}
-            ;;
-
-        "$PP_BAL") # balanced profile --> build disable/enable lists
-            quiet=1 # do not display progress
-            devs2enable="${DEVICES_TO_ENABLE_ON_BAL:-$enable_on_start}"
-            devs2disable="${DEVICES_TO_DISABLE_ON_BAL:-$disable_on_start}"
-            devs2disableu=${DEVICES_TO_DISABLE_ON_BAL_NOT_IN_USE:-}
-            ;;
-
-        "$PP_SAV") # power-saver profile --> build disable/enable lists
-            quiet=1 # do not display progress
-            devs2enable="${DEVICES_TO_ENABLE_ON_SAV:-$enable_on_start}"
-            devs2disable="${DEVICES_TO_DISABLE_ON_SAV:-$disable_on_start}"
-            devs2disableu=${DEVICES_TO_DISABLE_ON_SAV_NOT_IN_USE:-}
-            ;;
-    esac
 
     # check DEVICES_TO_DISABLE_ON_*_NOT_IN_USE for connected devices
     for dev in $devs2disableu; do
