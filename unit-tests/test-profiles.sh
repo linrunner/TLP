@@ -26,6 +26,7 @@ check_profile_select () {
 
     local prof_seq
     local prof prof_save prof_xpect
+    local prof_ac prof_bat
     local ps_save
     local mm_save mm_xpect
     local rc=0
@@ -43,15 +44,18 @@ check_profile_select () {
 
     # iterate supported profiles, return to initial profile
     case "$prof_save" in
-        "$PP_PRF") prof_seq="balanced power-saver ac bat start auto suspend resume0 resume usb usb0 performance" ;;
-        "$PP_BAL") prof_seq="power-saver ac bat start auto performance suspend resume0 resume usb usb0 balanced" ;;
-        "$PP_SAV") prof_seq="ac bat start auto performance balanced suspend resume0 resume usb usb0 power-saver" ;;
+        "$PP_PRF") prof_seq="balanced power-saver ac ac-bal bat bat-sav start auto suspend resume0 resume usb usb0 performance" ;;
+        "$PP_BAL") prof_seq="power-saver ac ac-bal bat bat-sav start auto performance suspend resume0 resume usb usb0 balanced" ;;
+        "$PP_SAV") prof_seq="ac ac-bal bat bat-sav start auto performance balanced suspend resume0 resume usb usb0 power-saver" ;;
     esac
 
     printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$prof_save $ps_save" "$mm_save"
 
     for prof in $prof_seq; do
         printf_msg " %-12s:" "$prof"
+
+        prof_ac=""
+        prof_bat=""
 
         case "$prof" in
             performance)
@@ -66,6 +70,14 @@ check_profile_select () {
                 prof_save="$PP_PRF"
                 ;;
 
+            ac-bal)
+                prof="ac"
+                prof_ac="BAL"
+                prof_xpect="$PP_BAL $ps_save"
+                mm_xpect="$PP_BAL"
+                prof_save="$PP_BAL"
+                ;;
+
             balanced)
                 prof_xpect="$PP_BAL $ps_save"
                 mm_xpect=""
@@ -76,6 +88,14 @@ check_profile_select () {
                 prof_xpect="$PP_BAL $ps_save"
                 mm_xpect="$PP_BAL"
                 prof_save="$PP_BAL"
+                ;;
+
+            bat-sav)
+                prof="bat"
+                prof_bat="SAV"
+                prof_xpect="$PP_SAV $ps_save"
+                mm_xpect="$PP_SAV"
+                prof_save="$PP_SAV"
                 ;;
 
             power-saver)
@@ -128,7 +148,7 @@ check_profile_select () {
 
         esac
 
-        sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_DEFAULT="" > /dev/null 2>&1
+        sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 TLP_PROFILE_AC="$prof_ac" TLP_PROFILE_BAT="$prof_bat" TLP_PROFILE_DEFAULT="" > /dev/null 2>&1
 
         # check expect results
         compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
