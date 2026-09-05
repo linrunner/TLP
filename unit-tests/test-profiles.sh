@@ -490,6 +490,8 @@ check_auto_switch () {
 
     local prof_seq
     local prof prof_save prof_xpect
+    local prof_ac="PRF"
+    local prof_bat="BAL"
     local ps_now ps_next
     local as
     local mm_xpect mm_save
@@ -511,62 +513,34 @@ check_auto_switch () {
     for as in 0 1 2; do
         # iterate auto switch modes
         read_saved_profile
-        printf_msg " TLP_AUTO_SWITCH=%s TLP_PROFILE_AC=PRF TLP_PROFILE_BAT=BAL: last_pwr/%s manual_mode/%s\n" "$as" "$_prof $_ps" "$mm_save"
+        printf_msg " TLP_AUTO_SWITCH=%s TLP_PROFILE_AC=$prof_ac TLP_PROFILE_BAT=$prof_bat: last_pwr/%s manual_mode/%s\n" "$as" "$_prof $_ps" "$mm_save"
 
-        case "$as" in
-            0|1) # auto switch: disabled|enabled
-                # interate power sources: AC, battery
-                for ps_now in 0 1; do
-                    for mode in auto resume; do
-                        printf_msg "  %-6s X_SIMULATE_PS=%s:" "$mode" "$ps_now"
-                        sudo tlp "$mode" -- TLP_AUTO_SWITCH="$as" \
-                            TLP_PROFILE_AC=PRF TLP_PROFILE_BAT=BAL TLP_PROFILE_DEFAULT="" TLP_PERSISTENT_DEFAULT=0 \
-                            X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
+        for mode in auto resume; do
+            for ps_now in 0 1; do
+                # calc opposite power source
+                ps_next="$((! ps_now))"
 
-                        case "$as" in
-                            0) # auto switch disabled, do not expect profile change
-                                prof_xpect="$_prof $ps_now"
-                                ;;
+                for prof in $prof_seq; do
+                    # prepare simulated active profile and power source
+                    printf_msg "  %-6s (prof=%-11s ps_now=%s) --> ps_next=%s:" "$mode" "$prof" "$ps_now" "$ps_next"
+                    sudo tlp "$prof" -- TLP_AUTO_SWITCH="$as" \
+                        TLP_PROFILE_AC="$prof_ac" TLP_PROFILE_BAT="$prof_bat" TLP_PERSISTENT_DEFAULT=0 \
+                        X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
 
-                            1) # auto swich enable, expect profile according to power source
-                                prof_xpect="$ps_now $ps_now"
-                                ;;
-                        esac
-                        compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
-                        if [ "$rc" -eq 0 ]; then
-                            printf_msg " last_pwr/%s=ok" "$prof_xpect"
-                        else
-                            printf_msg " last_pwr/%s=err(%s)" "$prof_xpect" "$rc"
-                            errcnt=$((errcnt + 1))
-                        fi
-                        # do not expect manual mode
-                        mm_xpect=""
-                        compare_sysf "$mm_xpect" "$MANUALMODE"; rc=$?
-                        if [ "$rc" -eq 0 ]; then
-                            printf_msg " manual_mode/%s=ok" "$mm_xpect"
-                        else
-                            printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
-                            errcnt=$((errcnt + 1))
-                        fi
-                        printf_msg "\n"
-                    done # auto/resume
-                done # ps_now
-                ;; # disabled|enabled
+                    # determine expected profile
+                    case "$as" in
+                        0) # auto switch disabled, do not expect profile change
+                            prof_xpect="$(str2pp "$prof") $ps_next"
+                            ;; # 0/disabled
 
-            2) # auto switch: smart
-                for mode in auto resume; do
-                    for ps_now in 0 1; do
-                        # calc opposite power source
-                        ps_next="$((! ps_now))"
+                        1) # auto switch enabled, expect profile according to power source
+                            case "$ps_next" in
+                                "$PS_AC")  prof_xpect="$(id2pp "$prof_ac") $ps_next" ;;
+                                "$PS_BAT") prof_xpect="$(id2pp "$prof_bat") $ps_next" ;;
+                            esac
+                            ;; # 1/auto
 
-                        for prof in $prof_seq; do
-                            # prepare simulated active profile and power source
-                            printf_msg "  %-6s (prof=%-11s ps_now=%s) --> ps_next=%s:" "$mode" "$prof" "$ps_now" "$ps_next"
-                            sudo tlp "$prof" -- TLP_AUTO_SWITCH=2 \
-                                TLP_PROFILE_AC=PRF TLP_PROFILE_BAT=BAL TLP_PERSISTENT_DEFAULT=0 \
-                                X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
-
-                            # determine expected profile
+                        2) # smart switch
                             case "$ps_now" in
                                 0) # simulated power source: AC
                                     case "$prof" in
@@ -584,40 +558,40 @@ check_auto_switch () {
                                     esac
                                     ;;
                             esac
+                            ;; # 2/smart
+                    esac
 
-                            # check auto/resume on opposite power source
-                            sudo tlp "$mode" -- TLP_AUTO_SWITCH="$as" \
-                                TLP_PROFILE_AC=PRF TLP_PROFILE_BAT=BAL TLP_PERSISTENT_DEFAULT=0 \
-                                X_SIMULATE_PS="$ps_next" > /dev/null 2>&1
+                    # check auto/resume on opposite power source and switch mode
+                    sudo tlp "$mode" -- TLP_AUTO_SWITCH="$as" \
+                        TLP_PROFILE_AC="$prof_ac" TLP_PROFILE_BAT="$prof_bat" TLP_PERSISTENT_DEFAULT=0 \
+                        X_SIMULATE_PS="$ps_next" > /dev/null 2>&1
 
-                            # check against expectations
-                            compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
-                            if [ "$rc" -eq 0 ]; then
-                                printf_msg " last_pwr/%s=ok" "$prof_xpect"
-                            else
-                                printf_msg " last_pwr/%s=err(%s)" "$prof_xpect" "$rc"
-                                errcnt=$((errcnt + 1))
-                            fi
-                            mm_xpect=""
-                            compare_sysf "$mm_xpect" "$MANUALMODE"; rc=$?
-                            if [ "$rc" -eq 0 ]; then
-                                printf_msg " manual_mode/%s=ok" "$mm_xpect"
-                            else
-                                printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
-                                errcnt=$((errcnt + 1))
-                            fi
-                            printf_msg "\n"
-                        done # prof
-                        printf_msg "\n"
-                    done # ps_now
-                done # auto/resume
-                ;; # smart
-        esac # as
+                    # check against expectations
+                    compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
+                    if [ "$rc" -eq 0 ]; then
+                        printf_msg " last_pwr/%s=ok" "$prof_xpect"
+                    else
+                        printf_msg " last_pwr/%s=err(%s)" "$prof_xpect" "$rc"
+                        errcnt=$((errcnt + 1))
+                    fi
+                    mm_xpect=""
+                    compare_sysf "$mm_xpect" "$MANUALMODE"; rc=$?
+                    if [ "$rc" -eq 0 ]; then
+                        printf_msg " manual_mode/%s=ok" "$mm_xpect"
+                    else
+                        printf_msg " manual_mode/%s=err(%s)" "$mm_xpect" "$rc"
+                        errcnt=$((errcnt + 1))
+                    fi
+                    printf_msg "\n"
+                done # prof
+                printf_msg "\n"
+            done # ps_now
+        done # auto/resume
 
         # restore initial profile
         sudo tlp "$(pp2str "$prof_save")" > /dev/null 2>&1
         read_saved_profile
-        printf_msg " result: last_pwr/%s manual_mode/%s\n\n" "$_prof $_ps" "$(read_sysf "$MANUALMODE")"
+        printf_msg " restore: last_pwr/%s manual_mode/%s\n\n" "$_prof $_ps" "$(read_sysf "$MANUALMODE")"
    done # as
 
    # print summary

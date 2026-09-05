@@ -107,6 +107,17 @@ pp2str () {
     esac
 }
 
+str2pp () {
+    # Convert profile string to code
+    # $1: profile
+
+    case "$1" in
+        performance)  printf "%s" "$PP_PRF"  ;;
+        balanced)     printf "%s" "$PP_BAL"  ;;
+        power-saver)  printf "%s" "$PP_SAV" ;;
+    esac
+}
+
 id2pp () { # convert power profile id to code
     # $1: id: PRF/AC/BAL/BAT/SAV
 
