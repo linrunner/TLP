@@ -207,7 +207,7 @@ check_default_mode () {
     printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$prof_save $ps_save" "$mm_save"
 
     for prof in $prof_seq; do
-        printf_msg " TLP_AUTO_SWITCH=0 TLP_PROFILE_DEFAULT=%-5s" "${prof}:"
+        printf_msg " start -- TLP_AUTO_SWITCH=0 TLP_PROFILE_DEFAULT=%-5s:" "${prof}"
 
         case "$prof" in
             PRF)
@@ -304,7 +304,7 @@ check_persistent_mode () {
     printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$prof_save $ps_save" "$mm_save"
 
     for prof in $prof_seq; do
-        printf_msg " TLP_AUTO_SWITCH=2 TLP_PERSISTENT_DEFAULT=1 TLP_PROFILE_DEFAULT=%-5s" "${prof}:"
+        printf_msg " auto -- TLP_AUTO_SWITCH=2 TLP_PERSISTENT_DEFAULT=1 TLP_PROFILE_DEFAULT=%-5s" "${prof}:"
 
         case "$prof" in
             PRF)
@@ -425,7 +425,7 @@ check_power_supply () {
         ps_seq="$PS_BAT $PS_UNKNOWN $PS_AC"
 
         for ps in $ps_seq; do
-            printf_msg " X_SIMULATE_PS=%-3s TLP_PROFILE_AC=%s TLP_PROFILE_BAT=%s TLP_PROFILE_DEFAULT=%s:" \
+            printf_msg " start -- X_SIMULATE_PS=%-3s TLP_PROFILE_AC=%s TLP_PROFILE_BAT=%s TLP_PROFILE_DEFAULT=%s:" \
                 "$ps" "$prof_ac" "$prof_bat" "$prof_def"
 
             case "$ps" in
@@ -452,9 +452,9 @@ check_power_supply () {
             # expect changing profiles
             compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
             if [ "$rc" -eq 0 ]; then
-                printf_msg " last_pwr/%s=ok" "$prof_xpect $ps_save"
+                printf_msg " last_pwr/%s=ok" "$prof_xpect"
             else
-                printf_msg " last_pwr/%s=err(%s)" "$prof_xpect $ps_save" "$rc"
+                printf_msg " last_pwr/%s=err(%s)" "$prof_xpect" "$rc"
                 errcnt=$((errcnt + 1))
             fi
             # do not expect manual mode
@@ -513,7 +513,8 @@ check_auto_switch () {
     for as in 0 1 2; do
         # iterate auto switch modes
         read_saved_profile
-        printf_msg " TLP_AUTO_SWITCH=%s TLP_PROFILE_AC=$prof_ac TLP_PROFILE_BAT=$prof_bat: last_pwr/%s manual_mode/%s\n" "$as" "$_prof $_ps" "$mm_save"
+        printf_msg " initial: last_pwr/%s manual_mode/%s\n" "$_prof $_ps" "$mm_save"
+        printf_msg "   TLP_AUTO_SWITCH=%s TLP_PROFILE_AC=%s TLP_PROFILE_BAT=%s\n" "$as" "$prof_ac" "$prof_bat"
 
         for mode in auto resume; do
             for ps_now in 0 1; do
@@ -522,7 +523,7 @@ check_auto_switch () {
 
                 for prof in $prof_seq; do
                     # prepare simulated active profile and power source
-                    printf_msg "  %-6s (prof=%-11s ps_now=%s) --> ps_next=%s:" "$mode" "$prof" "$ps_now" "$ps_next"
+                    printf_msg "     %-6s (prof=%-11s ps_now=%s --> ps_next=%s):" "$mode" "$prof" "$ps_now" "$ps_next"
                     sudo tlp "$prof" -- TLP_AUTO_SWITCH="$as" \
                         TLP_PROFILE_AC="$prof_ac" TLP_PROFILE_BAT="$prof_bat" TLP_PERSISTENT_DEFAULT=0 \
                         X_SIMULATE_PS="$ps_now" > /dev/null 2>&1
@@ -591,7 +592,7 @@ check_auto_switch () {
         # restore initial profile
         sudo tlp "$(pp2str "$prof_save")" > /dev/null 2>&1
         read_saved_profile
-        printf_msg " restore: last_pwr/%s manual_mode/%s\n\n" "$_prof $_ps" "$(read_sysf "$MANUALMODE")"
+        printf_msg " restored: last_pwr/%s manual_mode/%s\n\n" "$_prof $_ps" "$(read_sysf "$MANUALMODE")"
    done # as
 
    # print summary
@@ -615,15 +616,15 @@ check_ps_udev_no_switch () {
     # retval: $_testcnt++, $_failcnt++
 
     local prof_save prof_xpect
-    local ps ppi
+    local ps_save
     local rc=0
     local errcnt=0
 
     printf_msg "check_ps_udev_no_switch {{{\n"
 
     # save initial profile
-    read_saved_profile; prof_save="$_prof"; ps="$_ps"
-    printf_msg " initial: last_pwr/%s\n" "$prof_save $ps"
+    read_saved_profile; prof_save="$_prof"; ps_save="$_ps"
+    printf_msg " initial: last_pwr/%s\n" "$prof_save $ps_save"
 
     # 1. create temp config
     echo "TLP_AUTO_SWITCH=1" | sudo tee $TEMPCONF > /dev/null
@@ -632,12 +633,12 @@ check_ps_udev_no_switch () {
     printf_msg " Apply power-saver:"
     sudo tlp power-saver -- TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
     # expect power-saver
-    prof_xpect="2"
-    compare_sysf "$prof_xpect $ps" "$LASTPWR"; rc=$?
+    prof_xpect="2 $ps_save"
+    compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
     if [ "$rc" -eq 0 ]; then
-        printf_msg " last_pwr/%s=ok" "$prof_xpect $ps"
+        printf_msg " last_pwr/%s=ok" "$prof_xpect"
     else
-        printf_msg " last_pwr/%s=err(%s)" "$prof_xpect $ps" "$rc"
+        printf_msg " last_pwr/%s=err(%s)" "$prof_xpect" "$rc"
         errcnt=$((errcnt + 1))
     fi
     printf_msg "\n"
@@ -649,25 +650,19 @@ check_ps_udev_no_switch () {
     sleep 2
 
     # 4. check if logic works properly and power-saver profile didnt't change
-    compare_sysf "$prof_xpect $ps" "$LASTPWR"; rc=$?
+    compare_sysf "$prof_xpect" "$LASTPWR"; rc=$?
     if [ "$rc" -eq 0 ]; then
-        printf_msg " last_pwr/%s=ok" "$prof_xpect $ps"
+        printf_msg " last_pwr/%s=ok" "$prof_xpect"
     else
-        printf_msg " last_pwr/%s=err(%s)" "$prof_xpect $ps" "$rc"
+        printf_msg " last_pwr/%s=err(%s)" "$prof_xpect" "$rc"
         errcnt=$((errcnt + 1))
     fi
     printf_msg "\n"
 
     # restore initial profile
-    case "$prof_save" in
-        "$PP_PRF") ppi="performance" ;;
-        "$PP_BAL") ppi="balanced" ;;
-        "$PP_SAV") ppi="power-saver" ;;
-    esac
-    sudo tlp ${ppi} -- TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
-
+    sudo tlp "$(pp2str "$prof_save")" -- TLP_PERSISTENT_DEFAULT=0 > /dev/null 2>&1
     read_saved_profile
-    printf_msg " result: last_pwr/%s\n" "$_prof $_ps"
+    printf_msg " restored: last_pwr/%s\n" "$_prof $_ps"
 
     # remove temp config
     sudo rm -f $TEMPCONF
