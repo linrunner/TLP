@@ -36,7 +36,7 @@ my $EXIT_TLPCONF = 5;
 my $EXIT_DEFCONF = 6;
 
 # Defaults spared by TLP_DISABLE_DEFAULTS=1
-my $ESSENTIAL_DEFAULTS = 'qr/TLP_ENABLE|TLP_WARN_LEVEL|TLP_AUTO_SWITCH|TLP_PROFILE_AC|TLP_PROFILE_BAT/';
+my $ESSENTIAL_DEFAULTS = qr/TLP_ENABLE|TLP_WARN_LEVEL|TLP_AUTO_SWITCH|TLP_PROFILE_AC|TLP_PROFILE_BAT/;
 
 # --- Global vars
 my @config_val = ();      # 2-dim array: parameter name, value, source, default-value, renamed-flag
@@ -132,7 +132,7 @@ sub store_name_value_source {
         if ( $is_def ) {
             # save value as default
             push(@config_val, [$name, $value, $source, $value, 0]);
-            printf_debug ("tlp-readconfs.ins-def  [%s]: %s=\"%s\" '%s' def='%s ren=0'\n", $#config_val, $name, $value, $source, $value);
+            printf_debug ("tlp-readconfs.ins-def  [%s]: %s=\"%s\" '%s' def='%s' ren=0\n", $#config_val, $name, $value, $source, $value);
         } else {
             # save value as user config
             push(@config_val, [$name, $value, $source, "", $is_ren]);
