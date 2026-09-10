@@ -221,6 +221,18 @@ usb_suspend_device () {
                     fi
                 fi # exclude wwan
             fi # wwan
+
+            if [ -z "$exc" ]; then
+                # check for serial subdevices
+                local ttydev
+                for ttydev in "$usbdev"/*:*/tty*; do
+                    if [ -d "$ttydev" ]; then
+                        control="on"
+                        exc="_serial_deny"
+                        break
+                    fi
+                done
+            fi
         fi # !device denylist
 
         if [ "$(read_sysf "$usbdev/power/control")" != "$control" ]; then
@@ -246,7 +258,7 @@ usb_suspend_device () {
             echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid $usbdev [$drvlist]; control: rc=$rc1" \
                 "$(rc2log "$rc1")"
         else
-            # we didn't change anything actually
+            # nothing changed actually
             echo_debug "usb" "usb_suspend_device.$caller.$control$exc.no_change: $busdev ID $usbid $usbdev [$drvlist]"
         fi
 
