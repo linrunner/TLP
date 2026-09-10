@@ -11,7 +11,6 @@
 
 readonly USBD=/sys/bus/usb/devices
 readonly USB_TIMEOUT_MS=2000
-readonly USB_WWAN_VENDORS="0bdb 05c6 1199 2cb7"
 readonly USB_DONE=usb_done
 
 # ----------------------------------------------------------------------------
@@ -192,23 +191,33 @@ usb_suspend_device () {
             if [ -z "$exc" ]; then
                 # check for wwan devices
                 if [ "$USB_EXCLUDE_WWAN" = "1" ]; then
-                    if [ "$dclass" != "00" ]; then
-                        # check for cdc subdevices
+                    # check if device has both CDC Control and CDC Data interfaces
+                    local iclass
+                    local cdc_ctrl=0
+                    local cdc_data=0
+                    for subdev in "$usbdev"/*:*; do
+                        iclass="$(read_sysf "$subdev/bInterfaceClass")"
+                        [ "$iclass" = "02" ] && cdc_ctrl=1
+                        [ "$iclass" = "0a" ] && cdc_data=1
+                        if [ "$cdc_ctrl" = "1" ] && [ "$cdc_data" = "1" ]; then
+                            control="on"
+                            exc="_wwan_deny"
+                            break
+                        fi
+                    done
+
+                    if [ -z "$exc" ]; then
+                        # fallback: check for a matching driver
+                        local driver
                         for subdev in "$usbdev"/*:*; do
-                            if [ "$(read_sysf "$subdev/bInterfaceClass")" = "0a" ]; then
+                            driver="$(readlink "$subdev/driver")"
+                            driver="${driver##*/}"
+                            if wordinlist "$driver" "cdc_acm cdc_ether cdc_mbim cdc_ncm cdc_wdm option"; then
                                 control="on"
                                 exc="_wwan_deny"
                                 break
                             fi
                         done
-                    fi
-
-                    if [ -z "$exc" ]; then
-                        # check for vendors
-                        if wordinlist "$vendor" "$USB_WWAN_VENDORS"; then
-                            control="on"
-                            exc="_wwan_deny"
-                        fi
                     fi
                 fi # exclude wwan
             fi # wwan
