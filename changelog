@@ -76,6 +76,11 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     - RDW: warn if corresponding parameters are configured but the
       NetworkManager-dispatcher.service is not enabled
     - RESTORE_DEVICE_STATE_ON_STARTUP removed (deprecated since 1.10)
+    - USB_EXCLUDE_WWAN: base device recognition on interface class (02h, 0ah)
+      or driver (cdc_*, option). Do not use the vendor ID anymore.
+  USB:
+    - Exclude serial port devices from autosuspend by default.
+      Note: to enforce autosuspend for such a device, add it to USB_ALLOWLIST.
 
   * Bugfixes
     Profiles:
