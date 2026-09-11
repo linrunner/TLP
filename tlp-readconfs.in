@@ -222,9 +222,9 @@ sub write_runconf {
 
             # stdout: add deprecated or renamed message
             if ( defined $dprmsg{$name} ) {
-                $msg = " #! $dprmsg{$name}";
+                $msg = "  #! $dprmsg{$name}";
             } elsif ( $is_ren and defined $renmsg{$name} ) {
-                $msg = " #> $renmsg{$name}";
+                $msg = "  #> $renmsg{$name}";
             }
 
             # --cdiff: do not show user config lines matching the default
@@ -261,7 +261,7 @@ sub parse_renfile {
                 $renmsg{$new_name} = $+{rename_msg};
             } else {
                 # standard message
-                $renmsg{$new_name} = "runtime-renamed from $old_name: change your config!";
+                $renmsg{$new_name} = "Runtime-translated from $old_name. Change your config!";
             }
         }
     }
