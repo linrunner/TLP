@@ -29,6 +29,9 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     - MEM_SLEEP_ON_SAV added to the power-saver profile
     Graphics:
     - RADEON_DPM_STATE_ON_AC/BAT/SAV removed (deprecated since 1.10)
+    - DEVFREQ_GOVERNOR_ON_PRF/BAL/SAV: set the governor of devfreq
+      devices (e.g. GPU, DDR or NoC frequency controllers such as
+      Phytium NoC)
     Network:
     - WOL_DISABLE: support SoC/platform and USB ethernet interfaces
     Processor:
