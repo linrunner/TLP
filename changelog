@@ -11,8 +11,10 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
       _PRF (formerly _AC): applies to the performance profile.
       _BAL (formerly _BAT): applies to the balanced profile.
       _SAV (unaltered): applies to the power-saver profile.
-    - Old _AC, _BAT names still work, since they're converted automatically
+    - Old _AC, _BAT names still work, since they're translated automatically
       at runtime, but updating your individual configuration is recommended.
+      Check the output of tlp-stat --cdiff for the occurence of
+      "#> Runtime-translated from ..." to locate affected lines.
     Audio:
       - SOUND_POWER_SAVE_ON_SAV added to the power-saver profile
     Disks:
@@ -79,8 +81,8 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     - USB_EXCLUDE_WWAN: base device recognition on interface class (02h, 0ah)
       or driver (cdc_*, option). Do not use the vendor ID anymore.
   USB:
-    - Exclude serial port devices from autosuspend by default.
-      Note: to enforce autosuspend for such a device, add it to USB_ALLOWLIST.
+    - Exclude serial port devices from autosuspend by default. To enforce
+      autosuspend for such a device, add it to USB_ALLOWLIST.
 
   * Bugfixes
     Profiles:
