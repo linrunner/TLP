@@ -430,6 +430,15 @@
 #AMDGPU_ABM_LEVEL_ON_BAL=1
 #AMDGPU_ABM_LEVEL_ON_SAV=3
 
+# devfreq governor (e.g. GPU, DDR or NoC frequency controller)
+# Requires a devfreq device with a writable governor, e.g. Phytium NoC.
+# Available governors can be read from /sys/class/devfreq/devfreqX/available_governors
+# Default: not set (no changes)
+
+#DEVFREQ_GOVERNOR_ON_PRF=performance
+#DEVFREQ_GOVERNOR_ON_BAL=simple_ondemand
+#DEVFREQ_GOVERNOR_ON_SAV=powersave
+
 # Wi-Fi power saving mode: on=enable, off=disable.
 # Default: off (PRF), on (BAL, SAV)
 
