@@ -65,11 +65,17 @@ restore_rf_states () {
 
     for rfdev in bluetooth wifi; do
         if wordinlist "$rfdev" "$1"; then
-            if [ "$rfdev" = "wifi" ]; then
-                nmcli
-            sudo rfkill unblock "$rfdev"
+            if wordinlist "$rfdev" "wifi wwan"; then
+                sudo nmcli radio "$rfdev" on
+            else
+                sudo rfkill unblock "$rfdev"
+            fi
         else
-            sudo rfkill block "$rfdev"
+            if wordinlist "$rfdev" "wifi wwan"; then
+                sudo nmcli radio "$rfdev" off
+            else
+                sudo rfkill block "$rfdev"
+            fi
         fi
     done
 }
