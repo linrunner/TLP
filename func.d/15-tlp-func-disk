@@ -486,20 +486,26 @@ set_sata_link_power () { # set ahci link power management
                 echo_debug "disk" "set_sata_link_power($pwrmode).deny: $host"
                 ctrl_avail="1"
             else
-                # host not denylisted --> iterate all configured values
-                for pwr in "$@"; do
-                    write_sysf "$pwr" "$linkpol"; rc=$?
-                    echo_debug "disk" "set_sata_link_power($pwrmode).$pwr: $host; rc=$rc" "$(rc2log "$rc")"
-                    if [ $rc -eq 0 ]; then
-                        # write successful --> goto next host
-                        ctrl_avail="1"
-                        break
-                    else
-                        # write failed --> don't use this value for remaining hosts
-                        # and try next value
-                        shift
-                    fi
-                done
+                # host not denylisted
+                if [ "$(read_sysf "$linkpol")" = "keep_firmware_settings" ]; then
+                    echo_debug "disk" "set_sata_link_power($pwrmode).fw_lock: $host"
+                else
+                    # ALPM not locked by firmware
+                    # --> iterate all configured values
+                    for pwr in "$@"; do
+                        write_sysf "$pwr" "$linkpol"; rc=$?
+                        echo_debug "disk" "set_sata_link_power($pwrmode).$pwr: $host; rc=$rc" "$(rc2log "$rc")"
+                        if [ $rc -eq 0 ]; then
+                            # write successful --> goto next host
+                            ctrl_avail="1"
+                            break
+                        else
+                            # write failed --> don't use this value for remaining hosts
+                            # and try next value
+                            shift
+                        fi
+                    done
+                fi
             fi
         fi
     done
