@@ -218,11 +218,15 @@ get_ethifaces () { # get all eth devices -- retval: $_ethifaces
         subsys=$(readlink -f "$eid/subsystem" 2>/dev/null)
         wordinlist "${subsys##*/}" "pci platform usb" || continue
 
-        # skip wireless interfaces
+        # skip wifi interfaces
         [ -d "$eid/ieee80211" ] && continue
         [ -d "${eid%/device}/wireless" ] && continue
 
         ei="${eid%/device}"; ei="${ei##*/}"
+
+        # skip wwan interfaces
+        [ "${ei#ww}" != "$ei" ] && continue
+
         _ethifaces="${_ethifaces}${_ethifaces:+ }${ei}"
     done
 
