@@ -393,7 +393,7 @@ uninstall: uninstall-tlp uninstall-rdw uninstall-pd
 
 uninstall-man: uninstall-man-tlp uninstall-man-rdw uninstall-man-pd
 
-checkall: checkbatdrv checkbashisms shellcheck perlcritic checkdupconst checkman checkconf checkwip
+checkall: checkbatdrv checkbashisms shellcheck perlcritic checkdupconst checkman checkconf checkdepren checkwip
 
 checkbashisms:
 	@echo "*** checkbashisms ***************************************************************************"
@@ -418,6 +418,25 @@ checkman:
 checkconf:
 	@echo "*** checkconf *******************************************************************************"
 	@grep -v '^\s*\(#\|$$\)' tlp.conf.in || true
+
+COMMON_KEYS = awk '/^$$/ {next} /^\# / {next} \
+	{ k=$$0; sub(/^\#/,"",k); sub(/[= \t].*/,"",k) } \
+	k=="" {next} \
+	FILENAME==ARGV[1] {a[k]; next} \
+	(k in a) && !s[k]++ {print k}' \
+	$(1) $(2)
+
+checkdepren:
+	@echo "*** checkdepren ********************************************************************************"
+	# Scan defaults.conf, tlp.conf for deprecated or renamed parameters
+	@echo "* defaults.conf <--> deprecated.conf:"
+	@$(call COMMON_KEYS,defaults.conf,deprecated.conf)
+	@echo "* defaults.conf <--> rename.conf:"
+	@$(call COMMON_KEYS,defaults.conf,rename.conf)
+	@echo "* tlp.conf.in <--> deprecated.conf:"
+	@$(call COMMON_KEYS,tlp.conf.in,rename.conf)
+	@echo "* tlp.conf.in <--> rename.conf:"
+	@$(call COMMON_KEYS,tlp.conf.in,rename.conf)
 
 checkoldsfx:
 	@echo "*** checkoldsfx *******************************************************************************"
