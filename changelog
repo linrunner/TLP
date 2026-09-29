@@ -85,6 +85,11 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
       autosuspend for such a device, add it to USB_ALLOWLIST.
 
   * Bugfixes
+    Disks:
+    - SATA_LINKPWR_ON_PRF/BAL/SAV: skip links locked by the firmware;
+      visible in the tlp-stat -d output as "keep_firmware_settings"
+    - Prevent settings from being applied to ATA disks via the hot-plug
+      mechanism, which is intended for USB disks only
     Profiles:
     - USB chargers: prevent incorrect AC/battery detection by filtering out
       invalid transient states rather than using PD/PPS sensing.
