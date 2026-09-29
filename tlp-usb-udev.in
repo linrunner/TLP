@@ -46,7 +46,7 @@ case "$1" in
 
         # quit if batch mode and no startup completion flag
         if [ "$X_TLP_USB_MODE" = "1" ] && ! check_run_flag "$USB_DONE"; then
-            echo_debug "usb" "tlp_usb_udev.batch_not_completed: bus=$ID_BUS dev=/sys$2"
+            echo_debug "usb" "tlp_usb_udev.batch_not_completed: dev=/sys$2"
             do_exit 0
         fi
 
@@ -55,7 +55,7 @@ case "$1" in
         ;;
 
     disk) # (s)ata disks attached via usb
-        echo_debug "usb" "tlp_usb_udev.disk: bus=$ID_BUS dev=/sys$2" "$LOG_INFO"
+        echo_debug "usb" "tlp_usb_udev.disk: dev=/sys$2" "$LOG_INFO"
 
         get_next_power_profile usb-udev-disk
         dev="${2##*/block/}"
