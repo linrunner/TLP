@@ -181,7 +181,7 @@ clean:
 	rm -f *.log unit-tests/*.log
 
 install-tlp: all
-	# Package tlp
+	# package tlp
 	install -D -m 755 tlp $(_SBIN)/tlp
 	install -D -m 755 tlp-rf $(_BIN)/bluetooth
 	ln -sf bluetooth $(_BIN)/nfc
@@ -245,7 +245,7 @@ endif
 	install -d -m 755 $(_VAR)
 
 install-rdw: all
-	# Package tlp-rdw
+	# package tlp-rdw
 	install -D -m 755 tlp-rdw $(_BIN)/tlp-rdw
 	install -D -m 644 tlp-rdw.rules $(_ULIB)/rules.d/85-tlp-rdw.rules
 	install -D -m 755 tlp-rdw-udev $(_ULIB)/tlp-rdw-udev
@@ -261,7 +261,7 @@ ifneq ($(TLP_NO_FISHCOMP),1)
 endif
 
 install-pd: all
-	# Package tlp-pd
+	# package tlp-pd
 	install -D -m 755 tlp-pd $(_SBIN)/tlp-pd
 	install -D -m 755 tlpctl $(_BIN)/tlpctl
 ifneq ($(TLP_WITH_SYSTEMD),0)
@@ -288,19 +288,19 @@ ifneq ($(TLP_NO_FISHCOMP),1)
 endif
 
 install-man-tlp:
-	# manpages
+	# manpages tlp
 	install -d -m 755 $(_MAN)/man1
 	cd man && install -m 644 $(MANFILES1) $(_MAN)/man1/
 	install -d -m 755 $(_MAN)/man8
 	cd man && install -m 644 $(MANFILES8) $(_MAN)/man8/
 
 install-man-rdw:
-	# manpages
+	# manpages tlp-rdw
 	install -d -m 755 $(_MAN)/man8
 	cd man-rdw && install -m 644 $(MANFILESRDW8) $(_MAN)/man8/
 
 install-man-pd:
-	# manpages
+	# manpages tlp-pd
 	install -d -m 755 $(_MAN)/man1
 	cd man-pd && install -m 644 $(MANFILESPD1) $(_MAN)/man1/
 	install -d -m 755 $(_MAN)/man8
@@ -311,7 +311,7 @@ install: install-tlp install-rdw install-pd
 install-man: install-man-tlp install-man-rdw install-man-pd
 
 uninstall-tlp:
-	# Package tlp
+	# package tlp
 	rm $(_SBIN)/tlp
 	rm $(_BIN)/bluetooth
 	rm $(_BIN)/nfc
@@ -353,7 +353,7 @@ uninstall-tlp:
 	rm -r $(_VAR)
 
 uninstall-rdw:
-	# Package tlp-rdw
+	# package tlp-rdw
 	rm $(_BIN)/tlp-rdw
 	rm $(_ULIB)/rules.d/85-tlp-rdw.rules
 	rm $(_ULIB)/tlp-rdw-udev
@@ -363,6 +363,7 @@ uninstall-rdw:
 	rm -f $(_FISHCPL)/tlp-rdw.fish
 
 uninstall-pd:
+	# package tlp-pd
 	rm $(_SBIN)/tlp-pd
 	rm $(_BIN)/tlpctl
 	rm -f $(_SYSD)/tlp-pd.service
@@ -376,16 +377,16 @@ uninstall-pd:
 	rm -f  $(_FISHCPL)/tlpctl.fish
 
 uninstall-man-tlp:
-	# manpages
+	# manpages tlp
 	cd $(_MAN)/man1 && rm -f $(MANFILES1)
 	cd $(_MAN)/man8 && rm -f $(MANFILES8)
 
 uninstall-man-rdw:
-	# manpages
+	# manpages tlp-rdw
 	cd $(_MAN)/man8 && rm -f $(MANFILESRDW8)
 
 uninstall-man-pd:
-	# manpages
+	# manpages tlp-pd
 	cd $(_MAN)/man1 && rm -f $(MANFILESPD1)
 	cd $(_MAN)/man8 && rm -f $(MANFILESPD8)
 
@@ -397,26 +398,32 @@ checkall: checkbatdrv checkbashisms shellcheck perlcritic checkdupconst checkman
 
 checkbashisms:
 	@echo "*** checkbashisms ***************************************************************************"
+	# Check POSIX shell scripts for bashisms
 	@{ checkbashisms $(SHFILES) 2>&1 | sed -e '/test with unary -a (should be -e)/{N;d;}'; } || true
 
 shellcheck:
 	@echo "*** shellcheck ******************************************************************************"
+	# Check shell scripts
 	@shellcheck -s dash $(SHFILES) $(UTSHFILES) || true
 
 perlcritic:
 	@echo "*** perlcritic ******************************************************************************"
+	# Check perl scripts
 	@perlcritic --severity 4 --verbose "%F: [%p] %m at line %l, column %c.  (Severity: %s)\n" $(PLFILES) || true
 
 checkdupconst:
 	@echo "*** checkdupconst ***************************************************************************"
+	# Scan shell scripts for duplicate global constants ("readonly")
 	@{ sed -n -r -e 's,^.*readonly\s+([A-Za-z_][A-Za-z_0-9]*)=.*$$,\1,p' $(SHFILES) | sort | uniq -d; } || true
 
 checkman:
 	@echo "*** checkman ********************************************************************************"
+	# Show manpage version lines
 	@grep '.TH ' $(MANFILESALL)
 
 checkconf:
 	@echo "*** checkconf *******************************************************************************"
+	# Scan tlp.conf for active parameters
 	@grep -v '^\s*\(#\|$$\)' tlp.conf.in || true
 
 COMMON_KEYS = awk '/^$$/ {next} /^\# / {next} \
@@ -440,11 +447,13 @@ checkdepren:
 
 checkoldsfx:
 	@echo "*** checkoldsfx *******************************************************************************"
+	# Scan scripts for old _AC/_BAT parameters
 	@grep -E -n '_ON_(AC|BAT)' tlp.conf.in $(SHFILES) $(UTSHFILES) $(PLFILES) $(PYFILES) $(UTPYFILES) $(MANFILESALL) \
 		| grep -v 'RESTORE_THRESHOLDS_ON_BAT' || true
 
 checkwip:
 	@echo "*** checkwip ********************************************************************************"
+	# Scan scripts for comments that indicate “work in progress” or similar
 	@grep -E -n --exclude=$(EXCLUDECHECKWIP) "### (DEBUG|DEVEL|FIXME|TODO|WIP)" $(SHFILES) $(UTSHFILES) $(PLFILES) $(PYFILES) $(UTPYFILES) \
 		|| true
 
@@ -453,6 +462,7 @@ bat.d/TEMPLATE~: bat.d/TEMPLATE
 
 bat.d/%~: bat.d/%
 	@printf "*** checkbatdrv %-25s ***********************************************\n" "$<"
+	# Check whether the plugin has the complete set of methods
 	@awk '/^batdrv_[a-z_]+ ()/ { print $$1; }' $< | grep -v -E 'batdrv_(is|has)' | sort > $@
 	@diff -U 1 -s bat.d/TEMPLATE~  $@ || true
 
