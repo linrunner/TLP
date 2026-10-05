@@ -54,6 +54,10 @@ case "$1" in
         usb_suspend_device "/sys$2" "udev"
         ;;
 
+    serial) # usb serail port adapters - tty device
+        usb_suspend_device "/sys${2%/*/*}" "serial"
+        ;;
+
     disk) # (s)ata disks attached via usb
         echo_debug "usb" "tlp_usb_udev.disk: dev=/sys$2" "$LOG_INFO"
 

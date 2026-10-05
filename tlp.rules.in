@@ -14,5 +14,8 @@ ACTION=="change", SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_TYPE}=="USB", ENV{
 # handle added usb devices (exclude subdevices via DRIVER=="usb")
 ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ENV{DEVTYPE}=="usb_device", RUN+="@TLP_ULIB@/tlp-usb-udev usb %p"
 
+# handle added child tty* devices of usb serial port adapters
+ACTION=="add", SUBSYSTEM=="usb-serial", RUN+="@TLP_ULIB@/tlp-usb-udev serial %p"
+
 # handle added usb disk devices (exclude partitions via ENV{DEVTYPE}=="disk")
 ACTION=="add", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ENV{ID_USB_TYPE}=="disk", RUN+="@TLP_ULIB@/tlp-usb-udev disk %p"
