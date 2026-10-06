@@ -129,30 +129,7 @@ usb_suspend_device () {
 
             if [ -z "$exc" ] && [ "$USB_EXCLUDE_PHONE" = "1" ]; then
                 # look for phone devices
-                if [ "$vendor" = "0fca" ]; then
-                    # RIM
-                    if [ "$dclass" = "ef" ]; then
-                        # RIM / BlackBerry detected
-                        control="on"
-                        exc="_phone_deny"
-
-                    elif [ "$dclass" = "00" ]; then
-                        for subdev in "$usbdev"/*:*; do
-                            if [ "$(read_sysf "$subdev/interface")" = "BlackBerry" ]; then
-                                # Blackberry detected
-                                control="on"
-                                exc="_phone_deny"
-                                break
-                            fi
-                        done
-                    fi
-
-                elif [ "$vendor" = "045e" ] && [ "$dclass" = "ef" ]; then
-                    # Windows Phone detected
-                    control="on"
-                    exc="_phone_deny"
-
-                elif [ "$vendor" = "05ac" ] && [ "$(read_sysf "$usbdev/product")" = "iPhone" ]; then
+                if [ "$vendor" = "05ac" ] && [ "$(read_sysf "$usbdev/product")" = "iPhone" ]; then
                     # iPhone detected
                     control="on"
                     exc="_phone_deny"
@@ -178,7 +155,7 @@ usb_suspend_device () {
                             elif [ "$(read_sysf "$subdev/bInterfaceClass")" = "06" ] \
                                 && [ "$(read_sysf "$subdev/bInterfaceSubClass")" = "01" ] \
                                 && [ "$(read_sysf "$subdev/bInterfaceProtocol")" = "01" ]; then
-                                # PTP: iPhone, Lumia et al.
+                                # PTP: iPhone et al.
                                 # caveat: may also be a camera
                                 control="on"
                                 exc="_phone_deny"
