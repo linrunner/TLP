@@ -29,7 +29,7 @@ if [ "$X_USB_ENV_TRACE" = "1" ]; then
 fi
 
 case "$1" in
-    usb) # usb devices in general
+    usb|serial) # usb devices in general and tty device of serial port adapters
         [ "$USB_AUTOSUSPEND" = "1" ] || do_exit 0
         # quit if usb autosuspend disabled
 
@@ -51,11 +51,7 @@ case "$1" in
         fi
 
         # handle device
-        usb_suspend_device "/sys$2" "udev"
-        ;;
-
-    serial) # usb serail port adapters - tty device
-        usb_suspend_device "/sys${2%/*/*}" "serial"
+        usb_suspend_device "/sys$2" "$1"
         ;;
 
     disk) # (s)ata disks attached via usb
