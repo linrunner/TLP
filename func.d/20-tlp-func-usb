@@ -37,244 +37,232 @@ usb_suspend_device () {
         usbdev4log="$1"
     fi
 
-    if [ -f "$usbdev/power/autosuspend_delay_ms" ]; then
-        # device is autosuspendable
-        local vendor usbid busdev dclass
+    # quit if device is not autosuspendable
+    [ -f "$usbdev/power/autosuspend_delay_ms" ] || return 0
 
-        vendor="$(read_sysf "$usbdev/idVendor")"
-        usbid="$vendor:$(read_sysf "$usbdev/idProduct")"
-        busdev="Bus $(read_sysf "$usbdev/busnum") Dev $(read_sysf "$usbdev/devnum")"
-        dclass="$(read_sysf "$usbdev/bDeviceClass")"
+    local vendor usbid busdev dclass
 
-        local exc=""
-        local chg=0 rc1=0 rc2=0
-        local drvlist=""
+    vendor="$(read_sysf "$usbdev/idVendor")"
+    usbid="$vendor:$(read_sysf "$usbdev/idProduct")"
+    busdev="Bus $(read_sysf "$usbdev/busnum") Dev $(read_sysf "$usbdev/devnum")"
+    dclass="$(read_sysf "$usbdev/bDeviceClass")"
 
-        # trace only: get drivers for all subdevices
-        if [ "$X_USB_DRIVER_TRACE" = "1" ]; then
-            local dl
-            drvlist=$(for dl in "$usbdev"/*:*/driver; do readlink "$dl" | \
-                sed -r 's/.+\///'; done | sort -u | tr '\n' ' ')
-            drvlist=" [${drvlist% }]"
-        fi
+    local exc=""
+    local chg=0 rc1=0 rc2=0
+    local drvlist=""
 
-        if wordinlist "$usbid" "$USB_ALLOWLIST"; then
-            # device is in allowlist -- allowlist always wins
-            control="auto"
-            exc="_dev_allow"
-        elif wordinlist "$usbid" "$USB_DENYLIST"; then
-            # device is in denylist
-            control="on"
-            exc="_dev_deny"
-        else
-            local subdev
+    # trace only: get drivers for all subdevices
+    if [ "$X_USB_DRIVER_TRACE" = "1" ]; then
+        local dl
+        drvlist=$(for dl in "$usbdev"/*:*/driver; do readlink "$dl" | \
+            sed -r 's/.+\///'; done | sort -u | tr '\n' ' ')
+        drvlist=" [${drvlist% }]"
+    fi
 
-            # usb device --> wait for subdevices to populate
-            [ "$caller" = "udev" ] && sleep 0.5
+    if wordinlist "$usbid" "$USB_ALLOWLIST"; then
+        # device is in allowlist -- allowlist always wins
+        control="auto"
+        exc="_dev_allow"
 
-            # usb-serial tty* device --> do not check all device types
-            if [ "$caller" != "serial" ]; then
-                # check for hid subdevices
+    elif wordinlist "$usbid" "$USB_DENYLIST"; then
+        # device is in denylist
+        control="on"
+        exc="_dev_deny"
+
+    else
+        # device is neither deny nor allowlisted
+        local subdev
+
+        # usb device --> wait for subdevices to populate
+        [ "$caller" = "udev" ] && sleep 0.5
+
+        if [ "$caller" != "serial" ]; then
+            # --- check non wwan/usb-serial device types, first match wins
+            if [ "$USB_EXCLUDE_BTUSB" = "1" ] \
+                && [ "$dclass" = "e0" ] \
+                && [ "$(read_sysf "$usbdev/bDeviceSubClass")" = "01" ] \
+                && [ "$(read_sysf "$usbdev/bDeviceProtocol")" = "01" ]; then
+                # bluetooth device detected
+                control="on"
+                exc="_btusb_deny"
+            fi
+
+            # look for libsane scanners
+            # notes:
+            # - do it *before* detecting other subdevices, because there are multifunction devices.
+            #   the “deny” rule for the scanner must take precedence over a printer subdevice.
+            # - libsane_matched envvar is set by libsane's udev rules
+            # shellcheck disable=SC2154
+            if [ -z "$exc" ] && [ "$X_USB_IGNORE_SANE" != "1" ] \
+                && { [ "$libsane_matched" = "yes" ] \
+                    || [ "$caller" = "batch" ] && $UDEVADM info -q property "$usbdev" 2>/dev/null | grep -q 'libsane_matched=yes'
+                }; then
+                # libsane scanner detected --> do not touch this device
+                control="deny"
+                exc="_libsane"
+            fi
+
+            # iterate subdevices for further type classification
+            if [ -z "$exc" ]; then
                 for subdev in "$usbdev"/*:*; do
                     if [ "$(read_sysf "$subdev/bInterfaceClass")" = "03" ]; then
+                        # input device detected
                         control="on"
                         exc="_hid_deny"
                         break
-                    fi
-                done
 
-                if [ -z "$exc" ]; then
-                    # check for bluetooth devices
-                    if [ "$USB_EXCLUDE_BTUSB" = "1" ] \
-                        && [ "$dclass" = "e0" ] \
-                        && [ "$(read_sysf "$usbdev/bDeviceSubClass")" = "01" ] \
-                        && [ "$(read_sysf "$usbdev/bDeviceProtocol")" = "01" ]; then
+                    elif [ "$USB_EXCLUDE_AUDIO" = "1" ] \
+                        && [ "$(read_sysf "$subdev/bInterfaceClass")" = "01" ]; then
+                        # audio device detected
                         control="on"
-                        exc="_btusb_deny"
-                    fi
-                fi # bluetooth
+                        exc="_audio_deny"
+                        break
 
-                if [ -z "$exc" ]; then
-                    # check for audio devices
-                    if [ "$USB_EXCLUDE_AUDIO" = "1" ]; then
-                        for subdev in "$usbdev"/*:*; do
-                            if [ "$(read_sysf "$subdev/bInterfaceClass")" = "01" ]; then
-                                control="on"
-                                exc="_audio_deny"
-                                break
-                            fi
-                        done
-                    fi
-                fi # audio
-
-                if [ -z "$exc" ]; then
-                    # check for scanners:
-                    # libsane_matched envvar is set by libsane's udev rules
-                    # shellcheck disable=SC2154
-                    if [ "$libsane_matched" = "yes" ] || [ "$2" = "batch" ] \
-                        && $UDEVADM info -q property "$usbdev" 2>/dev/null | grep -q 'libsane_matched=yes'; then
-                        # do not touch this device
-                        control="deny"
-                        exc="_libsane"
-                    fi
-                fi
-
-                if [ -z "$exc" ]; then
-                    # check for phone devices
-                    if [ "$USB_EXCLUDE_PHONE" = "1" ]; then
-                        if [ "$vendor" = "0fca" ]; then
-                            # RIM
-                            if [ "$dclass" = "ef" ]; then
-                                # RIM / BlackBerry
-                                control="on"
-                                exc="_phone_deny"
-                            elif [ "$dclass" = "00" ]; then
-                            for subdev in "$usbdev"/*:*; do
-                                    if [ -d "$subdev" ]; then
-                                        if [ "$(read_sysf "$subdev/interface")" = "BlackBerry" ]; then
-                                            # Blackberry
-                                            control="on"
-                                            exc="_phone_deny"
-                                            break
-                                        fi
-                                    fi
-                                done
-                            fi
-
-                        elif [ "$vendor" = "045e" ] && [ "$dclass" = "ef" ]; then
-                            # Windows Phone
-                            control="on"
-                            exc="_phone_deny"
-
-                        elif [ "$vendor" = "05ac" ] && [ "$(read_sysf "$usbdev/product")" = "iPhone" ]; then
-                            # iPhone
-                            control="on"
-                            exc="_phone_deny"
-
-                        elif [ "$dclass" = "00" ]; then
-                            # class defined at interface level, iterate subdevices
-                            for subdev in "$usbdev"/*:*; do
-                                if [ -d "$subdev" ]; then
-                                    if [ "$(read_sysf "$subdev/interface")" = "MTP" ]; then
-                                        # MTP: mostly Android
-                                        control="on"
-                                        exc="_phone_deny"
-                                        break
-                                    elif [ "$(read_sysf "$subdev/bInterfaceClass")" = "ff" ] \
-                                        && [ "$(read_sysf "$subdev/bInterfaceSubClass")" = "42" ] \
-                                        && [ "$(read_sysf "$subdev/bInterfaceProtocol")" = "01" ]; then
-                                        # ADB: Android
-                                        control="on"
-                                        exc="_phone_deny"
-                                        break
-                                    elif [ "$(read_sysf "$subdev/bInterfaceClass")" = "06" ] \
-                                        && [ "$(read_sysf "$subdev/bInterfaceSubClass")" = "01" ] \
-                                        && [ "$(read_sysf "$subdev/bInterfaceProtocol")" = "01" ]; then
-                                        # PTP: iPhone, Lumia et al.
-                                        # caveat: may also be a camera
-                                        control="on"
-                                        exc="_phone_deny"
-                                        break
-                                    fi
-                                fi
-                            done
-
-                        fi # dclass 00
-                    fi # exclude phone
-                fi # phone
-
-                if [ -z "$exc" ]; then
-                    # check for printers
-                    if [ "$USB_EXCLUDE_PRINTER" = "1" ]; then
-                        if [ "$dclass" = "00" ]; then
-                            # check for printer subdevices
-                            for subdev in "$usbdev"/*:*; do
-                                if [ "$(read_sysf "$subdev/bInterfaceClass")" = "07" ]; then
-                                    control="on"
-                                    exc="_printer_deny"
-                                    break
-                                fi
-                            done
-                        fi
-                    fi
-                fi # printer
-            fi # udev only
-
-            if [ -z "$exc" ]; then
-                # check for wwan devices
-                if [ "$USB_EXCLUDE_WWAN" = "1" ]; then
-                    # check if device has both CDC Control and CDC Data interfaces
-                    local iclass
-                    local cdc_ctrl=0
-                    local cdc_data=0
-                    for subdev in "$usbdev"/*:*; do
-                        iclass="$(read_sysf "$subdev/bInterfaceClass")"
-                        [ "$iclass" = "02" ] && cdc_ctrl=1
-                        [ "$iclass" = "0a" ] && cdc_data=1
-                        if [ "$cdc_ctrl" = "1" ] && [ "$cdc_data" = "1" ]; then
-                            control="on"
-                            exc="_wwan_deny"
-                            break
-                        fi
-                    done
-
-                    if [ -z "$exc" ]; then
-                        # fallback: check for a matching driver
-                        local driver
-                        for subdev in "$usbdev"/*:*; do
-                            driver="$(readlink "$subdev/driver")"
-                            driver="${driver##*/}"
-                            if wordinlist "$driver" "cdc_acm cdc_ether cdc_mbim cdc_ncm cdc_wdm option"; then
-                                control="on"
-                                exc="_wwan_deny"
-                                break
-                            fi
-                        done
-                    fi
-                fi # exclude wwan
-            fi # wwan
-
-            if [ -z "$exc" ]; then
-                # check for serial subdevices
-                local ttydev
-                for ttydev in "$usbdev"/*:*/tty*; do
-                    if [ -d "$ttydev" ]; then
+                    elif [ "$USB_EXCLUDE_PRINTER" = "1" ] \
+                        && [ "$dclass" = "00" ] && [ "$(read_sysf "$subdev/bInterfaceClass")" = "07" ]; then
                         control="on"
-                        exc="_serial_deny"
+                        exc="_printer_deny"
                         break
                     fi
-                done
-            fi
-        fi # !device denylist
+                done # subdevices
+            fi # subdevices
 
-        if [ "$(read_sysf "$usbdev/power/control")" != "$control" ]; then
-            # set control, write actual changes only
-            case $control in
-                auto|on)
-                    write_sysf "$control" "$usbdev/power/control"; rc1=$?
-                    chg=1
-                    ;;
+            if [ -z "$exc" ] && [ "$USB_EXCLUDE_PHONE" = "1" ]; then
+                # look for phone devices
+                if [ "$vendor" = "0fca" ]; then
+                    # RIM
+                    if [ "$dclass" = "ef" ]; then
+                        # RIM / BlackBerry detected
+                        control="on"
+                        exc="_phone_deny"
 
-                deny) # do not touch denylisted device
-                    ;;
-            esac
+                    elif [ "$dclass" = "00" ]; then
+                        for subdev in "$usbdev"/*:*; do
+                            if [ "$(read_sysf "$subdev/interface")" = "BlackBerry" ]; then
+                                # Blackberry detected
+                                control="on"
+                                exc="_phone_deny"
+                                break
+                            fi
+                        done
+                    fi
+
+                elif [ "$vendor" = "045e" ] && [ "$dclass" = "ef" ]; then
+                    # Windows Phone detected
+                    control="on"
+                    exc="_phone_deny"
+
+                elif [ "$vendor" = "05ac" ] && [ "$(read_sysf "$usbdev/product")" = "iPhone" ]; then
+                    # iPhone detected
+                    control="on"
+                    exc="_phone_deny"
+
+                elif [ "$dclass" = "00" ]; then
+                    # class defined at interface level --> iterate subdevices
+                    for subdev in "$usbdev"/*:*; do
+                        if [ -d "$subdev" ]; then
+                            if [ "$(read_sysf "$subdev/interface")" = "MTP" ]; then
+                                # MTP: mostly Android
+                                control="on"
+                                exc="_phone_deny"
+                                break
+
+                            elif [ "$(read_sysf "$subdev/bInterfaceClass")" = "ff" ] \
+                                && [ "$(read_sysf "$subdev/bInterfaceSubClass")" = "42" ] \
+                                && [ "$(read_sysf "$subdev/bInterfaceProtocol")" = "01" ]; then
+                                # ADB: Android
+                                control="on"
+                                exc="_phone_deny"
+                                break
+
+                            elif [ "$(read_sysf "$subdev/bInterfaceClass")" = "06" ] \
+                                && [ "$(read_sysf "$subdev/bInterfaceSubClass")" = "01" ] \
+                                && [ "$(read_sysf "$subdev/bInterfaceProtocol")" = "01" ]; then
+                                # PTP: iPhone, Lumia et al.
+                                # caveat: may also be a camera
+                                control="on"
+                                exc="_phone_deny"
+                                break
+                            fi
+                        fi
+                    done # subdevices
+                fi # dclass 00
+            fi # phone
+
+        fi # !serial
+
+        # --- check wwan/usb-serial device types, first match wins
+        if [ -z "$exc" ] && [ "$USB_EXCLUDE_WWAN" = "1" ]; then
+            # look for wwan devices: check if device has both CDC Control and CDC Data interfaces
+            local iclass
+            local cdc_ctrl=0
+            local cdc_data=0
+            for subdev in "$usbdev"/*:*; do
+                iclass="$(read_sysf "$subdev/bInterfaceClass")"
+                [ "$iclass" = "02" ] && cdc_ctrl=1
+                [ "$iclass" = "0a" ] && cdc_data=1
+                if [ "$cdc_ctrl" = "1" ] && [ "$cdc_data" = "1" ]; then
+                    control="on"
+                    exc="_wwan_deny"
+                    break
+                fi
+            done # subdevices
+
+            if [ -z "$exc" ]; then
+                # fallback: check for a matching driver
+                local driver
+                for subdev in "$usbdev"/*:*; do
+                    driver="$(readlink "$subdev/driver")"
+                    driver="${driver##*/}"
+                    if wordinlist "$driver" "cdc_acm cdc_ether cdc_mbim cdc_ncm cdc_wdm option"; then
+                        control="on"
+                        exc="_wwan_deny"
+                        break
+                    fi
+                done # subdevices
+            fi # fallback
+        fi # wwan
+
+        if [ -z "$exc" ]; then
+            # look for serial child devices
+            local ttydev
+            for ttydev in "$usbdev"/*:*/tty*; do
+                if [ -d "$ttydev" ]; then
+                    control="on"
+                    exc="_serial_deny"
+                    break
+                fi
+            done
         fi
+    fi # else !allowlist, !denylist
 
-        if [ "$X_TLP_USB_SET_AUTOSUSPEND_DELAY" = "1" ]; then
-            # set autosuspend delay
-            write_sysf $USB_TIMEOUT_MS "$usbdev/power/autosuspend_delay_ms"; rc2=$?
-            echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid ${usbdev4log}${drvlist}; control: rc=$rc1; delay: rc=$rc2" \
-                "$(rc2log "$rc1")"
-        elif [ $chg -eq 1 ]; then
-            # default: control was changed but not autosuspend_delay, i.e. kernel default kept
-            echo_debug "usb" "usb_suspend_device.$caller.$control$exc: $busdev ID $usbid ${usbdev4log}${drvlist}; control: rc=$rc1" \
-                "$(rc2log "$rc1")"
-        else
-            # nothing changed actually
-            echo_debug "usb" "usb_suspend_device.$caller.$control$exc.no_change: $busdev ID $usbid ${usbdev4log}${drvlist}"
-        fi
+    if [ "$(read_sysf "$usbdev/power/control")" != "$control" ]; then
+        # set control, write actual changes only
+        case $control in
+            auto|on)
+                write_sysf "$control" "$usbdev/power/control"; rc1=$?
+                chg=1
+                ;;
 
-    fi # autosuspendable
+            deny) # do not touch denylisted device
+                ;;
+        esac
+    fi
+
+    local logtag="usb_suspend_device.$caller.$control$exc"
+    if [ "$X_USB_AUTOSUSPEND_DELAY" = "1" ] && [ "$control" != "deny" ]; then
+        # set autosuspend delay
+        write_sysf "$USB_TIMEOUT_MS" "$usbdev/power/autosuspend_delay_ms"; rc2=$?
+        echo_debug "usb" "${logtag}: $busdev ID $usbid ${usbdev4log}${drvlist}; control: rc=$rc1; delay: rc=$rc2" \
+            "$(rc2log "$rc1")"
+    elif [ $chg -eq 1 ]; then
+        # default: control was changed but not autosuspend_delay, i.e. kernel default kept
+        echo_debug "usb" "${logtag}: $busdev ID $usbid ${usbdev4log}${drvlist}; control: rc=$rc1" \
+            "$(rc2log "$rc1")"
+    else
+        # nothing changed actually
+        echo_debug "usb" "${logtag}.no_change: $busdev ID $usbid ${usbdev4log}${drvlist}"
+    fi
 
     return 0
 }
