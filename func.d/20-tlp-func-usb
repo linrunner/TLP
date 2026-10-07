@@ -87,7 +87,7 @@ usb_suspend_device () {
                 exc="_btusb_deny"
             fi
 
-            # look for libsane scanners
+            # discover libsane scanners
             # notes:
             # - do it *before* detecting other subdevices, because there are multifunction devices.
             #   the “deny” rule for the scanner must take precedence over a printer subdevice.
@@ -128,7 +128,7 @@ usb_suspend_device () {
             fi # subdevices
 
             if [ -z "$exc" ] && [ "$USB_EXCLUDE_PHONE" = "1" ]; then
-                # look for phone devices
+                # discover phone devices
                 if [ "$vendor" = "05ac" ] && [ "$(read_sysf "$usbdev/product")" = "iPhone" ]; then
                     # iPhone detected
                     control="on"
@@ -170,7 +170,7 @@ usb_suspend_device () {
 
         # --- check wwan/usb-serial device types, first match wins
         if [ -z "$exc" ] && [ "$USB_EXCLUDE_WWAN" = "1" ]; then
-            # look for wwan devices: check if device has both CDC Control and CDC Data interfaces
+            # discover wwan devices: check if device has both CDC Control and CDC Data interfaces
             local iclass
             local cdc_ctrl=0
             local cdc_data=0
@@ -201,7 +201,7 @@ usb_suspend_device () {
         fi # wwan
 
         if [ -z "$exc" ]; then
-            # look for serial child devices
+            # discover serial child devices
             local ttydev
             for ttydev in "$usbdev"/*:*/tty*; do
                 if [ -d "$ttydev" ]; then
