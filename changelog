@@ -83,7 +83,8 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
   USB:
     - Exclude serial port devices from autosuspend by default. To enforce
       autosuspend for such a device, add it to USB_ALLOWLIST.
-    - Revise and streamline device discovery and type classification
+    - Revise and streamline device discovery and type classification;
+      avoid misclassification corner cases
     - USB_EXCLUDE_PHONE: drop the detection of BlackBerry and Windows Phone.
       To disable autosuspend for such a device, add it to USB_DENYLIST.
 
