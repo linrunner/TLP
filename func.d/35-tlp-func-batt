@@ -14,6 +14,14 @@ readonly BCT_OFF=Standard
 
 # shellcheck disable=SC2034
 readonly ACPIBATDIR=/sys/class/power_supply
+# shellcheck disable=SC2034
+readonly MSGSTR_KERNEL_INCOMPAT="kernel is too old or incompatible"
+# shellcheck disable=SC2034
+readonly MSGSTR_MODEL_INCOMPAT="laptop model is incompatible"
+# shellcheck disable=SC2034
+readonly MSGSTR_THINKPAD_INCOMPAT="ThinkPad model is incompatible"
+# shellcheck disable=SC2034
+readonly MSGSTR_BC_DISABLED="disabled by configuration"
 
 # ----------------------------------------------------------------------------
 # Operational functions
@@ -76,10 +84,9 @@ setcharge_battery () {
 
     # select battery feature driver
     select_batdrv
-    # shellcheck disable=SC2154
     if [ "$_bm_thresh" = "none" ]; then
         # thresholds not available --> quit
-        cecho "Error: there is no hardware driver support for charge thresholds." 1>&2
+        cecho "Error: charge thresholds are not available; run 'tlp-stat -b' to find out why." 1>&2
         echo_debug "bat" "setcharge_battery.no_method"
         return 255
     fi
@@ -147,7 +154,7 @@ chargeonce_battery () {
     select_batdrv
     if [ "$_bm_thresh" = "none" ]; then
         # thresholds not available --> quit
-        cecho "Error: there is no hardware driver support for charge thresholds." 1>&2
+        charge_thresholds_na_error
         echo_debug "bat" "chargeonce_battery.no_method"
         return 255
     fi
@@ -174,7 +181,7 @@ chargeonce_battery () {
     # apply temporary start threshold
     batdrv_chargeonce; rc=$?
     if [ $rc -eq 255 ]; then
-        cecho "Error: chargeonce not available for your hardware." 1>&2
+        cecho "Error: the system does not have the 'chargeonce' functionality." 1>&2
         echo_debug "bat" "chargeonce_battery.not_supported"
         return 255
     fi
@@ -205,7 +212,7 @@ discharge_battery () {
     # shellcheck disable=SC2154
     if [ "$_bm_dischg" = "none" ]; then
         # no method available --> quit
-        cecho "Error: battery $mode is not supported." 1>&2
+        cecho "Error: the system does not have the '$mode' functionality." 1>&2
         echo_debug "bat" "discharge_battery.no_method"
         return 255
     fi
