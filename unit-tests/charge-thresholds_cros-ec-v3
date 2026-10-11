@@ -87,6 +87,7 @@ Setting temporary charge threshold(s) for battery BATA:
   stop  =  96
 $ sudo tlp setcharge 95 96 -- ${xinc} X_SIMULATE_THRESH_READERR="1" 2>&1 | sed -r "s/${bata}/BATA/"
 Error: could not read current charge threshold(s) for BATA. Aborted.
+$ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
 $ sudo tlp setcharge 95 96 -- ${xinc} 2>&1 | sed -r "s/${bata}/BATA/"
 Setting temporary charge threshold(s) for battery BATA:
   start =  95 (no change)
