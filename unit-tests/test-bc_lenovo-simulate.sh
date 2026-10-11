@@ -10,11 +10,11 @@ spath="${0%/*}"
 cache_root_cred
 start_report
 
-export xinc="X_BAT_PLUGIN_SIMULATE=lenovo"
-export bctoff="X_THRESH_SIMULATE_BCT=""[Standard] Long_Life"""
-export bctoff2="X_THRESH_SIMULATE_BCT=""[Fast] Standard Long_Life"""
-export bcton="X_THRESH_SIMULATE_BCT=""Standard [Long_Life]"""
-export bcton2="X_THRESH_SIMULATE_BCT=""Fast Standard [Long_Life]"""
+export xinc="X_SIMULATE_BC_PLUGIN=lenovo"
+export bctoff="X_SIMULATE_THRESH_CHTYPES=""[Standard] Long_Life"""
+export bctoff2="X_SIMULATE_THRESH_CHTYPES=""[Fast] Standard Long_Life"""
+export bcton="X_SIMULATE_THRESH_CHTYPES=""Standard [Long_Life]"""
+export bcton2="X_SIMULATE_THRESH_CHTYPES=""Fast Standard [Long_Life]"""
 echo "        # xinc=${xinc} bcton=${bcton} bctoff=${bctoff} bcton2=${bcton2} bctoff2=${bctoff2}" 1>&2
 run_clitest "$spath/charge-thresholds_lenovo" "" "$1"
 

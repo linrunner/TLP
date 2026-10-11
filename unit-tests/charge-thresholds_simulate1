@@ -12,309 +12,309 @@ $ sudo tlp start -- START_CHARGE_THRESH_BAT0="35" STOP_CHARGE_THRESH_BAT0="100" 
 TLP started
 $ #
 $ # --- tlp start
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (1..100). Battery skipped.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101" START_CHARGE_THRESH_BAT= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (1..100). Battery skipped.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="86" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="86" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if STOP_CHARGE_THRESH_BAT0="86" works as expected.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=asus NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=asus NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100"
 Setting temporary charge threshold for BAT0:
   stop  = 100
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="101"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="XYZZY"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="XYZZY"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="97" STOP_CHARGE_THRESH_BAT0="100"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="97" STOP_CHARGE_THRESH_BAT0="100"
 Setting temporary charge threshold for BAT0:
   stop  = 100
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="86" X_SOC_CHECK=0
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="86" X_SOC_CHECK=0
 Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if STOP_CHARGE_THRESH_BAT0="86" works as expected.
 Setting temporary charge threshold for BAT0:
   stop  =  86
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="80" X_SOC_CHECK=0
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="80" X_SOC_CHECK=0
 Setting temporary charge threshold for BAT0:
   stop  =  80
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="80" X_SOC_CHECK=0
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="80" X_SOC_CHECK=0
 Setting temporary charge threshold for BAT0:
   stop  =  80
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Setting temporary charge threshold for BAT0:
   stop  = 100
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=asus NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: there is no hardware driver support for charge thresholds.
 $ #
 $ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 60 100 -- X_BAT_PLUGIN_SIMULATE=asus
+$ sudo tlp setcharge 60 100 -- X_SIMULATE_BC_PLUGIN=asus
 Setting temporary charge threshold for BAT0:
   stop  = 100
-$ sudo tlp setcharge 0 0 -- X_BAT_PLUGIN_SIMULATE=asus
+$ sudo tlp setcharge 0 0 -- X_SIMULATE_BC_PLUGIN=asus
 Error: stop charge threshold (0) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge 0 101 -- X_BAT_PLUGIN_SIMULATE=asus
+$ sudo tlp setcharge 0 101 -- X_SIMULATE_BC_PLUGIN=asus
 Error: stop charge threshold (101) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge ABCDE 0 -- X_BAT_PLUGIN_SIMULATE=asus
+$ sudo tlp setcharge ABCDE 0 -- X_SIMULATE_BC_PLUGIN=asus
 Error: stop charge threshold (0) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge 0 XYZZY -- X_BAT_PLUGIN_SIMULATE=asus
+$ sudo tlp setcharge 0 XYZZY -- X_SIMULATE_BC_PLUGIN=asus
 Error: stop charge threshold (XYZZY) for BAT0 is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge 97 100 -- X_BAT_PLUGIN_SIMULATE=asus
+$ sudo tlp setcharge 97 100 -- X_SIMULATE_BC_PLUGIN=asus
 Setting temporary charge threshold for BAT0:
   stop  = 100
-$ sudo tlp setcharge 95 66 -- X_BAT_PLUGIN_SIMULATE=asus X_SOC_CHECK=0
+$ sudo tlp setcharge 95 66 -- X_SIMULATE_BC_PLUGIN=asus X_SOC_CHECK=0
 Notice: some ASUS laptops silently ignore charge thresholds other than 40, 60 or 80. Please check if 66 works as expected.
 Setting temporary charge threshold for BAT0:
   stop  =  66
-$ sudo tlp setcharge 95 60 -- X_BAT_PLUGIN_SIMULATE=asus X_SOC_CHECK=0
+$ sudo tlp setcharge 95 60 -- X_SIMULATE_BC_PLUGIN=asus X_SOC_CHECK=0
 Setting temporary charge threshold for BAT0:
   stop  =  60
-$ sudo tlp setcharge 95 60 -- X_BAT_PLUGIN_SIMULATE=asus X_THRESH_SIMULATE_START="35" X_THRESH_SIMULATE_STOP="100" X_SOC_CHECK=0
+$ sudo tlp setcharge 95 60 -- X_SIMULATE_BC_PLUGIN=asus X_SIMULATE_THRESH_START="35" X_SIMULATE_THRESH_STOP="100" X_SOC_CHECK=0
 Setting temporary charge threshold for BAT0:
   stop  =  60
-$ sudo tlp setcharge 95 60 -- X_BAT_PLUGIN_SIMULATE=asus X_SOC_CHECK=0
+$ sudo tlp setcharge 95 60 -- X_SIMULATE_BC_PLUGIN=asus X_SOC_CHECK=0
 Setting temporary charge threshold for BAT0:
   stop  =  60
-$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=asus
+$ sudo tlp setcharge DEF DEF -- X_SIMULATE_BC_PLUGIN=asus
 Setting temporary charge threshold for BAT0:
   stop  = 100
-$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=asus
+$ sudo tlp setcharge BAT2 -- X_SIMULATE_BC_PLUGIN=asus
 Error: battery BAT2 not present.
-$ sudo tlp setcharge 0 3 BAT2 -- X_BAT_PLUGIN_SIMULATE=asus
+$ sudo tlp setcharge 0 3 BAT2 -- X_SIMULATE_BC_PLUGIN=asus
 Error: battery BAT2 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT2 -- X_BAT_PLUGIN_SIMULATE=asus
+$ sudo tlp setcharge XYZZY ABCDE BAT2 -- X_SIMULATE_BC_PLUGIN=asus
 Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=asus | grep "BAT0/charge_control_end_threshold"
+$ sudo tlp-stat -b -- X_SIMULATE_BC_PLUGIN=asus | grep "BAT0/charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=asus X_THRESH_SIMULATE_READERR=1 | grep "BAT0/charge_control_end_threshold"
+$ sudo tlp-stat -b -- X_SIMULATE_BC_PLUGIN=asus X_SIMULATE_THRESH_READERR=1 | grep "BAT0/charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (no data) [%]
 $ #
 $ # +++ Huawei ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_THRESH_SIMULATE_START="59" X_THRESH_SIMULATE_STOP="99" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SIMULATE_THRESH_START="59" X_SIMULATE_THRESH_STOP="99" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error: writing charge thresholds failed.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error: writing charge thresholds failed.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="100" X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="100" X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error: writing charge thresholds failed.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100"  X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="100" STOP_CHARGE_THRESH_BAT0="100"  X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at START_CHARGE_THRESH_BAT0="100": not specified, invalid or out of range (0..99). Skipped.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (1..100). Skipped.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="1" STOP_CHARGE_THRESH_BAT0="101" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="1" STOP_CHARGE_THRESH_BAT0="101" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (1..100). Skipped.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="99" STOP_CHARGE_THRESH_BAT0="98" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="99" STOP_CHARGE_THRESH_BAT0="98" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration: START_CHARGE_THRESH_BAT0 > STOP_CHARGE_THRESH_BAT0. Skipped.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="95" X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="95" X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error: writing charge thresholds failed.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_START="0" X_THRESH_SIMULATE_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_SIMULATE_THRESH_START="0" X_SIMULATE_THRESH_STOP="100" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error: writing charge thresholds failed.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=huawei NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=huawei NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100"
 Setting temporary charge thresholds:
   start = 60, stop = 100 (Error: write failed)
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="99" STOP_CHARGE_THRESH_BAT0="100" X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="99" STOP_CHARGE_THRESH_BAT0="100" X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100"
 Setting temporary charge thresholds:
   start = 99, stop = 100 (Error: write failed)
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="0" STOP_CHARGE_THRESH_BAT0="0"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="0": not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="102" STOP_CHARGE_THRESH_BAT0="101"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="102" STOP_CHARGE_THRESH_BAT0="101"
 Error in configuration at START_CHARGE_THRESH_BAT0="102": not specified, invalid or out of range (0..99). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="1" STOP_CHARGE_THRESH_BAT0="101"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="1" STOP_CHARGE_THRESH_BAT0="101"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="101": not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="0"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="0"
 Error in configuration at START_CHARGE_THRESH_BAT0="ABCDE": not specified, invalid or out of range (0..99). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="1" STOP_CHARGE_THRESH_BAT0="XYZZY"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="1" STOP_CHARGE_THRESH_BAT0="XYZZY"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="99" STOP_CHARGE_THRESH_BAT0="98"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="99" STOP_CHARGE_THRESH_BAT0="98"
 Error in configuration: START_CHARGE_THRESH_BAT0 > STOP_CHARGE_THRESH_BAT0. Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="95" X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="95" X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100"
 Setting temporary charge thresholds:
   start = 95, stop = 95 (Error: write failed)
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="95" X_THRESH_SIMULATE_START="95" X_THRESH_SIMULATE_STOP="95"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="95" STOP_CHARGE_THRESH_BAT0="95" X_SIMULATE_THRESH_START="95" X_SIMULATE_THRESH_STOP="95"
 Setting temporary charge thresholds:
   start = 95, stop = 95 (Error: write failed)
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_START="0" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_SIMULATE_THRESH_START="0" X_SIMULATE_THRESH_STOP="100"
 Setting temporary charge thresholds:
   start = 0, stop = 100 (Error: write failed)
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=huawei NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: there is no hardware driver support for charge thresholds.
 $ #
 $ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 60 100 -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge 60 100 -- X_SIMULATE_BC_PLUGIN=huawei X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100"
 Setting temporary charge thresholds:
   start = 60, stop = 100 (Error: write failed)
-$ sudo tlp setcharge 99 100 -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge 99 100 -- X_SIMULATE_BC_PLUGIN=huawei X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100"
 Setting temporary charge thresholds:
   start = 99, stop = 100 (Error: write failed)
-$ sudo tlp setcharge 0 0 -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge 0 0 -- X_SIMULATE_BC_PLUGIN=huawei X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100"
 Error: stop charge threshold (0) is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge 102 101 -- X_BAT_PLUGIN_SIMULATE=huawei
+$ sudo tlp setcharge 102 101 -- X_SIMULATE_BC_PLUGIN=huawei
 Error: start charge threshold (102) is not specified, invalid or out of range (0..99). Aborted.
-$ sudo tlp setcharge 1 101 -- X_BAT_PLUGIN_SIMULATE=huawei
+$ sudo tlp setcharge 1 101 -- X_SIMULATE_BC_PLUGIN=huawei
 Error: stop charge threshold (101) is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge ABCDE 0 -- X_BAT_PLUGIN_SIMULATE=huawei
+$ sudo tlp setcharge ABCDE 0 -- X_SIMULATE_BC_PLUGIN=huawei
 Error: start charge threshold (ABCDE) is not specified, invalid or out of range (0..99). Aborted.
-$ sudo tlp setcharge 1 XYZZY -- X_BAT_PLUGIN_SIMULATE=huawei
+$ sudo tlp setcharge 1 XYZZY -- X_SIMULATE_BC_PLUGIN=huawei
 Error: stop charge threshold (XYZZY) is not specified, invalid or out of range (1..100). Aborted.
-$ sudo tlp setcharge 99 98 -- X_BAT_PLUGIN_SIMULATE=huawei
+$ sudo tlp setcharge 99 98 -- X_SIMULATE_BC_PLUGIN=huawei
 Error: start threshold > stop threshold. Aborted.
-$ sudo tlp setcharge 95 95 -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge 95 95 -- X_SIMULATE_BC_PLUGIN=huawei X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100"
 Setting temporary charge thresholds:
   start = 95, stop = 95 (Error: write failed)
-$ sudo tlp setcharge 95 95 -- X_BAT_PLUGIN_SIMULATE=huawei
+$ sudo tlp setcharge 95 95 -- X_SIMULATE_BC_PLUGIN=huawei
 Setting temporary charge thresholds:
   start = 95, stop = 95 (Error: write failed)
-$ sudo tlp setcharge 95 95 -- -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="95" X_THRESH_SIMULATE_STOP="95"
+$ sudo tlp setcharge 95 95 -- -- X_SIMULATE_BC_PLUGIN=huawei X_SIMULATE_THRESH_START="95" X_SIMULATE_THRESH_STOP="95"
 Setting temporary charge thresholds:
   start = 95, stop = 95 (Error: write failed)
-$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=huawei
+$ sudo tlp setcharge BAT2 -- X_SIMULATE_BC_PLUGIN=huawei
 Error: battery BAT2 not present.
-$ sudo tlp setcharge 0 3 BAT2 -- X_BAT_PLUGIN_SIMULATE=huawei
+$ sudo tlp setcharge 0 3 BAT2 -- X_SIMULATE_BC_PLUGIN=huawei
 Error: battery BAT2 not present.
-$ sudo tlp setcharge XYZZY ABCDE BAT2 -- X_BAT_PLUGIN_SIMULATE=huawei
+$ sudo tlp setcharge XYZZY ABCDE BAT2 -- X_SIMULATE_BC_PLUGIN=huawei
 Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="0" X_THRESH_SIMULATE_STOP="0" | grep "charge_control_thresholds"
+$ sudo tlp-stat -b -- X_SIMULATE_BC_PLUGIN=huawei X_SIMULATE_THRESH_START="0" X_SIMULATE_THRESH_STOP="0" | grep "charge_control_thresholds"
 /sys/devices/platform/huawei-wmi/charge_control_thresholds  = 0 0 [%] (disabled)
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="0" X_THRESH_SIMULATE_STOP="100" | grep "charge_control_thresholds"
+$ sudo tlp-stat -b -- X_SIMULATE_BC_PLUGIN=huawei X_SIMULATE_THRESH_START="0" X_SIMULATE_THRESH_STOP="100" | grep "charge_control_thresholds"
 /sys/devices/platform/huawei-wmi/charge_control_thresholds  = 0 100 [%] (disabled)
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=huawei X_THRESH_SIMULATE_START="75" X_THRESH_SIMULATE_STOP="80" | grep "charge_control_thresholds"
+$ sudo tlp-stat -b -- X_SIMULATE_BC_PLUGIN=huawei X_SIMULATE_THRESH_START="75" X_SIMULATE_THRESH_STOP="80" | grep "charge_control_thresholds"
 /sys/devices/platform/huawei-wmi/charge_control_thresholds  = 75 80 [%]
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=huawei | grep "charge_control_thresholds"
+$ sudo tlp-stat -b -- X_SIMULATE_BC_PLUGIN=huawei | grep "charge_control_thresholds"
 /sys/devices/platform/huawei-wmi/charge_control_thresholds  = (not available)
 $ #
 $ # +++ Lenovo ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ #
 $ # --- tlp start
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=lenovo-legacy START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=lenovo-legacy START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": conservation mode not specified or invalid (must be 0 or 1). Skipped.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=lenovo-legacy START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_SIMULATE_THRESH_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error: writing conservation mode failed.
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=lenovo-legacy START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_SIMULATE_THRESH_STOP="0" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=lenovo-legacy NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=lenovo-legacy START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": conservation mode not specified or invalid (must be 0 or 1). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="XYZZY"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=lenovo-legacy START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="XYZZY"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": conservation mode not specified or invalid (must be 0 or 1). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_THRESH_SIMULATE_STOP="0"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=lenovo-legacy START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1" X_SIMULATE_THRESH_STOP="0"
 Setting temporary charge threshold for all batteries:
   conservation mode = 1 (Error: write failed)
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=lenovo-legacy NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Error: there is no hardware driver support for charge thresholds.
 $ #
 $ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy
+$ sudo tlp setcharge 42 24 -- X_SIMULATE_BC_PLUGIN=lenovo-legacy
 Error: conservation mode (24) not specified or invalid (must be 0 or 1). Aborted.
-$ sudo tlp setcharge ABCDE XYZZY -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy
+$ sudo tlp setcharge ABCDE XYZZY -- X_SIMULATE_BC_PLUGIN=lenovo-legacy
 Error: conservation mode (XYZZY) not specified or invalid (must be 0 or 1). Aborted.
-$ sudo tlp setcharge 42 1 -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy  X_THRESH_SIMULATE_STOP="0"
+$ sudo tlp setcharge 42 1 -- X_SIMULATE_BC_PLUGIN=lenovo-legacy  X_SIMULATE_THRESH_STOP="0"
 Setting temporary charge threshold for all batteries:
   conservation mode = 1 (Error: write failed)
-$ sudo tlp setcharge 42 1 -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy  X_THRESH_SIMULATE_STOP="1"
+$ sudo tlp setcharge 42 1 -- X_SIMULATE_BC_PLUGIN=lenovo-legacy  X_SIMULATE_THRESH_STOP="1"
 Setting temporary charge threshold for all batteries:
   conservation mode = 1 (no change)
-$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy  X_THRESH_SIMULATE_STOP="0"
+$ sudo tlp setcharge DEF DEF -- X_SIMULATE_BC_PLUGIN=lenovo-legacy  X_SIMULATE_THRESH_STOP="0"
 Setting temporary charge threshold for all batteries:
   conservation mode = 0 (no change)
-$ sudo tlp setcharge 42 24 BAT2 -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy
+$ sudo tlp setcharge 42 24 BAT2 -- X_SIMULATE_BC_PLUGIN=lenovo-legacy
 Error: battery BAT2 not present.
-$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy
+$ sudo tlp setcharge BAT2 -- X_SIMULATE_BC_PLUGIN=lenovo-legacy
 Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lenovo-legacy | grep "/conservation_mode"
+$ sudo tlp-stat -b -- X_SIMULATE_BC_PLUGIN=lenovo-legacy | grep "/conservation_mode"
 /sys/bus/platform/drivers/ideapad_acpi/VPC2004:00/conservation_mode = (not available)
 $ #
 $ # +++ LG ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 $ # New kernel API >= 5.18
 $ #
 $ # --- tlp start
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=lg START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": not specified or invalid (must be 80 or 100). Skipped.
 TLP started
 $ [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" X_THRESH_SIMULATE_STOP="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="80" X_SIMULATE_THRESH_STOP="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_THRESH_SIMULATE_STOP="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=lg START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" X_SIMULATE_THRESH_STOP="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
-$ sudo tlp start -- X_BAT_PLUGIN_SIMULATE=lg NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- X_SIMULATE_BC_PLUGIN=lg NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
 $ #
 $ # --- tlp setcharge w/o arguments
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=lg START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="24"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="24": not specified or invalid (must be 80 or 100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="XYZZY"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=lg START_CHARGE_THRESH_BAT0="ABCDE" STOP_CHARGE_THRESH_BAT0="XYZZY"
 Error in configuration at STOP_CHARGE_THRESH_BAT0="XYZZY": not specified or invalid (must be 80 or 100). Aborted.
-$ sudo tlp setcharge -- X_BAT_PLUGIN_SIMULATE=lg START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+$ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=lg START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
 Setting temporary charge threshold for battery BAT0:
   stop  = 100
 $ #
 $ # --- tlp setcharge w/ arguments
-$ sudo tlp setcharge 42 24 -- X_BAT_PLUGIN_SIMULATE=lg
+$ sudo tlp setcharge 42 24 -- X_SIMULATE_BC_PLUGIN=lg
 Error: stop charge threshold (24) for battery BAT0 not specified or invalid (must be 80 or 100). Aborted.
-$ sudo tlp setcharge 42 100 -- X_BAT_PLUGIN_SIMULATE=lg  X_THRESH_SIMULATE_STOP="80" X_SOC_CHECK=0
+$ sudo tlp setcharge 42 100 -- X_SIMULATE_BC_PLUGIN=lg  X_SIMULATE_THRESH_STOP="80" X_SOC_CHECK=0
 Setting temporary charge threshold for battery BAT0:
   stop  = 100
-$ sudo tlp setcharge 42 80 -- X_BAT_PLUGIN_SIMULATE=lg  X_THRESH_SIMULATE_STOP="80" X_SOC_CHECK=0
+$ sudo tlp setcharge 42 80 -- X_SIMULATE_BC_PLUGIN=lg  X_SIMULATE_THRESH_STOP="80" X_SOC_CHECK=0
 Setting temporary charge threshold for battery BAT0:
   stop  =  80 (no change)
-$ sudo tlp setcharge DEF DEF -- X_BAT_PLUGIN_SIMULATE=lg  X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge DEF DEF -- X_SIMULATE_BC_PLUGIN=lg  X_SIMULATE_THRESH_STOP="100"
 Setting temporary charge threshold for battery BAT0:
   stop  = 100 (no change)
-$ sudo tlp setcharge ABCDE XYZZY -- X_BAT_PLUGIN_SIMULATE=lg
+$ sudo tlp setcharge ABCDE XYZZY -- X_SIMULATE_BC_PLUGIN=lg
 Error: stop charge threshold (XYZZY) for battery BAT0 not specified or invalid (must be 80 or 100). Aborted.
-$ sudo tlp setcharge DEF DEF -- X_THRESH_SIMULATE_READERR="1"
+$ sudo tlp setcharge DEF DEF -- X_SIMULATE_THRESH_READERR="1"
 Error: could not read current charge threshold(s) for battery BAT0. Aborted.
-$ sudo tlp setcharge 42 80 BAT2 -- X_BAT_PLUGIN_SIMULATE=lg X_SOC_CHECK=0
+$ sudo tlp setcharge 42 80 BAT2 -- X_SIMULATE_BC_PLUGIN=lg X_SOC_CHECK=0
 Error: battery BAT2 not present.
-$ sudo tlp setcharge BAT2 -- X_BAT_PLUGIN_SIMULATE=lg
+$ sudo tlp setcharge BAT2 -- X_SIMULATE_BC_PLUGIN=lg
 Error: battery BAT2 not present.
 $ #
 $ # --- tlp-stat
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lg | grep "BAT0/charge_control_end_threshold"
+$ sudo tlp-stat -b -- X_SIMULATE_BC_PLUGIN=lg | grep "BAT0/charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
-$ sudo tlp-stat -b -- X_BAT_PLUGIN_SIMULATE=lg X_THRESH_SIMULATE_READERR=1 | grep "BAT0/charge_control_end_threshold"
+$ sudo tlp-stat -b -- X_SIMULATE_BC_PLUGIN=lg X_SIMULATE_THRESH_READERR=1 | grep "BAT0/charge_control_end_threshold"
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
 $ #
 $ # --- Reset test machine to configured thresholds

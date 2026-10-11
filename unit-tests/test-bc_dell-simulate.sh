@@ -11,7 +11,7 @@ cache_root_cred
 set_threshold_trap
 start_report
 
-export xinc="X_BAT_PLUGIN_SIMULATE=dell"
+export xinc="X_SIMULATE_BC_PLUGIN=dell"
 echo "        # xinc=${xinc}" 1>&2
 run_clitest "$spath/charge-thresholds_dell" "" "$1"
 

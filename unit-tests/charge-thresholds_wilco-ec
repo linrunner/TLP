@@ -66,7 +66,7 @@ $ sudo tlp setcharge 60 100 -- ${xinc} X_SOC_CHECK=0
 Setting temporary charge thresholds:
   start =  60
   stop  = 100 (no change)
-$ sudo tlp setcharge 61 99 -- ${xinc} X_THRESH_SIMULATE_WRITEERR=1 X_SOC_CHECK=0
+$ sudo tlp setcharge 61 99 -- ${xinc} X_SIMULATE_THRESH_WRITEERR=1 X_SOC_CHECK=0
 Setting temporary charge thresholds:
   start =  61 (Error: write failed)
   stop  =  99 (Error: write failed)
@@ -87,10 +87,10 @@ $ sudo tlp setcharge 90 95 -- ${xinc}
 Setting temporary charge thresholds:
   start =  90
   stop  =  95
-$ sudo tlp setcharge 90 95 -- ${xinc} X_THRESH_SIMULATE_READERR="1"
+$ sudo tlp setcharge 90 95 -- ${xinc} X_SIMULATE_THRESH_READERR="1"
 Error: could not read current charge threshold(s). Aborted.
 $ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
-$ sudo tlp setcharge 90 95 -- ${xinc} X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge 90 95 -- ${xinc} X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100"
 Setting temporary charge thresholds:
   start =  90
   stop  =  95
@@ -113,7 +113,7 @@ $ # --- tlp-stat
 $ sudo tlp-stat -b -- ${xinc} | grep -E 'wilco-charger/charge_control'
 /sys/class/power_supply/wilco-charger/charge_control_start_threshold  =     95 [%]
 /sys/class/power_supply/wilco-charger/charge_control_end_threshold    =    100 [%]
-$ sudo tlp-stat -b -- ${xinc} X_THRESH_SIMULATE_READERR=1 | grep -E 'wilco-charger/charge_control'
+$ sudo tlp-stat -b -- ${xinc} X_SIMULATE_THRESH_READERR=1 | grep -E 'wilco-charger/charge_control'
 /sys/class/power_supply/wilco-charger/charge_control_start_threshold  = (not available) [%]
 /sys/class/power_supply/wilco-charger/charge_control_end_threshold    = (not available) [%]
 $ #

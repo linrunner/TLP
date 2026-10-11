@@ -83,9 +83,9 @@ $ sudo tlp setcharge 95 96
 Setting temporary charge thresholds for battery BAT0:
   start =  95
   stop  =  96
-$ sudo tlp setcharge 95 96 -- X_THRESH_SIMULATE_READERR="1"
+$ sudo tlp setcharge 95 96 -- X_SIMULATE_THRESH_READERR="1"
 Error: could not read current charge threshold(s) for battery BAT0. Aborted.
-$ sudo tlp setcharge 95 96 -- X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge 95 96 -- X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100"
 Setting temporary charge thresholds for battery BAT0:
   start =  95
   stop  =  96
@@ -110,6 +110,6 @@ $ # --- tlp-stat
 $ sudo tlp-stat -b -- | grep -E 'charge_control'
 /sys/class/power_supply/BAT0/charge_control_start_threshold =     90 [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
-$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
+$ sudo tlp-stat -b -- X_SIMULATE_THRESH_READERR=1 | grep -E 'charge_control'
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]

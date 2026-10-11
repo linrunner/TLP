@@ -13,7 +13,7 @@ $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0= STOP_CHARGE_THRESH_BAT0= S
 TLP started
 $ sudo tlp start -- ${xinc} START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
-$ sudo tlp start -- ${xinc} X_THRESH_SIMULATE_LOCKEDBIOS=1 START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- ${xinc} X_SIMULATE_THRESH_LOCKEDBIOS=1 START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" START_CHARGE_THRESH_BAT1= STOP_CHARGE_THRESH_BAT1= 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error: failed to set 'Custom' charge type for battery BAT0. Battery skipped.
 Remove the BIOS Admin password to allow the thresholds to be set.
 TLP started
@@ -43,7 +43,7 @@ $ sudo tlp setcharge -- ${xinc} START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH
 Setting temporary charge thresholds for battery BAT0:
   start =  60
   stop  = 100 (no change)
-$ sudo tlp setcharge -- ${xinc} X_THRESH_SIMULATE_LOCKEDBIOS=1 START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SOC_CHECK=0
+$ sudo tlp setcharge -- ${xinc} X_SIMULATE_THRESH_LOCKEDBIOS=1 START_CHARGE_THRESH_BAT0="60" STOP_CHARGE_THRESH_BAT0="100" X_SOC_CHECK=0
 Setting temporary charge thresholds for battery BAT0:
 Error: failed to set 'Custom' charge type for battery BAT0. Aborted.
 Remove the BIOS Admin password to allow the thresholds to be set.
@@ -75,7 +75,7 @@ $ sudo tlp setcharge 60 100 -- ${xinc} X_SOC_CHECK=0
 Setting temporary charge thresholds for battery BAT0:
   start =  60
   stop  = 100 (no change)
-$ sudo tlp setcharge 61 99 -- ${xinc} X_THRESH_SIMULATE_WRITEERR=1 X_SOC_CHECK=0
+$ sudo tlp setcharge 61 99 -- ${xinc} X_SIMULATE_THRESH_WRITEERR=1 X_SOC_CHECK=0
 Setting temporary charge thresholds for battery BAT0:
   start =  61 (Error: write failed)
   stop  =  99 (Error: write failed)
@@ -97,10 +97,10 @@ $ sudo tlp setcharge 90 95 -- ${xinc}
 Setting temporary charge thresholds for battery BAT0:
   start =  90
   stop  =  95
-$ sudo tlp setcharge 90 95 -- ${xinc} X_THRESH_SIMULATE_READERR="1"
+$ sudo tlp setcharge 90 95 -- ${xinc} X_SIMULATE_THRESH_READERR="1"
 Error: could not read current charge threshold(s) for battery BAT0. Aborted.
 $ [ -n "${xinc}" ] && [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes (in simulation)
-$ sudo tlp setcharge 90 95 -- ${xinc} X_THRESH_SIMULATE_START="60" X_THRESH_SIMULATE_STOP="100"
+$ sudo tlp setcharge 90 95 -- ${xinc} X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100"
 Setting temporary charge thresholds for battery BAT0:
   start =  90
   stop  =  95
@@ -123,7 +123,7 @@ $ # --- tlp-stat
 $ sudo tlp-stat -b -- ${xinc} | grep -E 'BAT0/charge_(control|behaviour)'
 /sys/class/power_supply/BAT0/charge_control_start_threshold =     95 [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   =    100 [%]
-$ sudo tlp-stat -b -- ${xinc} X_THRESH_SIMULATE_READERR=1 | grep -E 'BAT0/charge_(control|behaviour)'
+$ sudo tlp-stat -b -- ${xinc} X_SIMULATE_THRESH_READERR=1 | grep -E 'BAT0/charge_(control|behaviour)'
 /sys/class/power_supply/BAT0/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/BAT0/charge_control_end_threshold   = (not available) [%]
 $ #

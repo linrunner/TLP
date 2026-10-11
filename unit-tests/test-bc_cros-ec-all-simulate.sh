@@ -29,11 +29,11 @@ else
     exit 1
 fi
 
-export xinc="X_BAT_PLUGIN_SIMULATE=cros-ec X_BAT_CROSCC_SIMULATE_ECVER=2"
+export xinc="X_SIMULATE_BC_PLUGIN=cros-ec X_SIMULATE_CROS_ECVER=2"
 sudo tlp setcharge 70 100 ${bata} > /dev/null 2>&1 # preset start threshold for simulation
 "$spath/test-bc_cros-ec-v2.sh" "(cros_charge-control)"
 
-export xinc="X_BAT_PLUGIN_SIMULATE=cros-ec"
+export xinc="X_SIMULATE_BC_PLUGIN=cros-ec"
 "$spath/test-bc_cros-ec-v3.sh"
 
 print_report

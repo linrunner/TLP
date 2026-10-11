@@ -18,7 +18,7 @@ $ sudo tlp start -- ${xinc} "${bctoff}" START_CHARGE_THRESH_BAT0="DEF" STOP_CHAR
 TLP started
 $ sudo tlp start -- ${xinc} "${bcton}" NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="0" 2>&1 | sed -r "s/(TLP started).*/\1/"
 TLP started
-$ sudo tlp start -- ${xinc} "${bcton}" X_THRESH_SIMULATE_WRITEERR=1 START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
+$ sudo tlp start -- ${xinc} "${bcton}" X_SIMULATE_THRESH_WRITEERR=1 START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="DEF" 2>&1 | sed -r "s/(TLP started).*/\1/"
 Error: writing charge type failed.
 TLP started
 $ sudo tlp start -- ${xinc} "${bcton}" START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="0" 2>&1 | sed -r "s/(TLP started).*/\1/"
@@ -50,7 +50,7 @@ Setting temporary charge type for battery BAT0:
   charge type = Standard
 $ # Test machine state (real hardware): threshold disabled
 $ #
-$ sudo tlp setcharge -- ${xinc} "${bctoff}" X_THRESH_SIMULATE_WRITEERR=1 START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1"
+$ sudo tlp setcharge -- ${xinc} "${bctoff}" X_SIMULATE_THRESH_WRITEERR=1 START_CHARGE_THRESH_BAT0="42" STOP_CHARGE_THRESH_BAT0="1"
 Setting temporary charge type for battery BAT0:
   charge type = Long_Life (Error: write failed)
 $ sudo tlp setcharge -- ${xinc} "${bctoff}" NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
@@ -61,7 +61,7 @@ $ sudo tlp setcharge 42 24 -- ${xinc} "${bctoff}"
 Error: charge type (24) for battery BAT0 is not specified or invalid (must be 0 or 1). Aborted.
 $ sudo tlp setcharge ABCDE XYZZY -- ${xinc} "${bctoff}"
 Error: charge type (XYZZY) for battery BAT0 is not specified or invalid (must be 0 or 1). Aborted.
-$ sudo tlp setcharge 42 1 -- ${xinc} "${bctoff}" X_THRESH_SIMULATE_WRITEERR=1
+$ sudo tlp setcharge 42 1 -- ${xinc} "${bctoff}" X_SIMULATE_THRESH_WRITEERR=1
 Setting temporary charge type for battery BAT0:
   charge type = Long_Life (Error: write failed)
 $ sudo tlp setcharge 42 1 -- ${xinc} "${bctoff}"

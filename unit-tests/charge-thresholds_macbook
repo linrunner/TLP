@@ -61,7 +61,7 @@ $ sudo tlp setcharge 0 42
 Error: stop charge threshold (42) for battery macsmc-battery is not specified or invalid (must be 80 or 100). Aborted.
 $ sudo tlp setcharge 0 101
 Error: stop charge threshold (101) for battery macsmc-battery is not specified or invalid (must be 80 or 100). Aborted.
-$ sudo tlp setcharge DEF DEF -- X_THRESH_SIMULATE_READERR="1"
+$ sudo tlp setcharge DEF DEF -- X_SIMULATE_THRESH_READERR="1"
 Error: could not read current stop charge threshold for battery macsmc-battery. Aborted.
 $ sudo tlp setcharge BAT1
 Error: battery BAT1 not present.
@@ -79,6 +79,6 @@ $ # --- tlp-stat
 $ sudo tlp-stat -b -- | grep -E 'charge_control'
 /sys/class/power_supply/macsmc-battery/charge_control_start_threshold =    100 [%]
 /sys/class/power_supply/macsmc-battery/charge_control_end_threshold   =    100 [%]
-$ sudo tlp-stat -b -- X_THRESH_SIMULATE_READERR=1 | grep -E 'charge_control'
+$ sudo tlp-stat -b -- X_SIMULATE_THRESH_READERR=1 | grep -E 'charge_control'
 /sys/class/power_supply/macsmc-battery/charge_control_start_threshold = (not available) [%]
 /sys/class/power_supply/macsmc-battery/charge_control_end_threshold   = (not available) [%]
