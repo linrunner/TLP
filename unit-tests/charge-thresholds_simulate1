@@ -57,7 +57,7 @@ $ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus START_CHARGE_THRESH_BAT0="DEF"
 Setting temporary charge threshold for BAT0:
   stop  = 100
 $ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=asus NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-Error: there is no hardware driver support for charge thresholds.
+Error: charge thresholds are not available; run 'tlp-stat -b' to find out why.
 $ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100 -- X_SIMULATE_BC_PLUGIN=asus
@@ -167,7 +167,7 @@ $ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei START_CHARGE_THRESH_BAT0="DE
 Setting temporary charge thresholds:
   start = 0, stop = 100 (Error: write failed)
 $ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=huawei NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-Error: there is no hardware driver support for charge thresholds.
+Error: charge thresholds are not available; run 'tlp-stat -b' to find out why.
 $ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100 -- X_SIMULATE_BC_PLUGIN=huawei X_SIMULATE_THRESH_START="60" X_SIMULATE_THRESH_STOP="100"
@@ -239,7 +239,7 @@ $ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=lenovo-legacy START_CHARGE_THRESH_B
 Setting temporary charge threshold for all batteries:
   conservation mode = 1 (Error: write failed)
 $ sudo tlp setcharge -- X_SIMULATE_BC_PLUGIN=lenovo-legacy NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-Error: there is no hardware driver support for charge thresholds.
+Error: charge thresholds are not available; run 'tlp-stat -b' to find out why.
 $ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 42 24 -- X_SIMULATE_BC_PLUGIN=lenovo-legacy

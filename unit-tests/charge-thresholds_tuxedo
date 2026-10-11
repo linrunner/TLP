@@ -63,7 +63,7 @@ Setting temporary charge thresholds for battery BATA:
   stop  = 100
   start =  95
 $ sudo tlp setcharge -- ${xinc} NATACPI_ENABLE=0 START_CHARGE_THRESH_${bata}="DEF" STOP_CHARGE_THRESH_${bata}="DEF" 2>&1 | sed -r "s/${bata}/BATA/"
-Error: there is no hardware driver support for charge thresholds.
+Error: charge thresholds are not available; run 'tlp-stat -b' to find out why.
 $ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100 -- ${xinc} X_SOC_CHECK=0 2>&1 | sed -r "s/${bata}/BATA/"

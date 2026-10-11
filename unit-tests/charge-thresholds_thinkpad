@@ -61,8 +61,8 @@ $ sudo tlp setcharge -- X_SOC_CHECK=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE
 Setting temporary charge thresholds for battery BAT0:
   stop  = 100
   start =  96
-$ sudo tlp setcharge -- NATACPI_ENABLE=0 TPACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-Error: there is no hardware driver support for charge thresholds.
+$ sudo tlp setcharge -- NATACPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
+Error: charge thresholds are not available; run 'tlp-stat -b' to find out why.
 $ #
 $ # --- tlp setcharge w/ arguments
 $ [ -n "$VWRITE_SLEEP" ] && sleep "$VWRITE_SLEEP" # workaround: mitigate void writes

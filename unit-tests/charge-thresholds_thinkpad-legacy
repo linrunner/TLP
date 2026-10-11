@@ -55,7 +55,7 @@ Setting temporary charge thresholds for battery BAT0:
   start =  96
   stop  = 100
 $ sudo tlp setcharge -- TPSMAPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-Error: there is no hardware driver support for charge thresholds.
+Error: charge thresholds are not available (kernel driver for this laptop model is missing).
 $ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100 -- X_SOC_CHECK=0
@@ -132,7 +132,7 @@ Plugin: thinkpad-legacy
 Supported features: charge thresholds, chargeonce, discharge, recalibrate
 Driver usage:
 * tp-smapi (tp_smapi) = active (status, charge thresholds, force-discharge)
-$ sudo tlp-stat -b -- NATACPI_ENABLE=0 TPACPI_ENABLE=0 | head -7 | tail -4
+$ sudo tlp-stat -b -- NATACPI_ENABLE=0 | head -7 | tail -4
 Plugin: thinkpad-legacy
 Supported features: charge thresholds, chargeonce, discharge, recalibrate
 Driver usage:
