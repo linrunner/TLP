@@ -67,15 +67,15 @@ batdrv_init () {
     _batdrv_sim=0
 
     # check plugin simulation override and denylist
-    if [ -n "$X_BAT_PLUGIN_SIMULATE" ]; then
-        if [ "$X_BAT_PLUGIN_SIMULATE" = "$_batdrv_plugin" ]; then
+    if [ -n "$X_SIMULATE_BC_PLUGIN" ]; then
+        if [ "$X_SIMULATE_BC_PLUGIN" = "$_batdrv_plugin" ]; then
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.simulate"
             _batdrv_sim=1
         else
             echo_debug "bat" "batdrv_init.${_batdrv_plugin}.simulate_skip"
             return 1
         fi
-    elif wordinlist "$_batdrv_plugin" "$X_BAT_PLUGIN_DENYLIST"; then
+    elif wordinlist "$_batdrv_plugin" "$X_BC_PLUGIN_DENYLIST"; then
         echo_debug "bat" "batdrv_init.${_batdrv_plugin}.denylist"
         return 1
     else
@@ -120,8 +120,8 @@ batdrv_init () {
             if readable_sysf "$bd/charge_control_start_threshold" \
                 && readable_sysf "$bd/charge_control_end_threshold" \
                 && readable_sysf "$bd/charge_behaviour" \
-                && [ "$X_BAT_CROSCC_SIMULATE_ECVER" != "2" ] \
-                && [ "$X_BAT_CROSCC_SIMULATE_ECVER" != "1" ]; then
+                && [ "$X_SIMULATE_CROS_ECVER" != "2" ] \
+                && [ "$X_SIMULATE_CROS_ECVER" != "1" ]; then
                 # all sysfiles exist and are actually readable
                 if kernel_version_ge "$BATDRV_CROSCC_MIN_KVER"; then
                     # patched kernel -> EC cmd v3 w/ start and stop threshold
@@ -138,11 +138,11 @@ batdrv_init () {
                     # -> insufficient kernel support
                     _natacpi=128
                 fi
-            elif [ "$X_BAT_CROSCC_SIMULATE_ECVER" = "2" ] \
+            elif [ "$X_SIMULATE_CROS_ECVER" = "2" ] \
                 || [ ! -f "$bd/charge_control_start_threshold" ] \
                 && readable_sysf "$bd/charge_control_end_threshold" \
                 && readable_sysf "$bd/charge_behaviour" \
-                && [ "$X_BAT_CROSCC_SIMULATE_ECVER" != "1" ]; then
+                && [ "$X_SIMULATE_CROS_ECVER" != "1" ]; then
                 # patched kernel -> EC cmd v2 w/ stop threshold
                 _bn_stop="charge_control_end_threshold"
                 _bm_thresh="natacpi"
@@ -249,8 +249,8 @@ batdrv_read_threshold () {
     fi
 
     case "$1" in
-        start) out="$X_THRESH_SIMULATE_START" ;;
-        stop)  out="$X_THRESH_SIMULATE_STOP"  ;;
+        start) out="$X_SIMULATE_THRESH_START" ;;
+        stop)  out="$X_SIMULATE_THRESH_STOP"  ;;
     esac
     if [ -n "$out" ]; then
         printf "%s" "$out"
@@ -275,7 +275,7 @@ batdrv_read_threshold () {
     fi
 
     # "return" threshold
-    if [ "$X_THRESH_SIMULATE_READERR" != "1" ]; then
+    if [ "$X_SIMULATE_THRESH_READERR" != "1" ]; then
         printf "%s" "$out"
     else
         [ "$2" = "1" ] && printf "(not available)"
@@ -596,7 +596,7 @@ batdrv_read_force_discharge () {
     esac
 
     # "return" force-discharge
-    if [ "$X_DISCHG_SIMULATE_READERR" != "1" ]; then
+    if [ "$X_SIMULATE_DISCHG_READERR" != "1" ]; then
         printf "%s" "$out"
     else
         [ "$1" = "1" ] && printf "(not available)\n"
