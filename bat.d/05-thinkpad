@@ -73,7 +73,7 @@ check_thinkpad () {
 is_coreboot () {
     # check if coreboot BIOS
     # rc: 0=coreboot detected/1=not detected
-    [ "$(read_dmi bios_vendor)" = "coreboot" ]
+    [ "$(read_dmi bios_vendor)" = "coreboot" ] || [ "$X_SIMULATE_COREBOOT" = "1" ]
 }
 
 # --- Plugin API functions
@@ -88,8 +88,8 @@ batdrv_init () {
     #       0=thresholds and discharge/
     #       1=thresholds only/
     #       32=disabled/
-    #       128=no kernel support/
-    #       254=ThinkPad not supported
+    #       128=kernel incompatible /
+    #       254=Thinkpad model incompatible
     #
     # 2. check for tp-smapi external kernel module
     #    --> retval $_tpsmapi:
@@ -214,6 +214,16 @@ batdrv_init () {
             fi
         fi
     done
+
+    if [ "$X_SIMULATE_MODEL_INCOMPAT" = "1" ]; then
+        _bm_thresh="none"
+        _bm_dischg="none"
+        _natacpi=254
+    elif [ "$X_SIMULATE_KERNEL_INCOMPAT" = "1" ]; then
+        _bm_thresh="none"
+        _bm_dischg="none"
+        _natacpi=128
+    fi
 
     # quit if no battery detected, there is no point in activating the plugin
     if [ -z "$_batteries" ]; then
@@ -1050,16 +1060,16 @@ batdrv_show_battery_data () {
     # native kernel ACPI battery API
     case $_natacpi in
         0|1) cprintf "success" "* natacpi (%s) = active (%s)\n" "$_batdrv_kmod" "$(print_bat_methods_per_driver "natacpi")" ;;
-        32)  cprintf "notice"  "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
-        128) cprintf "err"     "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
-        254) cprintf "warning" "* natacpi (%s) = inactive (ThinkPad not supported)\n" "$_batdrv_kmod" ;;
+        32)  cprintf "notice"  "* natacpi (%s) = inactive ($MSGSTR_BC_DISABLED)\n" "$_batdrv_kmod" ;;
+        128) cprintf "err"     "* natacpi (%s) = inactive ($MSGSTR_KERNEL_INCOMPAT)\n" "$_batdrv_kmod" ;;
+        254) cprintf "warning" "* natacpi (%s) = inactive ($MSGSTR_THINKPAD_INCOMPAT)\n" "$_batdrv_kmod" ;;
         *)   cprintf "err"     "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
     # Legacy-ThinkPad battery API
     case $_tpsmapi in
         1)   cprintf "success" "* tp-smapi (tp_smapi)     = readonly (%s)\n" "$(print_bat_methods_per_driver "tpsmapi")" ;;
-        32)  cprintf "notice"  "* tp-smapi (tp_smapi)     = inactive (disabled by configuration)\n" ;;
+        32)  cprintf "notice"  "* tp-smapi (tp_smapi)     = inactive ($MSGSTR_BC_DISABLED)\n" ;;
         64)  cprintf "err"     "* tp-smapi (tp_smapi)     = inactive (kernel module 'tp_smapi' load error)\n" ;;
         128) cprintf "notice"  "* tp-smapi (tp_smapi)     = inactive (kernel module 'tp_smapi' not installed)\n" ;;
     esac
@@ -1215,10 +1225,13 @@ batdrv_recommendations () {
     # prerequisite: batdrv_init(), batdrv_select_battery()
 
     soc_gt_stop_recommendation
-    if [ "$_natacpi" = "1" ] \
-        && { [ ! -f "$_bd_read/charge_behaviour" ]||[ "$X_SIMULATE_DISCHG_NONE" = "1" ]; }; then
-        # kernel does not expose charge_behaviour
-        printf "Install kernel 5.17 (or later) for battery recalibration support\n"
+    if [ "$_natacpi" = "1" ]; then
+        if [ ! -f "$_bd_read/charge_behaviour" ] && ! kernel_version_ge "5.17"; then
+            # kernel does not expose charge_behaviour
+            printf "Install kernel 5.17 (or later) for battery recalibrate/discharge support\n"
+        elif is_coreboot; then
+            printf "Notice: coreboot version does not support battery recalibrate/discharge\n"
+        fi
     fi
     if [ "$_tpsmapi" = "128" ]; then
         printf "Install tp-smapi kernel modules for extended battery status (e.g. the cycle count)\n"

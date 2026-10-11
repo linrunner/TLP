@@ -908,10 +908,10 @@ batdrv_show_battery_data () {
     # ThinkPad-specific battery API
     case $_tpsmapi in
         0)   cprintf "success" "* tp-smapi (%s) = active (%s)\n" "$_batdrv_kmod" "$(print_bat_methods_per_driver "tpsmapi")" ;;
-        32)  cprintf "notice"  "* tp-smapi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
+        32)  cprintf "notice"  "* tp-smapi (%s) = inactive ($MSGSTR_BC_DISABLED)\n" "$_batdrv_kmod" ;;
         64)  cprintf "err"     "* tp-smapi (%s) = inactive (kernel module '%s' load error)\n" "$_batdrv_kmod" "$_batdrv_kmod" ;;
         128) cprintf "err"     "* tp-smapi (%s) = inactive (kernel module '%s' not installed)\n" "$_batdrv_kmod" "$_batdrv_kmod" ;;
-        254) cprintf "warning" "* tp-smapi (%s) = inactive (ThinkPad not supported)\n" "$_batdrv_kmod" ;;
+        254) cprintf "warning" "* tp-smapi (%s) = inactive ($MSGSTR_THINKPAD_INCOMPAT)\n" "$_batdrv_kmod" ;;
         *)   cprintf "err"     "* tp-smapi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
