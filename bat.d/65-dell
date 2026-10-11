@@ -14,6 +14,7 @@
 # --- Hardware Detection
 
 readonly BATDRV_DELL_MD=/sys/module/dell_laptop
+readonly BATDRV_DELL_MIN_KVER="6.12"
 
 batdrv_is_dell () {
     # check if kernel module is loaded
@@ -32,8 +33,8 @@ batdrv_init () {
     #    --> retval $_natacpi:
     #       0=thresholds/
     #       32=disabled/
-    #       128=no kernel support/
-    #       254=laptop not supported
+    #       128=kernel too old/
+    #       254=incompatible model
     #
     # 2. determine method for
     #    reading battery data                   --> retval $_bm_read,
@@ -110,7 +111,7 @@ batdrv_init () {
             fi
 
             if readable_sysf "$bd/charge_control_start_threshold" \
-               && readable_sysf "$bd/charge_control_end_threshold"; then
+               && readable_sysf "$bd/charge_control_end_threshold" ; then
                # threshold sysfiles exist and are actually readable
                 _bn_start="charge_control_start_threshold"
                 _bn_stop="charge_control_end_threshold"
@@ -118,8 +119,21 @@ batdrv_init () {
                 _bm_thresh="natacpi"
                 _natacpi=0
             else
-                # laptop model not supported by the driver
+                if kernel_version_ge "$BATDRV_DELL_MIN_KVER"; then
+                    # laptop model not supported by the driver
+                    _natacpi=254
+                else
+                    # insufficient kernel version
+                    _natacpi=128
+                fi
+            fi
+
+            if [ "$X_SIMULATE_MODEL_INCOMPAT" = "1" ]; then
+                _bm_thresh="none"
                 _natacpi=254
+            elif [ "$X_SIMULATE_KERNEL_INCOMPAT" = "1" ]; then
+                _bm_thresh="none"
+                _natacpi=128
             fi
         fi
     done
@@ -574,9 +588,9 @@ batdrv_show_battery_data () {
     # native kernel ACPI battery API
     case $_natacpi in
         0)   cprintf "success" "* natacpi (%s) = active (charge thresholds)\n" "$_batdrv_kmod" ;;
-        32)  cprintf "notice"  "* natacpi (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
-        128) cprintf "err"     "* natacpi (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
-        254) cprintf "warning" "* natacpi (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
+        32)  cprintf "notice"  "* natacpi (%s) = inactive ($MSGSTR_BC_DISABLED)\n" "$_batdrv_kmod" ;;
+        128) cprintf "err"     "* natacpi (%s) = inactive ($MSGSTR_KERNEL_INCOMPAT)\n" "$_batdrv_kmod" ;;
+        254) cprintf "warning" "* natacpi (%s) = inactive ($MSGSTR_MODEL_INCOMPAT)\n" "$_batdrv_kmod" ;;
         *)   cprintf "err"     "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
     if [ "$_bm_thresh" != "none" ]; then
@@ -645,6 +659,10 @@ batdrv_recommendations () {
     # prerequisite: batdrv_init()
 
     soc_gt_stop_recommendation
+    if [ "$_natacpi" = "128" ]; then
+        # insufficient kernel version
+        printf "Install kernel %s (or later) to enable charge thresholds\n" "$BATDRV_DELL_MIN_KVER"
+    fi
 
     return 0
 }

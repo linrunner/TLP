@@ -68,6 +68,7 @@ batdrv_init () {
 
     # presume no features at all
     _tpsmapi=254
+    _natacpi=255
     _bm_read="natacpi"
     _bm_thresh="none"
     _bm_dischg="none"
