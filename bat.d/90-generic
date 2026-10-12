@@ -141,7 +141,7 @@ batdrv_show_battery_data () { # output battery data
 
     printf "+++ Battery Care\n"
     printf "Plugin: %s\n" "$_batdrv_plugin"
-    cprintf "warning" "Supported features: none available\n"
+    cprintf "warning" "Supported features: none available (there is no compatible kernel driver for this system)\n"
     printf "\n"
 
     local bat
