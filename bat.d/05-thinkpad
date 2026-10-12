@@ -88,8 +88,8 @@ batdrv_init () {
     #       0=thresholds and discharge/
     #       1=thresholds only/
     #       32=disabled/
-    #       128=kernel incompatible /
-    #       254=Thinkpad model incompatible
+    #       128=kernel incompatible/
+    #       254=ThinkPad model incompatible
     #
     # 2. check for tp-smapi external kernel module
     #    --> retval $_tpsmapi:
@@ -215,6 +215,13 @@ batdrv_init () {
         fi
     done
 
+    # quit if no battery detected, there is no point in activating the plugin
+    if [ -z "$_batteries" ]; then
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries" "$LOG_WARN"
+        return 2
+    fi
+
+    # simulate incompatibilities
     if [ "$X_SIMULATE_MODEL_INCOMPAT" = "1" ]; then
         _bm_thresh="none"
         _bm_dischg="none"
@@ -223,12 +230,6 @@ batdrv_init () {
         _bm_thresh="none"
         _bm_dischg="none"
         _natacpi=128
-    fi
-
-    # quit if no battery detected, there is no point in activating the plugin
-    if [ -z "$_batteries" ]; then
-        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries" "$LOG_WARN"
-        return 2
     fi
 
     # consider legacy ThinkPads with coreboot/natacpi

@@ -118,6 +118,15 @@ batdrv_init () {
         return 2
     fi
 
+    # simulate incompatibilities
+    if [ "$X_SIMULATE_MODEL_INCOMPAT" = "1" ]; then
+        _bm_thresh="none"
+        _natacpi=254
+    elif [ "$X_SIMULATE_KERNEL_INCOMPAT" = "1" ]; then
+        _bm_thresh="none"
+        _natacpi=128
+    fi
+
     # consider legacy kernels < 6.17
     if [ $_natacpi -eq 128 ]; then
         # kernel module detected but charge_types not present --> try 16-lenovo-legacy next

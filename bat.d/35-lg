@@ -94,6 +94,12 @@ batdrv_init () {
             if [ "$NATACPI_ENABLE" = "0" ]; then
                 # natacpi disabled in configuration --> skip actual detection
                 _natacpi=32
+            elif [ "$X_SIMULATE_MODEL_INCOMPAT" = "1" ]; then
+                # simulate laptop incompatibility --> skip actual detection
+                _natacpi=254
+            elif [ "$X_SIMULATE_KERNEL_INCOMPAT" = "1" ]; then
+                # simulate kernel incompatibility --> skip actual detection
+                _natacpi=128
             elif [ -f "$bd/charge_control_end_threshold" ]; then
                 # sysfile for threshold exists (kernel 5.18 and newer)
                 if sp="$(read_sysf "$bd/charge_control_end_threshold")"; then
@@ -116,6 +122,12 @@ batdrv_init () {
             fi
         fi
     done
+
+    # quit if no battery detected, there is no point in activating the plugin
+    if [ -z "$_batteries" ]; then
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries" "$LOG_WARN"
+        return 2
+    fi
 
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin

@@ -152,6 +152,17 @@ batdrv_init () {
         fi
     fi
 
+    # simulate incompatibilities
+    if [ "$X_SIMULATE_MODEL_INCOMPAT" = "1" ]; then
+        _bm_thresh="none"
+        _bm_dischg="none"
+        _tpsmapi=254
+    elif [ "$X_SIMULATE_KERNEL_INCOMPAT" = "1" ]; then
+        _bm_thresh="none"
+        _bm_dischg="none"
+        _tpsmapi=128
+    fi
+
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; tpsmapi=$_tpsmapi" "$LOG_INFO"

@@ -115,6 +115,15 @@ batdrv_init () {
         return 2
     fi
 
+    # simulate incompatibilities
+    if [ "$X_SIMULATE_MODEL_INCOMPAT" = "1" ]; then
+        _bm_thresh="none"
+        _natacpi=254
+    elif [ "$X_SIMULATE_KERNEL_INCOMPAT" = "1" ]; then
+        _bm_thresh="none"
+        _natacpi=128
+    fi
+
     # shellcheck disable=SC2034
     _batdrv_selected=$_batdrv_plugin
     echo_debug "bat" "batdrv_init.${_batdrv_plugin}: batteries=$_batteries; natacpi=$_natacpi; thresh=$_bm_thresh; stop=$_bn_stop" "$LOG_INFO"

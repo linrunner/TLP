@@ -88,10 +88,22 @@ batdrv_init () {
         fi
     done
 
+    # quit if no battery detected, there is no point in activating the plugin
+    if [ -z "$_batteries" ]; then
+        echo_debug "bat" "batdrv_init.${_batdrv_plugin}.no_batteries" "$LOG_WARN"
+        return 2
+    fi
+
     # check for vendor specific kernel api
     if [ "$NATACPI_ENABLE" = "0" ]; then
         # natacpi disabled in configuration --> skip actual detection
         _natacpi=32
+    elif [ "$X_SIMULATE_MODEL_INCOMPAT" = "1" ]; then
+        # simulate laptop incompatibility --> skip actual detection
+        _natacpi=254
+    elif [ "$X_SIMULATE_KERNEL_INCOMPAT" = "1" ]; then
+        # simulate kernel incompatibility --> skip actual detection
+        _natacpi=128
     elif [ -f "$BATDRV_SAMSUNG_BLE" ] && readable_sysf "$BATDRV_SAMSUNG_BLE"; then
         # sysfile exists and is actually readable
         _natacpi=0
