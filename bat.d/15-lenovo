@@ -425,11 +425,11 @@ batdrv_show_battery_data () {
     printf "Driver usage:\n"
     # vendor specific kernel api
     case $_natacpi in
-        0)   cprintf "success" "* vendor (%s) = active (charge type)\n" "$_batdrv_kmod" ;;
-        32)  cprintf "notice"  "* vendor (%s) = inactive (disabled by configuration)\n" "$_batdrv_kmod" ;;
-        128) cprintf "err"     "* vendor (%s) = inactive (no kernel support)\n" "$_batdrv_kmod" ;;
-        254) cprintf "warning" "* vendor (%s) = inactive (laptop not supported)\n" "$_batdrv_kmod" ;;
-        *)   cprintf "err"     "* vendor (%s) = unknown status\n" "$_batdrv_kmod" ;;
+        0)   cprintf "success" "* natacpi (%s) = active (charge type)\n" "$_batdrv_kmod" ;;
+        32)  cprintf "notice"  "* natacpi (%s) = inactive ($MSGSTR_BC_DISABLED)\n" "$_batdrv_kmod" ;;
+        128) cprintf "err"     "* natacpi (%s) = inactive ($MSGSTR_KERNEL_INCOMPAT)\n" "$_batdrv_kmod" ;;
+        254) cprintf "warning" "* natacpi (%s) = inactive ($MSGSTR_MODEL_INCOMPAT)\n" "$_batdrv_kmod" ;;
+        *)   cprintf "err"     "* natacpi (%s) = unknown status\n" "$_batdrv_kmod" ;;
     esac
 
     if [ "$_bm_thresh" = "natacpi" ]; then
