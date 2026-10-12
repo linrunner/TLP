@@ -17,11 +17,14 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
       "#> Runtime-translated from ..." to locate affected lines.
     Audio:
       - SOUND_POWER_SAVE_ON_SAV added to the power-saver profile
+    Battery Care:
+    - tlp-stat -b: if charge thresholds are not available, the specific
+      reasons are described using clearer and more consistent terms
     Disks:
-      - DISK_APM_LEVEL_ON_SAV,
-      - DISK_SPINDOWN_TIMEOUT_ON_SAV,
-      - SATA_LINKPWR_ON_SAV,
-      - AHCI_RUNTIME_PM_ON_SAV added to the power-saver profile
+    - DISK_APM_LEVEL_ON_SAV,
+    - DISK_SPINDOWN_TIMEOUT_ON_SAV,
+    - SATA_LINKPWR_ON_SAV,
+    - AHCI_RUNTIME_PM_ON_SAV added to the power-saver profile
     File System:
     - MAX_LOST_WORK_SECS_ON_SAV added to the power-saver profile;
       default is set to 15 across all profiles.
