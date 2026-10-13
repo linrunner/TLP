@@ -60,7 +60,7 @@ batdrv_init () {
 
     _batdrv_plugin="tuxedo"
     # kernel module for natacpi; in the simulation, a different one can be entered
-    _batdrv_kmod="${X_BAT_PLUGIN_SIM_KMOD:-clevo_acpi}"
+    _batdrv_kmod="${X_SIMULATE_BC_KMOD:-clevo_acpi}"
     _batdrv_sim=0
 
     # check plugin simulation override and denylist
