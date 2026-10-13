@@ -964,7 +964,7 @@ batdrv_show_battery_data () {
     if [ "$_bm_thresh" != "none" ]; then
         case $_natacpi in
             0) cecho "Supported features: charge thresholds, chargeonce, discharge, recalibrate" "success" ;;
-            1) cecho "Supported features: charge threshold, chargeonce, discharge, recalibrate" "success" ;;
+            1) cecho "Supported features: charge threshold, discharge, recalibrate" "success" ;;
         esac
     else
         cprintf "warning" "Supported features: none available\n"
