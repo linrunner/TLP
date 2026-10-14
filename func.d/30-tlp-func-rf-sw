@@ -192,7 +192,6 @@ device_switch () {
         return 0
     else
         # desired does not match current state --> do switch
-
         # set timed lock if required
         [ -n "$3" ] && [ -n "$4" ] && [ "$1" != "bluetooth" ] && \
             set_timed_lock "$3" "$4"
@@ -204,6 +203,7 @@ device_switch () {
                 0) invoke_nmcli "$1" off; nmrc=$? ;;
             esac
             # record device state after nmcli
+            sleep 0.1
             get_rf_dev_state "$1"
 
             # interactive command only: check if failed due to missing privileges
