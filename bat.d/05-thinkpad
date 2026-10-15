@@ -1235,7 +1235,7 @@ batdrv_recommendations () {
         fi
     fi
     if [ "$_tpsmapi" = "128" ]; then
-        printf "Install tp-smapi kernel modules for extended battery status (e.g. the cycle count)\n"
+        printf "By installing the tp-smapi kernel module, 'tlp-stat -b' will display extra battery details, including the cycle count.\n"
     fi
 
     return 0
