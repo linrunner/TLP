@@ -286,7 +286,7 @@ device_switch () {
     # compare old and new device state
     if [ "$curst" = "$_devs" ]; then
         # state did not change
-        echo_debug "rf" "device_switch($1, $2).no_change: rc=4"
+        echo_debug "rf" "device_switch($1, $2).no_change: rc=4" "$LOG_WARN"
         return 4
     else
         echo_debug "rf" "device_switch($1, $2).ok: rc=0" "$LOG_INFO"

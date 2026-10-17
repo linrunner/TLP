@@ -19,7 +19,8 @@ check_switch_lock() { # switch listed radio devices
     # $1: device type where the event originated -- do nothing if its time-locked
     # $2: list of device types to switch
     # $3: on/off
-    local sw_rc type
+    # global params: $iface, $action, $repeats
+    local sw_rc type wait
 
     # quit if the originating *radio* device is time-locked (not LAN)
     [ "$1" != "LAN" ] && check_timed_lock "${RDW_NM_LOCK}_$1" && return 1
@@ -29,19 +30,29 @@ check_switch_lock() { # switch listed radio devices
             # device type is valid and not the originating one
             # --> do switch with state change lock
             device_switch "$type" "$3" "${RDW_NM_LOCK}_${type}" "$RDW_NM_LOCKTIME"; sw_rc=$?
-
             if [ "$sw_rc" = "4" ]; then
-                # switch failed, NetworkManager may be "asleep" -> schedule repeat:
-                # open a detached subshell, wait 2 secs and respawn ourselves,
-                # no more than two repetitions.
-                case "$repeats" in
-                    "") repeats="2" ;;
-                    2)  repeats="1" ;;
-                    *)  repeats=""  ;;
-                esac
-                if [ -n "$repeats" ]; then
-                    echo_debug "nm" "+++ tlp_rdw_nm(${iface}).${action}.nm_seems_asleep: repeats=$repeats" "$LOG_INFO"
-                    ( sleep 2; $0 "$iface" "$action" "$repeats" < /dev/null > /dev/null ) &
+                # --- NetworkManager suspend-resume race workaround part 1
+                # switch failed: when the system enters suspend, NetworkManager
+                # disconnects LAN, calls the hook and then enters a sleep state.
+                # this prevents wifi (or wwan) from being enabled subsequently.
+                # impact: if the LAN cable is unplugged while the system is suspended,
+                # NM considers the task complete and no further action is triggered upon
+                # resuming.
+                # as a workaround to ensure wifi and/or wwan activation on resume,
+                # schedule repeats of the original action: open a detached subshell,
+                # wait 2 secs and respawn ourselves; no more than two repeats.
+                # repeats will end up here again, in case NM hasn't woken up yet.
+                if [ -z "$repeats" ]; then
+                    repeats=${X_RDW_NM_SLEEP_REPEATS:-2}
+                elif is_uint "$repeats" 1 && [ "$repeats" -ge 1 ]; then
+                    repeats="$((repeats - 1))"
+                else
+                    repeats=0
+                fi
+                if [ "$repeats" -gt 0 ]; then
+                    wait="${X_RDW_NM_SLEEP_WAIT:-2}"
+                    echo_debug "nm" "tlp_rdw_nm($iface).${action}.nm_sleep: repeats=$repeats; wait=$wait" "$LOG_INFO"
+                    ( sleep "$wait"; $0 "$iface" "$action" "$repeats" < /dev/null > /dev/null ) &
                     do_exit 0
                 fi
             fi
@@ -211,7 +222,14 @@ case "$action" in
             down) # interface down, enable configured interfaces
                 case $itype in
                     *ethernet)
-                        check_switch_lock LAN "$DEVICES_TO_ENABLE_ON_LAN_DISCONNECT" on
+                        if [ -n "$repeats" ] && iface_connected "$iface"; then
+                            # --- NetworkManager suspend-resume race workaround part 2
+                            # LAN has connected again; a corresponding event ran earlier
+                            # --> repeats can be discarded
+                            echo_debug "nm" "tlp_rdw_nm($iface).${action}.discard_repeats" "$LOG_WARN"
+                        else
+                            check_switch_lock LAN "$DEVICES_TO_ENABLE_ON_LAN_DISCONNECT" on
+                        fi
                         ;;
 
                     *wireless|wifi)

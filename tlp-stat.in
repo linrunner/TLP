@@ -849,7 +849,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
             # get wifi driver
             get_wifi_driver "$iface"
             printf "%-30s: wifi, " "$iface($_wifidrv)"
-            if wireless_in_use "$iface"; then
+            if iface_connected "$iface"; then
                 printf "connected, "
             else
                 printf "not connected, "
@@ -874,7 +874,7 @@ if [ "$show_rfkill" = "1" ] || [ "$show_all" = "1" ]; then
             get_wwan_driver "$iface"
 
             printf "%-30s: wwan, " "$iface($_wwandrv)"
-            if wireless_in_use "$iface"; then
+            if iface_connected "$iface"; then
                 printf "connected"
             else
                 printf "not connected"

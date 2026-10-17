@@ -712,7 +712,16 @@ chmod_readable4all () { # make file world readable -- $1: file
     chmod -f o+r "$1"
 }
 
-# -- Battery Plugins
+# --- Network
+
+iface_connected () { # check if network interface is connected resp. "in use" -- $1: iface
+    if [ "$(read_sysf "$NETD/$1/carrier")" = "1" ]; then
+        return 0
+    fi
+    return 1
+}
+
+# --- Battery Plugins
 
 select_batdrv () { # source battery feature drivers and
                    # activate the one that matches the hardware
