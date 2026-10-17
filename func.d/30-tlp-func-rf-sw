@@ -26,6 +26,19 @@ readonly RFSTATEFILE="$VARDIR/rfkill_saved"
 
 # ----------------------------------------------------------------------------
 # Functions
+#
+rfk2str () { # convert rfkill state to human readable string
+    # $1: rfstate
+
+    case "$1" in
+        0) printf "soft-blocked" ;;
+        1) printf "unblocked" ;;
+        2) printf "hard-blocked" ;;
+        *) printf "unknown" ;;
+     esac
+
+     return 0
+}
 
 get_rf_dev_state () {
     # get radio device state
@@ -34,7 +47,7 @@ get_rf_dev_state () {
     # retval $_devs: 0=off/1=on/254=no device (or unknown type)
     #        $_devc: sysfs rkill state
 
-    local rfki rfks
+    local devsh rfki rfks rfksh
 
     # preset: no device
     _devs=254
@@ -76,32 +89,52 @@ get_rf_dev_state () {
     if check_nm && wordinlist "$1" "wifi wwan";  then
         # read state from rfkill sysfs first ...
         rfks="$(read_sysf "$_devc")"
+        rfksh="$(rfk2str "$rfks")"
+
         # ... then get state from NM
         case "$($NMCLI radio "$1" 2> /dev/null)" in
             enabled)
                 # assumption: the case NM(on), rfkill(off) does not occur
                 _devs=1
+                devsh="enabled"
                 ;;
 
             disabled)
                 case "$rfks" in
-                    0) _devs=0 ;; # rfkill soft blocked
-                    1) _devs=0 ;; # NM=off and rfkill=unblocked i.e. states are *not* in sync
-                                  # -> return off(soft blocked) to keep things going
-                    2) _devs=2 ;; # rfkill hard blocked
+                    0)  # rfkill soft blocked
+                        _devs=0
+                        devsh="disabled"
+                        ;;
+
+                    1)  # NM=off and rfkill=unblocked i.e. states are *not* in sync
+                        # -> return off(soft blocked) to keep things going
+                        _devs=0
+                        devsh="disabled(nm-only)"
+                        ;;
+
+                    2)  # rfkill hard blocked
+                        _devs=2
+                        devsh="disabled"
+                        ;;
                 esac
                 ;;
-            *) _devs=3 # unknown state
+
+            *)  # unknown state
+                _devs=3
+                devsh="unknown"
+                ;;
+
         esac
-        echo_debug "rf" "get_rf_dev_state.nmcli($1) = $_devs; devc=$_devc; rfkill=$rfks" "$LOG_INFO"
+        echo_debug "rf" "get_rf_dev_state.nmcli($1): devs=$_devs($devsh); $_devc=$rfks($rfksh)"
     else
         # get state from rfkill sysfs
-        _devs="$(read_sysf "$_devc")"
-        case "$_devs" in
-            0|1|2)     ;; # 0=soft blocked(off)/1=unblocked(on)/2=hard blocked(off)
+        rfks="$(read_sysf "$_devc")"
+        case "$rfks" in
+            0|1|2) _devs="$rfks" ;; # 0=soft blocked(off)/1=unblocked(on)/2=hard blocked(off)
             *) _devs=3 ;; # unknown state
         esac
-        echo_debug "rf" "get_rf_dev_state.sysfs($1) = $_devs; devc=$_devc" "$LOG_INFO"
+        rfksh="$(rfk2str "$_devs")"
+        echo_debug "rf" "get_rf_dev_state.rfkill($1): devs=$_devs; $_devc=$rfks($rfksh)"
     fi
 
     return 0
