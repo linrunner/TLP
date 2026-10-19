@@ -10,7 +10,6 @@ import os
 import re
 import socket
 import time
-from typing import List
 
 from testing import (
     TestReport,
@@ -28,7 +27,7 @@ WAIT_PROFILE_ACTIVATION = 1.5
 
 
 # --- Helper functions
-def reordered_profile_sequence(new_last: str) -> List[str]:
+def reordered_profile_sequence(new_last: str) -> list[str]:
     # Cyclic reorder of AVAILABLE_PROFILES sequence
     # Args:
     #   new_last: dedicated last element
@@ -79,6 +78,7 @@ def test_set_direct(report: TestReport):
             executable_path=TLPCTL,
             args=[profile],
             expected_output=f"Switched to {profile} profile.\n",
+            filters=[],
         ):
             errcnt += 1
 
@@ -90,10 +90,11 @@ def test_set_direct(report: TestReport):
             executable_path=TLPCTL,
             args=["get"],
             expected_output=f"{profile}\n",
+            filters=[],
         ):
             errcnt += 1
 
-    print("}}} " + f"errcnt={str(errcnt)}\n")
+    print("}}} " + f"errcnt={errcnt}\n")
 
     report.count_test(errcnt)
 
@@ -116,6 +117,7 @@ def test_set(report: TestReport):
             executable_path=TLPCTL,
             args=["set", profile],
             expected_output="",
+            filters=[],
         ):
             errcnt += 1
 
@@ -135,10 +137,11 @@ def test_set(report: TestReport):
             executable_path=TLPCTL,
             args=[],
             expected_output=exp_list,
+            filters=[],
         ):
             errcnt += 1
 
-    print("}}} " + f"errcnt={str(errcnt)}\n")
+    print("}}} " + f"errcnt={errcnt}\n")
 
     report.count_test(errcnt)
 
@@ -169,9 +172,6 @@ def test_list(report: TestReport):
     # Args: none
     # Returns: none
 
-    ### global _testcnt
-    ### lobal _failcnt
-
     errcnt = 0
     initial = run_executable(TLPCTL, ["get"]).rstrip("\n")
     sequence = reordered_profile_sequence(initial)
@@ -188,6 +188,7 @@ def test_list(report: TestReport):
             executable_path=TLPCTL,
             args=["set", profile],
             expected_output="",
+            filters=[],
         ):
             errcnt += 1
 
@@ -222,7 +223,7 @@ def test_list(report: TestReport):
         ):
             errcnt += 1
 
-    print("}}} " + f"errcnt={str(errcnt)}\n")
+    print("}}} " + f"errcnt={errcnt}\n")
 
     report.count_test(errcnt)
 
@@ -232,9 +233,6 @@ def test_loglevel(report: TestReport):
     #
     # Args: none
     # Returns: none
-
-    global _testcnt
-    global _failcnt
 
     errcnt = 0
     loglevel = run_executable(TLPCTL, ["list"]).rstrip("\n")
@@ -253,10 +251,11 @@ def test_loglevel(report: TestReport):
             executable_path=TLPCTL,
             args=["loglevel", loglevel],
             expected_output=f"tlp-pd loglevel set to '{loglevel}'.\n",
+            filters=[],
         ):
             errcnt += 1
 
-    print("}}} " + f"errcnt={str(errcnt)}\n")
+    print("}}} " + f"errcnt={errcnt}\n")
 
     report.count_test(errcnt)
 
@@ -290,6 +289,7 @@ def test_polkit_noauth(report: TestReport):
         if not test_executable(
             executable_path=TLPCTL,
             args=["get"],
+            filters=[],
             expected_output=f"{initial}\n",
         ):
             # Profile changed despite "not authorized"
@@ -307,7 +307,7 @@ def test_polkit_noauth(report: TestReport):
         print(f"    rc={rc}: unknown result (NOK)")
         errcnt += 1
 
-    print("}}} " + f"errcnt={str(errcnt)}\n")
+    print("}}} " + f"errcnt={errcnt}\n")
 
     report.count_test(errcnt)
 

@@ -7,13 +7,13 @@ import re
 import subprocess
 import sys
 import tempfile
-from typing import Callable, List, Optional
+from collections.abc import Callable
 
 
 # --- Testing functions ---
 def run_executable(
     executable_path: str,
-    args: List[str] = [],
+    args: list[str],
     input_data: str = "",
     timeout: int = 10,
 ) -> str:
@@ -52,7 +52,7 @@ def run_executable(
 
 def run_executable_rc(
     executable_path: str,
-    args: List[str] = [],
+    args: list[str],
     input_data: str = "",
     timeout: int = 10,
 ) -> int:
@@ -88,7 +88,7 @@ def run_executable_rc(
 
 def filter_output(
     output: str,
-    filters: Optional[List[Callable[[str], str]]] = None,
+    filters: list[Callable[[str], str]],
 ) -> str:
     # Apply filters to the output (e.g., remove timestamps, normalize whitespace)
     #
@@ -171,10 +171,10 @@ def generate_diff(
 
 def test_executable(
     executable_path: str,
-    args: List[str] = [],
+    args: list[str],
+    filters: list[Callable[[str], str]],
     expected_output: str = "",
     input_data: str = "",
-    filters: Optional[List[Callable[[str], str]]] = None,
     ignore_whitespace: bool = False,
 ) -> bool:
     # Test an executable by comparing its output to an expected output.
@@ -220,7 +220,7 @@ class TestReport:
             new_report = True
         else:
             try:
-                self._report_file = open(report_fn, "a")  # type: ignore[reportArgumentType]
+                self._report_file = open(report_fn, "a")  # noqa: SIM115
                 new_report = False
             except FileNotFoundError as e:
                 sys.stderr.write(
@@ -229,7 +229,7 @@ class TestReport:
                 sys.stderr.write(f"{e}\n")
                 sys.stderr.write("Creating a new one instead.\n")
                 new_report = True
-            except IOError as e:
+            except OSError as e:
                 sys.stderr.write(
                     f"Warning: could not open given report file '{report_fn}'.\n"
                 )
@@ -240,7 +240,7 @@ class TestReport:
         if new_report:
             try:
                 # Create temporary file
-                self._report_file = tempfile.NamedTemporaryFile(
+                self._report_file = tempfile.NamedTemporaryFile(  # noqa: SIM115
                     "w", prefix="tlp-test-report.", delete=False
                 )
             except OSError as e:
@@ -269,7 +269,7 @@ class TestReport:
         print(line)
         try:
             self._report_file.write(f"{line}\n")
-        except IOError:
+        except OSError:
             pass  # Ignore write errors
 
     def print_result(self):
