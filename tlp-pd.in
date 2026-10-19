@@ -7,11 +7,7 @@
 # Copyright (c) 2026 Thomas Koch <linrunner at gmx.net> and others.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-import argparse  # noqa: I001
-
-### import gi
-### gi.require_version("GLibUnix", "2.0")
-from gi.repository import Gio, GLib  ### , GLibUnix
+import argparse
 import inspect
 import logging
 import logging.handlers
@@ -21,9 +17,12 @@ import signal
 import string
 import subprocess
 import sys
-from syslog import LOG_DAEMON
-from typing import Dict, List, Optional
 import warnings
+from syslog import LOG_DAEMON
+
+### import gi
+### gi.require_version("GLibUnix", "2.0")
+from gi.repository import Gio, GLib  ### , GLibUnix
 
 # --- Daemon constants
 DAEMON_NAME = "TLP Profiles Daemon"
@@ -217,11 +216,8 @@ class ProfilesDaemon:
                 self._logger.error("Timeout waiting for bus name acquisition")
                 return False
 
-        # Check aquisition success
-        if self._name_lost:
-            return False
-        else:
-            return True
+        # Return aquisition result
+        return self._name_acquired
 
     def reload(self) -> None:
         self._active_profile = self._get_tlp_profile()
@@ -307,9 +303,6 @@ class ProfilesDaemon:
                     f"{_logtag}: Unknown method '{method_name}'",
                 )
         except GLib.Error as e:
-            self._logger.error(f"{_logtag}/{e.message}")
-            invocation.return_error_literal(Gio.dbus_error_quark(), e.code, e.message)
-        except Exception as e:
             self._logger.error(f"{_logtag}/{e.message}")
             invocation.return_error_literal(Gio.dbus_error_quark(), e.code, e.message)
 
@@ -453,7 +446,7 @@ class ProfilesDaemon:
         object_path: str,
         interface_name: str,
         property_name: str,
-    ) -> Optional[GLib.Variant]:
+    ) -> GLib.Variant | None:
         # Handle Get() through the main or legacy interface
         _logtag = f"{_method_name()}(interface='{interface_name}', property='{property_name}', sender='{sender}')"
 
@@ -557,10 +550,12 @@ class ProfilesDaemon:
 
     def _signal_properties_changed(
         self,
-        changed_properties: Dict[str, GLib.Variant],
-        invalidated: List[str] = [],
+        changed_properties: dict[str, GLib.Variant],
+        invalidated: list[str] | None,
     ) -> None:
         # Emit PropertiesChanged signal on noted interfaces
+        if invalidated == None:
+            invalidated = []
         _logtag = f"{_method_name()}(changed_properties={changed_properties}, invalidated={invalidated})"
 
         for iface in self._ifaces_seen:
@@ -588,7 +583,7 @@ class ProfilesDaemon:
     def _get_active_profile_holds(self) -> GLib.Variant:
         # Get list of active profile holds
         active_holds = []
-        for cookie, hold_info in self._holds.items():
+        for hold_info in self._holds.values():
             active_holds.append(
                 {
                     "ApplicationId": GLib.Variant("s", hold_info["application_id"]),
@@ -627,7 +622,7 @@ class ProfilesDaemon:
             with open(TLP_LAST_PROFILE, "r") as f:
                 last = f.readline().strip().split()
                 last_pp = last[0] if len(last) > 0 else ""
-        except (FileNotFoundError, IOError) as errmsg:
+        except OSError as errmsg:
             self._logger.info(
                 f"{_logtag}: {errmsg} --> TLP may not have applied a profile yet."
             )
