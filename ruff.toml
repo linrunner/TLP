@@ -1,0 +1,4 @@
+[lint]
+ignore = [
+    "EXE001", # shebang-not-executable: 'make install' takes care of chmod +x
+]
