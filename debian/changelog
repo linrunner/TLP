@@ -1,3 +1,12 @@
+tlp (1.11.0~beta.1-1) unstable; urgency=medium
+
+  * New upstream version 1.11.0-beta.1
+
+  [ Thomas Koch ]
+  * Install tlp-pd init.d script
+
+ -- Thomas Koch <linrunner@gmx.net>  Thu, 15 Oct 2026 08:42:21 +0200
+
 tlp (1.10.2-1) unstable; urgency=medium
 
   * New upstream version 1.10.2
