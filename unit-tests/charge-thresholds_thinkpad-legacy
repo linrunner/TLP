@@ -55,7 +55,7 @@ Setting temporary charge thresholds for battery BAT0:
   start =  96
   stop  = 100
 $ sudo tlp setcharge -- TPSMAPI_ENABLE=0 START_CHARGE_THRESH_BAT0="DEF" STOP_CHARGE_THRESH_BAT0="DEF"
-Error: charge thresholds are not available (kernel driver for this laptop model is missing).
+Error: charge thresholds are not available; run 'tlp-stat -b' to find out why.
 $ #
 $ # --- tlp setcharge w/ arguments
 $ sudo tlp setcharge 60 100 -- X_SOC_CHECK=0
