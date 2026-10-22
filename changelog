@@ -1,9 +1,9 @@
 This is the user-oriented changelog. For information regarding packaging,
 please refer to: https://linrunner.de/tlp/developers/packaging.html
 
-+++ 1.11.0-alpha.2 --- <unreleased> +++
++++ 1.11.0-beta.1 --- 22.10.2026 +++
 
-  * Development version
+  * Beta Release
 
   * Features
     Configuration:
@@ -100,6 +100,9 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
     Profiles:
     - USB chargers: prevent incorrect AC/battery detection by filtering out
       invalid transient states rather than using PD/PPS sensing.
+    Radio Devices:
+    - RDW: make sure that wifi and/or wwan do not switch on accidentally
+      when the laptop wakes up from sleep while connected to the LAN
 
 +++ 1.10.2 --- 06.07.2026 +++
 
