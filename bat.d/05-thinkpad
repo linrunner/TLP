@@ -556,9 +556,7 @@ batdrv_write_thresholds () {
     fi
 
     # determine write sequence because driver's intrinsic boundary conditions
-    # must be met in all write stages:
-    #   - natacpi: start < stop (write fails if not met)
-    #   - tpacpi:  nothing (maybe BIOS/ECP enforces something)
+    # must be met in all write stages: start < stop (write fails if not met))
     local rc=0 steprc tseq
 
     if [ "$old_stop" != "none" ] && [ "$new_start" -ge "$old_stop" ]; then
