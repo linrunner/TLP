@@ -99,15 +99,14 @@ batdrv_init () {
                 continue
             fi
 
-            if readable_sysf "$bd/charge_types" || [ "$_batdrv_sim" = "1" ] ; then
-                # charge_types sysfile is actually readable (or simulated)
+            if [ -f "$bd/charge_types" ] || [ "$_batdrv_sim" = "1" ]; then
+                # charge_types sysfile is present (or simulated)
                 _natacpi=0
                 _bm_thresh="natacpi"
                 _bn_stop="charge_types"
             else
                 # charge_types sysfile not present --> no kernel support
                 _natacpi=128
-                continue
             fi
         fi
     done
@@ -204,8 +203,13 @@ batdrv_read_threshold () {
     local bct out="" rc=0
 
     if [ "$_bm_thresh" = "natacpi" ]; then
-        bct="$(get_listitem "${X_SIMULATE_THRESH_CHTYPES:-$(read_sysf "$_bf_stop")}")"
-        out="$(bat_bct2bool "$bct")" || rc=4
+        if bct="$(read_sysf "$_bf_stop")" || [ -n "$X_SIMULATE_THRESH_CHTYPES" ]; then
+            bct="$(get_listitem "${X_SIMULATE_THRESH_CHTYPES:-$bct}")"
+            out="$(bat_bct2bool "$bct")"
+        else
+            # read error
+            rc=4
+        fi
     else
         # no threshold api
         rc=255
@@ -465,10 +469,14 @@ batdrv_show_battery_data () {
 
         # --- show battery features: thresholds
         if [ "$_bm_thresh" = "natacpi" ]; then
-            if [ "$_batdrv_sim" = "1" ]; then
-                printf "%-59s = %s\n" "$_bf_stop" "$X_SIMULATE_THRESH_CHTYPES"
+            if [ "$_batdrv_sim" != "1" ]; then
+                printparm "%-59s = ##%s##" "$_bf_stop" "read error"
             else
-                printparm "%-59s = ##%s##" "$_bf_stop" "not available"
+                if [ "$X_SIMULATE_THRESH_READERR" != "1" ]; then
+                    printf "%-59s = %s\n" "$_bf_stop" "$X_SIMULATE_THRESH_CHTYPES"
+                else
+                    printf "%-59s = %s\n" "$_bf_stop" "(read error)"
+                fi
             fi
             printf "\n"
         fi
