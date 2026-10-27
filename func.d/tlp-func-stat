@@ -670,6 +670,7 @@ show_gpu_data () {
     for gpu in "${BASE_DRMD}"/card?; do
         [ -d "$gpu" ] || continue
         get_gpu_driver_parms "$gpu"
+        [ -n "$X_SIMULATE_GPUDRV_STAT" ] && _gpu_driver="$X_SIMULATE_GPUDRV_STAT"
 
         # shellcheck disable=SC2154
         case "$_gpu_driver" in
@@ -739,11 +740,10 @@ show_gpu_data () {
                 if [ "$lc" -lt "$gtnum" ]; then
                     printf "Remaining GTs omitted for clarity, use -v to show all.\n"
                 fi
-                [ "$lc" -gt 0 ] && printf "\n"
-
+                printf "\n"
                 ;;
 
-            amdgpu) # AMD GPU
+            amdgpu|radeon) # AMD GPU
                 if [ "$hdr" != "amdgpu" ]; then
                     printf "+++ AMD Radeon Graphics\n"
                     hdr="amdgpu"
@@ -777,28 +777,6 @@ show_gpu_data () {
                 fi
                 ;;
 
-            radeon) # AMD GPU: legacy driver
-                if [ "$hdr" != "radeon" ]; then
-                    printf "+++ AMD Radeon Graphics\n"
-                    hdr="radeon"
-                fi
-                printf "%-65s = %s\n" "$gpu/device/driver" "$_gpu_driver"
-                printparm "%-65s = ##%s##" "$gpu/device/power_state"
-
-                if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
-                    # AMD hardware
-                    printparm "%-65s = ##%s##" "$gpu/device/power_dpm_force_performance_level"
-                    printparm "%-65s = ##%s##" "$gpu/device/power_dpm_state"
-                    printf "\n"
-
-                elif [ -f "$gpu/device/power_method" ]; then
-                    # legacy ATI hardware
-                    printparm "%-65s = ##%s##" "$gpu/device/power_method"
-                    printparm "%-65s = ##%s##" "$gpu/device/power_profile"
-                    printf "\n"
-                fi
-                ;;
-
             nouveau|nvidia) # Nvidia GPU: open and proprietary driver
                 if [ "$hdr" != "$_gpu_driver" ]; then
                     printf "+++ Nvidia Graphics\n"
@@ -806,7 +784,7 @@ show_gpu_data () {
                 fi
                 printf "%-44s = %s\n" "$gpu/device/driver" "$_gpu_driver"
                 printparm "%-44s = ##%s##" "$gpu/device/power_state"
-
+                printf "\n"
                 ;;
 
             *) # Other GPU driver
@@ -816,6 +794,7 @@ show_gpu_data () {
                 fi
                 printf "%-44s = %s\n" "$gpu/device/driver" "$_gpu_driver"
                 printparm "%-44s = ##%s##" "$gpu/device/power_state"
+                printf "\n"
                 ;;
         esac
     done
