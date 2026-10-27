@@ -364,7 +364,7 @@
 #AHCI_RUNTIME_PM_ON_SAV=auto
 
 # Seconds of inactivity before disk is suspended.
-# Note: effective only when AHCI_RUNTIME_PM_ON_PRF/BAL is activated.
+# Note: effective only when AHCI_RUNTIME_PM_ON_PRF/BAL/SAV is activated.
 # Default: 15
 
 #AHCI_RUNTIME_PM_TIMEOUT=15
