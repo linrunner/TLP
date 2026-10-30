@@ -1,6 +1,16 @@
 This is the user-oriented changelog. For information regarding packaging,
 please refer to: https://linrunner.de/tlp/developers/packaging.html
 
++++ 1.11.0 --- <unreleased> +++
+
+ * Bugfixes since 1.11.0-beta.2
+   Battery Care:
+   - Lenovo laptops (non-ThinkPad series and ThinkBooks): identify hardware
+     plugin correctly even with a charge_types read error; the threshold
+     is still inaccessible due to a kernel/firmware fault (Issue #908).
+   Processor:
+   - tlp-stat -p: fix platform kernel module identification
+
 +++ 1.11.0-beta.2 --- 22.10.2026 +++
 
   * Beta Release
