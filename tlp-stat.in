@@ -597,8 +597,10 @@ if [ "$show_proc" = "1" ] || [ "$show_all" = "1" ]; then
     if [ "$quiet" = "0" ] || [ "$show_all" = "1" ] ; then
         printf "\n+++ Platform\n"
     fi
-    if driver="$(readlink /sys/class/platform-profile/*/device)"; then
-        printf "Driver = %s\n" "${driver##*/}"
+    platform_driver="$(readlink /sys/class/platform-profile/*/device/driver/module)"
+    [ -n "$platform_driver" ] || platform_driver="$(readlink /sys/class/platform-profile/*/device/driver)"
+    if [ -n "$platform_driver" ]; then
+        printf "Driver = %s\n" "${platform_driver##*/}"
     else
         printf "Driver = (not available)\n"
     fi
