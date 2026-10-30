@@ -6,8 +6,9 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
  * Bugfixes since 1.11.0-beta.2
    Battery Care:
    - Lenovo laptops (non-ThinkPad series and ThinkBooks): identify hardware
-     plugin correctly even with a charge_types read error; the threshold
-     is still inaccessible due to a kernel/firmware fault (Issue #908).
+     plugin correctly despite an error in the kernel->firmware interaction.
+     Result: the threshold can be enabled, but tlp-stat -b cannot display
+     its status. Kernel 7.3 is supposed to fix the root cause (Issue #908).
    Processor:
    - tlp-stat -p: fix platform kernel module identification
 
