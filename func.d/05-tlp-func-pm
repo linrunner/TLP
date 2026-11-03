@@ -13,6 +13,7 @@ readonly ETHTOOL=ethtool
 
 readonly PCID=/sys/bus/pci/devices
 readonly PCIDRV=/sys/bus/pci/drivers
+readonly PLATFORMD=/sys/bus/platform/devices
 readonly SLEEPMODE=/sys/power/mem_sleep
 
 # ----------------------------------------------------------------------------
@@ -24,9 +25,9 @@ set_runtime_pm () { # set runtime power management
     # $1: PP_PRF, PP_BAL, PP_SAV
 
     local address class control device driver drv_bl type rc
+    local enable_devs disable_devs name
     local pci_bl_adr=""
     local pci_bl_drv=""
-    local pci_enable_adr pci_disable_adr
 
     case "$1" in
         "$PP_PRF") control="${RUNTIME_PM_ON_PRF:-}" ;;
@@ -34,11 +35,11 @@ set_runtime_pm () { # set runtime power management
         "$PP_SAV") control="${RUNTIME_PM_ON_SAV:-${RUNTIME_PM_ON_BAL:-}}" ;;
     esac
 
-    # permanent addresses
-    pci_enable_adr=${RUNTIME_PM_ENABLE:-}
-    pci_disable_adr=${RUNTIME_PM_DISABLE:-}
+    # permanent device overrides (PCIe addresses or platform device names)
+    enable_devs=${RUNTIME_PM_ENABLE:-}
+    disable_devs=${RUNTIME_PM_DISABLE:-}
 
-    if [ -z "$control" ] && [ -z "$pci_enable_adr" ] && [ -z "$pci_disable_adr" ] ; then
+    if [ -z "$control" ] && [ -z "$enable_devs" ] && [ -z "$disable_devs" ] ; then
         # quit if completely unconfigured
         echo_debug "pm" "set_runtime_pm($1).not_configured"
         return 0
@@ -92,11 +93,11 @@ set_runtime_pm () { # set runtime power management
                 address=${device##/*/0000:}
                 class=$(read_sysf "$device/class")
 
-                if wordinlist "$address" "$pci_enable_adr"; then
+                if wordinlist "$address" "$enable_devs"; then
                     # device should be permanently 'auto' (enabled)
                     write_sysf "auto" "$device/power/control"; rc=$?
                     echo_debug "pm" "set_runtime_pm($1).perm_auto: $device [$class]; rc=$rc" "$(rc2log "$rc")"
-                elif wordinlist "$address" "$pci_disable_adr"; then
+                elif wordinlist "$address" "$disable_devs"; then
                     # device should be permanently 'on' (disabled)
                     write_sysf "on" "$device/power/control"; rc=$?
                     echo_debug "pm" "set_runtime_pm($1).perm_on: $device [$class]; rc=$rc" "$(rc2log "$rc")"
@@ -121,6 +122,28 @@ set_runtime_pm () { # set runtime power management
             fi # if power/control
         done # for device
     done # for type
+
+    # iterate platform devices, matched by device name (e.g. AMDI0010:00) as
+    # listed in RUNTIME_PM_ENABLE/DISABLE; unlisted platform devices are
+    # never touched
+    if [ -n "$enable_devs$disable_devs" ]; then
+        for device in "$PLATFORMD"/*; do
+            if [ -f "$device/power/control" ]; then
+                # get short device name
+                name=${device##*/}
+
+                if wordinlist "$name" "$enable_devs"; then
+                    # device should be permanently 'auto' (enabled)
+                    write_sysf "auto" "$device/power/control"; rc=$?
+                    echo_debug "pm" "set_runtime_pm($1).perm_auto: $device; rc=$rc" "$(rc2log "$rc")"
+                elif wordinlist "$name" "$disable_devs"; then
+                    # device should be permanently 'on' (disabled)
+                    write_sysf "on" "$device/power/control"; rc=$?
+                    echo_debug "pm" "set_runtime_pm($1).perm_on: $device; rc=$rc" "$(rc2log "$rc")"
+                fi
+            fi # if power/control
+        done # for device
+    fi
 
     return 0
 }

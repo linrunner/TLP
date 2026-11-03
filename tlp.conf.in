@@ -492,10 +492,14 @@
 
 #RUNTIME_PM_DRIVER_DENYLIST="amdgpu mei_me nouveau nvidia xhci_hcd"
 
-# Permanently enable/disable autosuspend for listed PCIe device addresses
-# (independent of the power source). This has priority over all preceding
-# autosuspend settings. Separate multiple addresses with spaces.
-# Use lspci to get the adresses (1st column).
+# Permanently enable/disable autosuspend for listed devices (independent of
+# the power source). This has priority over all preceding autosuspend
+# settings. Separate multiple devices with spaces.
+# PCIe devices: use the device address as shown by lspci (1st column).
+# Platform devices (SoC/ACPI, e.g. the AMDI0010 I2C controller found on many
+# AMD laptops): use the device name as shown in /sys/bus/platform/devices/,
+# e.g. "AMDI0010:00". Platform devices are only managed by TLP if listed
+# here; unlisted platform devices are never touched.
 # Default: <none>
 
 #RUNTIME_PM_ENABLE="11:22.3"
