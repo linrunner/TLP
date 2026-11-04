@@ -11,6 +11,7 @@
 
 readonly BCT_ON=Long_Life
 readonly BCT_OFF=Standard
+readonly BCT_ERR=Unknown
 
 # shellcheck disable=SC2034
 readonly ACPIBATDIR=/sys/class/power_supply
@@ -303,9 +304,13 @@ bat_bool2bct () {
     # convert boolean to battery charge type string
     # $1: boolean
     case "$1" in
-        1) printf "%s" "$BCT_ON" ;;
-        0) printf "%s" "$BCT_OFF" ;;
-        *) return 1
+        1)  printf "%s" "$BCT_ON" ;;
+        0)  printf "%s" "$BCT_OFF" ;;
+
+        *)
+            printf "%s" "$BCT_ERR"
+            return 1
+            ;;
     esac
 
     return 0
