@@ -470,7 +470,7 @@ case "$_cmd" in
                 # Specific hardware which resets the EC when resuming
                 # --> apply charge thresholds
                 # Note: no hardware capabable of force-discharge concerned so far
-                init_batteries_thresholds "asus huawei lg"
+                init_batteries_thresholds "$BATDRV_RESUME_THRESHOLDS"
             fi
             [ $pp_changed -eq 0 ] && set_radio_device_states "$_pp_next"
             save_runconf
