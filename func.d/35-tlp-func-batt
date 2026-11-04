@@ -24,6 +24,9 @@ readonly MSGSTR_THINKPAD_INCOMPAT="ThinkPad model is incompatible"
 # shellcheck disable=SC2034
 readonly MSGSTR_BC_DISABLED="disabled by configuration"
 
+# shellcheck disable=SC2034
+readonly BATDRV_RESUME_THRESHOLDS="asus huawei lenovo lg"
+
 # ----------------------------------------------------------------------------
 # Operational functions
 
