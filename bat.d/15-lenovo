@@ -442,7 +442,7 @@ batdrv_show_battery_data () {
 
     if [ "$_bm_thresh" = "natacpi" ]; then
         printf "Parameter value range:\n"
-        printf "* STOP_CHARGE_THRESH_BAT0/1:  0(Standard)..1(Long_Life) -- charge_types\n"
+        printf "* STOP_CHARGE_THRESH_BAT0/1:  0(off/Standard)..1(on/Long_Life) -- conservation mode\n"
     fi
     printf "\n"
 
