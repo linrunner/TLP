@@ -11,6 +11,9 @@ please refer to: https://linrunner.de/tlp/developers/packaging.html
      suspend/hibernate to keep it readable (Issue #908).
    Processor:
    - tlp-stat -p: fix platform kernel module identification
+   PCIe Devices:
+   - RUNTIME_PM_ENABLE/DISABLE: support platform devices, matched by device
+     name (e.g. "AMDI0010:00"); unlisted platform devices remain untouched
 
 +++ 1.11.0-beta.2 --- 22.10.2026 +++
 
