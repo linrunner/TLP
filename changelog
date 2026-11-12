@@ -1,14 +1,14 @@
 This is the user-oriented changelog. For information regarding packaging,
 please refer to: https://linrunner.de/tlp/developers/packaging.html
 
-+++ 1.11.0 --- <unreleased> +++
++++ 1.11.0 --- 12.11.2026 +++
 
  * Bugfixes since 1.11.0-beta.2
    Battery Care:
    - Lenovo laptops (non-ThinkPad series and ThinkBooks): work around a
-     kernel error when reading the firmware status - dmesg "unexpected
-     charge_types: both [Fast] and [Long_Life] are enabled". Rewrite
-     charge_types after suspend/hibernate to keep it readable (Issue #908).
+     kernel error when reading the firmware status ("unexpected charge_types:
+     both [Fast] and [Long_Life] are enabled". Rewrite charge_types after
+     suspend/hibernate to keep it readable (Issue #908).
    Processor:
    - tlp-stat -p: fix platform kernel module identification
 
