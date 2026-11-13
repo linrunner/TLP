@@ -12,6 +12,7 @@
 readonly BASE_MODD=/sys/module
 readonly BASE_DRMD=/sys/class/drm
 readonly BASE_DEBUGD=/sys/kernel/debug/dri
+readonly BASE_DEVFREQD=/sys/class/devfreq
 
 # Intel i915 driver
 readonly IGPU_MIN_FREQ=gt_min_freq_mhz
@@ -358,6 +359,47 @@ set_abm_level () {
 
     if [ $sdone -eq 0 ]; then
         echo_debug "pm" "set_abm_level($1).no_gpu_or_abm"
+    fi
+
+    return 0
+}
+
+set_devfreq_governor () {
+    # set devfreq governor -- $1:  PP_PRF, PP_BAL, PP_SAV
+    local cfg dev ec gov
+
+    case "$1" in
+        "$PP_PRF") gov="${DEVFREQ_GOVERNOR_ON_PRF:-}" ; cfg="DEVFREQ_GOVERNOR_ON_PRF" ;;
+        "$PP_BAL") gov="${DEVFREQ_GOVERNOR_ON_BAL:-}" ; cfg="DEVFREQ_GOVERNOR_ON_BAL" ;;
+        "$PP_SAV")
+            if [ -n "$DEVFREQ_GOVERNOR_ON_SAV" ]; then
+                gov="${DEVFREQ_GOVERNOR_ON_SAV}"
+                cfg="DEVFREQ_GOVERNOR_ON_SAV"
+            else
+                gov="${DEVFREQ_GOVERNOR_ON_BAL}"
+                cfg="DEVFREQ_GOVERNOR_ON_BAL"
+            fi
+            ;;
+    esac
+
+    if [ -n "$gov" ]; then
+        # apply governor
+        ec=0
+        for dev in "${BASE_DEVFREQD}"/devfreq*/governor; do
+            if [ -f "$dev" ] && ! write_sysf "$gov" "$dev"; then
+                echo_debug "pm" "set_devfreq_governor($1).write_error: $dev $gov; rc=$?" "$LOG_WARN"
+                ec=$((ec+1))
+            fi
+        done
+        if [ "$ec" -gt 0 ]; then
+            # kernel rejected the configured governor
+            echo_debug "pm" "set_devfreq_governor($1).not_available: $gov; ec=$ec" "$LOG_WARN"
+            echo_message "Error in configuration at ${cfg}=\"${gov}\": governor not available."
+            return 1
+        fi
+        echo_debug "pm" "set_devfreq_governor($1): $gov; ec=$ec" "$LOG_INFO"
+    else
+        echo_debug "pm" "set_devfreq_governor($1).not_configured"
     fi
 
     return 0
