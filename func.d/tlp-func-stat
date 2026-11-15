@@ -682,6 +682,12 @@ show_gpu_data () {
                 fi
                 printf "%-44s = %s\n" "$gpu/device/driver" "$_gpu_driver"
 
+                for gtfd in "$gpu"/gt/gt*; do
+                    if [ -f "$gtfd/slpc_power_profile" ]; then
+                        printparm "%-60s = ##%s##" "$gtfd/slpc_power_profile"
+                    fi
+                done
+
                 # shellcheck disable=SC2154
                 printparm_i915 "$gpu/power/rc6_enable"
                 # shellcheck disable=SC2154
