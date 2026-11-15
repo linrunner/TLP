@@ -74,7 +74,7 @@ get_gpu_driver_parms () {
 # --- Intel GPU
 
 set_intel_gpu_power_profile () {
-    # set gpu frequency limits
+    # set Intel GPU power profile where the driver exposes the interface
     # $1: PP_PRF, PP_BAL, PP_SAV
     # rc: 0=ok/1=parameter error
 
@@ -97,6 +97,22 @@ set_intel_gpu_power_profile () {
         get_gpu_driver_parms "$gpu"
 
         case "$_gpu_driver" in
+            i915*) # Intel i915: SLPC profiles are exposed per GT
+                gtnum=0
+                ec=0
+                for gtfd in "$gpu"/gt/gt*; do
+                    if [ -f "$gtfd/slpc_power_profile" ]; then
+                        gtnum=$((gtnum + 1))
+                        if ! write_sysf "$profile" "$gtfd/slpc_power_profile"; then
+                            echo_debug "pm" "set_intel_gpu_power_profile($1).write_error: gt=$gtfd profile=$profile; rc=$?" "$LOG_ERR"
+                            ec=$((ec + 1))
+                        fi
+                        gdone=1
+                    fi
+                done
+                echo_debug "pm" "set_intel_gpu_power_profile($1): gpu=$gpu profile=$profile; gtnum=$gtnum; ec=$ec" "$LOG_INFO"
+                ;;
+
             xe) # Intel XE GPU
                 # iterate GT instances to cover multi-tile devices
                 gtnum=0
@@ -117,7 +133,7 @@ set_intel_gpu_power_profile () {
     done # card
 
     if [ $gdone -eq 0 ]; then
-        echo_debug "pm" "set_intel_gpu_power_profile($1).no_xe_gpu"
+        echo_debug "pm" "set_intel_gpu_power_profile($1).no_gpu"
     fi
 
     return 0
