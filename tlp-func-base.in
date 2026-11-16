@@ -568,7 +568,7 @@ lock_tlp () { # get exclusive lock: blocking with timeout
     if { exec 9> "${LOCKFILE}_${1:-tlp}" ; } 2> /dev/null; then
         until $FLOCK -x -n 9 9>&9; do
             if [ "$wait" -le 0 ]; then
-                echo_debug "lock" "lock_tlp($1).failed" "$LOG_WARN"
+                echo_debug "lock" "lock_tlp($1).timeout" "$LOG_WARN"
                 return 1
             fi
             sleep 1
