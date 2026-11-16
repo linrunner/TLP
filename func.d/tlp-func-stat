@@ -597,7 +597,7 @@ printparm_i915 () {
 
     if val=$(read_sysf "$sysf"); then
         # sysfile exists and is actually readable, output content
-        printf "%-44s = %2d " "$sysf" "$val"
+        printf "%-48s = %2d " "$sysf" "$val"
         # explain content
         if [ "$val" = "-1" ]; then
             printf "(use per-chip default)\n"
@@ -680,11 +680,12 @@ show_gpu_data () {
                     printf "+++ Intel Graphics\n"
                     hdr="i915"
                 fi
-                printf "%-44s = %s\n" "$gpu/device/driver" "$_gpu_driver"
+                printf "%-48s = %s\n" "$gpu/device/driver" "$_gpu_driver"
 
-                for gtfd in "$gpu"/gt/gt*; do
+                for gtfd in $_gpu_gtfds; do
                     if [ -f "$gtfd/slpc_power_profile" ]; then
-                        printparm "%-60s = ##%s##" "$gtfd/slpc_power_profile"
+                        printparm "%-48s = ##%s##" "$gtfd/slpc_power_profile"
+                        [ "$verbose" = "1" ] || break # print only first instance if non-verbose
                     fi
                 done
 
@@ -692,24 +693,24 @@ show_gpu_data () {
                 printparm_i915 "$gpu/power/rc6_enable"
                 # shellcheck disable=SC2154
                 if sysout=$(grep '^FBC ' "$_gpu_dbg/i915_fbc_status" 2> /dev/null); then
-                    printf "%-44s = %s\n" "$_gpu_dbg/i915_fbc_status" "$sysout"
+                    printf "%-48s = %s\n" "$_gpu_dbg/i915_fbc_status" "$sysout"
                 else
                     printparm_i915 "$_gpu_parm/enable_fbc"
                 fi
                 if sysout=$(grep '^PSR mode:' "$_gpu_dbg/i915_edp_psr_status" 2> /dev/null); then
-                    printf "%-44s = %s\n" "$_gpu_dbg/i915_edp_psr_status" "$sysout"
+                    printf "%-48s = %s\n" "$_gpu_dbg/i915_edp_psr_status" "$sysout"
                 else
                     printparm_i915 "$_gpu_parm/enable_psr"
                 fi
                 printf "\n"
 
                 # frequency parameters
-                if readable_sysf "$_gpu_freqs//$IGPU_MIN_FREQ"; then
-                    printparm "%-44s = ##%5d## [MHz]" "$_gpu_freqs/$IGPU_MIN_FREQ"
-                    printparm "%-44s = ##%5d## [MHz]" "$_gpu_freqs/$IGPU_MAX_FREQ"
-                    printparm "%-44s = ##%5d## [MHz]" "$_gpu_freqs/$IGPU_BOOST_FREQ"
-                    printparm "%-44s = ##%5d## [MHz] (GPU min)" "$_gpu_freqs/$IGPU_RPN_FREQ"
-                    printparm "%-44s = ##%5d## [MHz] (GPU max)" "$_gpu_freqs/$IGPU_RP0_FREQ"
+                if readable_sysf "$_gpu_freq/$IGPU_MIN_FREQ"; then
+                    printparm "%-48s = ##%5d## [MHz]" "$_gpu_freq/$IGPU_MIN_FREQ"
+                    printparm "%-48s = ##%5d## [MHz]" "$_gpu_freq/$IGPU_MAX_FREQ"
+                    printparm "%-48s = ##%5d## [MHz]" "$_gpu_freq/$IGPU_BOOST_FREQ"
+                    printparm "%-48s = ##%5d## [MHz] (GPU min)" "$_gpu_freq/$IGPU_RPN_FREQ"
+                    printparm "%-48s = ##%5d## [MHz] (GPU max)" "$_gpu_freq/$IGPU_RP0_FREQ"
                     printf "\n"
                 fi
                 ;;
@@ -723,9 +724,9 @@ show_gpu_data () {
                 printparm "%-60s = ##%s##" "$gpu/device/power_state"
 
                 # iterate GT instances to cover multi-tile devices
-                gtnum="$(echo "$_gpu_freqs" | wc -w)"
+                gtnum="$(echo "$_gpu_gtfds" | wc -w)"
                 lc=0
-                for gtfd in $_gpu_freqs; do
+                for gtfd in $_gpu_gtfds; do
                     printparm "%-60s = ##%s##" "$gtfd/power_profile"
                     printparm "%-60s = ##%6d## [MHz]" "$gtfd/$IGPU_XE_MIN_FREQ"
                     printparm "%-60s = ##%6d## [MHz]" "$gtfd/$IGPU_XE_MAX_FREQ"
@@ -773,7 +774,6 @@ show_gpu_data () {
 
                 if [ "$verbose" = "1" ]; then
                     lc=0
-                    printparm "%-43s = ##%s##" "$gpu/device/power_state" "not available"
                     for clk in pp_dpm_dcefclk pp_dpm_fclk pp_dpm_mclk pp_dpm_pcie pp_dpm_sclk pp_dpm_socclk; do
                         printparm_amdgpu_ml "$gpu/device/${clk}" && lc=1
                     done
