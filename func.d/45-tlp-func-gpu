@@ -37,36 +37,44 @@ get_gpu_driver_parms () {
     # determine GPU driver and parameter locations
     # $1: drm card dir
     # retval: $_gpu_driver: kernel driver
-    #         $_gpu_freqs   frequency control dir (list) - Intel only
-    #         $_gpu_parm:   parameter sysdir - Intel only
-    #         $_gpu_dbg:    debug parameter sysdir - Intel only
+    #         $_gpu_freq:   frequency sysdir (list) - Intel i915 only
+    #         $_gpu_gtfds:  GT sysdirs (list) - Intel xe, i915 only
+    #         $_gpu_parm:   parameter sysdir - Intel i915 only
+    #         $_gpu_dbg:    debug parameter sysdir - Intel i915 only
 
     local carddir="$1"
     local gtfd
 
     _gpu_driver="$(readlink "${carddir}/device/driver")"
     _gpu_driver="${_gpu_driver##*/}"
-    _gpu_freqs=""
+    _gpu_freq=""
+    _gpu_gtfds=""
     _gpu_parm=""
     _gpu_dbg=""
 
     case "$_gpu_driver" in
         i915*) # Intel GPU
-            _gpu_freqs="$carddir"
+            _gpu_freq="$carddir"
             _gpu_parm=${BASE_MODD}/${_gpu_driver}/parameters
             _gpu_dbg=${BASE_DEBUGD}/${carddir##"${BASE_DRMD}/card"}
+
+            # enumerate all GT instances of multi-tile devices
+            for gtfd in "$carddir"/gt/gt*; do
+                [ -d "$gtfd" ] || break
+                _gpu_gtfds="${_gpu_gtfds}${_gpu_gtfds:+ }$gtfd"
+            done
             ;;
 
-        xe) # Intel GPU: new driver (Tiger Lake integrated graphics and newer, or discrete graphics card)
-            # iterate and concat all GT instances to cover multi-tile devices
+        xe) # Intel GPU: new driver (Tiger Lake integrated graphics and newer, or discrete Arc graphics card)
+            # enumerate all GT instances of multi-tile devices
             # see: https://docs.kernel.org/gpu/xe/xe_tile.html
             for gtfd in "$carddir"/device/tile*/gt*/freq*; do
                 [ -d "$gtfd" ] || break
-                _gpu_freqs="${_gpu_freqs}${_gpu_freqs:+ }$gtfd"
+                _gpu_gtfds="${_gpu_gtfds}${_gpu_gtfds:+ }$gtfd"
             done
             ;;
     esac # driver
-    echo_debug "pm" "get_gpu_driver_parms: card=$carddir; driver=$_gpu_driver; freqs=$_gpu_freqs; parm=$_gpu_parm; dbg=$_gpu_dbg"
+    echo_debug "pm" "get_gpu_driver_parms.$_gpu_driver: gpu=$carddir; freq=$_gpu_freq; gtfds=[$_gpu_gtfds]; parm=$_gpu_parm; dbg=$_gpu_dbg"
 
     return 0
 }
@@ -79,7 +87,6 @@ set_intel_gpu_power_profile () {
     # rc: 0=ok/1=parameter error
 
     local profile ec gtfd gtnum rc
-    local gdone=0 # 1=gpu present
 
     case "$1" in
         "$PP_PRF") profile="${INTEL_GPU_POWER_PROFILE_ON_PRF:-}" ;;
@@ -97,44 +104,51 @@ set_intel_gpu_power_profile () {
         get_gpu_driver_parms "$gpu"
 
         case "$_gpu_driver" in
-            i915*) # Intel i915: SLPC profiles are exposed per GT
+            i915*) # Intel i915 driver
                 gtnum=0
                 ec=0
-                for gtfd in "$gpu"/gt/gt*; do
+                # Xe GPUs - except Tiger Lake - expose SLPC profiles per GT
+                for gtfd in $_gpu_gtfds; do
                     if [ -f "$gtfd/slpc_power_profile" ]; then
                         gtnum=$((gtnum + 1))
                         if ! write_sysf "$profile" "$gtfd/slpc_power_profile"; then
-                            echo_debug "pm" "set_intel_gpu_power_profile($1).write_error: gt=$gtfd profile=$profile; rc=$?" "$LOG_ERR"
+                            echo_debug "pm" "set_intel_gpu_power_profile($1).$_gpu_driver.write_error: gt=$gtfd profile=$profile; rc=$?" "$LOG_ERR"
                             ec=$((ec + 1))
                         fi
-                        gdone=1
                     fi
                 done
-                echo_debug "pm" "set_intel_gpu_power_profile($1): gpu=$gpu profile=$profile; gtnum=$gtnum; ec=$ec" "$LOG_INFO"
+                if [ $gtnum -gt 0 ]; then
+                    echo_debug "pm" "set_intel_gpu_power_profile($1).$_gpu_driver: gpu=$gpu profile=$profile; gtnum=$gtnum; ec=$ec" "$LOG_INFO"
+                else
+                    echo_debug "pm" "set_intel_gpu_power_profile($1).$_gpu_driver.no_slpc: gpu=$gpu"
+                fi
                 ;;
 
-            xe) # Intel XE GPU
-                # iterate GT instances to cover multi-tile devices
+            xe) # Intel xe driver
                 gtnum=0
                 ec=0
-                for gtfd in $_gpu_freqs; do
+                # Xe GPUs expose SLPC profiles per GT
+                for gtfd in $_gpu_gtfds; do
                     if [ -f "$gtfd/power_profile" ]; then
                         gtnum=$((gtnum + 1))
                         if ! write_sysf "$profile" "$gtfd/power_profile"; then
-                            echo_debug "pm" "set_intel_gpu_power_profile($1).write_error: gt=$gtfd profile=$profile; rc=$?" "$LOG_ERR"
+                            echo_debug "pm" "set_intel_gpu_power_profile($1).$_gpu_driver.write_error: gt=$gtfd profile=$profile; rc=$?" "$LOG_ERR"
                             ec=$((ec + 1))
                         fi
-                        gdone=1
                     fi
                 done
-                echo_debug "pm" "set_intel_gpu_power_profile($1): gpu=$gpu profile=$profile; gtnum=$gtnum; ec=$ec" "$LOG_INFO"
+                if [ $gtnum -gt 0 ]; then
+                    echo_debug "pm" "set_intel_gpu_power_profile($1).$_gpu_driver: gpu=$gpu profile=$profile; gtnum=$gtnum; ec=$ec" "$LOG_INFO"
+                else
+                    echo_debug "pm" "set_intel_gpu_power_profile($1).$_gpu_driver.no_slpc: gpu=$gpu"
+                fi
+                ;;
+
+            *) # not an Intel driver
+                echo_debug "pm" "set_intel_gpu_power_profile($1).gpu_not_matching"
                 ;;
         esac
     done # card
-
-    if [ $gdone -eq 0 ]; then
-        echo_debug "pm" "set_intel_gpu_power_profile($1).no_gpu"
-    fi
 
     return 0
 }
@@ -184,11 +198,11 @@ set_intel_gpu_min_max_boost_freq () {
         case "$_gpu_driver" in
             i915*) # Intel GPU
                 # shellcheck disable=SC2034
-                if old_min=$(read_sysf "$_gpu_freqs/$IGPU_MIN_FREQ") \
-                    && old_max=$(read_sysf "$_gpu_freqs/$IGPU_MAX_FREQ") \
-                    && old_boost=$(read_sysf "$_gpu_freqs/$IGPU_BOOST_FREQ") \
-                    && gpu_min=$(read_sysf "$_gpu_freqs/$IGPU_RPN_FREQ") \
-                    && gpu_max=$(read_sysf "$_gpu_freqs/$IGPU_RP0_FREQ"); then
+                if old_min=$(read_sysf "$_gpu_freq/$IGPU_MIN_FREQ") \
+                    && old_max=$(read_sysf "$_gpu_freq/$IGPU_MAX_FREQ") \
+                    && old_boost=$(read_sysf "$_gpu_freq/$IGPU_BOOST_FREQ") \
+                    && gpu_min=$(read_sysf "$_gpu_freq/$IGPU_RPN_FREQ") \
+                    && gpu_max=$(read_sysf "$_gpu_freq/$IGPU_RP0_FREQ"); then
                     # frequencies actually readable, check new ones against hardware limits and boundary conditions
                     if ! is_uint "$new_min" 5 || [ "$new_min" -lt "$gpu_min" ] || [ "$new_min" -gt "$gpu_max" ]; then
                         echo_message "Error in configuration at INTEL_GPU_MIN_FREQ_ON_${suffix}=\"${new_min}\": frequency invalid or out of range (see 'tlp-stat -g')."
@@ -214,17 +228,17 @@ set_intel_gpu_min_max_boost_freq () {
 
                     # all parameters valid --> write min, max in proper sequence
                     if [ "$new_min" -gt "$old_max" ]; then
-                        write_sysf "$new_max" "$_gpu_freqs/$IGPU_MAX_FREQ"; rc=$?
+                        write_sysf "$new_max" "$_gpu_freq/$IGPU_MAX_FREQ"; rc=$?
                         echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$rc" "$(rc2log "$rc")"
-                        write_sysf "$new_min" "$_gpu_freqs/$IGPU_MIN_FREQ"; rc=$?
+                        write_sysf "$new_min" "$_gpu_freq/$IGPU_MIN_FREQ"; rc=$?
                         echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$rc" "$(rc2log "$rc")"
                     else
-                        write_sysf "$new_min" "$_gpu_freqs/$IGPU_MIN_FREQ"; rc=$?
+                        write_sysf "$new_min" "$_gpu_freq/$IGPU_MIN_FREQ"; rc=$?
                         echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).min: gpu=$gpu freq=$new_min; rc=$rc" "$(rc2log "$rc")"
-                        write_sysf "$new_max" "$_gpu_freqs/$IGPU_MAX_FREQ"; rc=$?
+                        write_sysf "$new_max" "$_gpu_freq/$IGPU_MAX_FREQ"; rc=$?
                         echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).max: gpu=$gpu freq=$new_max; rc=$rc" "$(rc2log "$rc")"
                     fi
-                    write_sysf "$new_boost" "$_gpu_freqs/$IGPU_BOOST_FREQ"; rc=$?
+                    write_sysf "$new_boost" "$_gpu_freq/$IGPU_BOOST_FREQ"; rc=$?
                     echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: gpu=$gpu freq=$new_boost; rc=$rc" "$(rc2log "$rc")"
                 else
                     echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_available: gpu=$gpu"
@@ -234,7 +248,7 @@ set_intel_gpu_min_max_boost_freq () {
             xe)  # Intel XE GPU
                 # iterate GT instances to cover multi-tile devices
                 gtnum=0
-                for gtfd in $_gpu_freqs; do
+                for gtfd in $_gpu_gtfds; do
                     [ -d "$gtfd" ] || break
                     gtnum=$((gtnum + 1))
 
