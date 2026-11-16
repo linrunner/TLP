@@ -559,11 +559,21 @@ lock_tlp () { # get exclusive lock: blocking with timeout
               # $1: lock id (default: tlp)
               # rc: 0=success/1=failed
 
+    local wait=$LOCKTIMEOUT
+
     create_rundir
     # open file for writing and attach fd 9
-    # when successful lock fd 9 exclusive and blocking
-    # wait $LOCKTIMEOUT secs to obtain the lock
-    if { exec 9> "${LOCKFILE}_${1:-tlp}" ; } 2> /dev/null && timeout $LOCKTIMEOUT $FLOCK -x 9 ; then
+    # when successful lock fd 9 exclusive, retry each second
+    # for $LOCKTIMEOUT secs to obtain the lock
+    if { exec 9> "${LOCKFILE}_${1:-tlp}" ; } 2> /dev/null; then
+        until $FLOCK -x -n 9 9>&9; do
+            if [ "$wait" -le 0 ]; then
+                echo_debug "lock" "lock_tlp($1).failed" "$LOG_WARN"
+                return 1
+            fi
+            sleep 1
+            wait=$((wait - 1))
+        done
         echo_debug "lock" "lock_tlp($1).success"
         return 0
     else
@@ -579,7 +589,8 @@ lock_tlp_nb () { # get exclusive lock: non-blocking
     create_rundir
     # open file for writing and attach fd 9
     # when successful lock fd 9 exclusive and non-blocking
-    if { exec 9> "${LOCKFILE}_${1:-tlp}" ; } 2> /dev/null && $FLOCK -x -n 9 ; then
+    # fd 9 is passed to flock explicitly, see lock_tlp()
+    if { exec 9> "${LOCKFILE}_${1:-tlp}" ; } 2> /dev/null && $FLOCK -x -n 9 9>&9 ; then
         echo_debug "lock" "lock_tlp_nb($1).success"
         return 0
     else
