@@ -74,7 +74,7 @@ get_gpu_driver_parms () {
             done
             ;;
     esac # driver
-    echo_debug "pm" "get_gpu_driver_parms.$_gpu_driver: gpu=$carddir; freq=$_gpu_freq; gtfds=[$_gpu_gtfds]; parm=$_gpu_parm; dbg=$_gpu_dbg"
+    echo_debug "pm" "get_gpu_driver_parms($carddir): drv=$_gpu_driver; freq=$_gpu_freq; gtfds=[$_gpu_gtfds]; parm=$_gpu_parm; dbg=$_gpu_dbg"
 
     return 0
 }
@@ -168,14 +168,14 @@ set_intel_gpu_min_max_boost_freq () {
             new_min="${INTEL_GPU_MIN_FREQ_ON_PRF:-}"
             new_max="${INTEL_GPU_MAX_FREQ_ON_PRF:-}"
             new_boost="${INTEL_GPU_BOOST_FREQ_ON_PRF:-}"
-            suffix="AC"
+            suffix="PRF"
             ;;
 
         "$PP_BAL")
             new_min="${INTEL_GPU_MIN_FREQ_ON_BAL:-}"
             new_max="${INTEL_GPU_MAX_FREQ_ON_BAL:-}"
             new_boost="${INTEL_GPU_BOOST_FREQ_ON_BAL:-}"
-            suffix="BAT"
+            suffix="BAL"
             ;;
 
         "$PP_SAV")
@@ -196,7 +196,7 @@ set_intel_gpu_min_max_boost_freq () {
         get_gpu_driver_parms "$gpu"
 
         case "$_gpu_driver" in
-            i915*) # Intel GPU
+            i915*) # Intel i915 driver
                 # shellcheck disable=SC2034
                 if old_min=$(read_sysf "$_gpu_freq/$IGPU_MIN_FREQ") \
                     && old_max=$(read_sysf "$_gpu_freq/$IGPU_MAX_FREQ") \
@@ -241,11 +241,11 @@ set_intel_gpu_min_max_boost_freq () {
                     write_sysf "$new_boost" "$_gpu_freq/$IGPU_BOOST_FREQ"; rc=$?
                     echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).boost: gpu=$gpu freq=$new_boost; rc=$rc" "$(rc2log "$rc")"
                 else
-                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_available: gpu=$gpu"
+                    echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).not_available"
                 fi
                 ;; # i915
 
-            xe)  # Intel XE GPU
+            xe)  # Intel xe driver
                 # iterate GT instances to cover multi-tile devices
                 gtnum=0
                 for gtfd in $_gpu_gtfds; do
@@ -288,6 +288,10 @@ set_intel_gpu_min_max_boost_freq () {
                     fi
                 done
                 ;; # xe
+
+            *) # not an Intel driver
+                echo_debug "pm" "set_intel_gpu_min_max_boost_freq($1).gpu_not_matching"
+                ;;
         esac
     done # card
 
@@ -301,7 +305,6 @@ set_amdgpu_profile () {
     # $1: PP_PRF, PP_BAL, PP_SAV
 
     local gpu level rc
-    local sdone=0 # 1=gpu present
 
     for gpu in "${BASE_DRMD}"/card?; do
         [ -d "$gpu" ] || break
@@ -309,6 +312,7 @@ set_amdgpu_profile () {
 
         case "$_gpu_driver" in
             amdgpu|radeon)
+                # AMD amdgpu or radeon driver
                 if [ -f "$gpu/device/power_dpm_force_performance_level" ]; then
                     # Use amdgpu dynamic power management method (DPM)
                     case "$1" in
@@ -325,15 +329,17 @@ set_amdgpu_profile () {
                         write_sysf "$level" "$gpu/device/power_dpm_force_performance_level"; rc=$?
                         echo_debug "pm" "set_amdgpu_profile($1).$_gpu_driver: gpu=$gpu level=${level}: rc=$rc" "$(rc2log "$rc")"
                     fi
-                    sdone=1
+                else
+                    echo_debug "pm" "set_amdgpu_profile($1).$_gpu_driver.no_dpm"
                 fi
+                ;;
+
+            *) # not an AMD driver
+                echo_debug "pm" "set_amdgpu_profile($1).gpu_not_matching"
                 ;;
         esac
     done
 
-    if [ $sdone -eq 0 ]; then
-        echo_debug "pm" "set_amdgpu_profile($1).no_gpu"
-    fi
 
     return 0
 }
@@ -343,7 +349,6 @@ set_abm_level () {
     # $1: PP_PRF, PP_BAL, PP_SAV
 
     local card gpu level old_level pps rc
-    local sdone=0 # 1=gpu present
 
     for gpu in "${BASE_DRMD}"/card?; do
         [ -d "$gpu" ] || break
@@ -351,6 +356,7 @@ set_abm_level () {
 
         case "$_gpu_driver" in
             amdgpu)
+                # AMD amdgpu driver
                 card="${gpu##/*/}"
                 for pps in "$gpu/${card}-eDP"*; do
                     if [ -f "$pps/amdgpu/panel_power_savings" ]; then
@@ -378,17 +384,17 @@ set_abm_level () {
                             write_sysf "$level" "$pps/amdgpu/panel_power_savings"; rc=$?
                             echo_debug "pm" "set_abm_level($1).amdgpu: pps=$pps level=${level}: rc=$rc" "$(rc2log "$rc")"
                         fi
-                        sdone=1
+                    else
+                        echo_debug "pm" "set_abm_level($1).amdgpu.no_abm"
                     fi
                 done
                 ;;
 
+            *) # not an AMD driver
+                echo_debug "pm" "set_abm_level($1).gpu_not_matching"
+                ;;
         esac
     done
-
-    if [ $sdone -eq 0 ]; then
-        echo_debug "pm" "set_abm_level($1).no_gpu_or_abm"
-    fi
 
     return 0
 }
